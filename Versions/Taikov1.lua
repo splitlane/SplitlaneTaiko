@@ -141,11 +141,11 @@ function ParseTJA(source)
         songstarted = false,
         timingpoint = nil,
         sign = 4/4,
-        mpm = 0
+        mpm = 0,
         mspermeasure = 0,
         scroll = 1,
-        measuredone = true
-        currentmeasure = {}
+        measuredone = true,
+        currentmeasure = {},
         barline = true,
         gogo = false
     }
@@ -206,8 +206,10 @@ function ParseTJA(source)
                         ]]
                         --Parser.measure = tonumber(match[2]) --UNSAFE
                         Parser.sign = tonumber(match[2]) or Parser.sign --UNSAFE
+                        --[[
                         Parser.mpm = Parsed.Metadata.BPM * Parser.sign / 4
-                        Parser.mspermeasure = 60000 * Parser.measure * 4 / Parsed.Metadata.BPM
+                        Parser.mspermeasure = 60000 * Parser.sign * 4 / Parsed.Metadata.BPM
+                        --]]
                     elseif match[1] == 'BPMCHANGE' then
                         --[[
                             - Changes song's BPM, similar to BPM: command in metadata.
@@ -271,25 +273,120 @@ function ParseTJA(source)
                         })
                         --]]
                         Parser.gogo = false
-                    elseif match[1] == 'BARLINEOFF' 
+                    elseif match[1] == 'BARLINEOFF' then
+                        --[[
+                            - Turns off the visual appearance of measure lines between #BARLINEOFF and #BARLINEON commands.
+                        ]]
                         Parser.barline = false
                     elseif match[1] == 'BARLINEON' then
                         Parser.barline = true
                     elseif match[1] == 'BRANCHSTART' then
+                        --[[
+                            - Having this command in a song notation will mark the song's difficulty on song selection as having diverge notes and the song will appear to start on the Normal branch. When hosted on taiko-web, branch field in the database is used.
+                            - Value is a comma separated array. First value in that array is type, second is advanced requirement, third is master requirement.
+                            - If the type is "r", amount of drumroll and balloon hits determines the path.
+                            - If the type is "p" or any other value, accuracy determines the path. Note accuracy between #SECTION and one measure before #BRANCHSTART are summed together, divided by their amount, and multiplied by 100 (exception: zero amount of notes will equal zero accuracy). GOOD notes have 1 accuracy, OK notes have 0.5 accuracy, and BAD notes have 0 accuracy.
+                            - Advanced requirement and master requirement values is the minimum threshold for drumroll hits or accuracy. Some paths can be made impossible to get to by placing the requirement value out of bounds (such as negative values and values above 100 for "p" type) or having advanced requirement greater than master, which makes the master requirement override advanced.
+                            - The requirement is calculated one measure before #BRANCHSTART, changing the branch visually when it is calculated and changing the notes after #BRANCHSTART.
+                            - The first measure's line after #BRANCHSTART is always yellow.
+                            - Branch can be ended either with #BRANCHEND or with another #BRANCHSTART.
+                        ]]
                     elseif match[1] == 'N' then
+                        --[[
+                            - Starts a song notation for a path:
+                                - #N - starts Normal path, background is the default grey.
+                                - #E - starts Advanced or Professional path, background is blue.
+                                - #M - starts Master path, background is purple.
+                            - Only one of the paths from a #BRANCHSTART can be played in one go.
+                            - When taking a path, it skips measures, notes, and commands from all other paths, except for iterating over the BALLOON: metadata.
+                            - The path is required if the requirement does not make it impossible to get to.
+                            - All paths can be omitted, ending the branch with #BRANCHEND immediately.
+                            - All paths are required to have their measures complete in the same time at the end.
+                        ]]
                     elseif match[1] == 'E' then
                     elseif match[1] == 'M' then
                     elseif match[1] == 'BRANCHEND' then
+                        --[[
+                            - Begins a normal song notation without branching.
+                            - Retains the visual branch from previous #BRANCHSTART.
+                        ]]
                     elseif match[1] == 'SECTION' then
+                        --[[
+                            - Reset accuracy values for notes and drumrolls on the next measure.
+                            - Placing it near #BRANCHSTART or a measure before does not reset the accuracy for that branch. The value is calculated before it and a measure has not started yet at that point.
+                        ]]
                     elseif match[1] == 'LYRIC' then
+                        --[[
+                            - Shows song lyrics at the bottom of the screen until the next #LYRIC command.
+                            - Line breaks can be added with \n.
+                            - Has to be repeated for each difficulty.
+                            - Can be placed in the middle of a measure.
+                            - If LYRICS: is defined in the metadata, the command is ignored.
+                        ]]
                     elseif match[1] == 'LEVELHOLD' then
+                        --[[
+                            - The branch that is currently being played is forced until the end of the song.
+                            - Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'BMSCROLL' then
+                        --[[
+                            - Command that appears one line before a #START command.
+                            - #BPMCHANGE will make the notes after it appear at the same scrolling speed as the notes that are currently being played, but then change their speed suddenly after #BPMCHANGE is passed.
+                            - #DELAY will stop the scrolling completely.
+                            - #BMSCROLL ignores #SCROLL commands.
+                            - Behaviour can be turned off by the user.
+                            - Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'HBSCROLL' then
                     elseif match[1] == 'SENOTECHANGE' then
+                        --[[
+                            - Force note lyrics with a specific value, which is an integer index for the following lookup table:
+                                - 1: ドン, 2: ド, 3: コ, 4: カッ, 5: カ, 6: ドン(大), 7: カッ(大), 8: 連打, 9: ー, 10: ーっ!!, 11: 連打(大), 12: ふうせん
+                            - The lyrics are replaced only if the next note is Don (1) or Ka (2).
+                            - Can be placed in the middle of a measure.
+                            - Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'NEXTSONG' then
+                        --[[
+                            - Changes song when COURSE: is set to "Dan" or "6".
+                            - Value is a comma separated array, with these values, all of which are required:
+                                - Title
+                                - Subtitle
+                                - Genre
+                                - Audio filename
+                                - ScoreInit
+                                - ScoreDiff
+                            - Comma character in the value can be escaped with a backslash character (\,).
+                            - Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'DIRECTION' then
+                        --[[
+                            - Scrolling direction for notes afterwards.
+                            - Value is an integer index for the following lookup table:
+                                - 0: From right, 1: From above, 2: From below, 3: From top-right, 4: From bottom-right, 5: From left, 6: From top-left, 7: From bottom-left
+                            - Default is 0.
+                            - Can be placed in the middle of a measure.
+                            Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'SUDDEN' then
+                        --[[
+                            - Delays notes from appearing, starting their movement in the middle of the screen instead of off-screen.
+                            - The value is two floating point numbers separated with a space.
+                            - First value is appearance time, marking the note appearance this many seconds in advance.
+                            - Second value is movement wait time, notes stay in place and start moving when this many seconds are left.
+                            - Can be placed in the middle of a measure.
+                            - Ignored in taiko-web.
+                        ]]
                     elseif match[1] == 'JPOSSCROLL' then
+                        --[[
+                            - Linearly transition cursor's position to a different position on a bar.
+                            - Value is a space-separated array:
+                                - First value is the amount of seconds it takes for cursor to transition. If it takes too long before another #JPOSSCROLL is passed, it will be cancelled and next transition will happen at the cursor's current position.
+                                - Second value is the relative distance in pixels to move the cursor.
+                            - Third value is the direction, "0" is left and "1" is right.
+                            - Can be placed in the middle of a measure.
+                            - Ignored in taiko-web.
+                        ]]
                     else
 
                     end
@@ -311,21 +408,29 @@ function ParseTJA(source)
                     local s = string.sub(line, i, i)
                     local n = tonumber(s) --UNSAFE
                     if n then
-                        table.insert(Parser.currentmeasure,                 {
-                            ms = 1000,
+                        table.insert(Parser.currentmeasure, {
+                            ms = nil,
                             data = 'note',
                             type = n,
                             txt = nil,
                             gogo = Parser.gogo,
-                            scroll = Parser.scroll * Parser.HEADSCROLL
+                            scroll = Parser.scroll * Parsed.Metadata.HEADSCROLL
                         })
                     end
                 end
 
                 if EndsWith(line, ',') then
+                    --Recalculate
+                    Parser.mpm = Parsed.Metadata.BPM * Parser.sign / 4
+                    Parser.mspermeasure = 60000 * Parser.sign * 4 / Parsed.Metadata.BPM
+
                     --get first note and  make barline
                     if Parser.barline then
-                        
+                        table.insert(Parsed.Data, {
+                            ms = Parser.ms,
+                            data = 'event',
+                            event = 'barline'
+                        })
                     end
                     --add notes
                     if #Parser.currentmeasure == 0 then
@@ -347,6 +452,7 @@ function ParseTJA(source)
                                 Parser.ms = Parser.ms + c[2]
                             else
                                 --assume it is a note
+                                c.ms = Parser.ms
                                 table.insert(Parsed.Data, c)
                             end
                             Parser.ms = Parser.ms + increment
@@ -362,7 +468,12 @@ function ParseTJA(source)
 
         end
     end
+    return Parsed
 end
 
 
-require'ppp'(ParseTJA(io.open('test.tja','r'):read()))
+--require'ppp'(ParseTJA(io.open('test.tja','r'):read()))
+require'ppp'(ParseTJA([[
+11,
+11,
+]]))
