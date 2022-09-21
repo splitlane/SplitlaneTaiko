@@ -6,9 +6,10 @@ O: Parse TJA
 NEVER: Play frame
 O: Play entire song
 
+Tags: --WIP, --FIX, --TODO
 
-
-
+TODO:
+modes
 
 
 
@@ -280,6 +281,16 @@ Taiko.Data = {
         [2] = function(Parsed)
 
         end
+    },
+    SideId = {
+        normal = 1,
+        ex = 2,
+        both = 3
+    },
+    SideName = {
+        'normal',
+        'ex',
+        'both'
     }
 }
 
@@ -328,6 +339,7 @@ function Taiko.ParseTJA(source)
             SCOREMODE = 1,
             SONGVOL = 100, --taiko-web ignored
             SEVOL = 100, --taiko-web ignored
+            SIDE = 3, -- --taiko-web ignored
             LIFE = 0, --taiko-web ignored
             GAME = 'Taiko', --taiko-web ignored
             HEADSCROLL = 1, --taiko-web ignored
@@ -452,6 +464,9 @@ function Taiko.ParseTJA(source)
                                     ParseError(match[1], e, data)
                                 end
                             end
+                            local function CheckCSN(s, e)
+                                todo+balloon
+                            end
 
                             --Main metadata
                             --[[
@@ -495,21 +510,21 @@ function Taiko.ParseTJA(source)
                                 - The following formula is used: BPM = MEASURE / SIGN * 4, where MEASURE is amount of measures per minute and SIGN is the time signature, eg. 4 / 4 if the current time signature is common.
                                 - If omitted, BPM defaults to 120.
                             ]]
-
+                            Parsed.Metadata.BPM = CheckN(Parsed.Metadata.BPM, 'Invalid bpm')
                             --[[
                             OFFSET:
                                 - Floating point value for chart offset in seconds.
                                 - Negative values will delay notes, positive will cause them to appear sooner.
                                 - If the "offset" field is set in a taiko-web database, both values will be summed together.
                             ]]
-                            Parsed.Metadata.OFFSET = CheckN(tonumber(Parsed.Metadata.OFFSET), 'Invalid offset') * 1000
+                            Parsed.Metadata.OFFSET = CheckN(Parsed.Metadata.OFFSET, 'Invalid offset') * 1000
                             --[[
                             DEMOSTART: (i)
                                 - Offset of song preview during song selection in seconds.
                                 - Default is 0, which also disables the generation of a "preview.mp3" file when hosted on taiko-web.
                                 - When hosted on taiko-web, "preview" field in the database is used.
                             ]]
-                            Parsed.Metadata.DEMOSTART = CheckN(tonumber(Parsed.Metadata.DEMOSTART), 'Invalid demostart') * 1000
+                            Parsed.Metadata.DEMOSTART = CheckN(Parsed.Metadata.DEMOSTART, 'Invalid demostart') * 1000
                             if Parsed.Metadata.DEMOSTART == 0 then
                                 --No preview
                                 Parsed.Metadata.DEMOSTART = nil
@@ -554,8 +569,7 @@ function Taiko.ParseTJA(source)
                                 - Default is "1".
                             ]]
                             Parsed.Metadata.SCOREMODE = CheckN(Parsed.Metadata.SCOREMODE, 'Invalid scoremode')
-                            local a = Parsed.Metadata.SCOREMODE
-                            Check(a == 0 or a == 1 or a == 2, 'Invalid scoremode', a)
+                            Check(Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE], 'Invalid scoremode', Parsed.Metadata.SCOREMODE)
                             --[[
                             MAKER: (i)
                                 - Chart creator's name.
@@ -574,6 +588,143 @@ function Taiko.ParseTJA(source)
                             else
                                 Parsed.Metadata.CREATIVE = false
                             end
+                            --[[
+                            LYRICS: (i)
+                                - Path to a timed WEBVTT lyrics file, usually with a .vtt extension.
+                                - Shows song lyrics at the bottom of the screen.
+                                - Marks the song as having lyrics on the song select.
+                                - Contents of the vtt file:
+                                    - Offset of all lyrics can be specified after the header as a floating point number in seconds: WEBVTT Offset: 0.250
+                                    - All commands are separated with a double new line.
+                                    - Timestamps are separated with --> and have either MM:SS.msc or HH:MM:SS.msc format.
+                                        - First timestamp is when the line should appear, second is when it should end.
+                                        - Timestamps within the file should be sequentially ordered, a line cannot start before the previous one ends.
+                                    - Ruby tags can be used to display annotations for complex words: <ruby>漢字<rt>かんじ</rt></ruby>
+                                    - <lang en> (where "en" is the language code) begins a translated version of the line.
+                                        - If user's language does not match any of the lang tags, the line before all of them is used.
+                                - Overrides #LYRIC commands in the notation.
+                                - When hosted on taiko-web, setting "lyrics" field in the database to true will force the value to be "main.vtt", otherwise it will be ignored.
+                            ]]
+                            --TODO
+                            --[[
+                            SONGVOL: (?)
+                                - Music volume percentage.
+                                - Default is 100, but can be made louder by increasing the value further.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.SONGVOL = CheckN(Parsed.Metadata.SONGVOL, 'Invalid songvol') / 100
+                            --[[
+                            SEVOL: (?)
+                                - Sound effect volume percentage, such as drumming and Don's voice lines.
+                                - Default is 100.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.SEVOL = CheckN(Parsed.Metadata.SEVOL, 'Invalid sevol') / 100
+                            --[[
+                            SIDE: (?)
+                                - Value can be either:
+                                    - "Normal" or "1"
+                                    - "Ex" or "2"
+                                    - "Both" or "3"
+                                - Value of "Normal" and "1" makes the song appear when song selection is in the default mode.
+                                - "Ex" and "2" hides the song from default song selection.
+                                    - The song appears after the user presses the buttons for next song and previous song 20 times alternatingly (10 for each button).
+                                - Default is "Both", making the song appear during song selection in both modes.
+                                Ignored in taiko-web.
+                            ]]
+                            local a = tonumber(Parsed.Metadata.SIDE)
+                            if a then
+                                Parsed.Metadata.SIDE = Check(Taiko.Data.SideName[a], 'Invalid side id', a)
+                            else
+                                Parsed.Metadata.SIDE = Check(Taiko.Data.SideId[string.lower(Parsed.Metadata.SIDE)], 'Invalid side name', Parsed.Metadata.SIDE)
+                            end
+                            --[[
+                            LIFE: (?)
+                                - Amount of misses that are allowed to be made before interrupting the game and immediately showing the results screen.
+                                - Removes the gauge, replacing it with lit up souls that fade one by one after missing a note.
+                                - The amount is not limited, but only 16 souls fit on screen.
+                                - Default is 0, which does not limit the misses and will play until the end.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.LIFE = CheckN(Parsed.Metadata.LIFE, 'Invalid life')
+                            if Parsed.Metadata.LIFE == 0 then
+                                Parsed.Metadata.LIFE = nil
+                            end
+                            --[[
+                            GAME: (?)
+                                - Value can be either "Taiko" or "Jube".
+                                - Game will be forced to autoplay mode with "Jube" value.
+                                - Default is "Taiko".
+                                - Ignored in taiko-web.
+                            ]]
+                            --TODO
+                            Parsed.Metadata.GAME = string.lower(Parsed.Metadata.GAME)
+                            if Parsed.Metadata.GAME == 'taiko' then
+                                --Normal
+                            elseif Parsed.Metadata.GAME == 'jube' then
+                                --Force Autoplay
+                            else
+
+                            end
+                            --[[
+                            HEADSCROLL: (?)
+                                - Initial game scrolling speed.
+                                - #SCROLL command in a song notation will be a multiple of this value.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.HEADSCROLL = CheckN(Parsed.Metadata.HEADSCROLL, 'Invalid headscroll')
+                            --[[
+                            BGIMAGE: (?)
+                                - A limited song skin that combines donbg and songbg into a single image.
+                                - Scaling is not applied to the image, its size should match simulator's internal resolution.
+                                - Ignored in taiko-web.
+                            ]]
+                            --TODO
+                            --[[
+                            BGMOVIE: (?)
+                                - Video file that is played in the background during the gameplay.
+                                - Can be turned off by the user.
+                                - Ignored in taiko-web.
+                            ]]
+                            --TODO
+                            --[[
+                            MOVIEOFFSET: (?)
+                                - Floating point offset of video file's starting position in seconds.
+                                - Cannot be a negative number.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.MOVIEOFFSET = CheckN(Parsed.Metadata.MOVIEOFFSET, 'Invalid movieoffset')
+                            --[[
+                            TAIKOWEBSKIN: (i)
+                                - Selects a skin to be used for the song's background.
+                                - Works only for songs imported to taiko-web by the user, when hosted on taiko-web, "skin_id" field and "song_skins" collection in the database are used.
+
+                                CHART HERE
+                            ]]
+                            --TODO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                             --Course Metadata
@@ -604,7 +755,15 @@ function Taiko.ParseTJA(source)
                                 - Floating point numbers will be rounded down and numbers outside of the range will be clipped.
                                 - When hosted on taiko-web, the value is taken from "easy", "normal", "hard", "oni", or "ura" subfield from the "courses" field.
                             ]]
-                            Parsed.Metadata.LEVEL = ClipN(math.floor(Parsed.Metadata.LEVEL), 0, 10)
+                            Parsed.Metadata.LEVEL = ClipN(math.floor(CheckN(Parsed.Metadata.LEVEL, 'Invalid level')), 0, 10)
+                            --[[
+                            BALLOON:
+                                - Comma separated array of integers for Balloon notes (7) and Kusudama notes (9).
+                                - Required when balloon notes appear in the course.
+                                - Amount of values in the array should correspond to the amount of balloons in the course.
+                                - The balloon values are used as they appear in the chart and the values have to be repeated when branches are used.
+                            ]]
+                            
 
 
                             Parser.bpm = Parsed.Metadata.BPM
@@ -849,6 +1008,7 @@ function Taiko.ParseTJA(source)
                     note.ms = Parser.ms
                     note.data = 'event'
                     note.event = 'barline'
+                    print('a')
                 end
 
                 --Could not recognize command, probably just raw data
@@ -878,7 +1038,6 @@ function Taiko.ParseTJA(source)
                     --add notes
                     if #Parser.currentmeasure == 0 then
                         Parser.ms = Parser.ms + Parser.mspermeasure
-                        print('a')
                     else
                         --count notes
                         local notes = 0
@@ -950,9 +1109,14 @@ end
 
 function Taiko.GetNextNote(Parsed, n)
     while true do
+        if n > #Parsed.Data then
+            return nil
+        end
+        --[[
         if n == #Parsed.Data then
             return n
         end
+        --]]
         local a = Parsed.Data[n]
         if a.data == 'note' then
             return n
@@ -1013,16 +1177,12 @@ function Taiko.CalculateSpeed(note, noteradius)
     local noten = Taiko.GetNextNote(Parsed, noten)
     local noten2 = Taiko.GetNextNote(Parsed, noten + 1)
     local note, note2 = Parsed.Data[noten], Parsed.Data[noten2]
-    local ms = math.abs(note2.ms - note.ms) --FIX
+    local ms = math.abs(note2.ms - note.ms)
     local sign = note.bpm*note.mspermeasure/240000
     local speed = 240*noteradius*sign*note.scroll/(note.bpm*ms)
     --]]
-    if note.data == 'note' then
-        local speed = 9600*noteradius*note.scroll/(note.bpm*note.mspermeasure)
-        return speed
-    else
-        return false
-    end
+    local speed = 9600*noteradius*note.scroll/(note.bpm*note.mspermeasure)
+    return speed
 end
 
 function Taiko.CalculateSpeedAll(Parsed, noteradius)
@@ -1031,7 +1191,6 @@ function Taiko.CalculateSpeedAll(Parsed, noteradius)
         Parsed.Data[i].speed = Taiko.CalculateSpeed(Parsed.Data[i], noteradius)
         table.insert(t, Parsed.Data[i].speed)
     end
-    require'ppp'(t)
     return Parsed
 end
 
@@ -1046,6 +1205,7 @@ end
 
 --TJA Simulators
 
+--for testing only
 function Taiko.RenderScale(Parsed)
 
 
@@ -1118,21 +1278,34 @@ function Taiko.RenderScale(Parsed)
     return str
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
 function Taiko.PlaySong(Parsed, Difficulty)
-    
+    local Pixels = require('Pixels')
 
     Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
-    require'ppp'(Parsed)
 
 
     require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1))
     --print(Taiko.CalculateSpeed(Parsed, 1, 1))
     
     
-    error()
 
     local buffer = 100 --Buffer in ms
     local endtime = 100 --Added to last note (ms)
+
+    local tracklength = 40  --In noteradius from left (taiko-web)
+    local target = 3 --In noteradius from left, representing center (taiko-web)
 
     --Precalculate
 
@@ -1147,11 +1320,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
     --Calculate end time
     endtime = (math.max(unpack(timet)) + endtime) / 1000
 
-
+    --Optimized for this purpose
     local function GetNextNote(n)
         while true do
             if n == #Parsed.Data then
-                return Parsed.Data[n], -1, 0
+                return Parsed.Data[n], math.huge, 0
             end
             local a = Parsed.Data[n]
             if a.data == 'note' then
@@ -1169,7 +1342,12 @@ function Taiko.PlaySong(Parsed, Difficulty)
         if t > nextnotet then
             --Display ASAP
             --io.write(nextnote.type)
+
+
             print(nextnotet, t)
+            print(nextnote.speed)
+            --print(nextnote.type)
+
 
             --delay in seconds
             --print(os.clock() - t - startt)
@@ -1177,6 +1355,9 @@ function Taiko.PlaySong(Parsed, Difficulty)
             --Now bit of Downtime
             nextnote, nextnotet, nextnoten = GetNextNote(nextnoten + 1)
         end
+
+        --Render
+
         
         if t > endtime then
             break
