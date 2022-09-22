@@ -6,7 +6,7 @@ O: Parse TJA
 NEVER: Play frame
 O: Play entire song
 
-Tags: --WIP, --FIX, --TODO
+Tags: --WIP, --FIX, --TODO, --PERFORMANCE
 
 TODO:
 modes
@@ -109,6 +109,22 @@ end
 
 
 
+
+
+
+
+
+
+
+--Time Utils
+
+function MsToS(ms)
+    return ms / 1000
+end
+
+function SToMs(s)
+    return s * 1000
+end
 
 
 
@@ -291,7 +307,32 @@ Taiko.Data = {
         'normal',
         'ex',
         'both'
-    }
+    },
+    StyleId = {
+        single = 1,
+        double = 2,
+        couple = 2
+    },
+    StyleName = {
+        'single', 'double'
+    },
+    Exam = {
+        Condition = {
+            g = true,
+            jp = true,
+            jg = true,
+            jb = true,
+            s = true,
+            r = true,
+            h = true,
+            c = true
+        },
+        Scope = {
+            m = true,
+            l = true
+        }
+    },
+
 }
 
 
@@ -346,8 +387,19 @@ function Taiko.ParseTJA(source)
             MOVIEOFFSET = 0, --taiko-web ignored
             COURSE = 'ONI',
             LEVEL = 0,
+            BALLOON = nil,
             SCOREINIT,
-            SCOREDIFF
+            SCOREDIFF,
+            BALLOONNOR = nil,
+            BALLOONEXP = nil,
+            BALLOONMAS = nil,
+            STYLE = 1,
+            EXAM1 = nil,
+            EXAM2 = nil,
+            EXAM3 = nil,
+            GAUGEINCR = 'NORMAL',
+            TOTAL = nil,
+            HIDDENBRANCH = 0,
         },
         Data = {}
         --[[
@@ -365,6 +417,21 @@ function Taiko.ParseTJA(source)
         ]]
     }
     local Parser = {
+        settings = {
+            noteparse = {
+                notealias = {
+                    A = 3,
+                    B = 4
+                },
+                noteexceptions = {
+                    [','] = true,
+                    [' '] = true,
+                    ['\t'] = true
+                }
+            }
+        },
+
+
         bpm = 0,
         ms = 0,
         songstarted = false,
@@ -382,6 +449,110 @@ function Taiko.ParseTJA(source)
 
 
 
+
+
+
+
+
+    --Local functions
+    local function GetTranslated(name)
+        local a = Taiko.Data.Languages
+        for i = 1, #a do
+            local b = Parsed.Metadata[name .. a[i]]
+            if b then
+                return b
+            end
+        end
+        return nil
+    end
+    local function CheckN(cmd, n, e)
+        local a = tonumber(n)
+        if a then
+            return a
+        else
+            ParseError(cmd, e, n)
+        end
+    end
+    local function Check(cmd, a, e, data)
+        if a then
+            return a
+        else
+            ParseError(cmd, e, data)
+        end
+    end
+    local function CheckB(cmd, b, e)
+        local boolean = {
+            ['true'] = true,
+            ['false'] = false,
+            yes = true,
+            no = false,
+            ['1'] = true,
+            ['0'] = false,
+            [1] = true,
+            [0] = false
+        }
+        local a = boolean[b] ~= nil
+        if a then
+            return a
+        else
+            ParseError(cmd, e, b)
+        end
+    end
+    local function CheckCSV(cmd, str) --No errors are possible
+        local seperator = ','
+        local escape = '\\'
+        local t = {}
+        local temp = ''
+        local escaped = false
+        for i = 1, #str do
+            local s = string.sub(str, i, i)
+            if escaped then
+                temp = temp .. s
+                escaped = false
+            else
+                if s == seperator then
+                    table.insert(t, temp)
+                    temp = ''
+                elseif s == escape then
+                    escaped = true
+                else
+                    temp = temp .. s
+                end
+            end
+        end
+        table.insert(t, temp)
+        return t
+    end
+    local function CheckCSVN(cmd, str, e)
+        local t = CheckCSV(cmd, str)
+        for i = 1, #t do
+            t[i] = CheckN(cmd, t[i], e, str)
+        end
+        return a
+    end
+    local function CheckBalloon(cmd, s, e)
+        if s and s ~= '' then
+            return CheckCSVN(cmd, s, e)
+        else
+            return {}
+        end
+    end
+    local function CheckExam(cmd, s, e)
+        if s and s ~= '' then
+            local t = CheckCSV(cmd, s, e)
+            Check(cmd, Taiko.Data.Exam.Condition[t[1]], e)
+            t[2] = CheckN(cmd, t[2], e)
+            t[3] = CheckN(cmd, t[3], e)
+            Check(cmd, Taiko.Data.Exam.Scope[t[4]], e)
+            return t
+        else
+            return {}
+        end
+    end
+    
+
+
+
     --Parser functions
     function Parser.createnote()
         return {
@@ -393,8 +564,9 @@ function Taiko.ParseTJA(source)
             --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
             scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
             mspermeasure = Parser.mspermeasure,
-            bpm = Parser.bpm
-            --measuredensity = nil
+            bpm = Parser.bpm,
+            --measuredensity = nil,
+            nextnote = nil
         }
     end
 
@@ -416,6 +588,13 @@ function Taiko.ParseTJA(source)
                 if match[1] then
                     Parsed.Metadata[Trim(match[1])] = Trim(match[2])
                     done = true
+                    --[[
+                    local a = Trim(match[2])
+                    if a ~= '' then
+                        Parsed.Metadata[Trim(match[1])] = a
+                    end
+                    done = true
+                    ]]
                 end
             end
 
@@ -439,34 +618,7 @@ function Taiko.ParseTJA(source)
                             --Parse metadata
                             Parsed.OriginalMetadata = Table.Clone(Parsed.Metadata)
 
-                            local function GetTranslated(name)
-                                local a = Taiko.Data.Languages
-                                for i = 1, #a do
-                                    local b = Parsed.Metadata[name .. a[i]]
-                                    if b then
-                                        return b
-                                    end
-                                end
-                                return nil
-                            end
-                            local function CheckN(n, e)
-                                local a = tonumber(n)
-                                if a then
-                                    return a
-                                else
-                                    ParseError(match[1], e, n)
-                                end
-                            end
-                            local function Check(a, e, data)
-                                if a then
-                                    return a
-                                else
-                                    ParseError(match[1], e, data)
-                                end
-                            end
-                            local function CheckCSN(s, e)
-                                todo+balloon
-                            end
+
 
                             --Main metadata
                             --[[
@@ -484,7 +636,7 @@ function Taiko.ParseTJA(source)
                                     - "TITLEKO:" - Korean.
                                 - When hosted on taiko-web, "title_lang" field in the database is used.
                             ]]
-                            Parsed.Metadata.TITLE = Check(GetTranslated('TITLE'), 'Title is missing')
+                            Parsed.Metadata.TITLE = Check(match[1], GetTranslated('TITLE'), 'Title is missing')
                             --[[
                             SUBTITLE: (i)
                                 - The sub-title that appears on the selected song in song selection that may explain the origin of the song, such as the originating media or the lead singer.
@@ -503,28 +655,28 @@ function Taiko.ParseTJA(source)
                                     - "SUBTITLEKO:" - Korean.
                                 - When hosted on taiko-web, "subtitle_lang" field in the database is used.
                             ]]
-                            Parsed.Metadata.SUBTITLE = Check(GetTranslated('SUBTITLE'), 'Subtitle is missing')
+                            Parsed.Metadata.SUBTITLE = Check(match[1], GetTranslated('SUBTITLE'), 'Subtitle is missing')
                             --[[
                             BPM:
                                 - Song's beats per minute.
                                 - The following formula is used: BPM = MEASURE / SIGN * 4, where MEASURE is amount of measures per minute and SIGN is the time signature, eg. 4 / 4 if the current time signature is common.
                                 - If omitted, BPM defaults to 120.
                             ]]
-                            Parsed.Metadata.BPM = CheckN(Parsed.Metadata.BPM, 'Invalid bpm')
+                            Parsed.Metadata.BPM = CheckN(match[1], Parsed.Metadata.BPM, 'Invalid bpm')
                             --[[
                             OFFSET:
                                 - Floating point value for chart offset in seconds.
                                 - Negative values will delay notes, positive will cause them to appear sooner.
                                 - If the "offset" field is set in a taiko-web database, both values will be summed together.
                             ]]
-                            Parsed.Metadata.OFFSET = CheckN(Parsed.Metadata.OFFSET, 'Invalid offset') * 1000
+                            Parsed.Metadata.OFFSET = SToMs(CheckN(match[1], Parsed.Metadata.OFFSET, 'Invalid offset'))
                             --[[
                             DEMOSTART: (i)
                                 - Offset of song preview during song selection in seconds.
                                 - Default is 0, which also disables the generation of a "preview.mp3" file when hosted on taiko-web.
                                 - When hosted on taiko-web, "preview" field in the database is used.
                             ]]
-                            Parsed.Metadata.DEMOSTART = CheckN(Parsed.Metadata.DEMOSTART, 'Invalid demostart') * 1000
+                            Parsed.Metadata.DEMOSTART = SToMs(CheckN(match[1], Parsed.Metadata.DEMOSTART, 'Invalid demostart'))
                             if Parsed.Metadata.DEMOSTART == 0 then
                                 --No preview
                                 Parsed.Metadata.DEMOSTART = nil
@@ -568,8 +720,8 @@ function Taiko.ParseTJA(source)
                                     - Formula: INIT + DIFF * {100<=COMBO: 8, 50<=COMBO: 4, 30<=COMBO: 2, 10<=COMBO: 1, 0}
                                 - Default is "1".
                             ]]
-                            Parsed.Metadata.SCOREMODE = CheckN(Parsed.Metadata.SCOREMODE, 'Invalid scoremode')
-                            Check(Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE], 'Invalid scoremode', Parsed.Metadata.SCOREMODE)
+                            Parsed.Metadata.SCOREMODE = CheckN(match[1], Parsed.Metadata.SCOREMODE, 'Invalid scoremode')
+                            Check(match[1], Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE], 'Invalid scoremode', Parsed.Metadata.SCOREMODE)
                             --[[
                             MAKER: (i)
                                 - Chart creator's name.
@@ -612,14 +764,14 @@ function Taiko.ParseTJA(source)
                                 - Default is 100, but can be made louder by increasing the value further.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.SONGVOL = CheckN(Parsed.Metadata.SONGVOL, 'Invalid songvol') / 100
+                            Parsed.Metadata.SONGVOL = CheckN(match[1], Parsed.Metadata.SONGVOL, 'Invalid songvol') / 100
                             --[[
                             SEVOL: (?)
                                 - Sound effect volume percentage, such as drumming and Don's voice lines.
                                 - Default is 100.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.SEVOL = CheckN(Parsed.Metadata.SEVOL, 'Invalid sevol') / 100
+                            Parsed.Metadata.SEVOL = CheckN(match[1], Parsed.Metadata.SEVOL, 'Invalid sevol') / 100
                             --[[
                             SIDE: (?)
                                 - Value can be either:
@@ -634,9 +786,10 @@ function Taiko.ParseTJA(source)
                             ]]
                             local a = tonumber(Parsed.Metadata.SIDE)
                             if a then
-                                Parsed.Metadata.SIDE = Check(Taiko.Data.SideName[a], 'Invalid side id', a)
+                                Check(match[1], Taiko.Data.SideName[a], 'Invalid side id', Parsed.Metadata.SIDE)
+                                Parsed.Metadata.SIDE = a
                             else
-                                Parsed.Metadata.SIDE = Check(Taiko.Data.SideId[string.lower(Parsed.Metadata.SIDE)], 'Invalid side name', Parsed.Metadata.SIDE)
+                                Parsed.Metadata.SIDE = Check(match[1], Taiko.Data.SideId[string.lower(Parsed.Metadata.SIDE)], 'Invalid side name', Parsed.Metadata.SIDE)
                             end
                             --[[
                             LIFE: (?)
@@ -646,7 +799,7 @@ function Taiko.ParseTJA(source)
                                 - Default is 0, which does not limit the misses and will play until the end.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.LIFE = CheckN(Parsed.Metadata.LIFE, 'Invalid life')
+                            Parsed.Metadata.LIFE = CheckN(match[1], Parsed.Metadata.LIFE, 'Invalid life')
                             if Parsed.Metadata.LIFE == 0 then
                                 Parsed.Metadata.LIFE = nil
                             end
@@ -672,7 +825,7 @@ function Taiko.ParseTJA(source)
                                 - #SCROLL command in a song notation will be a multiple of this value.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.HEADSCROLL = CheckN(Parsed.Metadata.HEADSCROLL, 'Invalid headscroll')
+                            Parsed.Metadata.HEADSCROLL = CheckN(match[1], Parsed.Metadata.HEADSCROLL, 'Invalid headscroll')
                             --[[
                             BGIMAGE: (?)
                                 - A limited song skin that combines donbg and songbg into a single image.
@@ -693,7 +846,7 @@ function Taiko.ParseTJA(source)
                                 - Cannot be a negative number.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.MOVIEOFFSET = CheckN(Parsed.Metadata.MOVIEOFFSET, 'Invalid movieoffset')
+                            Parsed.Metadata.MOVIEOFFSET = CheckN(match[1], Parsed.Metadata.MOVIEOFFSET, 'Invalid movieoffset')
                             --[[
                             TAIKOWEBSKIN: (i)
                                 - Selects a skin to be used for the song's background.
@@ -744,9 +897,10 @@ function Taiko.ParseTJA(source)
                             ]]
                             local a = tonumber(Parsed.Metadata.COURSE)
                             if a then
-                                Parsed.Metadata.COURSE = Check(Taiko.Data.CourseName[a], 'Invalid course id', a)
+                                Check(match[1], Taiko.Data.CourseName[a], 'Invalid course id', Parsed.Metadata.COURSE)
+                                Parsed.Metadata.COURSE = a
                             else
-                                Parsed.Metadata.COURSE = Taiko.Data.CourseName[Check(Taiko.Data.CourseId[string.lower(Parsed.Metadata.COURSE)], 'Invalid course name', Parsed.Metadata.COURSE)]
+                                Parsed.Metadata.COURSE = Check(match[1], Taiko.Data.CourseId[string.lower(Parsed.Metadata.COURSE)], 'Invalid course name', Parsed.Metadata.COURSE)
                             end
                             --[[
                             LEVEL: (i)
@@ -755,7 +909,7 @@ function Taiko.ParseTJA(source)
                                 - Floating point numbers will be rounded down and numbers outside of the range will be clipped.
                                 - When hosted on taiko-web, the value is taken from "easy", "normal", "hard", "oni", or "ura" subfield from the "courses" field.
                             ]]
-                            Parsed.Metadata.LEVEL = ClipN(math.floor(CheckN(Parsed.Metadata.LEVEL, 'Invalid level')), 0, 10)
+                            Parsed.Metadata.LEVEL = ClipN(math.floor(CheckN(match[1], Parsed.Metadata.LEVEL, 'Invalid level')), 0, 10)
                             --[[
                             BALLOON:
                                 - Comma separated array of integers for Balloon notes (7) and Kusudama notes (9).
@@ -763,7 +917,124 @@ function Taiko.ParseTJA(source)
                                 - Amount of values in the array should correspond to the amount of balloons in the course.
                                 - The balloon values are used as they appear in the chart and the values have to be repeated when branches are used.
                             ]]
+                            Parsed.Metadata.BALLOON = CheckBalloon(match[1], Parsed.Metadata.BALLOON, 'Invalid balloon')
+                            --[[
+                            SCOREINIT:
+                                - Sets INIT value for the scoring method. See SCOREMODE: header for more information.
+                            ]]
+                            Parsed.Metadata.SCOREINIT = CheckN(match[1], Parsed.Metadata.SCOREINIT, 'Invalid scoreinit')
+                            --[[
+                            SCOREDIFF:
+                                - Sets DIFF value for the scoring method. See SCOREMODE: header for more information.
+                            ]]
+                            Parsed.Metadata.SCOREDIFF = CheckN(match[1], Parsed.Metadata.SCOREDIFF, 'Invalid scoreinit')
+                            --[[
+                            BALLOONNOR:, BALLOONEXP:, BALLOONMAS: (?)
+                                - BALLOON: command that is separated for branches.
+                                - BALLOONNOR: are balloons during a normal branch, BALLOONEXP: during an advanced branch, BALLOONMAS: during a master branch.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.BALLOONNOR = CheckBalloon(match[1], Parsed.Metadata.BALLOONNOR, 'Invalid balloonnor')
+                            Parsed.Metadata.BALLOONEXP = CheckBalloon(match[1], Parsed.Metadata.BALLOONEXP, 'Invalid balloonexp')
+                            Parsed.Metadata.BALLOONMAS = CheckBalloon(match[1], Parsed.Metadata.BALLOONMAS, 'Invalid balloonmas')
+                            --[[
+                            STYLE: (?)
+                                - Play the song notation after next #START depending on if playing in singleplayer or multiplayer.
+                                - The values can be either:
+                                    - "Single" or "1" (default).
+                                    - "Double", "Couple", or "2" - both players should pick the same difficulty in multiplayer to play the song notation below this command.
+                                - "#START P1" and "#START P2" commands can be used instead when first and second players' charts differ.
+                                Ignored in taiko-web.
+                            ]]
+                            local a = tonumber(Parsed.Metadata.STYLE)
+                            if a then
+                                Check(match[1], Taiko.Data.StyleName[a], 'Invalid course id', Taiko.Data.STYLE)
+                                Parsed.Metadata.STYLE = a
+                            else
+                                Parsed.Metadata.STYLE = Check(match[1], Taiko.Data.CourseId[string.lower(Parsed.Metadata.STYLE)], 'Invalid course name', Parsed.Metadata.STYLE)
+                            end
+                            --[[
+                            EXAM1:, EXAM2:, EXAM3: (?)
+                                - The three gauges required to clear a dojo course (COURSE: with "Dan" or "6" value)
+                                - Value is a comma separated array with the following values: condition, red clear requirement, gold clear requirement, scope.
+                                - Condition value:
+                                    - g - Gauge percentage (default)
+                                    - jp - GOOD amount
+                                    - jg - OK amount
+                                    - jb - BAD amount
+                                    - s - Score
+                                    - r - Drumroll hits
+                                    - h - Number of correct hits and drumroll hits
+                                    - c - MAX Combo
+                                - Scope value:
+                                    - m - Greater than requirement (default)
+                                    - l - Less than requirement
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.EXAM1 = CheckExam(Parsed.Metadata.EXAM1)
+                            Parsed.Metadata.EXAM2 = CheckExam(Parsed.Metadata.EXAM2)
+                            Parsed.Metadata.EXAM3 = CheckExam(Parsed.Metadata.EXAM3)
+                            --[[
+                            GAUGEINCR: (?)
+                                - Gauge increment method, performing rounding with each note that is hit, value is either:
+                                    - NORMAL - Default calculation method, which delays the gauge from appearing at the beginning.
+                                    - FLOOR - Round towards negative infinity.
+                                    - ROUND - Round towards nearest whole.
+                                    - NOTFIX - Do not perform rounding.
+                                    - CEILING - Round towards positive infinity, the gauge appears to fill with the first note.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.GAUGEINCR = string.lower(Parsed.Metadata.GAUGEINCR)
+                            --[[
+                            TOTAL: (?)
+                                - Percentage multiplier for amount of notes in the song notation that is applied to gauge calculation.
+                                - Value of 100 will require all notes to be hit perfectly to get a full gauge at the end.
+                                - Values less than 100 will make it impossible to get a full gauge.
+                                - Values greater than 100 will make it easier to fill the gauge.
+                                - Ignored in taiko-web.
+                            ]]
+                            if Parsed.Metadata.TOTAL then
+                                Parsed.Metadata.TOTAL = CheckN(match[1], Parsed.Metadata.TOTAL, 'Invalid total')
+                            end
+                            --[[
+                            HIDDENBRANCH: (?)
+                                - Hide the diverge notes indication on the song selection screen and current branch in the game until branching actually starts.
+                                - Ignored in taiko-web.
+                            ]]
+                            Parsed.Metadata.HIDDENBRANCH = CheckB(match[1], Parsed.Metadata.HIDDENBRANCH, 'Invalid hiddenbranch')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                             Parser.bpm = Parsed.Metadata.BPM
@@ -795,7 +1066,10 @@ function Taiko.ParseTJA(source)
                             mspb = 60000 / bpm
                         ]]
                         --Parser.measure = tonumber(match[2]) --UNSAFE
-                        Parser.sign = tonumber(match[2]) or Parser.sign --UNSAFE
+                        local a, b = string.match(match[2], '(%d+)/(%d+)')
+                        a = CheckN(match[1], a, 'Invalid measure')
+                        b = CheckN(match[1], b, 'Invalid measure')
+                        Parser.sign = (a/b) or Parser.sign --UNSAFE
                         --[[
                         Parser.mpm = Parsed.Metadata.BPM * Parser.sign / 4
                         Parser.mspermeasure = 60000 * Parser.sign * 4 / Parsed.Metadata.BPM
@@ -806,7 +1080,7 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure, therefore it is necessary to calculate milliseconds per measure value for each note.
                         ]]
                         --Parsed.Metadata.BPM = tonumber(match[2]) or Parsed.Metadata.BPM --UNSAFE
-                        Parser.bpm = tonumber(match[2]) or Parser.bpm --UNSAFE
+                        Parser.bpm = CheckN(match[1], match[2], 'Invalid bpmchange') or Parser.bpm --UNSAFE
                     elseif match[1] == 'DELAY' then
                         --[[
                             - Floating point value in seconds that offsets the position of the following song notation.
@@ -816,7 +1090,7 @@ function Taiko.ParseTJA(source)
                         --Parser.ms = Parser.ms + (1000 * (tonumber(match[2]) or 0)) --UNSAFE --QUESTIONABLE
                         table.insert(Parser.currentmeasure, {
                             match[1],
-                            tostring(1000 * (tonumber(match[2]) or 0)) --UNSAFE
+                            SToMs((CheckN(match[1], match[2], 'Invalid delay') or 0)) --UNSAFE
                         })
                     elseif match[1] == 'SCROLL' then
                         --[[
@@ -826,7 +1100,7 @@ function Taiko.ParseTJA(source)
                             - The value cannot be 0.
                             - Can be placed in the middle of a measure.
                         ]]
-                        Parser.scroll = tonumber(match[2]) or Parser.scroll --UNSAFE
+                        Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
                         if Parser.scroll == 0 then
                             ParseError(match[1], 'Scroll cannot be 0')
                         end
@@ -1008,7 +1282,6 @@ function Taiko.ParseTJA(source)
                     note.ms = Parser.ms
                     note.data = 'event'
                     note.event = 'barline'
-                    print('a')
                 end
 
                 --Could not recognize command, probably just raw data
@@ -1018,12 +1291,16 @@ function Taiko.ParseTJA(source)
 
                 for i = 1, #line do
                     local s = string.sub(line, i, i)
-                    local n = tonumber(s) --UNSAFE
-                    if n then
-                        local note = Parser.createnote()
-                        note.data = 'note'
-                        note.type = n
-                        table.insert(Parser.currentmeasure, note)
+                    if Parser.settings.noteparse.noteexceptions[s] then
+                        --Do nothing
+                    else
+                        local n = CheckN('parser.noteparse', tonumber(s) or Parser.settings.noteparse.notealias[s], 'Invalid note', s)
+                        if n then
+                            local note = Parser.createnote()
+                            note.data = 'note'
+                            note.type = n
+                            table.insert(Parser.currentmeasure, note)
+                        end
                     end
                 end
 
@@ -1060,6 +1337,21 @@ function Taiko.ParseTJA(source)
                                 if c.type ~= 0 then
                                     c.ms = Parser.ms
                                     --c.measuredensity = notes
+                                    local lastnote = Parsed.Data[#Parsed.Data]
+                                    if lastnote then
+                                        lastnote.nextnote = c
+                                        --[[
+                                        --to stop infinite loop from table visualizers --PERFORMANCE
+                                        setmetatable(lastnote, {
+                                            __index = function(t, k)
+                                                if k == 'nextnote' then
+                                                    return c
+                                                end
+                                            end,
+                                            __metatable = {}
+                                        })
+                                        --]]
+                                    end
                                     table.insert(Parsed.Data, c)
                                     --increment = (c.mspermeasure / notes) / c.speed
                                     increment = c.mspermeasure / notes
@@ -1081,7 +1373,7 @@ function Taiko.ParseTJA(source)
 
 
 
-    print('Parsing Took: '.. (os.clock() - time) * 1000 .. 'ms')
+    print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
 
 
     return Out
@@ -1090,8 +1382,9 @@ end
 --TJA Utils
 
 function Taiko.GetDifficulty(Parsed, Difficulty)
+    local a = Taiko.Data.CourseId[string.lower(Difficulty)] or Difficulty
     for k, v in pairs(Parsed) do
-        if v.Metadata.COURSE == Difficulty then
+        if v.Metadata.COURSE == a then
             return v
         end
     end
@@ -1296,8 +1589,10 @@ function Taiko.PlaySong(Parsed, Difficulty)
     Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
 
 
-    require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1))
-    --print(Taiko.CalculateSpeed(Parsed, 1, 1))
+    require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
+
+
+
     
     
 
@@ -1314,11 +1609,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local timet = {}
     for k, v in pairs(Parsed.Data) do
         table.insert(timet, v.ms)
-        v.ms = v.ms / 1000
+        v.ms = MsToS(v.ms)
     end
 
     --Calculate end time
-    endtime = (math.max(unpack(timet)) + endtime) / 1000
+    endtime = MsToS(math.max(unpack(timet)) + endtime)
 
     --Optimized for this purpose
     local function GetNextNote(n)
@@ -1353,6 +1648,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
             --print(os.clock() - t - startt)
 
             --Now bit of Downtime
+            --ppp(nextnote.nextnote)
             nextnote, nextnotet, nextnoten = GetNextNote(nextnoten + 1)
         end
 
@@ -1368,9 +1664,10 @@ end
 
 
 -- [[
---Taiko.PlaySong(Taiko.ParseTJA(io.open('./tja/donkama.tja','r'):read('*all')), 'Oni')
-Taiko.PlaySong(Taiko.ParseTJA(io.open('test.tja','r'):read('*all')), 'Oni')
---Taiko.PlaySong(Taiko.ParseTJA(io.open('./tja/ekiben.tja','r'):read('*all')), 'Oni')
+file = './tja/donkama.tja'
+--file = 'test.tja'
+--file = './tja/ekiben.tja'
+Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 
 
 --]]
