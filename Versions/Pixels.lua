@@ -1,5 +1,364 @@
---Pixelsv20_min.lua NO_TEST_CODE
-CacheEnabled=false;WarnEnabled=false;ErrorEnabled=true;WarnStrict=false;DefaultPixel={}ReverseY=false;os.execute('chcp 65001')Escape={}Escape.Data={['a']='\a',['b']='\b',['f']='\f',['n']='\n',['r']='\r',['t']='\t',['v']='\v',['\\']='\\',['\"']='\"',['\'']='\'',['[']='[',[']']=']'}Escape.DataReversed={}for fd,gd in pairs(Escape.Data)do Escape.DataReversed[gd]=fd end;function Escape.EscapeToString(fd)local gd=''local hd=false;local id=0;for i=1,#fd do if id>0 then id=id-1 else local jd=string.sub(fd,i,i)if hd then local kd=Escape.Data[jd]if kd then gd=gd..kd else local ld=i;local md=''repeat md=md..string.sub(fd,ld,ld)ld=ld+1;if tonumber(string.sub(fd,ld,ld))==nil then break end;if ld==#fd then error('Invalid Escape Sequence.')end until ld==#fd;gd=gd..string.char(tonumber(md))id=#md-1 end;hd=false else if jd=='\\'then hd=true else gd=gd..jd end end end end;return gd end;function Escape.StringToEscape(fd,gd)if gd then return fd end;return string.gsub(tostring(fd),'\27','\\27')end;LuaMode=true;SerialSeperator='~'EndSeperator='/'Minify=true;PrintOutput=true;printplusplus=function(fd)local gd={assert,collectgarbage,coroutine,coroutine.create,coroutine.resume,coroutine.running,coroutine.status,coroutine.wrap,coroutine.yield,debug,debug.debug,debug.getfenv,debug.gethook,debug.getinfo,debug.getlocal,debug.getmetatable,debug.getregistry,debug.getupvalue,debug.setfenv,debug.sethook,debug.setlocal,debug.setmetatable,debug.setupvalue,debug.traceback,dofile,dump,error,gcinfo,getfenv,getmetatable,io,io.close,io.flush,io.input,io.lines,io.open,io.output,io.popen,io.read,io.stderr,io.stdin,io.stdout,io.tmpfile,io.type,io.write,ipairs,load,loadfile,loadstring,math,math.abs,math.acos,math.asin,math.atan,math.atan2,math.ceil,math.cos,math.cosh,math.deg,math.exp,math.floor,math.fmod,math.frexp,math.huge,math.ldexp,math.log,math.log10,math.max,math.min,math.mod,math.modf,math.pi,math.pow,math.rad,math.random,math.randomseed,math.sin,math.sinh,math.sqrt,math.tan,math.tanh,module,newproxy,next,os,os.clock,os.date,os.difftime,os.execute,os.exit,os.getenv,os.remove,os.rename,os.setlocale,os.time,os.tmpname,package,package.config,package.cpath,package.loaded,string.byte,string.char,string.dump,string.find,string.format,string.gfind,string.gmatch,string.gsub,string.len,string.lower,string.match,string.rep,string.reverse,string.sub,string.upper,table.concat,table.foreach,table.foreachi,table.getn,table.insert,table.maxn,table.remove,table.setn,table.sort,package.loaders,package.loadlib,package.path,package.preload,package.seeall,pairs,pcall,print,rawequal,rawget,rawset,require,select,setfenv,setmetatable,started,string,table,tonumber,tostring,type,unpack,xpcall}local hd={'assert','collectgarbage','coroutine','coroutine.create','coroutine.resume','coroutine.running','coroutine.status','coroutine.wrap','coroutine.yield','debug','debug.debug','debug.getfenv','debug.gethook','debug.getinfo','debug.getlocal','debug.getmetatable','debug.getregistry','debug.getupvalue','debug.setfenv','debug.sethook','debug.setlocal','debug.setmetatable','debug.setupvalue','debug.traceback','dofile','dump','error','gcinfo','getfenv','getmetatable','io','io.close','io.flush','io.input','io.lines','io.open','io.output','io.popen','io.read','io.stderr','io.stdin','io.stdout','io.tmpfile','io.type','io.write','ipairs','load','loadfile','loadstring','math','math.abs','math.acos','math.asin','math.atan','math.atan2','math.ceil','math.cos','math.cosh','math.deg','math.exp','math.floor','math.fmod','math.frexp','math.huge','math.ldexp','math.log','math.log10','math.max','math.min','math.mod','math.modf','math.pi','math.pow','math.rad','math.random','math.randomseed','math.sin','math.sinh','math.sqrt','math.tan','math.tanh','module','newproxy','next','os','os.clock','os.date','os.difftime','os.execute','os.exit','os.getenv','os.remove','os.rename','os.setlocale','os.time','os.tmpname','package','package.config','package.cpath','package.loaded','string.byte','string.char','string.dump','string.find','string.format','string.gfind','string.gmatch','string.gsub','string.len','string.lower','string.match','string.rep','string.reverse','string.sub','string.upper','table.concat','table.foreach','table.foreachi','table.getn','table.insert','table.maxn','table.remove','table.setn','table.sort','package.loaders','package.loadlib','package.path','package.preload','package.seeall','pairs','pcall','print','rawequal','rawget','rawset','require','select','setfenv','setmetatable','started','string','table','tonumber','tostring','type','unpack','xpcall'}local function id(od)local pd=od;if type(od)=='string'then local qd,rd=loadstring(od)if qd==nil then return pd end end;if pcall(function()string.dump(od)end)then if Minify then return'loadstring\''.. (string.gsub(string.dump(od),'.',function(qd)return'\\'..qd:byte()end)or string.dump(od)..'\'')..'\''else return'loadstring(\''.. (string.gsub(string.dump(od),'.',function(qd)return'\\'..qd:byte()end)or string.dump(od)..'\'')..'\')'end else for i=1,#gd do if gd[i]==od then return hd[i]end end end end;local function jd(od)local pd=getmetatable(od)local qd=nil;if pd~=nil then local rd=nil;qd=''for sd,td in pairs(pd)do rd=true;if Minify then qd=qd..sd..'='..id(td)..','else qd=qd..sd..' = '..id(td)..',\n'end end;if rd==true then local sd;if Minify then sd=1 else sd=2 end;qd=string.sub(qd,1,#qd-sd)return qd else return nil end end end;local function kd(od)local pd=0;for qd in pairs(od)do pd=pd+1 end;return pd end;local function ld(od,pd)local qd=jd(od)pd=pd or 0;local rd=kd(od)>1;local sd=string.rep('    ',pd+1)local td="{".. (rd and'\n'or'')if Minify then sd=''td='{'end;for ud,vd in pairs(od)do td=td.. (rd and sd or'')if type(ud)=='number'then elseif type(ud)=='string'and ud:match("^[A-Za-z_][A-Za-z0-9_]*$")then td=td..ud.. (Minify and"="or" = ")elseif type(ud)=='string'then td=td.. (Minify and"[\'"..ud.."\']="or"[\'"..ud.."\'] = ")else td=td.. (Minify and"["..tostring(ud).."]="or"["..tostring(ud).."] = ")end;local wd,xd=SerializeMain(vd)td=td..wd;if next(od,ud)then td=td..","end;if not Minify then if rd then td=td..'\n'else td=td..' 'end end end;td=td.. (rd and string.rep('    ',pd)or'').."}"if qd~=nil then if Minify then td='setmetatable('..td..',{'..qd..'})'else td='setmetatable('..td..', {\n'..qd..'\n})'end end;return td end;function SerializeMain(od)local pd;local qd;local rd=SerialSeperator;local sd=EndSeperator;if type(od)=='number'or type(od)=='boolean'or type(od)=='nil'then pd=tostring(od)qd=tostring(od)elseif type(od)=='string'then pd='\''..tostring(od)..'\''qd=rd..type(od)..rd..tostring(od)..rd..sd..type(od)..rd elseif type(od)=='table'then pd=ld(od)qd=rd..type(od)..rd..ld(od)..rd..sd..type(od)..rd elseif type(od)=='function'then pd=id(od)qd=rd..type(od)..rd..id(od)..rd..sd..type(od)..rd elseif type(od)=='userdata'or type(od)=='thread'then pd=type(od)qd=rd..type(od)..rd..rd..sd..type(od)..rd end;return pd,qd end;local md,nd=SerializeMain(fd)if PrintOutput then print(LuaMode and md or nd)else return LuaMode and md or nd end end;ppp=printplusplus;Split=function(fd,gd)c={}for hd,id in fd:gmatch("([^"..gd.."]*)("..gd.."?)")do table.insert(c,hd)if id==''then return c end end end;local Ib=([[
+--[[
+Pixelsv20.lua
+
+Utilities for generating pixel art / graphics
+
+Focus : MAJOR Function Changes. Will break code from Pixelsv19 or below
+WARNING: Code from Pixelsv19 will be broken
+
+
+Major code cleanup:
+
+Make a point class
+Clean up options
+Clean up code
+Comment the code
+
+
+
+
+
+
+
+Focus: Performance (Increase from 6.175 -> 1.813, ~3x faster)
+Focus: Mazes
+
+Focus: ZBuffer (Delayed as of current)
+
+TODO: 
+
+Priority: Z-Buffer
+Priority: Make a custom triangle algorithm (http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html)
+Priority: Make a color to every pixel, apply during render
+Priority: Converting str format to table
+
+
+Fixed: Expandable canvas might cause issues with 3d canvas
+
+
+Done: Setting to negative pixels
+Done: Expandable canvas
+Done: More 3d
+Done: Color optimize
+Done: Even more optimization
+Done: Mazes
+Done: Color in Pixel.Line
+Done: Pixel.Circle,
+Done: Pixel.Polygon,
+Done: Pixel.Fill
+
+
+
+Work on:
+Done: Typo: Rectangles
+
+Done: Add an optable, to save operations such as lines (When zooming in / out, I lose resolution)
+
+3d library
+Done: Making the Pixel class work on 5 * 5
+From dots
+
+Optable is not supported for graphs. Also, Saving / Drawing Graphs are terribly inefficient.
+
+
+Instructions:
+
+This library will convert a bitmap (A stream of 0's and 1's with newlines) into braille
+
+
+Pixel Layout
+123
+456
+789
+
+{x = 1, y = 1}, {x = 2, y = 1}, {x = 3, y = 1}
+{x = 1, y = 2}, {x = 2, y = 2}, {x = 3, y = 2}
+{x = 1, y = 3}, {x = 2, y = 3}, {x = 3, y = 3}
+
+Format:
+
+{
+    Data = '1111\n1111\n1111\n1111',
+    Op = {
+        {'Line', arguments}
+    },
+    Color = {
+        All = 'Red' --Optional data tag, will get processed
+        {x, y, 'Red'} --One color data
+    },
+    Offset = {
+        x,
+        y
+    }
+    Z = {
+        {x, y, z} --Z buffer
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://en.wikipedia.org/wiki/Box-drawing_character
+▀   ▄   ▌	▐
+▖	▗	▘	▙	▚	▛	▜	▝	▞	▟   █
+
+https://en.wikipedia.org/wiki/Braille_Patterns
+
+]]
+
+--Settings
+CacheEnabled = false --Enable cache for converting data to pixels.
+WarnEnabled = false --Enable warnings, which show you what to fix.
+ErrorEnabled = true --Enable errors, which stops the code.
+WarnStrict = false --Warns you when you do something wrong.
+DefaultPixel = {} --Default pixel.
+ReverseY = false --Reverse y.
+os.execute('chcp 65001') --Makes your terminal support unicode. If it is buggy, turn it off
+
+
+
+
+
+
+
+
+
+--for debug
+--[[
+    --This does nto work at ALL
+profile = {}
+profile.strconcat = 0
+profile.varmake = 0
+profile.varaccess = 0
+profile.venv = {}
+function profile.start()
+    local function ri(var)
+        rawset(profile, var, rawget(profile, var) + 1)
+    end
+    getmetatable('').__concat = function()
+
+    end
+    setmetatable(_G, {
+        __newindex = function(t, k, v)
+            ri('varmake')
+            rawset(profile.venv, k, v)
+        end,
+        __index = function(t, k)
+            ri('varaccess')
+            return rawget(profile.venv, k)[k]
+        end
+    })
+end
+
+function profile.stop()
+    for k, v in pairs(profile) do
+        print(k, v)
+    end
+end
+
+
+
+--]]
+
+
+
+
+Escape = {}
+Escape.Data = {
+    --First handle normal esc sequences
+    ['a'] = '\a',
+    ['b'] = '\b',
+    ['f'] = '\f',
+    ['n'] = '\n',
+    ['r'] = '\r',
+    ['t'] = '\t',
+    ['v'] = '\v',
+    ['\\'] = '\\',
+    ['\"'] = '\"',
+    ['\''] = '\'',
+    ['['] = '[',
+    [']'] = ']',
+}
+Escape.DataReversed = {}
+for k, v in pairs(Escape.Data) do
+    Escape.DataReversed[v] = k
+end
+
+function Escape.EscapeToString(str)
+    local finalstr = ''
+    local Escaped = false
+    local skip = 0
+    for i = 1, #str do
+        if skip > 0 then
+            skip = skip - 1
+        else
+            local tempstr = string.sub(str, i, i)
+            if Escaped then
+                local temp = Escape.Data[tempstr]
+                if temp then
+                    finalstr = finalstr .. temp
+                else
+                    local peek = i
+                    local peekdata = ''
+                    repeat
+                        peekdata = peekdata .. string.sub(str, peek, peek)
+                        peek = peek + 1
+                        if tonumber(string.sub(str, peek, peek)) == nil then
+                            break
+                        end
+                        if peek == #str then
+                            error('Invalid Escape Sequence.')
+                        end
+                    until peek == #str
+                    --print(peek, peekdata)
+                    finalstr = finalstr .. string.char(tonumber(peekdata))
+                    skip = #peekdata - 1
+                end
+                Escaped = false
+            else
+                if tempstr == '\\' then
+                    Escaped = true
+                else
+                    finalstr = finalstr .. tempstr
+                end
+            end
+        end
+    end
+    return finalstr
+end
+
+function Escape.StringToEscape(str, f)
+    if f then return str end
+    return string.gsub(tostring(str), '\27', '\\27')
+end
+
+
+
+
+
+
+
+
+
+
+
+
+--debug
+LuaMode=true;SerialSeperator='~'EndSeperator='/'Minify=true;PrintOutput=true;printplusplus=function(a)local b={assert,collectgarbage,coroutine,coroutine.create,coroutine.resume,coroutine.running,coroutine.status,coroutine.wrap,coroutine.yield,debug,debug.debug,debug.getfenv,debug.gethook,debug.getinfo,debug.getlocal,debug.getmetatable,debug.getregistry,debug.getupvalue,debug.setfenv,debug.sethook,debug.setlocal,debug.setmetatable,debug.setupvalue,debug.traceback,dofile,dump,error,gcinfo,getfenv,getmetatable,io,io.close,io.flush,io.input,io.lines,io.open,io.output,io.popen,io.read,io.stderr,io.stdin,io.stdout,io.tmpfile,io.type,io.write,ipairs,load,loadfile,loadstring,math,math.abs,math.acos,math.asin,math.atan,math.atan2,math.ceil,math.cos,math.cosh,math.deg,math.exp,math.floor,math.fmod,math.frexp,math.huge,math.ldexp,math.log,math.log10,math.max,math.min,math.mod,math.modf,math.pi,math.pow,math.rad,math.random,math.randomseed,math.sin,math.sinh,math.sqrt,math.tan,math.tanh,module,newproxy,next,os,os.clock,os.date,os.difftime,os.execute,os.exit,os.getenv,os.remove,os.rename,os.setlocale,os.time,os.tmpname,package,package.config,package.cpath,package.loaded,string.byte,string.char,string.dump,string.find,string.format,string.gfind,string.gmatch,string.gsub,string.len,string.lower,string.match,string.rep,string.reverse,string.sub,string.upper,table.concat,table.foreach,table.foreachi,table.getn,table.insert,table.maxn,table.remove,table.setn,table.sort,package.loaders,package.loadlib,package.path,package.preload,package.seeall,pairs,pcall,print,rawequal,rawget,rawset,require,select,setfenv,setmetatable,started,string,table,tonumber,tostring,type,unpack,xpcall}local c={'assert','collectgarbage','coroutine','coroutine.create','coroutine.resume','coroutine.running','coroutine.status','coroutine.wrap','coroutine.yield','debug','debug.debug','debug.getfenv','debug.gethook','debug.getinfo','debug.getlocal','debug.getmetatable','debug.getregistry','debug.getupvalue','debug.setfenv','debug.sethook','debug.setlocal','debug.setmetatable','debug.setupvalue','debug.traceback','dofile','dump','error','gcinfo','getfenv','getmetatable','io','io.close','io.flush','io.input','io.lines','io.open','io.output','io.popen','io.read','io.stderr','io.stdin','io.stdout','io.tmpfile','io.type','io.write','ipairs','load','loadfile','loadstring','math','math.abs','math.acos','math.asin','math.atan','math.atan2','math.ceil','math.cos','math.cosh','math.deg','math.exp','math.floor','math.fmod','math.frexp','math.huge','math.ldexp','math.log','math.log10','math.max','math.min','math.mod','math.modf','math.pi','math.pow','math.rad','math.random','math.randomseed','math.sin','math.sinh','math.sqrt','math.tan','math.tanh','module','newproxy','next','os','os.clock','os.date','os.difftime','os.execute','os.exit','os.getenv','os.remove','os.rename','os.setlocale','os.time','os.tmpname','package','package.config','package.cpath','package.loaded','string.byte','string.char','string.dump','string.find','string.format','string.gfind','string.gmatch','string.gsub','string.len','string.lower','string.match','string.rep','string.reverse','string.sub','string.upper','table.concat','table.foreach','table.foreachi','table.getn','table.insert','table.maxn','table.remove','table.setn','table.sort','package.loaders','package.loadlib','package.path','package.preload','package.seeall','pairs','pcall','print','rawequal','rawget','rawset','require','select','setfenv','setmetatable','started','string','table','tonumber','tostring','type','unpack','xpcall'}local function d(e)local f=e;if type(e)=='string'then local e,g=loadstring(e)if e==nil then return f end end;if pcall(function()string.dump(e)end)then if Minify then return'loadstring\''..(string.gsub(string.dump(e),'.',function(h)return'\\'..h:byte()end)or string.dump(e)..'\'')..'\''else return'loadstring(\''..(string.gsub(string.dump(e),'.',function(h)return'\\'..h:byte()end)or string.dump(e)..'\'')..'\')'end else for i=1,#b do if b[i]==e then return c[i]end end end end;local function j(k)local l=getmetatable(k)local m=nil;if l~=nil then local n=nil;m=''for o,p in pairs(l)do n=true;if Minify then m=m..o..'='..d(p)..','else m=m..o..' = '..d(p)..',\n'end end;if n==true then local q;if Minify then q=1 else q=2 end;m=string.sub(m,1,#m-q)return m else return nil end end end;local function r(s)local t=0;for u in pairs(s)do t=t+1 end;return t end;local function v(s,w)local x=j(s)w=w or 0;local y=r(s)>1;local z=string.rep('    ',w+1)local A="{"..(y and'\n'or'')if Minify then z=''A='{'end;for o,p in pairs(s)do A=A..(y and z or'')if type(o)=='number'then elseif type(o)=='string'and o:match("^[A-Za-z_][A-Za-z0-9_]*$")then A=A..o..(Minify and"="or" = ")elseif type(o)=='string'then A=A..(Minify and"[\'"..o.."\']="or"[\'"..o.."\'] = ")else A=A..(Minify and"["..tostring(o).."]="or"["..tostring(o).."] = ")end;local B,C=SerializeMain(p)A=A..B;if next(s,o)then A=A..","end;if not Minify then if y then A=A..'\n'else A=A..' 'end end end;A=A..(y and string.rep('    ',w)or'').."}"if x~=nil then if Minify then A='setmetatable('..A..',{'..x..'})'else A='setmetatable('..A..', {\n'..x..'\n})'end end;return A end;function SerializeMain(a)local D;local E;local F=SerialSeperator;local G=EndSeperator;if type(a)=='number'or type(a)=='boolean'or type(a)=='nil'then D=tostring(a)E=tostring(a)elseif type(a)=='string'then D='\''..tostring(a)..'\''E=F..type(a)..F..tostring(a)..F..G..type(a)..F elseif type(a)=='table'then D=v(a)E=F..type(a)..F..v(a)..F..G..type(a)..F elseif type(a)=='function'then D=d(a)E=F..type(a)..F..d(a)..F..G..type(a)..F elseif type(a)=='userdata'or type(a)=='thread'then D=type(a)E=F..type(a)..F..F..G..type(a)..F end;return D,E end;local D,E=SerializeMain(a)if PrintOutput then print(LuaMode and D or E)else return LuaMode and D or E end end;ppp=printplusplus
+
+
+
+
+
+
+
+
+--[[
+
+
+8 bit braille order
+1	4
+2	5
+3	6
+7	8
+
+converted to
+
+1   5
+2   6
+3   7
+4   8
+
+
+0000 0000
+1000 0000
+0100 0000
+1100 0000
+
+...
+
+0 -> byte
+1 -> byte reverse
+2 -> byte reverse
+3 -> byte reverse
+
+raw data
+
+
+
+
+Braille Patterns[1]
+Official Unicode Consortium code chart (PDF)
+ 	    0	1	2	3	4	5	6	7	8	9	A	B	C	D	E	F
+U+280x	⠀	⠁	⠂	⠃	⠄	⠅	⠆	⠇	⠈	⠉	⠊	⠋	⠌	⠍	⠎	⠏
+U+281x	⠐	⠑	⠒	⠓	⠔	⠕	⠖	⠗	⠘	⠙	⠚	⠛	⠜	⠝	⠞	⠟
+U+282x	⠠	⠡	⠢	⠣	⠤	⠥	⠦	⠧	⠨	⠩	⠪	⠫	⠬	⠭	⠮	⠯
+U+283x	⠰	⠱	⠲	⠳	⠴	⠵	⠶	⠷	⠸	⠹	⠺	⠻	⠼	⠽	⠾	⠿
+(end of 6-dot cell patterns)
+U+284x	⡀	⡁	⡂	⡃	⡄	⡅	⡆	⡇	⡈	⡉	⡊	⡋	⡌	⡍	⡎	⡏
+U+285x	⡐	⡑	⡒	⡓	⡔	⡕	⡖	⡗	⡘	⡙	⡚	⡛	⡜	⡝	⡞	⡟
+U+286x	⡠	⡡	⡢	⡣	⡤	⡥	⡦	⡧	⡨	⡩	⡪	⡫	⡬	⡭	⡮	⡯
+U+287x	⡰	⡱	⡲	⡳	⡴	⡵	⡶	⡷	⡸	⡹	⡺	⡻	⡼	⡽	⡾	⡿
+U+288x	⢀	⢁	⢂	⢃	⢄	⢅	⢆	⢇	⢈	⢉	⢊	⢋	⢌	⢍	⢎	⢏
+U+289x	⢐	⢑	⢒	⢓	⢔	⢕	⢖	⢗	⢘	⢙	⢚	⢛	⢜	⢝	⢞	⢟
+U+28Ax	⢠	⢡	⢢	⢣	⢤	⢥	⢦	⢧	⢨	⢩	⢪	⢫	⢬	⢭	⢮	⢯
+U+28Bx	⢰	⢱	⢲	⢳	⢴	⢵	⢶	⢷	⢸	⢹	⢺	⢻	⢼	⢽	⢾	⢿
+U+28Cx	⣀	⣁	⣂	⣃	⣄	⣅	⣆	⣇	⣈	⣉	⣊	⣋	⣌	⣍	⣎	⣏
+U+28Dx	⣐	⣑	⣒	⣓	⣔	⣕	⣖	⣗	⣘	⣙	⣚	⣛	⣜	⣝	⣞	⣟
+U+28Ex	⣠	⣡	⣢	⣣	⣤	⣥	⣦	⣧	⣨	⣩	⣪	⣫	⣬	⣭	⣮	⣯
+U+28Fx	⣰	⣱	⣲	⣳	⣴	⣵	⣶	⣷	⣸	⣹	⣺	⣻	⣼	⣽	⣾	⣿
+
+
+
+
+
+
+
+⠀	⠁	⠂	⠃	⠄	⠅	⠆	⠇	⠈	⠉	⠊	⠋	⠌	⠍	⠎	⠏	⠐	⠑	⠒	⠓	⠔	⠕	⠖	⠗	⠘	⠙	⠚	⠛	⠜	⠝	⠞	⠟	⠠	⠡	⠢	⠣	⠤	⠥	⠦	⠧	⠨	⠩	⠪	⠫	⠬	⠭	⠮	⠯	⠰	⠱	⠲	⠳	⠴	⠵	⠶	⠷	⠸	⠹	⠺	⠻	⠼	⠽	⠾	⠿	⡀	⡁	⡂	⡃	⡄	⡅	⡆	⡇	⡈	⡉	⡊	⡋	⡌	⡍	⡎	⡏	⡐	⡑	⡒	⡓	⡔	⡕	⡖	⡗	⡘	⡙	⡚	⡛	⡜	⡝	⡞	⡟	⡠	⡡	⡢	⡣	⡤	⡥	⡦	⡧	⡨	⡩	⡪	⡫	⡬	⡭	⡮	⡯	⡰	⡱	⡲	⡳	⡴	⡵	⡶	⡷	⡸	⡹	⡺	⡻	⡼	⡽	⡾	⡿	⢀	⢁	⢂	⢃	⢄	⢅	⢆	⢇	⢈	⢉	⢊	⢋	⢌	⢍	⢎	⢏	⢐	⢑	⢒	⢓	⢔	⢕	⢖	⢗	⢘	⢙	⢚	⢛	⢜	⢝	⢞	⢟	⢠	⢡	⢢	⢣	⢤	⢥	⢦	⢧	⢨	⢩	⢪	⢫	⢬	⢭	⢮	⢯	⢰	⢱	⢲	⢳	⢴	⢵	⢶	⢷	⢸	⢹	⢺	⢻	⢼	⢽	⢾	⢿	⣀	⣁	⣂	⣃	⣄	⣅	⣆	⣇	⣈	⣉	⣊	⣋	⣌	⣍	⣎	⣏	⣐	⣑	⣒	⣓	⣔	⣕	⣖	⣗	⣘	⣙	⣚	⣛	⣜	⣝	⣞	⣟	⣠	⣡	⣢	⣣	⣤	⣥	⣦	⣧	⣨	⣩	⣪	⣫	⣬	⣭	⣮	⣯	⣰	⣱	⣲	⣳	⣴	⣵	⣶	⣷	⣸	⣹	⣺	⣻	⣼	⣽	⣾	⣿
+
+
+⠀ ⠁ ⠂ ⠃ ⠄ ⠅ ⠆ ⠇ ⠈ ⠉ ⠊ ⠋ ⠌ ⠍ ⠎ ⠏ ⠐ ⠑ ⠒ ⠓ ⠔ ⠕ ⠖ ⠗ ⠘ ⠙ ⠚ ⠛ ⠜ ⠝ ⠞ ⠟ ⠠ ⠡ ⠢ ⠣ ⠤ ⠥ ⠦ ⠧ ⠨ ⠩ ⠪ ⠫ ⠬ ⠭ ⠮ ⠯ ⠰ ⠱ ⠲ ⠳ ⠴ ⠵ ⠶ ⠷ ⠸ ⠹ ⠺ ⠻ ⠼ ⠽ ⠾ ⠿ ⡀ ⡁ ⡂ ⡃ ⡄ ⡅ ⡆ ⡇ ⡈ ⡉ ⡊ ⡋ ⡌ ⡍ ⡎ ⡏ ⡐ ⡑ ⡒ ⡓ ⡔ ⡕ ⡖ ⡗ ⡘ ⡙ ⡚ ⡛ ⡜ ⡝ ⡞ ⡟ ⡠ ⡡ ⡢ ⡣ ⡤ ⡥ ⡦ ⡧ ⡨ ⡩ ⡪ ⡫ ⡬ ⡭ ⡮ ⡯ ⡰ ⡱ ⡲ ⡳ ⡴ ⡵ ⡶ ⡷ ⡸ ⡹ ⡺ ⡻ ⡼ ⡽ ⡾ ⡿ ⢀ ⢁ ⢂ ⢃ ⢄ ⢅ ⢆ ⢇ ⢈ ⢉ ⢊ ⢋ ⢌ ⢍ ⢎ ⢏ ⢐ ⢑ ⢒ ⢓ ⢔ ⢕ ⢖ ⢗ ⢘ ⢙ ⢚ ⢛ ⢜ ⢝ ⢞ ⢟ ⢠ ⢡ ⢢ ⢣ ⢤ ⢥ ⢦ ⢧ ⢨ ⢩ ⢪ ⢫ ⢬ ⢭ ⢮ ⢯ ⢰ ⢱ ⢲ ⢳ ⢴ ⢵ ⢶ ⢷ ⢸ ⢹ ⢺ ⢻ ⢼ ⢽ ⢾ ⢿ ⣀ ⣁ ⣂ ⣃ ⣄ ⣅ ⣆ ⣇ ⣈ ⣉ ⣊ ⣋ ⣌ ⣍ ⣎ ⣏ ⣐ ⣑ ⣒ ⣓ ⣔ ⣕ ⣖ ⣗ ⣘ ⣙ ⣚ ⣛ ⣜ ⣝ ⣞ ⣟ ⣠ ⣡ ⣢ ⣣ ⣤ ⣥ ⣦ ⣧ ⣨ ⣩ ⣪ ⣫ ⣬ ⣭ ⣮ ⣯ ⣰ ⣱ ⣲ ⣳ ⣴ ⣵ ⣶ ⣷ ⣸ ⣹ ⣺ ⣻ ⣼ ⣽ ⣾ ⣿
+
+
+
+]]
+--[=[
+local dotdata6 = [[⠀ ⠁ ⠂ ⠃ ⠄ ⠅ ⠆ ⠇ ⠈ ⠉ ⠊ ⠋ ⠌ ⠍ ⠎ ⠏ ⠐ ⠑ ⠒ ⠓ ⠔ ⠕ ⠖ ⠗ ⠘ ⠙ ⠚ ⠛ ⠜ ⠝ ⠞ ⠟ ⠠ ⠡ ⠢ ⠣ ⠤ ⠥ ⠦ ⠧ ⠨ ⠩ ⠪ ⠫ ⠬ ⠭ ⠮ ⠯ ⠰ ⠱ ⠲ ⠳ ⠴ ⠵ ⠶ ⠷ ⠸ ⠹ ⠺ ⠻ ⠼ ⠽ ⠾ ⠿]]
+
+local dotdata8 = [[⡀ ⡁ ⡂ ⡃ ⡄ ⡅ ⡆ ⡇ ⡈ ⡉ ⡊ ⡋ ⡌ ⡍ ⡎ ⡏ ⡐ ⡑ ⡒ ⡓ ⡔ ⡕ ⡖ ⡗ ⡘ ⡙ ⡚ ⡛ ⡜ ⡝ ⡞ ⡟ ⡠ ⡡ ⡢ ⡣ ⡤ ⡥ ⡦ ⡧ ⡨ ⡩ ⡪ ⡫ ⡬ ⡭ ⡮ ⡯ ⡰ ⡱ ⡲ ⡳ ⡴ ⡵ ⡶ ⡷ ⡸ ⡹ ⡺ ⡻ ⡼ ⡽ ⡾ ⡿ ⢀ ⢁ ⢂ ⢃ ⢄ ⢅ ⢆ ⢇ ⢈ ⢉ ⢊ ⢋ ⢌ ⢍ ⢎ ⢏ ⢐ ⢑ ⢒ ⢓ ⢔ ⢕ ⢖ ⢗ ⢘ ⢙ ⢚ ⢛ ⢜ ⢝ ⢞ ⢟ ⢠ ⢡ ⢢ ⢣ ⢤ ⢥ ⢦ ⢧ ⢨ ⢩ ⢪ ⢫ ⢬ ⢭ ⢮ ⢯ ⢰ ⢱ ⢲ ⢳ ⢴ ⢵ ⢶ ⢷ ⢸ ⢹ ⢺ ⢻ ⢼ ⢽ ⢾ ⢿ ⣀ ⣁ ⣂ ⣃ ⣄ ⣅ ⣆ ⣇ ⣈ ⣉ ⣊ ⣋ ⣌ ⣍ ⣎ ⣏ ⣐ ⣑ ⣒ ⣓ ⣔ ⣕ ⣖ ⣗ ⣘ ⣙ ⣚ ⣛ ⣜ ⣝ ⣞ ⣟ ⣠ ⣡ ⣢ ⣣ ⣤ ⣥ ⣦ ⣧ ⣨ ⣩ ⣪ ⣫ ⣬ ⣭ ⣮ ⣯ ⣰ ⣱ ⣲ ⣳ ⣴ ⣵ ⣶ ⣷ ⣸ ⣹ ⣺ ⣻ ⣼ ⣽ ⣾ ⣿]]
+
+local combattempt1 = [[⠀ ⠁ ⠂ ⠃ ⠄ ⠅ ⠆ ⠇ ⡀ ⡁ ⡂ ⡃ ⡄ ⡅ ⡆ ⡇ ⠈ ⠉ ⠊ ⠋ ⠌ ⠍ ⠎ ⠏ ⡈ ⡉ ⡊ ⡋ ⡌ ⡍ ⡎ ⡏ ⠐ ⠑ ⠒ ⠓ ⠔ ⠕ ⠖ ⠗ ⠘ ⠙ ⠚ ⠛ ⠜ ⠝ ⠞ ⠟ ⡐ ⡑ ⡒ ⡓ ⡔ ⡕ ⡖ ⡗ ⡘ ⡙ ⡚ ⡛ ⡜ ⡝ ⡞ ⡟ ⠠ ⠡ ⠢ ⠣ ⠤ ⠥ ⠦ ⠧ ⠨ ⠩ ⠪ ⠫ ⠬ ⠭ ⠮ ⠯ ⠰ ⠱ ⠲ ⠳ ⠴ ⠵ ⠶ ⠷ ⠸ ⠹ ⠺ ⠻ ⠼ ⠽ ⠾ ⠿ ⡠ ⡡ ⡢ ⡣ ⡤ ⡥ ⡦ ⡧ ⡨ ⡩ ⡪ ⡫ ⡬ ⡭ ⡮ ⡯ ⡰ ⡱ ⡲ ⡳ ⡴ ⡵ ⡶ ⡷ ⡸ ⡹ ⡺ ⡻ ⡼ ⡽ ⡾ ⡿ ⢀ ⢁ ⢂ ⢃ ⢄ ⢅ ⢆ ⢇ ⢈ ⢉ ⢊ ⢋ ⢌ ⢍ ⢎ ⢏ ⢐ ⢑ ⢒ ⢓ ⢔ ⢕ ⢖ ⢗ ⢘ ⢙ ⢚ ⢛ ⢜ ⢝ ⢞ ⢟ ⢠ ⢡ ⢢ ⢣ ⢤ ⢥ ⢦ ⢧ ⢨ ⢩ ⢪ ⢫ ⢬ ⢭ ⢮ ⢯ ⢰ ⢱ ⢲ ⢳ ⢴ ⢵ ⢶ ⢷ ⢸ ⢹ ⢺ ⢻ ⢼ ⢽ ⢾ ⢿ ⣀ ⣁ ⣂ ⣃ ⣄ ⣅ ⣆ ⣇ ⣈ ⣉ ⣊ ⣋ ⣌ ⣍ ⣎ ⣏ ⣐ ⣑ ⣒ ⣓ ⣔ ⣕ ⣖ ⣗ ⣘ ⣙ ⣚ ⣛ ⣜ ⣝ ⣞ ⣟ ⣠ ⣡ ⣢ ⣣ ⣤ ⣥ ⣦ ⣧ ⣨ ⣩ ⣪ ⣫ ⣬ ⣭ ⣮ ⣯ ⣰ ⣱ ⣲ ⣳ ⣴ ⣵ ⣶ ⣷ ⣸ ⣹ ⣺ ⣻ ⣼ ⣽ ⣾ ⣿]]
+
+]=]
+
+
+
+Split = function(a,b)c={}for d,b in a:gmatch("([^"..b.."]*)("..b.."?)")do table.insert(c,d)if b==''then return c end end end
+
+
+
+
+
+
+--combined 6 and 8
+--https://github.com/qntm/braille-encode/blob/main/index.js
+local dotdata = ([[
 ⠀ ⢀ ⠠ ⢠ ⠐ ⢐ ⠰ ⢰ ⠈ ⢈ ⠨ ⢨ ⠘ ⢘ ⠸ ⢸
 ⡀ ⣀ ⡠ ⣠ ⡐ ⣐ ⡰ ⣰ ⡈ ⣈ ⡨ ⣨ ⡘ ⣘ ⡸ ⣸
 ⠄ ⢄ ⠤ ⢤ ⠔ ⢔ ⠴ ⢴ ⠌ ⢌ ⠬ ⢬ ⠜ ⢜ ⠼ ⢼
@@ -15,4 +374,3734 @@ CacheEnabled=false;WarnEnabled=false;ErrorEnabled=true;WarnStrict=false;DefaultP
 ⠃ ⢃ ⠣ ⢣ ⠓ ⢓ ⠳ ⢳ ⠋ ⢋ ⠫ ⢫ ⠛ ⢛ ⠻ ⢻
 ⡃ ⣃ ⡣ ⣣ ⡓ ⣓ ⡳ ⣳ ⡋ ⣋ ⡫ ⣫ ⡛ ⣛ ⡻ ⣻
 ⠇ ⢇ ⠧ ⢧ ⠗ ⢗ ⠷ ⢷ ⠏ ⢏ ⠯ ⢯ ⠟ ⢟ ⠿ ⢿
-⡇ ⣇ ⡧ ⣧ ⡗ ⣗ ⡷ ⣷ ⡏ ⣏ ⡯ ⣯ ⡟ ⣟ ⡿ ⣿]]):gsub('\n',' ')function GenerateDotData()function ToBinary(ld)local md={}while ld>0 do local od=math.fmod(ld,2)md[#md+1]=string.sub(od,1,1)ld=(ld-od)/2 end;local nd=string.reverse(table.concat(md))return string.rep('0',8 -#nd)..nd end;local function fd(ld)return ld end;local gd=Split(Ib,' ')local hd={}local id=false;local jd=''local kd=' 'for i=1,#gd do hd[ToBinary(i-1)]=fd(gd[i])if id then print(ToBinary(i-1)..gd[i])local ld=io.read()if ld==''then ld=gd[i]elseif ld=='stop'then break end;jd=jd..ld..kd end end;if id then print(jd)io.open('Data.lua','a+'):write(jd)end;return hd end;local Jb=GenerateDotData()Pixel={}Pixel.Data={Box={['1000']='▘',['0100']='▝',['0010']='▖',['0001']='▗',['1100']='▀',['1001']='▚',['0110']='▞',['0110']='▐',['1010']='▌',['0011']='▄',['1110']='▛',['0111']='▟',['1101']='▜',['1011']='▙',['1111']='█'}}Pixel.Data.Dot=Jb;Pixel.Data.Empty='0'Pixel.Data.Filled='1'Pixel.Data.NewLine='\n'Split=function(fd,gd)c={}for hd,id in fd:gmatch("([^"..gd.."]*)("..gd.."?)")do table.insert(c,hd)if id==''then return c end end end;function Round(fd,gd)local hd=10 ^ (gd or 0)return math.floor(fd*hd+0.5)/hd end;function GetPixelData(fd)if type(fd)=='table'and fd.Data then return fd else local gd=Pixel.New(fd)return gd end end;function Error(fd,gd)if not ErrorEnabled then return end;local function hd(kd,ld)return(kd:gsub('(%b{})',function(md)return ld[md:sub(2,-2)]or md end))end;local function id(kd)error(kd)end;local jd=hd(fd,gd)id(jd)end;function Warn(fd,gd)if not WarnEnabled then return end;local function hd(jd,kd)return(jd:gsub('(%b{})',function(ld)return kd[ld:sub(2,-2)]or ld end))end;local id=hd(fd,gd)print('Warning: '..id)if WarnStrict then print('Press enter to continue.')io.read()end end;Table={}function Table.Combine(fd,gd)for i=1,#gd do table.insert(fd,gd[i])end;return fd end;function Table.Clone(fd,gd)gd=gd or{}local hd=type(fd)local id;if hd=='table'then if gd[fd]then id=gd[fd]else id={}gd[fd]=id;for jd,kd in next,fd,nil do id[Table.Clone(jd,gd)]=Table.Clone(kd,gd)end;setmetatable(id,Table.Clone(getmetatable(fd),gd))end else id=fd end;return id end;Pixel.Color={}Pixel.Color.Data={reset=0,clear=0,space=0,bright=1,bold=1,dim=2,faint=1,italic=3,underline=4,blink=5,reverse=7,invisible=8,hidden=8,strikethrough=9,black=30,red=31,green=32,yellow=33,blue=34,purple=35,magenta=35,cyan=36,white=37,onblack=40,onred=41,ongreen=42,onyellow=43,onblue=44,onpurple=45,onmagenta=45,oncyan=46,onwhite=47}local function Kb(fd)local gd=Split(fd,',')local hd={}for i=1,#gd do local id=string.gsub(gd[i],'^%s*(.-)%s*$','%1')table.insert(hd,Pixel.Color.Data[string.lower(id)]or id)end;fd=table.concat(hd,';')return'\27['..fd..'m'end;local function Lb(fd,gd)local hd=fd;local id=true;local jd;fd=string.gsub(fd,'(%b{})',function(kd)kd=string.sub(kd,2,-2)if id then id=false;local ld=Kb(kd)jd=ld;return ld else id=true;local ld=Lb(kd,jd)if ld then return ld.. (gd or'')else return kd.. (gd or'')end end end)if id==false or finalstr==''or fd==hd then return nil end;return fd end;function Pixel.Color.Set(fd)local gd=Lb(fd)if gd then return gd..Kb('0')else local hd=Kb(fd)local id=false;local jd=''local kd;kd=setmetatable({},{__concat=function(ld,md)hd=tostring(ld)..tostring(md)..Kb('0')return kd end,__call=function(ld,md)jd=Kb('0')if id then hd=hd..Kb(md)id=false else hd=hd..md;id=true end;return ld end,__tostring=function()return hd..jd end})return kd end end;setmetatable(Pixel.Color,{__call=function(fd,...)return Pixel.Color.Set(...)end})function Pixel.SetColor(fd,gd,hd,id)local jd=GetPixelData(fd)jd.Color[gd]=jd.Color[gd]or{}jd.Color[gd][hd]=id;return jd end;function Pixel.SetColorAll(fd,gd)local hd=GetPixelData(fd)hd.Color.All=gd;return hd end;function Pixel.GetColor(fd,gd,hd)local id=GetPixelData(fd)if id.Color[gd]and id.Color[gd][hd]then return id.Color[gd][hd]end;if WarnStrict then Warn('Unable to find color, x: {x}, y: {y}.',{x=gd,y=hd})end;return nil end;function Pixel.GetColorAll(fd)local gd=GetPixelData(fd)if gd.Color.All then return gd.Color.All else if WarnStrict then Warn('str.Color.All is a nil value.')end;return nil end end;Pixel.__index=Pixel;Pixel.__tostring=function(fd)return Pixel.Convert(fd)end;local function Mb()return Table.Clone(DefaultPixel)end;function Pixel.New(fd)if type(fd)=='string'then fd=Pixel.Convert.To2d(fd)end;local gd={}gd.Data=fd or Mb()gd.Op={}gd.Color={}setmetatable(gd,Pixel)return gd end;function Pixel.Blank()return Pixel.New()end;function Pixel.Clear(fd)return Pixel.New()end;function Pixel.Copy(fd)return Table.Clone(fd)end;Pixel.Convert={}function Pixel.Convert.To2d(fd,gd,hd)local id,jd=gd or 1,hd or 1;local kd,ld=id,jd;local md={}for i=1,#fd do local nd=string.sub(fd,i,i)if nd=='\n'then ld=ld+1;kd=id else md[kd]=md[kd]or{}md[kd][ld]=nd;kd=kd+1 end end;return md end;function Pixel.Convert.From2d(fd)local gd=GetPixelData(fd)local hd=gd.Data;local function id(qd)local rd=nil;for sd,td in pairs(qd)do if not rd or sd<rd then rd=sd end end;return rd end;local function jd(qd)local rd=nil;for sd,td in pairs(qd)do if not rd or sd>rd then rd=sd end end;return rd end;local function kd(qd,rd)local sd={}for td,ud in pairs(qd)do local vd=rd(ud)if vd then sd[vd]=true end end;return rd(sd)end;local ld={}local md,nd,od,pd=id(hd),jd(hd),kd(hd,id),kd(hd,jd)for y=od,pd do for x=md,nd do table.insert(ld,Pixel.GetPixel(gd,x,y))end;local qd=#ld;repeat if ld[qd]==Pixel.Data.Filled then break else ld[qd]=nil;qd=qd-1 end until false;table.insert(ld,'\n')end;ld[#ld]=nil;return table.concat(ld),md,od end;if CacheEnabled then Pixel.Cache={}end;local function Nb(fd,gd,hd)local id=type(fd)local jd=type(gd)if id~=jd then return false end;if id~='table'and jd~='table'then return fd==gd end;local kd=getmetatable(fd)if not hd and kd and kd.__eq then return fd==gd end;for ld,md in pairs(fd)do local nd=gd[ld]if nd==nil or not Nb(md,nd)then return false end end;for ld,md in pairs(gd)do local nd=fd[ld]if nd==nil or not Nb(nd,md)then return false end end;return true end;local function Ob(fd)for i=1,#Pixel.Cache do if Nb(Pixel.Cache[i][1],fd)then return Pixel.Cache[i][2]end end;return nil end;local function Pb(fd,gd)table.insert(Pixel.Cache,{fd,gd})end;function Pixel.Convert.ToDots(fd)fd=GetPixelData(fd)local gd,hd=fd.Data,fd.Color;if ReverseY then local function vd(wd)local xd={}for yd,zd in pairs(wd)do for Ad,Bd in pairs(zd)do xd[yd]=xd[yd]or{}xd[yd][-Ad]=Bd end end;return xd end;gd=vd(gd)hd=vd(hd)end;fd={Data=gd,Color=hd}local function id(vd)local wd=nil;for xd,yd in pairs(vd)do if not wd or xd<wd then wd=xd end end;return wd end;local function jd(vd)local wd=nil;for xd,yd in pairs(vd)do if not wd or xd>wd then wd=xd end end;return wd end;local function kd(vd,wd)local xd={}for yd,zd in pairs(vd)do local Ad=wd(zd)if Ad then xd[Ad]=true end end;return wd(xd)end;local ld,md,nd,od=id(gd),jd(gd),kd(gd,id),kd(gd,jd)local pd={}local qd=string.rep('0',8)local rd=Pixel.Data.Dot[qd]local sd=nil;local td=nil;if fd.Color.All then local vd=tostring(Pixel.Color(fd.Color.All))table.insert(pd,vd)td=vd end;local ud={}for vd,wd in pairs(gd)do for xd,yd in pairs(wd)do ud[xd]=ud[xd]or{}ud[xd][vd]=yd end end;if not nd then return''end;for y=nd,od,4 do for x=ld,md,2 do local vd=''local wd={{0,0},{0,1},{0,2},{0,3},{1,0},{1,1},{1,2},{1,3}}for i=1,8 do local xd,yd=x+wd[i][1],y+wd[i][2]vd=vd.. ( (gd[xd]and gd[xd][yd]or false)and gd[xd][yd]or Pixel.Data.Empty)end;if vd~=qd then vd=Pixel.Data.Dot[vd]if not td then local xd=Pixel.GetColor(fd,x,y)if not xd then local yd={{0,0},{0,1},{0,2},{0,3},{1,0},{1,1},{1,2},{1,3}}for i=1,8 do xd=Pixel.GetColor(fd,x+yd[i][1],y+yd[i][2])if xd then break end end end;if xd then xd=tostring(Pixel.Color(xd))else xd=tostring(Pixel.Color('reset'))end;if sd==xd then else table.insert(pd,xd)sd=xd end end;table.insert(pd,vd)else table.insert(pd,rd)end end;table.insert(pd,Pixel.Data.NewLine)end;table.insert(pd,tostring(Pixel.Color('reset')))return table.concat(pd)end;function Pixel.Convert.FromDots(fd)if''then return nil end;local function gd(id)for jd,kd in pairs(Pixel.Data.Dot)do if kd==id then return jd end end end;local hd=Pixel.Convert.To2d(fd)for x=1,#hd do for y=1,#hd[x]do print(hd[x][y])end end end;setmetatable(Pixel.Convert,{__call=function(fd,...)return Pixel.Convert.ToDots(...)end})for fd,gd in pairs(Pixel.Convert)do Pixel[fd]=gd end;function Pixel.Format(fd,gd)local function hd()for i=1,#fd do local jd=string.sub(fd,i,i)if jd==Pixel.Data.Empty or jd==Pixel.Data.Filled or jd==Pixel.Data.NewLine then else return false end end;return true end;local id;if type(fd)=='string'then local jd=hd()if jd then id='str'else id='dots'end elseif type(fd)=='table'then id='2d'end;if id=='str'then elseif id=='2d'then fd=Pixel.Convert.From2d(fd)elseif id=='dots'then fd=Pixel.Convert.FromDots(fd)else Error('Pixel.Format: Could not convert {from} to {to}.',{from=id,to='STR'})end;if gd=='str'then return fd elseif gd=='2d'then return Pixel.Convert.To2d(fd)elseif gd=='dots'then return Pixel.Convert.ToDots(str)else Error('Pixel.Format: Could not convert {from} to {to}.',{from='STR',to=gd})end end;local function Qb(fd)local gd=nil;for hd,id in pairs(fd)do if not gd or hd>gd then gd=hd end end;return gd end;function Pixel.GetSizeX(fd)local gd=GetPixelData(fd)return Qb(gd.Data)end;function Pixel.GetSizeY(fd)local gd=GetPixelData(fd)local hd=nil;for id,jd in pairs(gd.Data)do local kd=Qb(jd)if(not hd or kd>hd)and kd then hd=kd end end;return hd end;function Pixel.SetPixel(fd,gd,hd,id)local jd=GetPixelData(fd)jd.Data[gd]=jd.Data[gd]or{}jd.Data[gd][hd]=id;return jd end;function Pixel.GetPixel(fd,gd,hd)local id=GetPixelData(fd)return id.Data[gd]and id.Data[gd][hd]or nil end;function Pixel.SetPixels(fd,gd)local hd=GetPixelData(fd)for i=1,#gd do hd.Data=Pixel.SetPixel(hd.Data,gd[i][1],gd[i][2],gd[i][3])end;return hd end;function Pixel.Equal(fd,gd,hd,id,jd)local kd=GetPixelData(fd)return Pixel.GetPixel(gd,hd)==Pixel.GetPixel(id,jd)end;function Pixel.MovePixel(fd,gd,hd,id,jd)local kd=GetPixelData(fd)return Pixel.SetPixel(Pixel.SetPixel(kd,id,jd,Pixel.GetPixel(gd,hd)),gd,hd,Pixel.Data.Empty)end;function Pixel.SwapPixel(fd,gd,hd,id,jd)local kd=GetPixelData(fd)local ld=Pixel.GetPixel(kd,gd,hd)return Pixel.SetPixel(Pixel.SetPixel(kd,gd,hd,Pixel.GetPixel(kd,id,jd)),id,jd,ld)end;function Pixel.Replace(fd,gd,hd)local id=GetPixelData(fd)for jd,kd in pairs(id.Data)do for ld,md in pairs(kd)do if md==gd and id.Data[jd]then id=Pixel.SetPixel(id,jd,ld,hd)end end end;return id end;function Pixel.SetAll(fd,gd)local hd=GetPixelData(fd)return Pixel.Replace(hd,Pixel.Data.Empty,gd)end;function Pixel.Flip(fd)local gd=GetPixelData(fd)return Pixel.Replace(Pixel.Replace(Pixel.Replace(gd,'0, 2'),'1','0'),'2','1')end;function Pixel.GetRect(fd,gd,hd,id,jd,kd,ld)local md=GetPixelData(fd)local nd=Pixel.New()if id>jd then id,jd=jd,id end;if jd>ld then jd,ld=ld,jd end;for x=id,kd do for y=jd,ld do nd=Pixel.SetPixel(nd,x-id+gd,y-jd+hd,Pixel.GetPixel(md,x,y))end end;return nd end;function Pixel.ZoomIn(fd,gd)local hd=GetPixelData(fd)local id=Pixel.New()for jd,kd in pairs(hd.Data)do for ld,md in pairs(kd)do for x2=(jd-1)*gd+1,jd*gd do for y2=(ld-1)*gd+1,ld*gd do id=Pixel.SetPixel(id,x2,y2,md)end end end end;return id end;function Pixel.ZoomOut(fd,gd)local hd=GetPixelData(fd)local id=Pixel.New()for jd,kd in pairs(hd.Data)do for ld,md in pairs(kd)do if(jd-1)%gd==0 and(ld-1)%gd==0 then local nd={}for x2=jd,jd+gd-1 do for y2=ld,ld+gd-1 do local pd=Pixel.GetPixel(hd,x2,y2)if pd then nd[pd]=nd[pd]and nd[pd]+1 or 1 end end end;local od=nil;for pd,qd in pairs(nd)do if not od or qd>nd[od]then od=pd elseif od and qd==nd[od]then pd=Pixel.Data.Empty;break end end;id=Pixel.SetPixel(id,(jd-1)/gd+1,(ld-1)/gd+1,od)end end end;return id end;function Pixel.Resize(fd,gd,hd)end;function Pixel.Offset(fd,gd,hd)end;local function Rb(...)local fd={...}if#fd==1 and type(fd[1])=='table'then return unpack(fd[1])else return...end end;local function Sb(fd,gd,...)local hd={...}if hd[#hd]~=true then table.insert(fd.Op,{gd,...})end end;local function Tb(fd,gd)if type(fd)=='boolean'and type(gd)=='table'then return gd,fd elseif type(fd)=='table'and type(gd)=='boolean'then return fd,gd elseif type(fd)=='table'then return fd,gd end end;function Pixel.Line(fd,...)local gd={Rb(...)}local hd,id,jd,kd,ld,md=unpack(gd)local nd,od=Tb(ld,md)nd=nd or{}local pd,qd,rd,sd=nd.color,nd.callback,nd.init,nd.setfunction;if rd then rd()end;local td=GetPixelData(fd)local ud,vd=0,0;if hd<0 and hd<ud then ud=hd end;if jd<0 and jd<ud then ud=jd end;if id<0 and id<vd then vd=id end;if kd<0 and kd<vd then vd=kd end;hd,id,jd,kd=hd-ud,id-vd,jd-ud,kd-vd;Sb(td,'Line',hd,id,jd,kd,nd,od)local function wd(Cd,Dd)local Ed,Fd=Cd+ud,Dd+vd;if qd then local Gd=qd(td,Ed,Fd,Pixel.Data.Filled)if Gd then Pixel.SetPixel(td,Ed,Fd,Gd)end else Pixel.SetPixel(td,Ed,Fd,Pixel.Data.Filled)end;if pd then Pixel.SetColor(td,Ed,Fd,pd)end end;if nd.setfunction then wd=nd.setfunction end;local xd,yd=math.abs(jd-hd),hd<jd and 1 or-1;local zd,Ad=math.abs(kd-id),id<kd and 1 or-1;local Bd=math.floor((xd>zd and xd or-zd)/2)while(true)do wd(hd,id)if(hd==jd and id==kd)then break end;if(Bd>-xd)then Bd,hd=Bd-zd,hd+yd;if(hd==jd and id==kd)then wd(hd,id)break end end;if(Bd<zd)then Bd,id=Bd+xd,id+Ad end end;return td end;function Pixel.Bezier2(fd,gd,hd,id,jd,kd,ld,md)local nd=GetPixelData(fd)md=md or 10;local od,pd,qd,rd;for i=0,md do local sd=i/md;local td,ud,vd=(1 -sd)^2,2 *sd* (1 -sd),sd^2;od,pd=qd,rd;qd=math.floor(td*gd+ud*id+vd*kd+0.5)rd=math.floor(td*hd+ud*jd+vd*ld+0.5)if i>0 then Pixel.Line(nd,od,pd,qd,rd)end end;return nd end;function Pixel.Bezier3(fd,gd,hd,id,jd,kd,ld,md,nd,od)local pd=GetPixelData(fd)od=od or 10;local qd,rd,sd,td;for i=0,od do local ud=i/od;local vd,wd,xd,yd=(1 -ud)^3,3 *ud* (1 -ud)^2,3 *ud^2 * (1 -ud),ud^3;qd,rd=sd,td;sd=math.floor(vd*gd+wd*id+xd*kd+yd*md+0.5)td=math.floor(vd*hd+wd*jd+xd*ld+yd*nd+0.5)if i>0 then Pixel.Line(pd,qd,rd,sd,td)end end;return pd end;function Pixel.Fill(fd,gd,hd,id,jd)local kd,ld=Tb(id,jd)local md=GetPixelData(fd)Sb(md,'Fill',gd,hd,kd,ld)local function nd(od,pd)if Pixel.GetPixel(md,od,pd)==Pixel.Data.Filled then return else Pixel.SetPixel(md,od,pd,Pixel.Data.Filled)nd(od-1,pd)nd(od+1,pd)nd(od,pd-1)nd(od,pd+1)end end;nd(gd,hd)return md end;local function Ub(fd,gd,hd,id,jd,kd,ld,md)local nd=(kd-gd)/ (ld-hd)local od=(kd-id)/ (ld-jd)local pd=kd;local qd=kd;local rd=ld;repeat fd=Pixel.Line(fd,Round(pd),rd,Round(qd),rd,md)pd,qd=pd-nd,qd-od;rd=rd-1 until rd<hd;return fd end;local function Vb(fd,gd,hd,id,jd,kd,ld,md)local nd=(id-gd)/ (jd-hd)local od=(kd-gd)/ (ld-hd)local pd=gd;local qd=gd;local rd=hd;repeat fd=Pixel.Line(fd,Round(pd),rd,Round(qd),rd,md)pd,qd=pd+nd,qd+od;rd=rd+1 until rd>jd;return fd end;function Pixel.Tri(fd,gd,hd,id,jd,kd,ld,md)local nd=GetPixelData(fd)local od,pd={},{}local qd=true;local rd=nil;local sd=nil;local td=nil;md=md or{}local function ud(xd,yd)if xd~=nil then return xd else return yd end end;qd=ud(md.fill,qd)rd=ud(md.color,rd)sd=ud(md.fillcolor,sd)td=ud(md.callback,td)local vd,wd={color=rd,callback=td},{color=sd,callback=td}if qd then local xd=function(Ad,Bd)local Cd={}for Ed in pairs(Ad)do Cd[#Cd+1]=Ed end;if Bd then table.sort(Cd,function(Ed,Fd)return Bd(Ad,Ed,Fd)end)else table.sort(Cd)end;local Dd=0;return function()Dd=Dd+1;if Cd[Dd]then return Cd[Dd],Ad[Cd[Dd]]end end end;local yd={{gd,hd},{id,jd},{kd,ld}}local zd={}for Ad,Bd in xd(yd,function(Ad,Bd,Cd)return Ad[Bd][2]<Ad[Cd][2]end)do table.insert(zd,Bd[1])table.insert(zd,Bd[2])end;yd=zd;gd,hd,id,jd,kd,ld=yd[1],yd[2],yd[3],yd[4],yd[5],yd[6]if jd==ld then nd=Vb(nd,gd,hd,id,jd,kd,ld,wd)elseif hd==jd then nd=Ub(nd,gd,hd,id,jd,kd,ld,wd)else local Ad,Bd=Round(gd+ (jd-hd)/ (ld-hd)* (kd-gd)),jd;nd=Vb(nd,gd,hd,id,jd,Ad,Bd,wd)nd=Ub(nd,id,jd,Ad,Bd,kd,ld,wd)end end;nd=Pixel.Line(nd,gd,hd,id,jd,vd)nd=Pixel.Line(nd,id,jd,kd,ld,vd)nd=Pixel.Line(nd,kd,ld,gd,hd,vd)return nd end;function Pixel.PolygonFill(fd,...)local gd={...}local hd;if#gd%2 ==1 then hd=gd[#gd]table.remove(gd,#gd)end;local function id(od)local pd=#od;local qd=0;p=pd-1;for q=1,pd,2 do qd=qd+od[p]*od[q+1]-od[q]*od[p+1]p=q end;return qd*0.5 end;local function jd(od,pd,qd,rd,sd,td,ud,vd)local wd,xd,yd,zd,Ad,Bd,Cd,Dd,Ed,Fd,Gd,Hd;local Id,Jd,Kd;wd=sd-qd;xd=td-rd;yd=od-sd;zd=pd-td;Ad=qd-od;Bd=rd-pd;Cd=ud-od;Dd=vd-pd;Ed=ud-qd;Fd=vd-rd;Gd=ud-sd;Hd=vd-td;Kd=wd*Fd-xd*Ed;Id=Ad*Dd-Bd*Cd;Jd=yd*Hd-zd*Gd;return(Kd>=0.0)and(Jd>=0.0)and(Id>=0.0)end;local kd=0.000001;local function ld(od,pd,qd,rd,sd,td)local ud,vd,wd,xd,yd,zd,Ad,Bd;ud=od[td[pd]]vd=od[td[pd]+1]wd=od[td[qd]]xd=od[td[qd]+1]yd=od[td[rd]]zd=od[td[rd]+1]if(kd> ( ( (wd-ud)* (zd-vd))- ( (xd-vd)* (yd-ud))))then return false end;for p=1,sd do if(p==pd)or(p==qd)or(p==rd)then else Ad=od[td[p]]Bd=od[td[p]+1]if(jd(ud,vd,wd,xd,yd,zd,Ad,Bd))then return false end end end;return true end;local function md(od)local pd={}if#od<6 then return nil elseif#od==6 then return{od}end;local qd=#od/2;local rd={}if id(od)>=0 then for i=1,qd do rd[i]=i*2 -1 end else for i=1,qd do rd[i]=#od-i*2 +1 end end;local sd=qd*2;local td=qd;while qd>2 do sd=sd-1;if sd<0 then return nil end;local wd=td;if wd>qd then wd=1 end;td=wd+1;if td>qd then td=1 end;local xd=td+1;if xd>qd then xd=1 end;if ld(od,wd,td,xd,qd,rd)then local yd=rd[wd]local zd=rd[td]local Ad=rd[xd]table.insert(pd,od[yd])table.insert(pd,od[yd+1])table.insert(pd,od[zd])table.insert(pd,od[zd+1])table.insert(pd,od[Ad])table.insert(pd,od[Ad+1])table.remove(rd,td)qd=qd-1;sd=qd*2 end end;local ud={}local vd=6;for i=1,#pd,vd do local wd={}for i2=1,vd do table.insert(wd,pd[i+i2 -1])end;table.insert(ud,wd)end;pd=ud;return pd end;local nd=md(gd)if hd then for i=1,#nd do Pixel.Tri(fd,unpack(Table.Combine(nd[i],{hd})))end else for i=1,#nd do Pixel.Tri(fd,unpack(nd[i]))end end;return fd end;function Pixel.Polygon(fd,...)local gd=GetPixelData(fd)local hd=true;local id=nil;local jd=nil;local kd={Rb(...)}if#kd%2 ==1 and type(kd)=='table'then local ld=kd[#kd]local function md(nd,od)if nd~=nil then return nd else return od end end;hd=md(ld.fill,hd)id=md(ld.color,id)jd=md(ld.fillcolor,jd)end;if hd then gd=Pixel.PolygonFill(gd,unpack(kd))else table.remove(kd,#kd)local ld={color=id}for i=1,#kd-2,2 do gd=Pixel.Line(gd,kd[i],kd[i+1],kd[i+2],kd[i+3],true,ld)end;gd=Pixel.Line(gd,kd[#kd-1],kd[#kd],kd[1],kd[2],true,ld)end;Sb(gd,'Polygon',...)return gd end;function Pixel.Ellipse(fd,gd,hd,id,jd,kd)local ld=GetPixelData(fd)local md=Pixel.Data.Filled;local function nd(pd,qd)return pd^2 *jd^2 +qd^2 *id^2 <=id^2 *jd^2 end;local od=id;for y=0,jd do local pd=false;repeat pd=nd(od,y)od=od-1 until pd;od=od+1;for x2=0,od do Pixel.SetPixel(ld,gd+x2,hd+y,md,kd)Pixel.SetPixel(ld,gd-x2,hd+y,md,kd)Pixel.SetPixel(ld,gd+x2,hd-y,md,kd)Pixel.SetPixel(ld,gd-x2,hd-y,md,kd)end end;return ld end;function Pixel.Circle(fd,gd,hd,id,jd)return Pixel.Ellipse(fd,gd,hd,id,id,jd)end;function Pixel.Graph(fd,gd,hd,id,jd)local kd=jd or true;local ld=hd or 1;local md=GetPixelData(fd)local nd=id or Pixel.GetSizeX(md)local od=md.Data;if kd then for i=ld,nd do local pd=Round(gd(i))od=Pixel.Line(md,i,pd,i,pd)end else for i=ld,nd do local pd=gd(i)od=Pixel.Line(md,i,pd,i,pd)end end;return od end;function Pixel.Area(fd)local gd=GetPixelData(fd)local hd=0;for id,jd in pairs(gd.Data)do for kd,ld in pairs(jd)do if Pixel.GetPixel(id,kd)==Pixel.Data.Filled then hd=hd+1 end end end;return hd end;function Pixel.GetOutline(fd)local gd=GetPixelData(fd)local hd=Pixel.New()local id={{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}for jd,kd in pairs(gd.Data)do for ld,md in pairs(kd)do local nd=false;for i=1,#id do if Pixel.GetPixel(gd,jd+id[i][1],ld+id[i][2])~=Pixel.Data.Filled then nd=true end end;if nd then hd=Pixel.SetPixel(hd,jd,ld,Pixel.Data.Filled)end end end;return hd end;PixelMaze={}function PixelMaze.BT(fd,gd)local hd={}local id,jd=fd%2 +fd+1,gd%2 +gd+1;local kd=Pixel.Polygon(Pixel.New(),1,1,id,1,id,jd,1,jd,{fill=true})for y=2,jd,2 do for x=2,id,2 do kd=Pixel.SetPixel(kd,x,y,Pixel.Data.Empty)local ld={}if x>2 then table.insert(ld,{x-1,y})end;if y>2 then table.insert(ld,{x,y-1})end;if#ld~=0 then local md=ld[math.random(1,#ld)]kd=Pixel.SetPixel(kd,md[1],md[2],Pixel.Data.Empty)end end end;return kd end;function PixelMaze.DFS(fd,gd)local hd={}local id,jd=fd%2 +fd+1,gd%2 +gd+1;local kd=Pixel.Polygon(Pixel.New(),1,1,id,1,id,jd,1,jd,{fill=true})local function ld(sd,td)return math.random(1,sd),math.random(1,td)end;local function md(sd,td,ud,vd,wd)local xd={}local function yd(Ad,Bd)if Ad>vd or Bd>wd or Ad<1 or Bd<1 then return else table.insert(xd,{Ad,Bd})end end;local zd=2;yd(td-zd,ud)yd(td+zd,ud)yd(td,ud-zd)yd(td,ud+zd)if#xd>0 then return xd else return nil end end;local function nd(sd)for i=1,#sd-1 do local td=math.random(i,#sd)sd[i],sd[td]=sd[td],sd[i]end;return sd end;local function od(sd)hd[sd]=hd[sd]or{}end;local function pd(sd,td)Pixel.SetPixel(kd,sd,td,Pixel.Data.Empty)od(sd)hd[sd][td]=true;local ud=md(hd,sd,td,id,jd)if ud then ud=nd(ud)for i=1,#ud do local vd,wd=ud[i][1],ud[i][2]if hd[vd]and hd[vd][wd]then elseif vd>0 and wd>0 and vd<=id and wd<=jd then kd=Pixel.SetPixel(kd,(vd-sd)/2 +sd,(wd-td)/2 +td,Pixel.Data.Empty)pd(vd,wd)end end else return end end;local qd,rd=ld(id,jd)qd,rd=qd%2 +qd,rd%2 +rd;pd(qd,rd)return kd end;function PixelMaze.Solve(fd,gd,hd,id,jd)local kd={['l']={-1,0,'r'},['r']={1,0,'l'},['u']={0,-1,'d'},['d']={0,1,'u'}}local ld={}local function md(pd,qd,rd,sd)rd=rd or{}sd=sd or{}ld[pd]=ld[pd]or{}ld[pd][qd]=true;if pd==id and qd==jd then return rd,sd end;local td=false;for ud,vd in pairs(kd)do local wd,xd=pd+vd[1],qd+vd[2]if ld[wd]==nil or ld[wd][xd]==nil then td=true;if Pixel.GetPixel(fd,wd,xd)==Pixel.Data.Empty then table.insert(rd,ud)table.insert(sd,{wd,xd})local yd=#rd;local zd,Ad=md(wd,xd,rd,sd)if zd then return zd,Ad else local Bd={}for i=1,yd-1 do table.insert(Bd,rd[i])end;rd=Bd;local Cd={}for i=1,yd-1 do table.insert(Cd,sd[i])end;sd=Cd end end end end;if td==false then return nil end end;local nd,od=md(gd,hd,{})return nd,od end;function PixelMaze.SolveShort(fd,gd,hd,id,jd)local kd=true;local ld=Pixel.GetSizeX(fd)local md=Pixel.GetSizeY(fd)local function nd(xd,yd,zd,Ad)return(zd-xd)^2 + (Ad-yd)^2 end;local function od(xd,yd)return nd(xd,yd,gd,hd)end;local function pd(xd,yd)return nd(xd,yd,id,jd)end;local function qd(xd,yd)return xd+yd end;local function rd(xd)local yd=xd;local zd={}local Ad={}repeat if yd then table.insert(zd,{yd.x,yd.y})table.insert(Ad,yd.d)else break end;yd=yd.p until false;local Bd={}local Cd={}for i=#zd,1,-1 do table.insert(Bd,zd[i])table.insert(Cd,Ad[i])end;return Cd,Bd end;local sd={{-1,-1,'lu'},{0,-1,'u'},{1,-1,'ru'},{-1,0,'l'},{1,0,'r'},{-1,1,'ld'},{0,1,'d'},{1,1,'rd'}}local td={{0,-1,'u'},{-1,0,'l'},{1,0,'r'},{0,1,'d'}}local ud={}local vd={}table.insert(ud,{x=gd,y=hd,g=0,h=0,f=0})local wd;while#ud~=0 do wd=nil;for i=1,#ud do if not wd or ud[i].f<wd.f then wd=ud[i]end end;if not kd and wd.x==id and wd.y==jd then return rd(wd)end;table.insert(vd,wd)for i=1,#ud do if ud[i].x==wd.x and ud[i].y==wd.y then table.remove(ud,i)break end end;for i=1,#td do local xd,yd,zd=wd.x+td[i][1],wd.y+td[i][2],td[i][3]if xd>0 and xd<=ld and yd>1 and xd<=md then if Pixel.GetPixel(fd,xd,yd)==Pixel.Data.Empty then local Ad=false;for i2=1,#vd do local Bd=vd[i2]if Bd.x==xd and Bd.y==yd then Ad=true;break end end;if Ad==false then local Bd=false;for i2=1,#vd do local Cd=vd[i2]if Cd.x==xd and Cd.y==yd then Bd=true;break end end;if Bd==false then local Cd={x=xd,y=yd,g=od(xd,yd),h=pd(xd,yd),p=wd,d=zd}Cd.f=qd(Cd.g,Cd.h)table.insert(ud,Cd)else end end end end end end;if kd then return rd(wd)else return nil end end;function PixelMaze.Mark(fd,gd,hd,id,jd)local kd={['l']={-1,0,'r'},['r']={1,0,'l'},['u']={0,-1,'d'},['d']={0,1,'u'}}local ld,md=gd,hd;for i=1,#id do fd=Pixel.SetPixel(fd,ld,md,jd)local nd=kd[id[i]]ld,md=nd[1]+ld,nd[2]+md end;return fd end;function PixelMaze.Color(fd,gd,hd,id,jd)local kd={['l']={-1,0,'r'},['r']={1,0,'l'},['u']={0,-1,'d'},['d']={0,1,'u'}}local ld,md=gd,hd;for i=1,#id do fd=Pixel.SetColor(fd,ld,md,jd)local nd=kd[id[i]]ld,md=nd[1]+ld,nd[2]+md end;return fd end;Pixel3d={}local function Wb(fd,gd,hd,id,jd,kd,ld,md,nd)ld,md=md,ld;ld,md=-ld,-md;ld,md=math.rad(ld),math.rad(md)local od,pd,qd,rd=math.sin(ld),math.cos(ld),math.sin(md),math.cos(md)fd,gd,hd=fd-id,gd-jd,hd-kd;fd,gd,hd=(hd*qd)+ (fd*rd),gd,(hd*rd)- (fd*qd)fd,gd,hd=fd,(gd*pd)- (hd*od),(gd*od)+ (hd*pd)rx,ry=nd* (fd/hd),nd* (gd/hd)rx,ry=Round(rx),Round(ry)return rx,ry end;local function Xb(fd,gd,hd)end;local function Yb(fd,gd,...)fd,gd=fd/2,gd/2;local hd={}local id={...}for i=1,#id,2 do table.insert(hd,{id[i],id[i+1]})end;local jd={{-fd,-gd},{fd,-gd},{fd,gd},{-fd,gd}}local function kd(od,pd,qd)return(qd.x-pd.x)* (od.y-pd.y)> (qd.y-pd.y)* (od.x-pd.x)end;local function ld(od,pd,qd,rd)local sd,td=od.x-pd.x,od.y-pd.y;local ud,vd=qd.x-rd.x,qd.y-rd.y;local wd=od.x*pd.y-od.y*pd.x;local xd=qd.x*rd.y-qd.y*rd.x;local yd=1 / (sd*vd-td*ud)local zd=(wd*ud-xd*sd)*yd;local Ad=(wd*vd-xd*td)*yd;return{x=zd,y=Ad}end;local function md(od,pd)local qd=od;local rd=pd[#pd]for sd,td in ipairs(pd)do local ud=qd;qd={}local vd=ud[#ud]for wd,xd in ipairs(ud)do if kd(xd,rd,td)then if not kd(vd,rd,td)then qd[#qd+1]=ld(rd,td,vd,xd)end;qd[#qd+1]=xd elseif kd(vd,rd,td)then qd[#qd+1]=ld(rd,td,vd,xd)end;vd=xd end;rd=td end;return qd end;local function nd()local function od(rd)for sd,td in ipairs(rd)do td.x,td.y=td[1],td[2]end end;od(hd)od(jd)local pd=md(hd,jd)local qd={}for i=1,#pd do local rd,sd=pd[i].x,pd[i].y;local td=false;for i2=1,#qd,2 do if i~=i2 and rd==qd[i2]and sd==qd[i2 +1]then td=true end end;if td==false then table.insert(qd,Round(rd))table.insert(qd,Round(sd))end end;return unpack(qd)end;return nd()end;local function Zb(fd,gd,hd)gd=(gd>180)and(gd-360)or gd;fd=(fd>180)and(fd-360)or fd;return(gd<fd)and(fd<hd)end;local function ac(fd)return fd- (math.floor(fd/360)*360)end;local function bc(fd,gd,hd,id,jd,kd)xn,yn,zn=x<0,y<0,z<0;x,y,z=id-fd,jd-gd,kd-hd;n=math.sqrt(x^2 +y^2 +z^2)x,y,z=x/n,y/n,z/n;if xn then x=x*-1 end;if yn then y=y*-1 end;if zn then z=z*-1 end;return fd,gd,hd,fd+x,gd+y,hd+z end;local function cc(fd)local gd={}local hd={}local id={}local jd={}local kd=0;local function ld(nd,od)table.insert(gd,{nd,od})end;ld('v',function(nd)local od={}for i=2,#nd do table.insert(od,tonumber(nd[i]))end;table.insert(hd,od)end)ld('f',function(nd)local od={}local pd={}for i=2,#nd do table.insert(od,hd[tonumber(nd[i])])table.insert(pd,tonumber(nd[i]))end;table.insert(id,od)table.insert(jd,pd)end)local md=Split(fd,'\n')for i=1,#md do local nd=Split(md[i],' ')for i2=1,#gd do if gd[i2][1]==nd[1]then kd=kd+1;gd[i2][2](nd)break end end end;return hd,id,jd end;function Pixel3d.New(fd)local gd={}setmetatable(gd,Pixel3d)if fd then for hd,id in pairs(fd)do gd[string.lower(hd)]=id end;return gd end end;function Pixel3d.Default()local fd=Pixel3d.New({x=0,y=0,z=0,size={x=0,y=0,z=0}})return fd end;function Pixel3d.Point()local fd=Pixel3d.New({x=0,y=0,z=0,type='Point',size={x=0,y=0,z=0}})return fd end;function Pixel3d.Box(fd,gd,hd)local id=Pixel3d.New({type='Box',x=0,y=0,z=0,size={x=0,y=0,z=0},fill=nil,color=nil,fillcolor=nil,colorall=nil})id.size.x,id.size.y,id.size.z=fd,gd,hd;return id end;function Pixel3d.Sphere(fd,gd,hd)local id=Pixel3d.New({x=0,y=0,z=0,radius=fd,type='Sphere'})return id end;local function dc(fd,gd,hd,id)local jd=id-gd;local kd=hd-fd;if kd==0 then if jd>0 then return 90 elseif jd<0 then return 270 else return 0 end end;local ld=math.atan2(jd,kd)ld=ld*180 /math.pi;return ld end;function Pixel3d.RenderObject(fd,gd,hd,id,jd,kd,ld,md)local nd=jd or 105;nd=180;nd=105;local od,pd,qd=gd or 0,hd or 0,id or 0;local rd,sd=kd or 0,ld or 0;local td=scale or 25;local ud,vd=200,200;ud,vd=100,100;rd=ac(rd)local wd=md or{fill=false,color='red'}local xd=Pixel.New()xd.Color.All=wd.colorall;local yd,zd,Ad=cc(fd)local Bd={}local Cd=2;local Dd=Pixel.New()local Ed,Fd=Round(od),Round(qd)Dd=Pixel.SetPixel(Dd,Ed*Cd,Fd*Cd,Pixel.Data.Filled)Dd=Pixel.SetColor(Dd,Ed*Cd,Fd*Cd,'red')print(rd,(ac(rd-nd/2)))local Gd,Hd,Id=Pixel3d.CalculateMovement(Ed*Cd,0,Fd*Cd,(ac(rd-nd/2)),0,10)local Jd,Kd,Ld=Pixel3d.CalculateMovement(Ed*Cd,0,Fd*Cd,(ac(rd+nd/2)),0,10)Dd=Pixel.Line(Dd,Ed*Cd,Fd*Cd,Round(Gd),Round(Id))Dd=Pixel.Line(Dd,Ed*Cd,Fd*Cd,Round(Jd),Round(Ld))local Md,Nd,Od=Pixel3d.CalculateMovement(Ed*Cd,0,Fd*Cd,(ac(rd)),0,20)Dd=Pixel.Line(Dd,Ed*Cd,Fd*Cd,Round(Md),Round(Od))for i=1,#yd do local Pd=yd[i]local Qd,Rd,Sd=Pd[1],Pd[2],Pd[3]local Td,Ud=Wb(Qd,Rd,Sd,od,pd,qd,rd,sd,td)local Vd=math.sqrt((od-Qd)^2 + (pd-Rd)^2 + (qd-Sd)^2)local Wd=ac(dc(od,qd,Qd,Sd)-90)Dd=Pixel.SetPixel(Dd,Qd*Cd,Sd*Cd,Pixel.Data.Filled)if Zb(Wd,ac(rd-nd/2),ac(rd+nd/2))then else Vd=-Vd end;table.insert(Bd,{Td,Ud,{Qd,Rd,Sd},Vd})end;print(Dd)for i=1,#Ad do local Pd={}local Qd=false;for i2=1,#Ad[i]do local Rd=Bd[Ad[i][i2]]local Sd,Td=Rd[1],Rd[2]local Ud=Rd[4]if Ud>0 then Qd=true end;table.insert(Pd,Sd)table.insert(Pd,Td)end;if Qd then Pd={Yb(ud,vd,unpack(Pd))}if#Pd>=6 then local Rd=true;for i=1,#Pd do local Sd=Pd[i]if Sd~=Sd or Sd==1 /0 then Rd=false end end;if Rd then table.insert(Pd,wd)Pixel.Polygon(xd,unpack(Pd))end end end end;return xd end;function Pixel3d.CalculateMovement(fd,gd,hd,id,jd,kd)id,jd=math.rad(id),jd;return fd+math.sin(id)*kd,gd+math.sin(jd),hd+math.cos(id)*kd end;function Pixel3d.Interactive(fd,gd,hd,id,jd,kd,ld,md)local nd=jd or 70;local od,pd,qd=gd or 0,hd or 0,id or 0;local rd,sd=kd or 0,ld or 0;local td=1;local ud=10;ud=45;print('Use wasd to move, and ijkl to move camera. Type stop to stop.')local vd={}local function wd(zd)if vd[zd]then vd[zd]()end end;local function xd(zd,Ad)vd[zd]=Ad end;local function yd(zd)od,pd,qd=Pixel3d.CalculateMovement(od,pd,qd,(rd+zd),(sd),td)end;xd('w',function()yd(0)end)xd('a',function()rd=rd-ud end)xd('s',function()yd(-180)end)xd('d',function()rd=rd+ud end)xd('c',function()yd(-90)end)xd('v',function()yd(90)end)xd('i',function()sd=sd+ud end)xd('j',function()rd=rd-ud end)xd('k',function()sd=sd-ud end)xd('l',function()rd=rd+ud end)xd('debug',function()print(od,pd,qd)print(rd,sd)end)xd('up',function()pd=pd+td end)xd('down',function()pd=pd-td end)repeat print(Pixel3d.RenderObject(fd,od,pd,qd,nd,rd,sd,md))local zd=string.lower(io.read())wd(zd)until input=='stop'end;GameOfLife={}function GameOfLife.NextGeneration(fd)local gd=GetPixelData(fd)local hd=Pixel.New()local function id(kd,ld)local md=0;md=Pixel.GetPixel(gd,kd-1,ld-1)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd,ld-1)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd+1,ld-1)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd-1,ld)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd+1,ld)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd-1,ld+1)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd,ld+1)==Pixel.Data.Filled and md+1 or md;md=Pixel.GetPixel(gd,kd+1,ld+1)==Pixel.Data.Filled and md+1 or md;local nd=Pixel.GetPixel(gd,kd,ld)if nd==Pixel.Data.Filled then if md==2 or md==3 then Pixel.SetPixel(hd,kd,ld,Pixel.Data.Filled)else end elseif md==3 then Pixel.SetPixel(hd,kd,ld,Pixel.Data.Filled)end end;local jd={}for kd,ld in pairs(gd.Data)do for md,nd in pairs(ld)do jd[kd-1]=jd[kd-1]or{}jd[kd]=jd[kd]or{}jd[kd+1]=jd[kd+1]or{}jd[kd-1][md-1]=true;jd[kd][md-1]=true;jd[kd+1][md-1]=true;jd[kd-1][md]=true;jd[kd][md]=true;jd[kd+1][md]=true;jd[kd-1][md+1]=true;jd[kd][md+1]=true;jd[kd+1][md+1]=true end end;for kd,ld in pairs(jd)do for md,nd in pairs(ld)do id(kd,md)end end;return hd end;local ec=50;local function fc(fd,gd,hd,id)local jd,kd=(fd+hd)/2,(gd+id)/2;local ld=-1 / ( (id-gd)/ (hd-fd))local md=math.sqrt((ec^2)- ((( (jd-fd)^2 + (kd-gd)^2))))if fd==hd then return Round(jd+md),Round(kd)elseif gd==id then return Round(jd),Round(kd+md)else local nd=(md/math.sqrt(1 + (ld^2)))local od=ld*nd;return Round(jd+nd),Round(jd+od)end end;local function gc(fd,gd,hd,id,jd)local kd,ld=fc(gd,hd,id,jd)fd=Pixel.Line(fd,gd,hd,kd,ld)fd=Pixel.Line(fd,kd,ld,id,jd)return fd end;function Pixel.AnimateWrite(fd,gd,hd,id)local jd=true;fd=GetPixelData(fd)gd=GetPixelData(gd)hd=hd or 0;id=id or 0;local kd={}local ld={}for qd,rd in pairs(gd.Data)do for sd,td in pairs(rd)do if td==Pixel.Data.Filled then table.insert(kd,qd)ld[qd]=ld[qd]or{}table.insert(ld[qd],sd)end end end;table.sort(kd)local function md(qd)print(qd)end;local function nd(qd,rd,sd,td)local ud=0;if math.abs(sd-qd)<=1 and math.abs(td-rd)<=1 then return ud else Pixel.Line(Pixel.New(),qd,rd,sd,td,{setfunction=function(vd,wd)if(vd==qd and wd==rd)or(vd==sd and wd==td)then else ud=ud+1;local xd=Pixel.Copy(fd)xd=gc(xd,hd,id,vd,wd)md(xd)end end})return ud end end;local od,pd;for i=1,#kd do local qd=kd[i]if od~=qd then table.sort(ld[qd])for i2=1,#ld[qd]do local rd=ld[qd][i2]if pd then if od and i2 ==1 then nd(od,pd,qd,rd)else nd(qd,pd,qd,rd)end end;local sd=Pixel.Copy(fd)sd=gc(sd,hd,id,qd,rd)fd=Pixel.SetPixel(fd,qd,rd,Pixel.Data.Filled)md(sd)pd=rd end;od=qd end end end;local hc=string.char;local ic=type;local jc=select;local kc=string.sub;local lc=table.concat;local mc={}local nc={}for i=0,255 do local fd,gd=hc(i),hc(i,0)mc[fd]=gd;nc[gd]=fd end;local function oc(fd,gd,hd,id)if hd>=256 then hd,id=0,id+1;if id>=256 then gd={}id=1 end end;gd[fd]=hc(hd,id)hd=hd+1;return gd,hd,id end;local function pc(fd)if ic(fd)~="string"then return nil,"string expected, got "..ic(fd)end;local gd=#fd;if gd<=1 then return"u"..fd end;local hd={}local id,jd=0,1;local kd={"c"}local ld=1;local md=2;local nd=""for i=1,gd do local od=kc(fd,i,i)local pd=nd..od;if not(mc[pd]or hd[pd])then local qd=mc[nd]or hd[nd]if not qd then return nil,"algorithm error, could not fetch word"end;kd[md]=qd;ld=ld+#qd;md=md+1;if gd<=ld then return"u"..fd end;hd,id,jd=oc(pd,hd,id,jd)nd=od else nd=pd end end;kd[md]=mc[nd]or hd[nd]ld=ld+#kd[md]md=md+1;if gd<=ld then return"u"..fd end;return lc(kd)end;local function qc(fd,gd,hd,id)if hd>=256 then hd,id=0,id+1;if id>=256 then gd={}id=1 end end;gd[hc(hd,id)]=fd;hd=hd+1;return gd,hd,id end;local function rc(fd)if ic(fd)~="string"then return nil,"string expected, got "..ic(fd)end;if#fd<1 then return nil,"invalid input - not a compressed string"end;local gd=kc(fd,1,1)if gd=="u"then return kc(fd,2)elseif gd~="c"then return nil,"invalid input - not a compressed string"end;fd=kc(fd,2)local hd=#fd;if hd<2 then return nil,"invalid input - not a compressed string"end;local id={}local jd,kd=0,1;local ld={}local md=1;local nd=kc(fd,1,2)ld[md]=nc[nd]or id[nd]md=md+1;for i=3,hd,2 do local od=kc(fd,i,i+1)local pd=nc[nd]or id[nd]if not pd then return nil,"could not find last from dict. Invalid input?"end;local qd=nc[od]or id[od]if qd then ld[md]=qd;md=md+1;id,jd,kd=qc(pd..kc(qd,1,1),id,jd,kd)else local rd=pd..kc(pd,1,1)ld[md]=rd;md=md+1;id,jd,kd=qc(rd,id,jd,kd)end;nd=od end;return lc(ld)end;function Pixel.Compress(fd)local gd=GetPixelData(fd)local hd={'M'}table.insert(hd,'Color{')for Bd,Cd in pairs(gd.Color)do table.insert(hd,'[')table.insert(hd,tostring(Bd))table.insert(hd,']={')for Dd,Ed in pairs(Cd)do if Ed then table.insert(hd,'[')table.insert(hd,tostring(Dd))table.insert(hd,']=\'')table.insert(hd,tostring(Ed))table.insert(hd,'\',')end end;hd[#hd]='\''table.insert(hd,'}')end;table.insert(hd,'}')hd=table.concat(hd)local id,jd,kd=Pixel.Convert.From2d(gd)local ld='X'..tostring(jd)..'Y'..tostring(kd)..'S'..id..hd;local md=pc(ld)do return'1'..md end;local nd={}local od=4;local pd=0;local qd=0;local rd={}for Bd,Cd in pairs(gd.Data)do for Dd,Ed in pairs(Cd)do for Fd,Gd in pairs(gd.Data)do for Hd,Id in pairs(Gd)do if Fd>Bd and Hd>Dd then if math.abs(Fd-Bd)>od and math.abs(Hd-Dd)>od then local Jd=0;for x=Bd,Fd do for y=Dd,Hd do if Pixel.GetPixel(gd,x,y)==Pixel.Data.Filled then Jd=Jd+1 end end end;local Kd=( (math.abs(Fd-Bd)+1)* (math.abs(Hd-Dd)+1))if(Jd/Kd)>0.8 then local Ld=( (2 +#tostring(Bd)+#tostring(Dd)+Kd+ (math.abs(Fd-Bd)))- (4 +#tostring(Bd)+#tostring(Dd)+#tostring(Fd)+#tostring(Hd)+ (pd* (Kd-Jd)+ (qd* ( (Jd/Kd)==1 and 1 or 0)))))/1;if Ld>0 then table.insert(rd,{Ld,Bd,Dd,Fd,Hd})end end end end end end end end;local sd=function(Bd,Cd)local Dd={}for Fd in pairs(Bd)do Dd[#Dd+1]=Fd end;if Cd then table.sort(Dd,function(Fd,Gd)return Cd(Bd,Fd,Gd)end)else table.sort(Dd)end;local Ed=0;return function()Ed=Ed+1;if Dd[Ed]then return Dd[Ed],Bd[Dd[Ed]]end end end;for Bd,Cd in sd(rd,function(Bd,Cd,Dd)return Bd[Cd][1]>Bd[Dd][1]end)do if Cd then local Dd={Cd[2],Cd[3],Cd[4],Cd[5]}for Ed,Fd in pairs(rd)do if Bd~=Ed then local Gd={Fd[2],Fd[3],Fd[4],Fd[5]}if Dd[1]<Gd[3]and Dd[3]>Gd[1]and Dd[2]<Gd[4]and Dd[4]>Gd[2]then rd[Ed]=nil end end end end end;local td,ud=nil,nil;local function vd(Bd,Cd,Dd)local Ed=false;if not(td==Bd)then table.insert(nd,'X')table.insert(nd,Bd)td=Bd;Ed=true end;if not(ud and(ud+1 ==Cd)or false)then table.insert(nd,'Y')table.insert(nd,Cd)Ed=true end;if Ed then table.insert(nd,'S')end;table.insert(nd,Dd)ud=Cd end;for Bd,Cd in sd(rd,function(Bd,Cd,Dd)return Bd[Cd][1]>Bd[Dd][1]end)do local Dd={Cd[2],Cd[3],Cd[4],Cd[5]}table.insert(nd,'A')table.insert(nd,Dd[1])table.insert(nd,'B')table.insert(nd,Dd[2])table.insert(nd,'C')table.insert(nd,Dd[3])table.insert(nd,'D')table.insert(nd,Dd[4])table.insert(nd,'S')table.insert(nd,Pixel.Data.Filled)local Ed={}for x=Dd[1],Dd[3]do for y=Dd[2],Dd[4]do if Pixel.GetPixel(gd,x,y)==Pixel.Data.Empty then table.insert(Ed,{x,y})else if gd.Data[x]then gd.Data[x][y]=nil end;if gd.Data[x]then local Fd=true;for Gd,Hd in pairs(gd.Data[x])do Fd=false;break end;if Fd then gd.Data[x]=nil end end end end end;for i=1,#Ed do vd(Ed[i][1],Ed[i][2],Pixel.Data.Empty)end end;for Bd,Cd in pairs(gd.Data)do for Dd,Ed in pairs(Cd)do if Ed==Pixel.Data.Filled then vd(Bd,Dd,Pixel.Data.Filled)end end end;local wd=table.concat(nd)..hd;local xd=pc(wd)local yd=nil;local zd={ld,md,wd,xd}local Ad={'0','1','2','3'}for Bd,Cd in pairs(zd)do print(Bd,#Cd)end;for Bd,Cd in sd(zd,function(Bd,Cd,Dd)return#Bd[Cd]<#Bd[Dd]end)do yd=Ad[Bd]..Cd;break end;return yd end;function Pixel.Decompress(fd)local gd=string.sub(fd,1,1)fd=string.sub(fd,2,-1)local hd=false;if gd=='0'then elseif gd=='1'then fd=rc(fd)elseif gd=='2'then hd=true elseif gd=='3'then hd=true;fd=rc(fd)end;local id=#fd;repeat if string.sub(fd,id,id)=='M'then break end;id=id-1;if id<=0 then error('No metadata found')end until false;local jd=string.sub(fd,id+1,-1)fd=string.sub(fd,1,id-1)local kd=Pixel.New()local ld={}local function md(rd,sd)if rd=='S'then sd=tostring(sd)for i=1,#sd do local td=string.sub(sd,i,i)if ld.A and ld.B and ld.C and ld.D then for x=ld.A,ld.C do for y=ld.B,ld.D do Pixel.SetPixel(kd,x,y,td)end end;ld.A,ld.B,ld.C,ld.D=nil,nil,nil,nil elseif ld.X and ld.Y then if hd==false then if td==Pixel.Data.NewLine then ld.Y=ld.Y+1;ld.X=ld.DX else Pixel.SetPixel(kd,ld.X,ld.Y,td)ld.X=ld.X+1 end else if td==Pixel.Data.NewLine then ld.X=ld.X+1 else Pixel.SetPixel(kd,ld.X,ld.Y,td)ld.Y=ld.Y+1 end end else error('Unable to determine opdata set')end end else sd=tonumber(sd)ld[rd]=sd;if hd==false and rd=='X'then ld.DX=ld.X end end end;local nd={A=true,B=true,C=true,D=true,X=true,Y=true,S=true}local od=false;local pd=''local qd=''for i=1,#fd+1 do local rd=string.sub(fd,i,i)if nd[rd]or(i==#fd+1)then if od then md(pd,qd)end;od=true;pd=rd;qd=''else if od then qd=qd..rd else error('Invalid opcode: '..rd..', i: '..i)end end end;return kd end;BenchmarkOn=false;function Pixel.Benchmark()if BenchmarkOn then local fd=os.clock()-BenchmarkOn;print(fd)else BenchmarkOn=os.clock()end end;BenchmarkFunctionStats={{'','Test Length','Count','Per Second','Per Operation'}}function Pixel.BenchmarkFunction(fd,gd,hd)if ic(gd[1])=='table'and gd[1].Data then else if hd then else table.insert(gd,1,Pixel.New())end end;local id;if ic(fd)=='function'then id=fd elseif ic(fd)=='string'then id=Pixel[fd]else error('Invalid Function.')end;local jd=5;local kd=0;local ld=os.clock()repeat id(unpack(gd))kd=kd+1 until ld+jd<=os.clock()local md={}md[1]=tostring(fd)md[2]=jd;md[3]=kd;md[4]=kd/jd;md[5]=jd/kd;table.insert(BenchmarkFunctionStats,md)end;function Pixel.BenchmarkFunctionChart()local function fd(id)local jd={}for x=1,#id do for y=1,#id[x]do jd[y]=jd[y]or{}jd[y][x]=id[x][y]end end;local kd={}for i=1,#id do table.insert(kd,id[i][1])end;local ld={}for i=1,#id[1]do table.insert(ld,id[1][i])end;local md={}for i=1,#id do local od=0;for i2=1,#id[i]do local pd=#tostring(id[i][i2])od=(pd>od)and pd or od end;table.insert(md,od+1)end;local nd={}for i=1,#jd do for i2=1,#jd[i]do local od=tostring(jd[i][i2])table.insert(nd,od..string.rep(' ',md[i2]-#od))end;table.insert(nd,'\n')end;return table.concat(nd)end;local gd=pcall(function()require'jit'end)local hd='Version: '.._VERSION.. (gd and' JIT'or'')..'\n'..fd(BenchmarkFunctionStats)..'\n'print(hd)return hd end;return Pixel
+⡇ ⣇ ⡧ ⣧ ⡗ ⣗ ⡷ ⣷ ⡏ ⣏ ⡯ ⣯ ⡟ ⣟ ⡿ ⣿]]):gsub('\n', ' ')
+
+
+
+function GenerateDotData() --im lazy, so this will generate a dictionary with all of the patterns formatted.
+    --generate alphanumeric chars
+    --local badchars = '	%+1234567890%(%)%-\n '
+    --[[
+    local badchars = '%+1234567890%(%)%-'
+    local startpoint = 65
+    local endpoint = 90 --no need for lowercase.
+    for i = startpoint, endpoint do
+        badchars = badchars .. string.char(i)
+    end
+    badchars = '[' .. string.lower(badchars) .. string.upper(badchars) .. ']'
+    --ok now pattern match them
+    dotdata = dotdata:gsub(badchars, '')
+    print(dotdata)
+    ]] --wont use because i need to split str
+
+    --format data into a 't'
+    function ToBinary(a)
+        local t = {}
+        while a > 0 do
+            local r = math.fmod(a, 2)
+            t[#t + 1] = string.sub(r, 1, 1)
+            a=(a - r) / 2
+        end
+        local s = string.reverse(table.concat(t))
+        return string.rep('0', 8 - #s) .. s
+        --return s
+    end
+    local function format(s)
+        --return string.rep('0', 8 - #s) .. s
+        return s
+    end
+    local t = Split(dotdata, ' ')
+    local newt = {}
+    --print(#t) --> 256
+    local inputa = false
+    local str = ''
+    local sep = ' '
+    for i = 1, #t do
+        --print(i, ToBinary(i - 1), t[i])
+        newt[ToBinary(i - 1)] = format(t[i])
+        if inputa then
+            print(ToBinary(i - 1) .. t[i])
+            local input = io.read()
+            if input == '' then
+                input = t[i]
+            elseif input == 'stop' then
+                break
+            end
+            str = str .. input .. sep
+        end
+    end
+    if inputa then
+        print(str)
+        io.open('Data.lua', 'a+'):write(str)
+    end
+    return newt
+end
+local DotDataFormatted = GenerateDotData()
+--Order: LU, RU, LD, RD
+
+
+
+
+
+
+Pixel = {}
+Pixel.Data = {Box = {['1000'] = '▘', ['0100'] = '▝', ['0010'] = '▖', ['0001'] = '▗', ['1100'] = '▀', ['1001'] = '▚', ['0110'] = '▞', ['0110'] = '▐', ['1010'] = '▌', ['0011'] = '▄', ['1110'] = '▛', ['0111'] = '▟', ['1101'] = '▜', ['1011'] = '▙', ['1111'] = '█'}}
+Pixel.Data.Dot = DotDataFormatted
+
+Pixel.Data.Empty = '0'
+Pixel.Data.Filled = '1'
+Pixel.Data.NewLine = '\n'
+
+--Pixel.DirData = {Box = {{'R', 2}, {'D', 3}, {'RD', 4}}}
+
+--[[
+123
+456
+789
+
+dimensions[1] = x, dimensions[2] = y
+]]
+
+
+--[[
+Pixel Order:
+
+
+1   5
+2   6
+3   7
+4   8
+
+v1
+
+converted to
+
+8   4
+7   3
+6   2
+5   1
+
+v2
+
+
+]]
+
+
+--split string: call Split(string, seperator)
+Split = function(a,b)c={}for d,b in a:gmatch("([^"..b.."]*)("..b.."?)")do table.insert(c,d)if b==''then return c end end end
+
+function Round(num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+--[=[
+function ParseArguments(...)
+    local Data = {
+
+    }
+    --[[
+    t format:
+    t =
+    {
+        str = str,
+        points = {{x, y}, {x, y}, ...}
+        options = options
+    }
+    ]]
+    local a = {...}
+    --Create table
+    local t = {}
+    --#1 is str
+    if type(a[1]) == 'table' and a[1].Data then
+        t.str = a[1]
+    elseif type(a[1]) == 'string' then
+        t.str = Pixel.New(a[1])
+    else
+        Error('ParseArguments: str is invalid. type: {type}.', {type = type(a[1])})
+    end
+    --#2 is points
+end
+--]=]
+
+function GetPixelData(str)
+    if type(str) == 'table' and str.Data then
+        return str
+    else
+        local t = Pixel.New(str)
+        return t
+    end
+end
+
+
+function Error(msg, t)
+    if not ErrorEnabled then return end
+    --http://lua-users.org/wiki/StringInterpolation
+    local function Interpolate(s, t)return(s:gsub('(%b{})',function(w)return t[w:sub(2,-2)]or w end))end
+    local function Internal_Error(s)
+        error(s)
+    end
+    local str = Interpolate(msg, t)
+    Internal_Error(str)
+end
+
+function Warn(msg, t)
+    if not WarnEnabled then return end
+    --http://lua-users.org/wiki/StringInterpolation
+    local function Interpolate(s, t)return(s:gsub('(%b{})',function(w)return t[w:sub(2,-2)]or w end))end
+    local str = Interpolate(msg, t)
+    print('Warning: ' .. str)
+    if WarnStrict then
+        print('Press enter to continue.')
+        io.read()
+    end
+end
+
+
+
+
+
+Table = {} --the table variable is a table :)
+
+--Table handling
+function Table.Combine(a, b)
+    for i = 1, #b do
+        table.insert(a, b[i])
+    end
+    return a
+end
+
+--http://lua-users.org/wiki/CopyTable
+--Supply ONLY 1 Argument
+function Table.Clone(orig, copies)
+    copies = copies or {}
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        if copies[orig] then
+            copy = copies[orig]
+        else
+            copy = {}
+            copies[orig] = copy
+            for orig_key, orig_value in next, orig, nil do
+                copy[Table.Clone(orig_key, copies)] = Table.Clone(orig_value, copies)
+            end
+            setmetatable(copy, Table.Clone(getmetatable(orig), copies))
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--See Terminal.lua for the entire file
+
+--Color library
+Pixel.Color = {}
+--Color = Pixel.Color
+
+Pixel.Color.Data = {
+    --attributes
+    reset = 0, clear = 0, space = 0,
+    bright = 1, bold = 1,
+    dim = 2, faint = 1,
+    italic = 3,
+    underline = 4,
+    blink = 5,
+    reverse = 7,
+    invisible = 8, hidden = 8,
+    strikethrough = 9,
+
+    --foreground
+    black = 30,
+    red = 31,
+    green = 32,
+    yellow = 33,
+    blue = 34,
+    purple = 35, magenta = 35,
+    cyan = 36,
+    white = 37,
+
+    --background
+    onblack = 40,
+    onred = 41,
+    ongreen = 42,
+    onyellow = 43,
+    onblue = 44,
+    onpurple = 45, onmagenta = 45,
+    oncyan = 46,
+    onwhite = 47,
+}
+
+local function GetAnsi(v)
+    local t = Split(v, ',') --Split
+    local t2 = {} --Trim
+    for i = 1, #t do
+        local str = string.gsub(t[i], '^%s*(.-)%s*$', '%1')
+        table.insert(t2, Pixel.Color.Data[string.lower(str)] or str)
+    end
+    v = table.concat(t2, ';')
+    return '\27[' .. v .. 'm'
+end
+
+local function ScanColor(str, nest)
+    local original = str
+    local mode = true --true means color, false means text
+    local past
+    str = string.gsub(str, '(%b{})', function(data)
+        data = string.sub(data, 2, -2)
+        if mode then
+            mode = false
+            local ansi = GetAnsi(data)
+            past = ansi
+            return ansi
+        else
+            mode = true
+            local scan = ScanColor(data, past)
+            if scan then
+                return scan .. (nest or '')
+            else
+                return data .. (nest or '')
+            end
+        end
+    end)
+    if mode == false or finalstr == '' or str == original then
+        return nil
+    end
+    return str
+end
+
+function Pixel.Color.Set(v)
+    local scan = ScanColor(v)
+    if scan then
+        return scan .. GetAnsi('0') --Reset the color at the end
+    else
+        local data = GetAnsi(v)
+        local mode = false --true -> color, false -> text
+        local tostringcall = ''
+        local t
+        t = setmetatable({}, {
+            __concat = function(l, r) --Concatenation is right associative, so we can't do anything.
+                data = tostring(l) .. tostring(r) .. GetAnsi('0') --Reset the color at the end
+                return t
+            end,
+            __call = function(t, s)
+                tostringcall = GetAnsi('0') --Reset the color at the end
+                if mode then
+                    data = data .. GetAnsi(s)
+                    mode = false
+                else
+                    data = data .. s
+                    mode = true
+                end
+                return t
+            end,
+            __tostring = function()
+                return data .. tostringcall
+            end
+        })
+        return t
+    end
+end
+
+
+
+
+
+setmetatable(Pixel.Color, {
+    __call = function(t, ...)
+        return Pixel.Color.Set(...)
+    end
+})
+
+
+function Pixel.SetColor(self, x, y, color)
+    local str = GetPixelData(self)
+    str.Color[x] = str.Color[x] or {}
+    str.Color[x][y] = color
+    return str
+end
+
+function Pixel.SetColorAll(self, color)
+    local str = GetPixelData(self)
+    str.Color.All = color
+    return str
+end
+
+function Pixel.GetColor(self, x, y)
+    local str = GetPixelData(self)
+    if str.Color[x] and str.Color[x][y] then
+        return str.Color[x][y]
+    end
+    --Well, we could not find the color
+    --WarnEnabled, WarnStrict = true, true
+    if WarnStrict then
+        Warn('Unable to find color, x: {x}, y: {y}.', {x = x, y = y})
+    end
+    return nil
+end
+
+function Pixel.GetColorAll(self)
+    local str = GetPixelData(self)
+    if str.Color.All then
+        return str.Color.All
+    else
+        if WarnStrict then
+            Warn('str.Color.All is a nil value.')
+        end
+        return nil
+    end
+end
+
+--[[
+function Pixel.PushColor(x, y)
+    --Pushes the color to a character (2 by 4 pixels)
+    --return {x, y, c}
+    --print(x - (x - 1) % 2, y - (y - 1) % 4)
+    return x - (x - 1) % 2, y - (y - 1) % 4
+end
+--]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pixel.__index = Pixel
+Pixel.__tostring = function(t)
+    return Pixel.Convert(t)
+end
+
+
+local function GetDefaultPixel()
+    return Table.Clone(DefaultPixel)
+end
+
+
+function Pixel.New(str)
+    --[[
+    str can be a pixeltable or str
+    ]]
+    if type(str) == 'string' then
+        str = Pixel.Convert.To2d(str)
+    end
+    local PixelObject = {}
+    --[[
+    local i = 1
+    while true do
+      local name, value = debug.getlocal(2, i)
+      if not name then break end
+      print(name, i, value)
+      i = i + 1
+    end  
+    --]]
+    PixelObject.Data = str or GetDefaultPixel()
+    PixelObject.Op = {}
+    PixelObject.Color = {}
+    --[[
+    PixelObject.Data.gsub = function(...)
+        return Pixel.Replace(PixelObject, ...).Data
+    end
+    --]]
+    setmetatable(PixelObject, Pixel)
+    return PixelObject
+end
+
+function Pixel.Blank()
+    --[[
+    if x % 2 ~= 0 then
+        error('x must be a multiple of 2')
+    end
+    if y % 4 ~= 0 then
+        error('y must be a multiple of 4')
+    end
+    --]]
+    --return Pixel.New(((DefaultPixel):rep(x)..'\n'):rep(y):sub(1, -2))
+    --[[
+    local str = Pixel.New()
+    if cx and cy then
+        for x = 1, cx do
+            for y = 1, cy do
+                str = Pixel.SetPixel(str, x, y, Pixel.Data.Empty)
+            end
+        end
+    end
+    --]]
+    return Pixel.New()
+end
+
+
+function Pixel.Clear(self)
+    --[[
+    local str = {}
+    str.Data = GetDefaultPixel()
+    str.Op = {}
+    str.Color = {}
+    str.Offset = {0, 0}
+    return str
+    --]]
+    return Pixel.New()
+end
+
+function Pixel.Copy(self)
+    return Table.Clone(self)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pixel.Convert = {}
+
+function Pixel.Convert.To2d(str, dx, dy)
+    local dx, dy = dx or 1, dy or 1
+    local x, y = dx, dy
+    local t = {}
+    for i = 1, #str do
+        local a = string.sub(str, i, i)
+        if a == '\n' then
+            y = y + 1
+            x = dx
+        else
+            t[x] = t[x] or {}
+            t[x][y] = a
+            x = x + 1
+        end
+    end
+    return t
+end
+
+function Pixel.Convert.From2d(str)
+    local str = GetPixelData(str)
+    local data = str.Data
+    --Stats
+    local function getmin(t)
+        local c = nil
+        for k, v in pairs(t) do
+            if not c or k < c then
+                c = k
+            end
+        end
+        return c
+    end
+    local function getmax(t)
+        local c = nil
+        for k, v in pairs(t) do
+            if not c or k > c then
+                c = k
+            end
+        end
+        return c
+    end
+    local function itrow(t, func)
+        local t2 = {}
+        for k, v in pairs(t) do
+            --table.insert(t2, func(v))
+            local a = func(v)
+            if a then
+                t2[a] = true
+            end
+        end
+        return func(t2)
+    end
+    local final = {}
+    local minx, maxx, miny, maxy = getmin(data), getmax(data), itrow(data, getmin), itrow(data, getmax)
+    for y = miny, maxy do
+        for x = minx, maxx do
+            table.insert(final, Pixel.GetPixel(str, x, y))
+        end
+        local i = #final
+        repeat
+            if final[i] == Pixel.Data.Filled then
+                break
+            else
+                final[i] = nil
+                i = i - 1
+            end
+        until false
+        table.insert(final, '\n')
+    end
+    final[#final] = nil
+    return table.concat(final), minx, miny
+end
+
+
+
+
+if CacheEnabled then
+    Pixel.Cache = {}
+end
+
+
+--https://stackoverflow.com/questions/20325332/how-to-check-if-two-tablesobjects-have-the-same-value-in-lua
+local function CompareTable(t1,t2,ignore_mt)
+local ty1 = type(t1)
+local ty2 = type(t2)
+if ty1 ~= ty2 then return false end
+-- non-table types can be directly compared
+if ty1 ~= 'table' and ty2 ~= 'table' then return t1 == t2 end
+-- as well as tables which have the metamethod __eq
+local mt = getmetatable(t1)
+if not ignore_mt and mt and mt.__eq then return t1 == t2 end
+for k1,v1 in pairs(t1) do
+local v2 = t2[k1]
+if v2 == nil or not CompareTable(v1,v2) then return false end
+end
+for k2,v2 in pairs(t2) do
+local v1 = t1[k2]
+if v1 == nil or not CompareTable(v1,v2) then return false end
+end
+return true
+end
+
+
+local function SearchCache(k)
+    for i = 1, #Pixel.Cache do
+        --if Pixel.Cache[i][1] == k then
+        if CompareTable(Pixel.Cache[i][1], k) then
+            return Pixel.Cache[i][2]
+        end
+    end
+    return nil
+end
+
+local function UpdateCache(k, v)
+    table.insert(Pixel.Cache, {k, v})
+end
+
+
+--[=[
+v1
+function Pixel.Convert.ToDots(str) --converts a given string. must be formatted.
+    --The pixels might look off, but they are not
+    --str should be:
+    --[[
+    1111111111
+    0000000000
+    etc
+    ]]
+    --Data
+    str = GetPixelData(str)
+    --Cache
+    if CacheEnabled then
+        local a = SearchCache(str)
+        if a then
+            return a
+        end
+    end
+    local strbackup = str
+    CheckInstructions = {'', 'D', 'DD', 'DDD', 'R', 'RD', 'RDD', 'RDDD'}
+    DirectionFunctions = {['R'] = function(i, subber) return {i, subber + 1} end, ['D'] = function(i, subber) return {i + 1, subber} end}
+    local function c(str, subber)
+        if not str then return Pixel.Data.Empty end
+        return string.sub(str, subber, subber) --returns empty, if over edge
+    end
+    local reset = tostring(Pixel.Color('reset'))
+    local ignorecolor = false
+    local append = reset
+    local appendc = ''
+    local pastcolor = nil
+    local out = {}
+    if str.Color.All then
+        local c = tostring(Pixel.Color(str.Color.All))
+        table.insert(out, c)
+        appendc = appendc .. c
+        ignorecolor = true
+    end
+    local rows = Split(str.Data, Pixel.Data.NewLine)
+    --optimize
+    --[[
+    Zero dots: Ignore all 'white space' characters
+    ~10x speedup
+
+    for rendering 10 shapes, speedup was from
+    43 seconds to 4.4 seconds
+    --]]
+    local zerostring = string.rep(Pixel.Data.Empty, 8) --Set the 8 to 0 to disable
+    local zerodot = Pixel.Data.Dot[zerostring]
+
+    --ppp(rows)
+    for i = 1, #rows, 4 do
+        for i2 = 1, #rows[i], 2 do
+            local str = ''
+            for i3 = 1, #CheckInstructions do
+                local tempdata = {i, i2}
+                for i4 = 1, #CheckInstructions[i3] do
+                    tempdata = DirectionFunctions[c(CheckInstructions[i3], i4)](unpack(tempdata))
+                end
+                str = str .. c(rows[tempdata[1]], tempdata[2])
+                --debug
+                --print(#str, #c(rows[tempdata[1]], tempdata[2]), c(rows[tempdata[1]], tempdata[2]))
+            end
+            str = str .. string.rep(Pixel.Data.Empty, 8 - #str)
+            if str ~= zerostring then
+                local sc = Pixel.GetColor(strbackup, i2, i)
+                local pixeldata = Pixel.Data.Dot[str]
+                if sc then
+                    local a = tostring(Pixel.Color(sc))
+                    if pastcolor == a then
+                        table.insert(out, pixeldata)
+                    else
+                        table.insert(out, a)
+                        table.insert(out, pixeldata)
+                        pastappend = false
+                        pastcolor = a
+                    end
+                else
+                    if ignorecolor then
+                        if pastappend then
+                            table.insert(out, pixeldata)
+                        else
+                            table.insert(out, appendc)
+                            table.insert(out, pixeldata)
+                            pastappend = true
+                        end
+                        pastcolor = appendc
+                    else
+                        pastappend = false
+                        table.insert(out, pixeldata)
+                    end
+                end
+            else
+                table.insert(out, zerodot)
+            end
+        end
+        table.insert(out, '\n')
+    end
+    table.insert(out, append)
+    local o = table.concat(out)
+    if CacheEnabled then
+        UpdateCache(str, o)
+    end
+    return o
+end
+
+--]=]
+
+
+--v2
+function Pixel.Convert.ToDots(str) --converts a given data table
+    --The pixels might look off, but they are not
+    --[[
+    Format:
+    t[x][y]
+
+    ]]
+    --Data
+    str = GetPixelData(str) --Read Only
+    local data, color = str.Data, str.Color
+    if ReverseY then
+        local function reversey(t)
+            local new = {}
+            for x, v in pairs(t) do
+                for y, v2 in pairs(v) do
+                    new[x] = new[x] or {}
+                    new[x][-y] = v2
+                end
+            end
+            return new
+        end
+        data = reversey(data)
+        color = reversey(color)
+    end
+    --Make sure to not write to str
+    str = {
+        Data = data,
+        Color = color
+    }
+    --Stats
+    local function getmin(t)
+        local c = nil
+        for k, v in pairs(t) do
+            if not c or k < c then
+                c = k
+            end
+        end
+        return c
+    end
+    local function getmax(t)
+        local c = nil
+        for k, v in pairs(t) do
+            if not c or k > c then
+                c = k
+            end
+        end
+        return c
+    end
+    local function itrow(t, func)
+        local t2 = {}
+        for k, v in pairs(t) do
+            --table.insert(t2, func(v))
+            local a = func(v)
+            if a then
+                t2[a] = true
+            end
+        end
+        return func(t2)
+    end
+    local minx, maxx, miny, maxy = getmin(data), getmax(data), itrow(data, getmin), itrow(data, getmax)
+    --print(minx, maxx, miny, maxy)
+    --Optimizations
+    local out = {}
+    local zerostring = string.rep('0', 8)
+    local zerodot = Pixel.Data.Dot[zerostring]
+    local currentcolor = nil
+    local allcolor = nil
+    if str.Color.All then
+        local c = tostring(Pixel.Color(str.Color.All))
+        table.insert(out, c)
+        allcolor = c
+    end
+    local rows = {}
+    for x, v in pairs(data) do
+        for y, v2 in pairs(v) do
+            rows[y] = rows[y] or {}
+            rows[y][x] = v2
+        end
+    end
+    --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
+    --Main loop
+    if not miny then
+        return ''
+    end
+    for y = miny, maxy, 4 do
+        --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
+        --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
+        for x = minx, maxx, 2 do
+            --print(x, y)
+            --Get Pixels
+            local pixel = ''
+            local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+            for i = 1, 8 do
+                local x, y = x + c[i][1], y + c[i][2]
+                pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
+            end
+            --print(pixel, x, y, color)
+            if pixel ~= zerostring then
+                pixel = Pixel.Data.Dot[pixel]
+                --local x, y = Pixel.PushColor(x, y)
+                if not allcolor then
+                    local color = Pixel.GetColor(str, x, y)
+                    --if color==nil then print(x, y, color) end
+                    --if not allcolor and color then
+                    --find all 8 pixels
+                    if not color then
+                        local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                        for i = 1, 8 do
+                            color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
+                            if color then
+                                break
+                            end
+                        end
+                    end
+                    if color then
+                        color = tostring(Pixel.Color(color))
+                    else
+                        color = tostring(Pixel.Color('reset'))
+                    end
+                    if currentcolor == color then
+                        --Do Nothing
+                    else
+                        table.insert(out, color)
+                        currentcolor = color
+                    end
+                end
+                --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
+                table.insert(out, pixel)
+            else
+                table.insert(out, zerodot)
+            end
+        end
+        table.insert(out, Pixel.Data.NewLine)
+    end
+    table.insert(out, tostring(Pixel.Color('reset')))
+    --ppp(out)
+    return table.concat(out)
+end
+
+
+function Pixel.Convert.FromDots(dots)
+    if''then return nil end
+    --Will not work, because lua does not support unicode iteration
+    local function Find(s)
+        for k, v in pairs(Pixel.Data.Dot) do
+            if v == s then
+                return k
+            end
+        end
+    end
+    local t = Pixel.Convert.To2d(dots)
+    for x = 1, #t do
+        for y = 1, #t[x] do
+            print(t[x][y])
+        end
+    end
+end
+
+setmetatable(Pixel.Convert, {__call = function(t, ...)
+    return Pixel.Convert.ToDots(...)
+end})
+for k, v in pairs(Pixel.Convert) do
+    Pixel[k] = v
+end
+
+function Pixel.Format(data, to) --Formats data to the ideal data
+    local function IsData()
+        for i = 1, #data do
+            local temp = string.sub(data, i, i)
+            if temp == Pixel.Data.Empty or temp == Pixel.Data.Filled or temp == Pixel.Data.NewLine then
+                --Do nothing
+            else
+                return false
+            end
+        end
+        return true
+    end
+    local from
+    if type(data) == 'string' then
+        local check = IsData()
+        if check then
+            from = 'str'
+        else
+            from = 'dots'
+        end
+    elseif type(data) == 'table' then
+        from = '2d'
+    end
+    --Convert Everything to STR
+    if from == 'str' then
+        --Do nothing
+    elseif from == '2d' then
+        data = Pixel.Convert.From2d(data)
+    elseif from == 'dots' then
+        data = Pixel.Convert.FromDots(data)
+    else
+        Error('Pixel.Format: Could not convert {from} to {to}.', {from = from, to = 'STR'})
+    end
+    if to == 'str' then
+        return data
+    elseif to == '2d' then
+        return Pixel.Convert.To2d(data)
+    elseif to == 'dots' then
+        return Pixel.Convert.ToDots(str)
+    else
+        Error('Pixel.Format: Could not convert {from} to {to}.', {from = 'STR', to = to})
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+local function getmax(t)
+    local c = nil
+    for k, v in pairs(t) do
+        if not c or k > c then
+            c = k
+        end
+    end
+    return c
+end
+function Pixel.GetSizeX(self)
+    local str = GetPixelData(self)
+    return getmax(str.Data)
+end
+function Pixel.GetSizeY(self)
+    local str = GetPixelData(self)
+    local c = nil
+    for k, v in pairs(str.Data) do
+        local a = getmax(v)
+        if (not c or a > c) and a then
+            c = a
+        end
+    end
+    return c
+end
+
+
+
+
+
+
+function Pixel.SetPixel(self, x, y, value) --str should be a canvas object
+    --preserve metatables
+    --print(x, y, value)
+    local str = GetPixelData(self)
+    str.Data[x] = str.Data[x] or {}
+    str.Data[x][y] = value
+    return str
+end
+
+function Pixel.GetPixel(self, x, y)
+    local str = GetPixelData(self)
+    return str.Data[x] and str.Data[x][y] or nil
+end
+
+
+
+--Legacy
+function Pixel.SetPixels(self, t) --t should be {{x, y, value}, {x, y, value}, {...}}
+    local str = GetPixelData(self)
+    for i = 1, #t do
+        str.Data = Pixel.SetPixel(str.Data, t[i][1], t[i][2], t[i][3])
+    end
+    return str
+end
+
+--Operations
+
+function Pixel.Equal(self, x1, y1, x2, y2)
+    local str = GetPixelData(self)
+    return Pixel.GetPixel(x1, y1) == Pixel.GetPixel(x2, y2)
+end
+
+function Pixel.MovePixel(self, x1, y1, x2, y2)
+    local str = GetPixelData(self)
+    return Pixel.SetPixel(Pixel.SetPixel(str, x2, y2, Pixel.GetPixel(x1, y1)), x1, y1, Pixel.Data.Empty)
+end
+
+function Pixel.SwapPixel(self, x1, y1, x2, y2)
+    local str = GetPixelData(self)
+    local data1 = Pixel.GetPixel(str, x1, y1)
+    return Pixel.SetPixel(Pixel.SetPixel(str, x1, y1, Pixel.GetPixel(str, x2, y2)), x2, y2, data1)
+end
+
+function Pixel.Replace(self, find, replace)
+    local str = GetPixelData(self)
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            if v2 == find and str.Data[x] then
+                str = Pixel.SetPixel(str, x, y, replace)
+            end
+        end
+    end
+    return str
+end
+
+function Pixel.SetAll(self, value)
+    local str = GetPixelData(self)
+    return Pixel.Replace(str, Pixel.Data.Empty, value)
+end
+
+function Pixel.Flip(self)
+    local str = GetPixelData(self)
+    --improve this
+    return Pixel.Replace(Pixel.Replace(Pixel.Replace(str, '0, 2'), '1', '0'), '2', '1')
+end
+
+function Pixel.GetRect(self, cx, cy, x1, y1, x2, y2)
+    --Get a subset of a pixel rect between 2 points
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    if x1 > y1 then
+        x1, y1 = y1, x1
+    end
+    if y1 > y2 then
+        y1, y2 = y2, y1
+    end
+    for x = x1, x2 do
+        for y = y1, y2 do
+            new = Pixel.SetPixel(new, x - x1 + cx, y - y1 + cy, Pixel.GetPixel(str, x, y))
+        end
+    end
+    return new
+end
+
+
+
+
+--[[
+function Pixel.PixelZoomIn(self, times)
+    
+end
+
+function Pixel.PixelZoomOut(self, times)
+    
+end
+--]]
+
+function Pixel.ZoomIn(self, times) --assumes origin at 1, 1
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            for x2 = (x - 1) * times + 1, x * times do
+                for y2 = (y - 1) * times + 1, y * times do
+                    new = Pixel.SetPixel(new, x2, y2, v2)
+                end
+            end
+        end
+    end
+    return new
+end
+
+function Pixel.ZoomOut(self, times) --assumes origin at 1, 1
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            if (x - 1) % times == 0 and (y - 1) % times == 0 then
+                local count = {}
+                for x2 = x, x + times - 1 do
+                    for y2 = y, y + times - 1 do
+                        local a = Pixel.GetPixel(str, x2, y2)
+                        --print(x2, y2, a)
+                        if a then
+                            count[a] = count[a] and count[a] + 1 or 1
+                        end
+                    end
+                end
+                local c = nil
+                for k, v in pairs(count) do
+                    --print(k, v)
+                    if not c or v > count[c] then
+                        c = k
+                    elseif c and v == count[c] then
+                        k = Pixel.Data.Empty
+                        break
+                    end
+                end
+                --print(c)
+                new = Pixel.SetPixel(new, (x - 1) / times + 1, (y - 1) / times + 1, c)
+            end
+        end
+    end
+    return new
+end
+
+
+
+
+function Pixel.Resize(self, x, y)
+
+end
+
+function Pixel.Offset(self, offx, offy)
+
+end
+
+
+
+
+
+
+
+--2d library
+--rewrite of Pixel.Line
+
+local function GetPointTable(...)
+    local t = {...}
+    if #t == 1 and type(t[1]) == 'table' then
+        return unpack(t[1])
+    else
+        return ...
+        --return unpack(t)
+    end
+end
+
+local function SaveOpData(str, funcname, ...)
+    local t = {...}
+    if t[#t] ~= true then
+        --print('OP: '..funcname..','..#t)
+        table.insert(str.Op, {funcname, ...})
+    end
+end
+
+local function OrganizeColor(a, b)
+    if type(a) == 'boolean' and type(b) == 'table' then
+        return b, a
+    elseif type(a) == 'table' and type(b) == 'boolean' then
+        return a, b
+    elseif type(a) == 'table' then
+        return a, b
+    end
+end
+
+
+--http://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#Lua
+function Pixel.Line(self, ...)
+    local vararg = {GetPointTable(...)}
+    local x1, y1, x2, y2, a, b = unpack(vararg)
+    local options, op = OrganizeColor(a, b)
+    options = options or {}
+    local color, callback, init, func = options.color, options.callback, options.init, options.setfunction
+    if init then
+        init()
+    end
+    local str = GetPixelData(self)
+    --Handle negatives
+    local offx, offy = 0, 0
+    --x
+    if x1 < 0 and x1 < offx then
+        offx = x1
+    end
+    if x2 < 0 and x2 < offx then
+        offx = x2
+    end
+    --y
+    if y1 < 0 and y1 < offy then
+        offy = y1
+    end
+    if y2 < 0 and y2 < offy then
+        offy = y2
+    end
+    x1, y1, x2, y2 = x1 - offx, y1 - offy, x2 - offx, y2 - offy
+    --Save Op
+    SaveOpData(str, 'Line', x1, y1, x2, y2, options, op)
+    local function Set(x, y)
+        local x, y = x + offx, y + offy
+        --t[(dimx * (y - 1)) + x] = c
+        if callback then
+            local r = callback(str, x, y, Pixel.Data.Filled)
+            if r then
+                Pixel.SetPixel(str, x, y, r)
+            end
+        else
+            Pixel.SetPixel(str, x, y, Pixel.Data.Filled)
+        end
+        if color then
+            --local x, y = Pixel.PushColor(x, y)
+            Pixel.SetColor(str, x, y, color)
+        end
+        --table.insert(pixelt, {x, y, Pixel.Data.Filled})
+    end
+    if options.setfunction then
+        Set = options.setfunction
+    end
+    local dx, sx = math.abs(x2-x1), x1<x2 and 1 or -1
+    local dy, sy = math.abs(y2-y1), y1<y2 and 1 or -1
+    local err = math.floor((dx>dy and dx or -dy)/2)
+    while(true) do
+      Set(x1, y1)
+      if (x1==x2 and y1==y2) then break end
+      if (err > -dx) then
+        err, x1 = err-dy, x1+sx
+        if (x1==x2 and y1==y2) then
+          Set(x1, y1)
+          break
+        end
+      end
+      if (err < dy) then
+        err, y1 = err+dx, y1+sy
+      end
+    end
+    return str
+end
+
+
+
+
+
+--https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Quadratic#Lua
+function Pixel.Bezier2(self, x1, y1, x2, y2, x3, y3, nseg)
+    local str = GetPixelData(self)
+    nseg = nseg or 10
+    local prevx, prevy, currx, curry
+    for i = 0, nseg do
+      local t = i / nseg
+      local a, b, c = (1-t)^2, 2*t*(1-t), t^2
+      prevx, prevy = currx, curry
+      currx = math.floor(a * x1 + b * x2 + c * x3 + 0.5)
+      curry = math.floor(a * y1 + b * y2 + c * y3 + 0.5)
+      if i > 0 then
+        Pixel.Line(str, prevx, prevy, currx, curry)
+      end
+    end
+    return str
+end
+
+--https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Cubic#Lua
+function Pixel.Bezier3(self, x1, y1, x2, y2, x3, y3, x4, y4, nseg)
+    local str = GetPixelData(self)
+    nseg = nseg or 10
+    local prevx, prevy, currx, curry
+    for i = 0, nseg do
+      local t = i / nseg
+      local a, b, c, d = (1-t)^3, 3*t*(1-t)^2, 3*t^2*(1-t), t^3
+      prevx, prevy = currx, curry
+      currx = math.floor(a * x1 + b * x2 + c * x3 + d * x4 + 0.5)
+      curry = math.floor(a * y1 + b * y2 + c * y3 + d * y4 + 0.5)
+      if i > 0 then
+        Pixel.Line(str, prevx, prevy, currx, curry)
+      end
+    end
+    return str
+end
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Pixel.Fill(self, x, y, a, b)
+    local options, op = OrganizeColor(a, b)
+    local str = GetPixelData(self)
+    SaveOpData(str, 'Fill', x, y, options, op)
+    --Recursive
+    local function main(x, y)
+        if Pixel.GetPixel(str, x, y) == Pixel.Data.Filled then
+            return
+        else
+            Pixel.SetPixel(str, x, y, Pixel.Data.Filled)
+            main(x - 1, y)
+            main(x + 1, y)
+            main(x, y - 1)
+            main(x, y + 1)
+        end
+    end
+    main(x, y)
+    return str
+end
+
+
+
+
+
+--http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html
+--Standard algorithm
+--[[
+Split triangle into 2 (top and bottom)
+Fill
+]]
+--[[
+TODO:
+Since this algorithm only uses straight lines, optimize
+]]
+local function TopFlat(str, x1, y1, x2, y2, x3, y3, options)
+    local slope1 = (x3 - x1) / (y3 - y1)
+    local slope2 = (x3 - x2) / (y3 - y2)
+    
+    local cx1 = x3
+    local cx2 = x3
+
+    local i = y3
+    repeat
+        str = Pixel.Line(str, Round(cx1), i, Round(cx2), i, options)
+        cx1, cx2 = cx1 - slope1, cx2 - slope2
+        i = i - 1
+    until i < y1
+    return str
+end
+local function BottomFlat(str, x1, y1, x2, y2, x3, y3, options)
+    local slope1 = (x2 - x1) / (y2 - y1)
+    local slope2 = (x3 - x1) / (y3 - y1)
+    
+    local cx1 = x1
+    local cx2 = x1
+
+    local i = y1
+    repeat
+        str = Pixel.Line(str, Round(cx1), i, Round(cx2), i, options)
+        cx1, cx2 = cx1 + slope1, cx2 + slope2
+        i = i + 1
+    until i > y2
+    return str
+end
+function Pixel.Tri(self, x1, y1, x2, y2, x3, y3, options)
+    local str = GetPixelData(self)
+    local t1, t2 = {}, {}
+    local fill = true
+    local color = nil
+    local fillcolor = nil
+    local callback = nil
+    options = options or {}
+    local function a(a, b)
+        if a ~= nil then
+            return a
+        else
+            return b
+        end
+    end
+    fill = a(options.fill, fill)
+    color = a(options.color, color)
+    fillcolor = a(options.fillcolor, fillcolor)
+    callback = a(options.callback, callback)
+    local edget, fillt = {color = color, callback = callback}, {color = fillcolor, callback = callback}
+    if fill then
+        --Sort points by y ascending (y1 is top)
+        --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+        local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+        local t = {
+            {x1, y1},
+            {x2, y2},
+            {x3, y3}
+        }
+        local t2 = {}
+        for k, v in spairs(t, function(t, a, b) return t[a][2] < t[b][2] end) do
+            table.insert(t2, v[1])
+            table.insert(t2, v[2])
+        end
+        t = t2
+        x1, y1, x2, y2, x3, y3 = t[1], t[2], t[3], t[4], t[5], t[6]
+        --Check for some cases
+        if y2 == y3 then --Bottom flat
+            str = BottomFlat(str, x1, y1, x2, y2, x3, y3, fillt)
+        elseif y1 == y2 then --Top flat
+            str = TopFlat(str, x1, y1, x2, y2, x3, y3, fillt)
+        else --General
+            --Get line points
+            local x4, y4 = Round(x1 + (y2 - y1) / (y3 - y1) * (x3 - x1)), y2
+            str = BottomFlat(str, x1, y1, x2, y2, x4, y4, fillt)
+            str = TopFlat(str, x2, y2, x4, y4, x3, y3, fillt)
+        end
+    end
+    --Edges again
+    str = Pixel.Line(str, x1, y1, x2, y2, edget)
+    str = Pixel.Line(str, x2, y2, x3, y3, edget)
+    str = Pixel.Line(str, x3, y3, x1, y1, edget)
+    return str
+end
+
+function Pixel.PolygonFill(str, ...)
+    local points = {...}
+    local options
+    if #points % 2 == 1 then
+        options = points[#points]
+        table.remove(points, #points)
+    end
+    local function area(poly)
+        local n = #poly
+        local a = 0
+        p = n - 1
+        for q = 1, n, 2 do
+            a = a + poly[p] * poly[q + 1] - poly[q] * poly[p + 1]
+            p = q
+        end --for q
+        return a * 0.5
+    end --area
+    local function insideTriangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py)
+        local ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy
+        local cCROSSap, bCROSScp, aCROSSbp
+
+        ax = Cx - Bx
+        ay = Cy - By
+        bx = Ax - Cx
+        by = Ay - Cy
+        cx = Bx - Ax
+        cy = By - Ay
+        apx = Px - Ax
+        apy = Py - Ay
+        bpx = Px - Bx
+        bpy = Py - By
+        cpx = Px - Cx
+        cpy = Py - Cy
+
+        aCROSSbp = ax * bpy - ay * bpx
+        cCROSSap = cx * apy - cy * apx
+        bCROSScp = bx * cpy - by * cpx
+
+        return (aCROSSbp >= 0.0) and (bCROSScp >= 0.0) and (cCROSSap >= 0.0)
+    end
+    local EPSILON = 0.000001
+    local function snip(contour, u, v, w, n, V)
+        local Ax, Ay, Bx, By, Cx, Cy, Px, Py
+
+        Ax = contour[V[u]]
+        Ay = contour[V[u] + 1]
+
+        Bx = contour[V[v]]
+        By = contour[V[v] + 1]
+
+        Cx = contour[V[w]]
+        Cy = contour[V[w] + 1]
+
+        if (EPSILON > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax)))) then
+            return false
+        end --if
+
+        for p = 1, n do
+            if (p == u) or (p == v) or (p == w) then
+            else
+                Px = contour[V[p]]
+                Py = contour[V[p] + 1]
+                if (insideTriangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py)) then
+                    return false
+                end --if
+            end --if
+        end --for p
+        return true
+    end
+    --Problem with triangulation: It will error if there are 2 same points.
+    local function triangulate(poly)
+        local result = {}
+        if #poly < 6 then
+            return nil
+        elseif #poly == 6 then
+            return {poly}
+        end
+        --poly must be counter-clockwise
+        local nv = #poly / 2
+        local V = {}
+        if area(poly) >= 0 then
+            for i = 1, nv do
+                V[i] = i * 2 - 1
+            end
+        else
+            for i = 1, nv do
+                V[i] = #poly - i * 2 + 1
+            end
+        end
+        --remove nv-2 Vertices, creating 1 triangle every time
+        local count = nv * 2
+        local v = nv
+        while nv > 2 do
+            count = count - 1
+            if count < 0 then
+                return nil
+            end
+            --three consecutive vertices in current polygon, <u,v,w>
+            local u = v
+            if u > nv then
+                u = 1
+            end
+            v = u + 1
+            if v > nv then
+                v = 1
+            end
+            local w = v + 1
+            if w > nv then
+                w = 1
+            end
+            if snip(poly, u, v, w, nv, V) then
+                local a = V[u]
+                local b = V[v]
+                local c = V[w]
+                table.insert(result, poly[a])
+                table.insert(result, poly[a + 1])
+                table.insert(result, poly[b])
+                table.insert(result, poly[b + 1])
+                table.insert(result, poly[c])
+                table.insert(result, poly[c + 1])
+                table.remove(V, v)
+                nv = nv - 1
+                count = nv * 2
+            end
+        end
+        --result is a point table, so split into tri tables
+        local temp = {}
+        local chunk = 6
+        for i = 1, #result, chunk do
+            local temp2 = {}
+            for i2 = 1, chunk do
+                table.insert(temp2, result[i + i2 - 1])
+            end
+            table.insert(temp, temp2)
+        end
+        result = temp
+        return result
+    end
+    local tris = triangulate(points)
+    if options then
+        for i = 1, #tris do
+            Pixel.Tri(str, unpack(Table.Combine(tris[i], {options})))
+        end
+    else
+        for i = 1, #tris do
+            Pixel.Tri(str, unpack(tris[i]))
+        end
+    end
+    return str
+end
+
+function Pixel.Polygon(self, ...)
+    local str = GetPixelData(self)
+    local fill = true
+    local color = nil
+    local fillcolor = nil
+    local t = {GetPointTable(...)}
+    if #t % 2 == 1 and type(t) == 'table' then --Vararg contains options
+        local options = t[#t]
+        local function a(a, b)
+            if a ~= nil then
+                return a
+            else
+                return b
+            end
+        end
+        fill = a(options.fill, fill)
+        color = a(options.color, color)
+        fillcolor = a(options.fillcolor, fillcolor)
+    end
+    if fill then
+        str = Pixel.PolygonFill(str, unpack(t))
+    else
+        table.remove(t, #t)
+        local o = {color = color}
+        for i = 1, #t - 2, 2 do
+            --print(t[i], t[i + 1], t[i + 2], t[i + 3])
+            str = Pixel.Line(str, t[i], t[i + 1], t[i + 2], t[i + 3], true, o)
+        end
+        str = Pixel.Line(str, t[#t - 1], t[#t], t[1], t[2], true, o)
+    end
+    SaveOpData(str, 'Polygon', ...)
+    return str
+end
+
+
+
+
+
+
+
+
+--[=[
+--v1
+function Pixel.Circle(self, centerx, centery, r, op, options)
+    local str = GetPixelData(self)
+    local options, op = OrganizeColor(op, options)
+    SaveOpData(str, 'Circle', centerx, centery, r, op, options)
+--[[
+
+a is the length of the cross section of circle (output)
+r is the radius (input)
+d is the distance from radius to line (input)
+
+basic math explanation:
+we use the pythagorean theorem (a ^ 2 + b ^ 2 = c ^ 2). we will plug in the r and d for a and b, and get the output. to get the length, all we have to do is to square root it. make sure to get the absolute value.
+
+
+diagram:
+
+
+         , - ~ ~ - ,
+     , '             ' ,
+   , |\                  ,
+  ,  |   \ <--r           ,
+ ,   |      \              ,
+ ,a->|--<-d->-●            ,
+ ,   |      /              ,
+  ,  |   / <--r           ,
+   , |/                  ,
+     ,                , '
+       ' - , _ _ ,  '
+
+
+
+code:
+--error checking
+if d > r or d < 0 or r < 0 then
+    error()
+end
+
+--actual formula
+a = math.sqrt( (r ^ 2) - (d ^ 2) ) * 2
+print(a)
+]]
+
+
+
+    for i = 1, r do
+        local d = r - i
+        if d > r or d < 0 or r < 0 then
+            break
+        end
+        local a = math.sqrt( (r ^ 2) - (d ^ 2) ) * 2
+        local a2 = Round(a / 2)
+        --local a2 = math.floor(a / 2)
+        --local a2 = math.ceil(a / 2)
+        local offsetx = 0
+        local offsety = 0
+        str = Pixel.Line(str, i + centerx - r + offsetx, centery - a2 + offsety, i + centerx - r + offsetx, centery + a2 + offsety, true, options) --Left
+        str = Pixel.Line(str, r - i + centerx + 1 + offsetx, centery - a2 + offsety, r - i + centerx + 1 + offsetx, centery + a2 + offsety, true, options) --Right
+    end
+    return str
+end
+--]=]
+
+function Pixel.Ellipse(self, cx, cy, sx, sy, options)
+    options = options or {}
+    local str = GetPixelData(self)
+    local set = Pixel.Data.Filled
+--[[
+Scanline Algorithm
+https://stackoverflow.com/questions/10322341/simple-algorithm-for-drawing-filled-ellipse-in-c-c
+Do a quarter, then mirror
+Region is: Right Down
+--]]
+    local function check(x, y)
+        return x ^ 2 * sy ^ 2 + y ^ 2 * sx ^ 2 <= sx ^ 2 * sy ^ 2
+    end
+    local x = sx
+    for y = 0, sy do
+        local a = false
+        repeat
+            a = check(x, y)
+            x = x - 1
+        until a
+        x = x + 1
+        
+        for x2 = 0, x do
+            Pixel.SetPixel(str, cx + x2, cy + y, set, options)
+            Pixel.SetPixel(str, cx - x2, cy + y, set, options)
+            Pixel.SetPixel(str, cx + x2, cy - y, set, options)
+            Pixel.SetPixel(str, cx - x2, cy - y, set, options)
+
+
+            --color --FIX
+            if options.color then
+                Pixel.SetColor(str, cx + x2, cy + y, options.color)
+                Pixel.SetColor(str, cx - x2, cy + y, options.color)
+                Pixel.SetColor(str, cx + x2, cy - y, options.color)
+                Pixel.SetColor(str, cx - x2, cy - y, options.color)
+            end
+        end
+
+    end
+    return str
+end
+
+function Pixel.Circle(self, x, y, r, options)
+    return Pixel.Ellipse(self, x, y, r, r, options)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Pixel.Graph(str, func, startx, endx, round) --func should return 1 value after inputted 1 value. it should be error proof.
+    local round = round or true
+    local startx = startx or 1
+    local str = GetPixelData(str)
+    local endx = endx or Pixel.GetSizeX(str)
+    local t = str.Data
+    if round then
+        for i = startx, endx do
+            local data = Round(func(i))
+            t = Pixel.Line(str, i, data, i, data)
+        end
+    else
+        for i = startx, endx do
+            local data = func(i)
+            t = Pixel.Line(str, i, data, i, data)
+        end
+    end
+    return t
+end
+
+
+
+--Math / Complex Library
+
+function Pixel.Area(self)
+    local str = GetPixelData(self)
+    local area = 0
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            if Pixel.GetPixel(x, y) == Pixel.Data.Filled then
+                area = area + 1
+            end
+        end
+    end
+    return area
+end
+
+function Pixel.GetOutline(self)
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    local check = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            local a = false
+            for i = 1, #check do
+                if Pixel.GetPixel(str, x + check[i][1], y + check[i][2]) ~= Pixel.Data.Filled then
+                    a = true
+                end
+            end
+            if a then
+                new = Pixel.SetPixel(new, x, y, Pixel.Data.Filled)
+            end
+        end
+    end
+    return new
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--Maze / Pathfinding Library
+PixelMaze = {}
+
+--Binary tree algorithm
+--[[
+For each cell in the grid
+    Check if a north or west neighbor exists
+        1. Get a random neighbor
+        2. Set the pixel between current cell and neighbor, to empty
+]]
+function PixelMaze.BT(cx, cy)
+    local Visited = {}
+    local cx, cy = cx % 2 + cx + 1, cy % 2 + cy + 1
+    local str = Pixel.Polygon(Pixel.New(), 1, 1, cx, 1, cx, cy, 1, cy, {fill = true})
+    for y = 2, cy, 2 do
+        for x = 2, cx, 2 do
+            str = Pixel.SetPixel(str, x, y, Pixel.Data.Empty)
+            local t = {}
+            if x > 2 then
+                table.insert(t, {x - 1, y})
+            end
+            if y > 2 then
+                table.insert(t, {x, y - 1})
+            end
+            if #t ~= 0 then
+                local n = t[math.random(1, #t)]
+                str = Pixel.SetPixel(str, n[1], n[2], Pixel.Data.Empty)
+            end
+        end
+    end
+    return str
+end
+
+--Depth-first search algorithm, http://rosettacode.org/wiki/Maze_generation
+--[[
+1. Start at a random cell
+Mark the current cell as visited
+    If there are no neighbors, then terminate
+    For each randomly selected neighbor
+        1. Set the pixel between current cell and neighbor, to empty
+        2. Recurse as the neighbor
+]]
+function PixelMaze.DFS(cx, cy)
+    local Visited = {}
+    local cx, cy = cx % 2 + cx + 1, cy % 2 + cy + 1
+    local str = Pixel.Polygon(Pixel.New(), 1, 1, cx, 1, cx, cy, 1, cy, {fill = true})
+    local function RandomCell(cx, cy)
+        return math.random(1, cx), math.random(1, cy)
+    end
+    local function GetRandomNeighbor(Visited, x, y, cx, cy)
+        local t = {}
+        local function Check(x, y)
+            if x > cx or y > cy or x < 1 or y < 1 then
+                return
+            else
+                table.insert(t, {x, y})
+            end
+        end
+        local a = 2
+        Check(x - a, y)
+        Check(x + a, y)
+        Check(x, y - a)
+        Check(x, y + a)
+        if #t > 0 then
+            return t
+        else
+            return nil
+        end
+    end
+    local function ShuffleTable(t)
+        for i = 1, #t - 1 do
+            local r = math.random(i, #t)
+            t[i], t[r] = t[r], t[i]
+        end
+        return t
+    end
+    local function MakeTable(k)
+        Visited[k] = Visited[k] or {}
+    end
+    local function Recurse(x, y)
+        Pixel.SetPixel(str, x, y, Pixel.Data.Empty)
+        MakeTable(x)
+        Visited[x][y] = true --Mark current cell as visited
+        --Get neighbors
+        local t = GetRandomNeighbor(Visited, x, y, cx, cy)
+        if t then
+            --Shuffle
+            t = ShuffleTable(t)
+            for i = 1, #t do
+                --Neighbor x, y
+                local nx, ny = t[i][1], t[i][2]
+                if Visited[nx] and Visited[nx][ny] then
+
+                elseif nx > 0 and ny > 0 and nx <= cx and ny <= cy then
+                    --Get the wall, (Between neighbor and current)
+                    str = Pixel.SetPixel(str, (nx - x) / 2 + x, (ny - y) / 2 + y, Pixel.Data.Empty)
+                    Recurse(nx, ny)
+                end
+            end
+        else
+            return
+        end
+    end
+    local x, y = RandomCell(cx, cy)
+    x, y = x % 2 + x, y % 2 + y
+    Recurse(x, y)
+    return str
+end
+
+--Kruskal's
+--[[
+
+]]
+
+
+
+
+
+
+
+
+
+
+--Recursive Backtracker
+--[[
+Set current as start
+Repeat
+    Find neighbors that are walkable, and not visited
+        If no neighbor, return
+        Recurse as the neighbor
+]]
+function PixelMaze.Solve(str, sx, sy, ex, ey)
+    local Directions = {
+        ['l'] = {-1, 0, 'r'},
+        ['r'] = {1, 0, 'l'},
+        ['u'] = {0, -1, 'd'},
+        ['d'] = {0, 1, 'u'}
+    }
+    local past = {}
+    local function Recurse(x, y, steps, data)
+        steps = steps or {}
+        data = data or {}
+        past[x] = past[x] or {}
+        past[x][y] = true
+        if x == ex and y == ey then
+            return steps, data
+        end
+        local open = false
+        for k, v in pairs(Directions) do
+            local nx, ny = x + v[1], y + v[2]
+            if past[nx] == nil or past[nx][ny] == nil then
+                open = true
+                if Pixel.GetPixel(str, nx, ny) == Pixel.Data.Empty then
+                    table.insert(steps, k)
+                    table.insert(data, {nx, ny})
+                    local n = #steps
+                    local a, b = Recurse(nx, ny, steps, data)
+                    if a then
+                        return a, b
+                    else
+                        local newsteps = {}
+                        for i = 1, n - 1 do
+                            table.insert(newsteps, steps[i])
+                        end
+                        steps = newsteps
+                        local newdata = {}
+                        for i = 1, n - 1 do
+                            table.insert(newdata, data[i])
+                        end
+                        data = newdata
+                    end
+                end
+            end
+        end
+        if open == false then
+            return nil
+        end
+    end
+    local steps, data = Recurse(sx, sy, {})
+    --table.remove(steps, 1)
+    return steps, data
+end
+
+--A star
+--[[
+https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
+]]
+function PixelMaze.SolveShort(str, sx, sy, ex, ey)
+    --Options
+    local shortest = true --If true, it searches every cell to find the absolute shortest. false is for performance
+    --Configurable options
+    local cx = Pixel.GetSizeX(str)
+    local cy = Pixel.GetSizeY(str)
+    local function CalculateDistance(x1, y1, x2, y2)
+        return (x2 - x1) ^ 2 + (y2 - y1) ^ 2
+    end
+    local function CalculateG(x, y)
+        return CalculateDistance(x, y, sx, sy)
+    end
+    local function CalculateH(x, y)
+        return CalculateDistance(x, y, ex, ey)
+    end
+    local function CalculateF(g, h)
+        return g + h
+    end
+    local function Return(current)
+        local c = current
+        local t = {}
+        local d = {}
+        repeat
+            if c then
+                table.insert(t, {c.x, c.y})
+                table.insert(d, c.d)
+            else
+                break
+            end
+            c = c.p
+        until false
+        local rt = {}
+        local rd = {}
+        for i = #t, 1, -1 do
+            table.insert(rt, t[i])
+            table.insert(rd, d[i])
+        end
+        return rd, rt
+    end
+    --Diagonal
+    local neighbor = {
+        {-1, -1, 'lu'},
+        {0, -1, 'u'},
+        {1, -1, 'ru'},
+        {-1, 0, 'l'},
+        --Current
+        {1, 0, 'r'},
+        {-1, 1, 'ld'},
+        {0, 1, 'd'},
+        {1, 1, 'rd'}
+    }
+    --LRUD
+    local neighbor = {
+        {0, -1, 'u'},
+        {-1, 0, 'l'},
+        --Current
+        {1, 0, 'r'},
+        {0, 1, 'd'}
+    }
+    local open = {}
+    local closed = {}
+    table.insert(open, {
+        x = sx,
+        y = sy,
+        g = 0,
+        h = 0,
+        f = 0
+    })
+    local current
+    while #open ~= 0 do
+        current = nil
+        for i = 1, #open do
+            if not current or open[i].f < current.f then
+                current = open[i]
+            end
+        end
+        if not shortest and current.x == ex and current.y == ey then
+            return Return(current)
+        end
+        table.insert(closed, current)
+        for i = 1, #open do
+            if open[i].x == current.x and open[i].y == current.y then
+                table.remove(open, i)
+                break
+            end
+        end
+        for i = 1, #neighbor do
+            local nx, ny, dir = current.x + neighbor[i][1], current.y + neighbor[i][2], neighbor[i][3]
+            if nx > 0 and nx <= cx and ny > 1 and nx <= cy then
+                if Pixel.GetPixel(str, nx, ny) == Pixel.Data.Empty then
+                    local inclosed = false
+                    for i2 = 1, #closed do
+                        local c = closed[i2]
+                        if c.x == nx and c.y == ny then
+                            inclosed = true
+                            break
+                        end
+                    end
+                    if inclosed == false then
+                        local inopen = false
+                        for i2 = 1, #closed do
+                            local c = closed[i2]
+                            if c.x == nx and c.y == ny then
+                                inopen = true
+                                break
+                            end
+                        end
+                        if inopen == false then
+                            local t = {
+                                x = nx,
+                                y = ny,
+                                g = CalculateG(nx, ny),
+                                h = CalculateH(nx, ny),
+                                
+                                p = current,
+                                d = dir
+                            }
+                            t.f = CalculateF(t.g, t.h)
+                            table.insert(open, t)
+                        else
+                            
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if shortest then
+        return Return(current)
+    else
+        return nil --Unable to find path
+    end
+end
+
+function PixelMaze.Mark(str, sx, sy, t, set) --t should be an output from PixelMaze.Solve
+    local Directions = {
+        ['l'] = {-1, 0, 'r'},
+        ['r'] = {1, 0, 'l'},
+        ['u'] = {0, -1, 'd'},
+        ['d'] = {0, 1, 'u'}
+    }
+    local x, y = sx, sy
+    for i = 1, #t do
+        str = Pixel.SetPixel(str, x, y, set)
+        local d = Directions[t[i]]
+        x, y = d[1] + x, d[2] + y
+    end
+    return str
+end
+
+
+function PixelMaze.Color(str, sx, sy, t, set) --t should be an output from PixelMaze.Solve
+    local Directions = {
+        ['l'] = {-1, 0, 'r'},
+        ['r'] = {1, 0, 'l'},
+        ['u'] = {0, -1, 'd'},
+        ['d'] = {0, 1, 'u'}
+    }
+    local x, y = sx, sy
+    for i = 1, #t do
+        str = Pixel.SetColor(str, x, y, set)
+        local d = Directions[t[i]]
+        x, y = d[1] + x, d[2] + y
+    end
+    --print(#str.Color)
+    return str
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--3d Library
+
+Pixel3d = {}
+
+
+
+--Some functions
+
+
+
+--Translated from scratch
+local function ProjectPoint(x, y, z, camx, camy, camz, rotx, roty, viewfactor)
+    --Reverse rotx and roty (what the fuck?)
+    rotx, roty = roty, rotx
+    --Negate rotx and roty (what the fuck?)
+    rotx, roty = -rotx, -roty
+    --Convert to radians
+    rotx, roty = math.rad(rotx), math.rad(roty)
+    --Calculate trig values
+    local sinx, cosx, siny, cosy = math.sin(rotx), math.cos(rotx), math.sin(roty), math.cos(roty)
+    --Set point
+    x, y, z = x - camx, y - camy, z - camz
+    --Set point
+    x, y, z = (z * siny) + (x * cosy), y, (z * cosy) - (x * siny)
+    --Set point
+    x, y, z = x, (y * cosx) - (z * sinx), (y * sinx) + (z * cosx)
+    --Z clipping
+    
+    --View factor?
+    rx, ry = viewfactor * (x / z), viewfactor * (y / z)
+    --Round (added step)
+    rx, ry = Round(rx), Round(ry)
+    return rx, ry
+end
+
+local function ClipTri3d(a, b, c)
+    --todo
+end
+--http://graphics.cs.cmu.edu/nsp/course/15-462/Spring04/slides/06-viewing.pdf
+--https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua
+local function ClipPolygon(cx, cy, ...)
+    cx, cy = cx / 2, cy / 2
+    local subjectPolygon = {}
+    local t = {...}
+    for i = 1, #t, 2 do
+        table.insert(subjectPolygon, {t[i], t[i + 1]})
+    end
+    local clipPolygon = {{-cx, -cy}, {cx, -cy}, {cx, cy}, {-cx, cy}}
+    
+    local function inside(p, cp1, cp2)
+        return (cp2.x - cp1.x) * (p.y - cp1.y) > (cp2.y - cp1.y) * (p.x - cp1.x)
+    end
+    
+    local function intersection(cp1, cp2, s, e)
+        local dcx, dcy = cp1.x - cp2.x, cp1.y - cp2.y
+        local dpx, dpy = s.x - e.x, s.y - e.y
+        local n1 = cp1.x * cp2.y - cp1.y * cp2.x
+        local n2 = s.x * e.y - s.y * e.x
+        local n3 = 1 / (dcx * dpy - dcy * dpx)
+        local x = (n1 * dpx - n2 * dcx) * n3
+        local y = (n1 * dpy - n2 * dcy) * n3
+        return {x = x, y = y}
+    end
+    
+    local function clip(subjectPolygon, clipPolygon)
+        local outputList = subjectPolygon
+        local cp1 = clipPolygon[#clipPolygon]
+        for _, cp2 in ipairs(clipPolygon) do -- WP clipEdge is cp1,cp2 here
+            local inputList = outputList
+            outputList = {}
+            local s = inputList[#inputList]
+            for _, e in ipairs(inputList) do
+                if inside(e, cp1, cp2) then
+                    if not inside(s, cp1, cp2) then
+                        outputList[#outputList + 1] = intersection(cp1, cp2, s, e)
+                    end
+                    outputList[#outputList + 1] = e
+                elseif inside(s, cp1, cp2) then
+                    outputList[#outputList + 1] = intersection(cp1, cp2, s, e)
+                end
+                s = e
+            end
+            cp1 = cp2
+        end
+        return outputList
+    end
+    
+    local function main()
+        local function mkpoints(t)
+            for i, p in ipairs(t) do
+                p.x, p.y = p[1], p[2]
+            end
+        end
+        mkpoints(subjectPolygon)
+        mkpoints(clipPolygon)
+    
+        local outputList = clip(subjectPolygon, clipPolygon)
+        local out = {}
+        for i = 1, #outputList do
+            local x, y = outputList[i].x, outputList[i].y
+            local duplicate = false
+            for i2 = 1, #out, 2 do
+                if i ~= i2 and x == out[i2] and y == out[i2 + 1] then
+                    duplicate = true
+                end
+            end
+            if duplicate == false then
+                table.insert(out, Round(x))
+                table.insert(out, Round(y))
+            end
+        end
+        return unpack(out)
+    end
+    
+    return main()
+end
+
+local function AngleInRange(angle, r1, r2)
+    --is angle between r1 and r2?
+    --use normalized angles
+    r1 = (r1 > 180) and (r1 - 360) or r1
+    angle = (angle > 180) and (angle - 360) or angle
+    return (r1 < angle) and (angle < r2)
+end
+local function NormalizeAngle(deg)
+    return deg - (math.floor(deg / 360) * 360)
+end
+local function Normalize(x1, y1, z1, x2, y2, z2)
+    --Sets the line length to 1, while preserving everything else
+    xn, yn, zn = x < 0, y < 0, z < 0
+    x, y, z = x2 - x1, y2 - y1, z2 - z1
+    n = math.sqrt(x ^ 2 + y ^ 2 + z ^ 2)
+    x, y, z = x / n, y / n, z / n
+    if xn then
+        x = x * -1
+    end
+    if yn then
+        y = y * -1
+    end
+    if zn then
+        z = z * -1
+    end
+    return x1, y1, z1, x1 + x, y1 + y, z1 + z
+end
+
+
+
+local function ParseObject(str)
+    --[[
+    This function parses an object file.
+    Pass on the file content.
+    In blender, the object must be exported as an 'Wavefront Object' file. 'Triangulate faces' and 'Export as obj' must be on, and everything else should be off.
+    --]]
+    local t = {}
+    local vertices = {} --Format: {{x, y, z}, {x, y, z}, ...}
+    local polygons = {} --Format: {{{x1, y1, z1}, {x2, y2, z2}, {x3, y3, z3}}, {{x1, y1, z1}, {x2, y2, z2}, {x3, y3, z3}}, ...}
+    local polygonindex = {} --Format: {{p1, p2, p3}, {p1, p2, p3}, ...}
+    local counter = 0
+    local function Hook(start, func)
+        table.insert(t, {start, func})
+    end
+    --Vertex
+    Hook('v', function(t)
+        local temp = {}
+        for i = 2, #t do
+            table.insert(temp, tonumber(t[i]))
+        end
+        table.insert(vertices, temp)
+    end)
+    --Polygon
+    Hook('f', function(t)
+        local temp = {}
+        local temp2 = {}
+        for i = 2, #t do
+            table.insert(temp, vertices[tonumber(t[i])])
+            table.insert(temp2, tonumber(t[i]))
+        end
+        table.insert(polygons, temp)
+        table.insert(polygonindex, temp2)
+    end)
+    local data = Split(str, '\n')
+    for i = 1, #data do
+        local chunk = Split(data[i], ' ')
+        for i2 = 1, #t do
+            if t[i2][1] == chunk[1] then
+                counter = counter + 1
+                t[i2][2](chunk)
+                break
+            end
+        end
+    end
+    return vertices, polygons, polygonindex
+end
+
+
+
+
+
+
+function Pixel3d.New(t)
+    --t should be a dictionary with attributes
+    --Example: t = {x = 1, y = 1, z = 1, size = 100}
+    local Object = {}
+    setmetatable(Object, Pixel3d)
+    if t then
+        for k, v in pairs(t) do
+            Object[string.lower(k)] = v
+        end
+        return Object
+    end
+end
+
+function Pixel3d.Default()
+    local Object = Pixel3d.New(
+    {
+        x = 0,
+        y = 0,
+        z = 0,
+        size = {
+            x = 0,
+            y = 0,
+            z = 0
+        }
+    })
+    return Object
+end
+
+function Pixel3d.Point()
+    local Object = Pixel3d.New(
+    {
+        x = 0,
+        y = 0,
+        z = 0,
+        type = 'Point',
+        size = {
+            x = 0,
+            y = 0,
+            z = 0
+        }
+    })
+    return Object
+end
+
+function Pixel3d.Box(sx, sy, sz)
+    local Object = Pixel3d.New(
+    {
+        --Type
+        type = 'Box',
+        --Coordinates
+        x = 0,
+        y = 0,
+        z = 0,
+        --Size
+        size = {
+            x = 0,
+            y = 0,
+            z = 0
+        },
+        fill = nil, --Fill the surface
+        color = nil, --Color of the edges
+        fillcolor = nil, --Color of the surface
+        colorall = nil --Overrides color and fillcolor, to set a color for all of the object
+    })
+    Object.size.x, Object.size.y, Object.size.z = sx, sy, sz
+    return Object
+end
+
+function Pixel3d.Sphere(rsx, sy, sz)
+    local Object = Pixel3d.New(
+    {
+        x = 0,
+        y = 0,
+        z = 0,
+        radius = rsx,
+        type = 'Sphere'
+    })
+    return Object
+end
+
+--https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
+--result is in degrees
+local function CalculateAngle(cx, cy, ex, ey)
+    local dy = ey - cy
+    local dx = ex - cx
+    if dx == 0 then
+        if dy > 0 then
+            return 90
+        elseif dy < 0 then
+            return 270
+        else
+            return 0 --cx, cy = ex, ey ?
+        end
+    end
+    local theta = math.atan2(dy, dx) --rad
+    theta = theta * 180 / math.pi
+    return theta
+end
+
+function Pixel3d.RenderObject(Object, cx, cy, cz, fov, rx, ry, options)
+    --Default settings
+    local fov = fov or 105 --field of view (degrees) (minecraft is 70, 150)
+    fov = 180
+    fov = 105
+    local cx, cy, cz = cx or 0, cy or 0, cz or 0 --Camera coordinates
+    local rx, ry = rx or 0, ry or 0 --Camera Rotation, in degrees
+    local scale = scale or 25 --Scale
+    local clipx, clipy = 200, 200 --Total Width
+    clipx, clipy = 100, 100
+    --Normalize Angle
+    rx = NormalizeAngle(rx)
+
+    --[[
+    --Z Buffer
+    local ZBuffer = {}
+    --]]
+
+    --Options
+    local options = options or {fill = false, color = 'red'}
+
+    --Make Blank
+    local str = Pixel.New() --Relies on expandable canvas
+    str.Color.All = options.colorall
+
+    --Parse Object
+    local v, p, index = ParseObject(Object) --Vertex, Polygon
+    local ProjectedPoint = {}
+
+    --2d Map (debug)
+    local _ = 2
+    local map = Pixel.New()
+    local crx, crz = Round(cx), Round(cz)
+    map = Pixel.SetPixel(map, crx * _, crz * _, Pixel.Data.Filled)
+    map = Pixel.SetColor(map, crx * _, crz * _, 'red')
+    -- [[
+    print(rx, (NormalizeAngle(rx - fov / 2)))
+    local fovx1, fovy1, fovz1 = Pixel3d.CalculateMovement(crx * _, 0, crz * _, (NormalizeAngle(rx - fov / 2)), 0, 10)
+    local fovx2, fovy2, fovz2 = Pixel3d.CalculateMovement(crx * _, 0, crz * _, (NormalizeAngle(rx + fov / 2)), 0, 10)
+    map = Pixel.Line(map, crx * _, crz * _, Round(fovx1), Round(fovz1))
+    map = Pixel.Line(map, crx * _, crz * _, Round(fovx2), Round(fovz2))
+    --]]
+    local fx, fy, fz = Pixel3d.CalculateMovement(crx * _, 0, crz * _, (NormalizeAngle(rx)), 0, 20)
+    map = Pixel.Line(map, crx * _, crz * _, Round(fx), Round(fz))
+
+    --Parse Verticies
+    for i = 1, #v do
+        local point = v[i]
+        local x, y, z = point[1], point[2], point[3]
+        local px, py = ProjectPoint(x, y, z, cx, cy, cz, rx, ry, scale)
+        local zbuffer = math.sqrt((cx - x) ^ 2 + (cy - y) ^ 2 + (cz - z) ^ 2) --3d distance formula
+        --[[
+         , - ~ ~ ~ - ,
+     , ' rx-fov/2      ' ,rx+fov/2
+   ,  \                 /  ,
+  ,      \           /      ,
+ ,          \     /          ,
+ ,             P             ,
+ ,                           ,
+  ,                 O       ,
+   ,                       ,
+     ,                  , '
+       ' - , _ _ _ ,  '        
+        ]]
+        --calculate angle
+        local angle = NormalizeAngle(CalculateAngle(cx, cz, x, z) - 90)
+        --negate it if it's behind
+        --range
+        --print('RANGE', (rx - fov / 2), (rx + fov / 2), 'ANGLE', angle)
+        map = Pixel.SetPixel(map, x * _, z * _, Pixel.Data.Filled)
+
+        --if angle > NormalizeAngle(rx - fov / 2) and angle < NormalizeAngle(rx + fov / 2) then
+        if AngleInRange(angle, NormalizeAngle(rx - fov / 2), NormalizeAngle(rx + fov / 2)) then
+            --in range
+        else
+            
+            zbuffer = -zbuffer
+        end
+        table.insert(ProjectedPoint, {px, py, {x, y, z}, zbuffer})
+    end
+    print(map)
+    for i = 1, #index do
+        local Projected = {}
+        --if any points on zbuf greater than 0
+        --todo: implement real zbuffer
+        local valid = false
+        for i2 = 1, #index[i] do
+            local point = ProjectedPoint[index[i][i2]]
+            local px, py = point[1], point[2]
+            local zbuffer = point[4]
+            if zbuffer > 0 then
+                valid = true
+            end
+            table.insert(Projected, px)
+            table.insert(Projected, py)
+        end
+        if valid then
+            Projected = {ClipPolygon(clipx, clipy, unpack(Projected))}
+            if #Projected >= 6 then
+                local valid = true
+                for i = 1, #Projected do
+                    --detect NAN, INF
+                    local a = Projected[i]
+                    if a ~= a or a == 1/0 then
+                        valid = false
+                    end
+                end
+                if valid then
+                    table.insert(Projected, options) --Bug in lua, unpacking and mixing arguments don't work well
+                    --Draw Polygons
+                    Pixel.Polygon(str, unpack(Projected))
+                end
+            end
+        end
+    end
+    return str
+end
+
+
+
+function Pixel3d.CalculateMovement(x, y, z, rx, ry, distance)
+    --rx, ry should be deg
+    rx, ry = math.rad(rx), ry
+    --[[
+    Get x, y from x, y, angle, distance
+
+
+    Radians
+    360 = 2pi radians
+    90 = pi/2 radians
+    45 = pi/4 radians
+    
+    X
+
+            0
+
+
+    270     O     90
+
+
+           180
+
+
+    Y
+
+           0
+
+
+D   270    O     90   U
+
+
+          180
+    --]]
+    return x + math.sin(rx) * distance, y + math.sin(ry), z + math.cos(rx) * distance
+end
+
+--https://www.khanacademy.org/computer-programming/interactive-3d-cube/6436122472742912
+--
+function Pixel3d.Interactive(Object, cx, cy, cz, fov, rx, ry, options)
+    --Default settings
+    local fov = fov or 70 --field of view
+    local cx, cy, cz = cx or 0, cy or 0, cz or 0 --Camera coordinates
+    local rx, ry = rx or 0, ry or 0 --Camera Rotation, in degrees
+
+    --Settings
+    local cms = 1 --Camera moving speed
+    local crs = 10 --Camera rotation speed
+    
+    crs = 45
+
+
+
+    print('Use wasd to move, and ijkl to move camera. Type stop to stop.')
+    --Keybinds
+    local t = {}
+    local function Main(input)
+        if t[input] then
+            t[input]()
+        end
+    end
+    local function Bind(k, f)
+        t[k] = f
+    end
+    --Move
+    local function Move(x)
+        cx, cy, cz = Pixel3d.CalculateMovement(cx, cy, cz, (rx + x), (ry), cms)
+    end
+    Bind('w', function()
+        Move(0)
+    end)
+    Bind('a', function()
+        rx = rx - crs
+    end)
+    Bind('s', function()
+        Move(-180)
+    end)
+    Bind('d', function()
+        rx = rx + crs
+    end)
+    --Camera
+    Bind('c', function()
+        Move(-90)
+    end)
+    Bind('v', function()
+        Move(90)
+    end)
+
+    Bind('i', function()
+        ry = ry + crs
+    end)
+    Bind('j', function()
+        rx = rx - crs
+    end)
+    Bind('k', function()
+        ry = ry - crs
+    end)
+    Bind('l', function()
+        rx = rx + crs
+    end)
+    --Debug
+    Bind('debug', function()
+        print(cx, cy, cz)
+        print(rx, ry)
+        --print(sinx, cosx, siny, cosy)
+    end)
+    Bind('up', function()cy = cy + cms end)
+    Bind('down', function()cy = cy - cms end)
+    repeat
+        print(Pixel3d.RenderObject(Object, cx, cy, cz, fov, rx, ry, options))
+        local input = string.lower(io.read())
+        Main(input)
+    until input == 'stop'
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--Conway's Game of Life
+--[[
+- Each cell has 8 neighbors
+- Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+- Any live cell with two or three live neighbours lives on to the next generation.
+- Any live cell with more than three live neighbours dies, as if by overpopulation.
+- Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+--]]
+
+GameOfLife = {}
+
+
+--[=[
+--v1, no optimizations
+function GameOfLife.NextGeneration(self)
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    local function CheckN(x, y)
+        local a = 0
+        local t = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}}
+        local t = 
+        {
+        {-1, -1}, {0, -1}, {1, -1},
+        {-1, 0},           {1, 0},
+        {-1, 1},  {0, 1},  {1, 1}
+        }
+        for i = 1, #t do
+            --print(Pixel.GetPixel(str, x + t[i][1], y + t[i][2]))
+            a = a + tonumber(Pixel.GetPixel(str, x + t[i][1], y + t[i][2]) or 0)
+        end
+        --print('OVER')
+        return a
+    end
+    local function CheckCell(x, y)
+        --print(x,y)
+        local n = CheckN(x, y)
+        local p = Pixel.GetPixel(str, x, y)
+        if p == Pixel.Data.Filled then
+            if n == 2 or n == 3 then
+                Pixel.SetPixel(new, x, y, Pixel.Data.Filled)
+            else
+                --Pixel.SetPixel(new, x, y, Pixel.Data.Empty)
+            end
+        elseif n == 3 then --Should be dead
+            Pixel.SetPixel(new, x, y, Pixel.Data.Filled)
+        end
+    end
+    local minx, miny, maxx, maxy = nil, nil, nil, nil
+    for x, v in pairs(str.Data) do
+        --[[
+        if minx then
+            if x < minx then
+                minx = x
+            end
+        else
+            minx = x
+        end
+        --]]
+        minx = minx and ( ( minx > x ) and x or minx ) or x
+        maxx = maxx and ( ( maxx < x ) and x or maxx ) or x
+        for y, v2 in pairs(v) do
+            miny = miny and ( ( miny > y ) and y or miny ) or y
+            maxy = maxy and ( ( maxy < y ) and y or maxy ) or y
+            --CheckCell(x, y)
+        end
+    end
+    --Check cells of all the grid. Even "nil" ones
+    for x = minx, maxx do
+        for y = miny, maxy do
+            CheckCell(x, y)
+        end
+    end
+    --[[
+    Check cells just around the grid.
+    C = check
+    . = cell
+    CCCCC
+    C...C
+    C...C
+    C...C
+    CCCCC
+    ]]
+    for x = minx - 1, maxx do
+        CheckCell(x, miny - 1)
+    end
+    for y = miny - 1, maxy do
+        CheckCell(maxx + 1, y)
+    end
+    for x = maxx + 1, minx, -1 do
+        CheckCell(x, maxy + 1)
+    end
+    for y = maxy + 1, miny, -1 do
+        CheckCell(minx - 1, y)
+    end
+    return new
+end
+--]=]
+
+
+function GameOfLife.NextGeneration(self)
+    local str = GetPixelData(self)
+    local new = Pixel.New()
+    local function CheckCell(x, y)
+        --print(x,y)
+        -- [[
+        local n = 0
+        n = Pixel.GetPixel(str, x-1, y-1) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x  , y-1) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x+1, y-1) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x-1, y  ) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x+1, y  ) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x-1, y+1) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x  , y+1) == Pixel.Data.Filled and n + 1 or n
+        n = Pixel.GetPixel(str, x+1, y+1) == Pixel.Data.Filled and n + 1 or n
+        --]]
+        local p = Pixel.GetPixel(str, x, y)
+        if p == Pixel.Data.Filled then
+            if n == 2 or n == 3 then
+                Pixel.SetPixel(new, x, y, Pixel.Data.Filled)
+            else
+                --Pixel.SetPixel(new, x, y, Pixel.Data.Empty)
+            end
+        elseif n == 3 then --Should be dead
+            Pixel.SetPixel(new, x, y, Pixel.Data.Filled)
+        end
+    end
+    local c = {}
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            c[x-1] = c[x-1] or {}
+            c[x  ] = c[x  ] or {}
+            c[x+1] = c[x+1] or {}
+
+            
+            c[x-1][y-1] = true
+            c[x  ][y-1] = true
+            c[x+1][y-1] = true
+            c[x-1][y  ] = true
+            c[x  ][y  ] = true
+            c[x+1][y  ] = true
+            c[x-1][y+1] = true
+            c[x  ][y+1] = true
+            c[x+1][y+1] = true
+        end
+    end
+    for x, v in pairs(c) do
+        for y, v2 in pairs(v) do
+            CheckCell(x, y)
+        end
+    end
+    return new
+end
+
+
+
+
+
+
+
+
+
+
+
+--DrawWithJoints.lua
+--Inspiration: https://www.youtube.com/watch?v=pgAHW8OpcTY
+local armlength = 50
+local function GetJoint(x1, y1, x2, y2)
+    --https://www.geeksforgeeks.org/find-points-at-a-given-distance-on-a-line-of-given-slope/
+    --midpoint
+    local mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+    --perpendicular slope to line x1y1 to x2y2
+    local slope = -1 / ((y2 - y1) / (x2 - x1))
+    local distance = math.sqrt((armlength ^ 2) - ((((mx - x1) ^ 2 + (my - y1) ^ 2))))
+    --print(distance)
+
+    
+    --there should be plus and minus, but we are only including plus for now.
+    --joint will always be on the right or up. just swap points if u want left or down.
+    if x1 == x2 then
+        return Round(mx + distance), Round(my)
+    elseif y1 == y2 then
+        return Round(mx), Round(my + distance)
+    else
+        local dx = (distance / math.sqrt(1 + (slope ^ 2)));
+        local dy = slope * dx;
+        return Round(mx + dx), Round(mx + dy)
+    end
+
+
+    --[=[
+    --doesn't work
+    local mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+    --perpendicular slope to line x1y1 to x2y2
+    --local slope = -1 / ((y2 - y1) / (x2 - x1))
+    --slope of line x1y1 to x2y2
+    local slope = ((y2 - y1) / (x2 - x1))
+    local distance = (x2 - x1) ^ 2 + (y2 - y1) ^ 2
+    --[[
+    form a triangle
+    armlength ^ 2 = (distance / 2) ^ 2 + (pointdistance) ^ 2
+    pointdistance ^ 2 = armlength ^ 2 - (distance / 2) ^ 2
+    --]]
+    local pointdistance = math.sqrt(armlength ^ 2 - (distance / 2) ^ 2)
+    --If slope is closer to 0, more down. If closer to 1, more directional.
+    return mx + (distance * ()), my + (distance * ())
+    --]=]
+    --[[
+for i = 1, 1 do
+    local x1, y1, x2, y2 = 0, 0, i, 0
+    local x3, y3 = GetJoint(x1, y1, x2, y2)
+    print(x3, y3)
+    print(Pixel.New():Line(x1, y1, x3, y3):Line(x3, y3, x2, y2))
+end
+print('START')
+
+for i = 1, 10 do
+    local x1, y1, x2, y2 = 0, i, 8, 0
+    local x3, y3 = GetJoint(x1, y1, x2, y2)
+    print(x3, y3)
+    print(Pixel.New():Line(x1, y1, x3, y3):Line(x3, y3, x2, y2))
+end
+    ]]
+end
+
+local function CreateArm(str, x1, y1, x2, y2)
+    local x3, y3 = GetJoint(x1, y1, x2, y2)
+    str = Pixel.Line(str, x1, y1, x3, y3)
+    str = Pixel.Line(str, x3, y3, x2, y2)
+    return str
+end
+
+function Pixel.AnimateWrite(old, new, ox, oy)
+    local interpolate = true
+    --old should be a canvas to write on, new should just have the places to write filled, ox and oy should be the place where the arm starts.
+    old = GetPixelData(old)
+    new = GetPixelData(new)
+    ox = ox or 0
+    oy = oy or 0
+    local tx = {}
+    local ty = {}
+    for x, v in pairs(new.Data) do
+        for y, v2 in pairs(v) do
+            if v2 == Pixel.Data.Filled then
+                table.insert(tx, x)
+                ty[x] = ty[x] or {}
+                table.insert(ty[x], y)
+            end
+        end
+    end
+    --ppp(tx)ppp(ty)
+    table.sort(tx)
+    local function Output(str)
+        print(str)
+        --wait
+        --local a=os.clock()repeat until a+0.5<=os.clock()
+    end
+    local function Interpolate(x1, y1, x2, y2)
+        local n = 0
+        if math.abs(x2 - x1) <= 1 and math.abs(y2 - y1) <= 1 then
+            --nothing to interpolate
+            return n
+        else
+            --use pixel.line but with funcs
+            Pixel.Line(Pixel.New(), x1, y1, x2, y2, {setfunction = function(x, y)
+                --print(x, y)
+                if (x == x1 and y == y1) or (x == x2 and y == y2) then
+                    --ignore
+                else
+                    --print('INTERPOLATE', x, y)
+                    n = n + 1
+                    local temp = Pixel.Copy(old)
+                    temp = CreateArm(temp, ox, oy, x, y)
+                    Output(temp)
+                end
+            end})
+            return n
+        end
+    end
+    local lastx, lasty
+    for i = 1, #tx do
+        local x = tx[i]
+        if lastx ~= x then
+            table.sort(ty[x])
+            for i2 = 1, #ty[x] do
+                local y = ty[x][i2]
+                if lasty then
+                    if lastx and i2 == 1 then
+                        --special happens when x change
+                        --print(lastx, lasty, x, y)
+                        Interpolate(lastx, lasty, x, y)
+                    else
+                        --print(x, lasty, x, y)
+                        Interpolate(x, lasty, x, y)
+                    end
+                end
+                --print(ox, oy, x2, y2, x, y)
+                local temp = Pixel.Copy(old)
+                temp = CreateArm(temp, ox, oy, x, y)
+                old = Pixel.SetPixel(old, x, y, Pixel.Data.Filled)
+                Output(temp)
+                lasty = y
+            end
+            lastx = x
+        end
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--https://github.com/Rochet2/lualzw/blob/master/lualzw.lua
+--[[
+MIT License
+Copyright (c) 2016 Rochet2
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+]]
+
+
+local char = string.char
+local type = type
+local select = select
+local sub = string.sub
+local tconcat = table.concat
+
+local basedictcompress = {}
+local basedictdecompress = {}
+for i = 0, 255 do
+    local ic, iic = char(i), char(i, 0)
+    basedictcompress[ic] = iic
+    basedictdecompress[iic] = ic
+end
+
+local function dictAddA(str, dict, a, b)
+    if a >= 256 then
+        a, b = 0, b+1
+        if b >= 256 then
+            dict = {}
+            b = 1
+        end
+    end
+    dict[str] = char(a,b)
+    a = a+1
+    return dict, a, b
+end
+
+local function compress(input)
+    if type(input) ~= "string" then
+        return nil, "string expected, got "..type(input)
+    end
+    local len = #input
+    if len <= 1 then
+        return "u"..input
+    end
+
+    local dict = {}
+    local a, b = 0, 1
+
+    local result = {"c"}
+    local resultlen = 1
+    local n = 2
+    local word = ""
+    for i = 1, len do
+        local c = sub(input, i, i)
+        local wc = word..c
+        if not (basedictcompress[wc] or dict[wc]) then
+            local write = basedictcompress[word] or dict[word]
+            if not write then
+                return nil, "algorithm error, could not fetch word"
+            end
+            result[n] = write
+            resultlen = resultlen + #write
+            n = n+1
+            if  len <= resultlen then
+                return "u"..input
+            end
+            dict, a, b = dictAddA(wc, dict, a, b)
+            word = c
+        else
+            word = wc
+        end
+    end
+    result[n] = basedictcompress[word] or dict[word]
+    resultlen = resultlen+#result[n]
+    n = n+1
+    if  len <= resultlen then
+        return "u"..input
+    end
+    return tconcat(result)
+end
+
+local function dictAddB(str, dict, a, b)
+    if a >= 256 then
+        a, b = 0, b+1
+        if b >= 256 then
+            dict = {}
+            b = 1
+        end
+    end
+    dict[char(a,b)] = str
+    a = a+1
+    return dict, a, b
+end
+
+local function decompress(input)
+    if type(input) ~= "string" then
+        return nil, "string expected, got "..type(input)
+    end
+
+    if #input < 1 then
+        return nil, "invalid input - not a compressed string"
+    end
+
+    local control = sub(input, 1, 1)
+    if control == "u" then
+        return sub(input, 2)
+    elseif control ~= "c" then
+        return nil, "invalid input - not a compressed string"
+    end
+    input = sub(input, 2)
+    local len = #input
+
+    if len < 2 then
+        return nil, "invalid input - not a compressed string"
+    end
+
+    local dict = {}
+    local a, b = 0, 1
+
+    local result = {}
+    local n = 1
+    local last = sub(input, 1, 2)
+    result[n] = basedictdecompress[last] or dict[last]
+    n = n+1
+    for i = 3, len, 2 do
+        local code = sub(input, i, i+1)
+        local lastStr = basedictdecompress[last] or dict[last]
+        if not lastStr then
+            return nil, "could not find last from dict. Invalid input?"
+        end
+        local toAdd = basedictdecompress[code] or dict[code]
+        if toAdd then
+            result[n] = toAdd
+            n = n+1
+            dict, a, b = dictAddB(lastStr..sub(toAdd, 1, 1), dict, a, b)
+        else
+            local tmp = lastStr..sub(lastStr, 1, 1)
+            result[n] = tmp
+            n = n+1
+            dict, a, b = dictAddB(tmp, dict, a, b)
+        end
+        last = code
+    end
+    return tconcat(result)
+end
+
+
+
+--Pixel.Compress
+--[[
+TODO: Encode metadata
+]]
+
+function Pixel.Compress(str)
+    local str = GetPixelData(str)
+
+
+
+    --Add metadata before compression
+    local metadata = {'M'}
+    table.insert(metadata, 'Color{')
+    for x, v in pairs(str.Color) do
+        table.insert(metadata, '[')
+        table.insert(metadata, tostring(x))
+        table.insert(metadata, ']={')
+        for y, v2 in pairs(v) do
+            if v2 then
+                table.insert(metadata, '[')
+                table.insert(metadata, tostring(y))
+                table.insert(metadata, ']=\'')
+                table.insert(metadata, tostring(v2))
+                table.insert(metadata, '\',')
+            end
+        end
+        metadata[#metadata] = '\''
+        table.insert(metadata, '}')
+    end
+    table.insert(metadata, '}')
+    metadata = table.concat(metadata)
+
+
+    --Pixel.Convert.From2d
+    local from2d, x, y = Pixel.Convert.From2d(str)
+    local string = 'X' .. tostring(x) .. 'Y' .. tostring(y) .. 'S' .. from2d .. metadata
+    --Pixel.Convert.From2d + lzw
+    local stringlzw = compress(string)
+
+    do
+        return '1' .. stringlzw
+    end
+
+
+
+
+
+
+
+
+
+
+    --Rectangle
+    local final = {}
+    --Compress Data
+    --[[
+        t = {
+            [1] = {
+                [1] = '1',
+                ...
+            },
+            ...
+        }
+        OPCODE
+        --point
+        X 1 SETX 1
+        Y 1 SETY 1
+        S 1 SET '1'
+        --rectangle
+        A 1 SETX1 1
+        B 1 SETY1 1
+        C 1 SETX2 1
+        D 1 SETY2 1
+    ]]
+    --Compress into rectangle
+    local size = 4
+    local unfilledpenalty = 0
+    local filledreward = 0
+    local rect = {}
+    for x1, v in pairs(str.Data) do --Get a point
+        for y1, v2 in pairs(v) do
+            for x2, v3 in pairs(str.Data) do --Get another point
+                for y2, v4 in pairs(v3) do
+                    if x2 > x1 and y2 > y1 then --No repeat check
+                        if math.abs(x2 - x1) > size and math.abs(y2 - y1) > size then
+                            local count = 0
+                            for x = x1, x2 do --Count points (Filled)
+                                for y = y1, y2 do
+                                    if Pixel.GetPixel(str, x, y) == Pixel.Data.Filled then
+                                        count = count + 1
+                                    end
+                                end
+                            end
+                            local area = ((math.abs(x2 - x1) + 1) * (math.abs(y2 - y1) + 1))
+                            if (count / area) > 0.8  then --Over threshold
+                                --Estimate reduction in space
+                                --print(area, (area - count) == 1)
+                                --local reduction = ((((math.abs(x2 - x1) + 1) * 2) + (area * 2)) - (8 + ((area - count) * 4)))
+                                --Algorithm for reduction
+                                local reduction = ((2 + #tostring(x1) + #tostring(y1) + area + (math.abs(x2 - x1))) - (4 + #tostring(x1) + #tostring(y1) + #tostring(x2) + #tostring(y2) + (unfilledpenalty * (area - count) + (filledreward * ((count / area) == 1 and 1 or 0))))) / 1
+                                --local reduction = count / area
+                                if reduction > 0 then
+                                    table.insert(rect, {reduction, x1, y1, x2, y2})
+                                    --print('YAY', reduction, x1, y1, x2, y2)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+    for k, v in spairs(rect, function(t, a, b) return t[a][1] > t[b][1] end) do
+        if v then
+            --print(v[2], v[3], v[4], v[5])
+            --print(k, v[1])
+            local a = {v[2], v[3], v[4], v[5]}
+            --Destroy all other overlaps
+            for k2, v in pairs(rect) do
+                if k ~= k2 then
+                    --print(k, k2)
+                    local b = {v[2], v[3], v[4], v[5]}
+                    --https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
+                    --if (RectA.Left < RectB.Right && RectA.Right > RectB.Left &&
+                    --    RectA.Top > RectB.Bottom && RectA.Bottom < RectB.Top ) 
+                    --print(a[1] < b[3] , a[3] > b[1] , a[2] > b[4] , a[2] < b[4])
+                    if a[1] < b[3] and a[3] > b[1] and a[2] < b[4] and a[4] > b[2] then
+                        --print('overlap')
+                        rect[k2] = nil
+                    end
+                end
+            end
+        end
+    end
+    local cx, cy = nil, nil
+    local function Encode(x, y, v)
+        local s = false
+        if not (cx == x) then
+            table.insert(final, 'X')
+            table.insert(final, x)
+            cx = x
+            s = true
+        end
+        if not (cy and (cy + 1 == y) or false) then
+            table.insert(final, 'Y')
+            table.insert(final, y)
+            s = true
+        end
+        if s then
+            table.insert(final, 'S')
+        end
+        table.insert(final, v)
+        cy = y
+    end
+    for k, v in spairs(rect, function(t, a, b) return t[a][1] > t[b][1] end) do
+        --print(k, v[1])
+        local a = {v[2], v[3], v[4], v[5]}
+        --print(unpack(a))
+        --Make opcodes for rect
+        table.insert(final, 'A')
+        table.insert(final, a[1])
+        table.insert(final, 'B')
+        table.insert(final, a[2])
+        table.insert(final, 'C')
+        table.insert(final, a[3])
+        table.insert(final, 'D')
+        table.insert(final, a[4])
+        table.insert(final, 'S')
+        table.insert(final, Pixel.Data.Filled)
+        --Find points that are empty
+        local t = {}
+        for x = a[1], a[3] do
+            for y = a[2], a[4] do
+                if Pixel.GetPixel(str, x, y) == Pixel.Data.Empty then
+                    table.insert(t, {x, y})
+                else
+                    if str.Data[x] then
+                        str.Data[x][y] = nil --Set it to nil to not get it picked up by later compression
+                    end
+                    if str.Data[x] then
+                        local delete = true
+                        for k, v in pairs(str.Data[x]) do
+                            delete = false
+                            break
+                        end
+                        if delete then
+                            str.Data[x] = nil
+                        end
+                    end
+                end
+            end
+        end
+        for i = 1, #t do
+            Encode(t[i][1], t[i][2], Pixel.Data.Empty)
+        end
+    end
+    --Encode all other points
+    for x, v in pairs(str.Data) do
+        for y, v2 in pairs(v) do
+            if v2 == Pixel.Data.Filled then
+                Encode(x, y, Pixel.Data.Filled)
+            end
+        end
+    end
+    --rectangle
+    local rectangle = table.concat(final) .. metadata
+    --rectangle + lzw
+    local rectanglelzw = compress(rectangle)
+
+
+
+    local final = nil
+    local lengtht = {string, stringlzw, rectangle, rectanglelzw}
+    local codes = {'0', '1', '2', '3'}
+    for k, v in pairs(lengtht) do print(k, #v )end
+    for k, v in spairs(lengtht, function(t, a, b) return #t[a] < #t[b] end) do
+        final = codes[k] .. v
+        --print(codes[k])
+        break
+    end
+
+
+
+
+
+    return final
+end
+
+function Pixel.Decompress(str)
+    local a = string.sub(str, 1, 1)
+    str = string.sub(str, 2, -1)
+    local rectmode = false
+    if a == '0' then --STRING only
+        
+    elseif a == '1' then --STRING + LZW
+        str = decompress(str)
+    elseif a == '2' then --RECT only
+        rectmode = true
+    elseif a == '3' then --RECT + LZW
+        rectmode = true
+        str = decompress(str)
+    end
+    --print(a, str)
+    --Find metadata
+    local i = #str
+    repeat
+        if string.sub(str, i, i) == 'M' then
+            break
+        end
+        i = i - 1
+        if i <= 0 then
+            error('No metadata found')
+        end
+        --print(i)
+    until false
+    local metadata = string.sub(str, i + 1, -1)
+    str = string.sub(str, 1, i - 1)
+    --print(str)
+    --[[
+    if rectmode == false then
+        return Pixel.New(str)
+    end
+    --]]
+    --Main rectangle decompression + 2d works too
+    local new = Pixel.New()
+    local OPDATA = {}
+    local function Execute(op, args)
+        --print(op, args)
+        if op == 'S' then
+            args = tostring(args)
+            for i = 1, #args do
+                local s = string.sub(args, i, i)
+                if OPDATA.A and OPDATA.B and OPDATA.C and OPDATA.D then
+                    for x = OPDATA.A, OPDATA.C do
+                        for y = OPDATA.B, OPDATA.D do
+                            Pixel.SetPixel(new, x, y, s)
+                        end
+                    end
+                    OPDATA.A, OPDATA.B, OPDATA.C, OPDATA.D = nil, nil, nil, nil
+                elseif OPDATA.X and OPDATA.Y then
+                    if rectmode == false then
+                        if s == Pixel.Data.NewLine then
+                            OPDATA.Y = OPDATA.Y + 1
+                            OPDATA.X = OPDATA.DX
+                        else
+                            --print('SET', OPDATA.X, OPDATA.Y)
+                            Pixel.SetPixel(new, OPDATA.X, OPDATA.Y, s)
+                            OPDATA.X = OPDATA.X + 1
+                            --OPDATA.X = OPDATA.X + 1
+                        end
+                    else
+                        if s == Pixel.Data.NewLine then
+                            OPDATA.X = OPDATA.X + 1
+                        else
+                            --print('SET', OPDATA.X, OPDATA.Y)
+                            Pixel.SetPixel(new, OPDATA.X, OPDATA.Y, s)
+                            OPDATA.Y = OPDATA.Y + 1
+                            --OPDATA.X = OPDATA.X + 1
+                        end
+                    end
+                else
+                    error('Unable to determine opdata set')
+                end
+            end
+        else
+            args = tonumber(args)
+            OPDATA[op] = args
+            if rectmode == false and op == 'X' then
+                OPDATA.DX = OPDATA.X
+            end
+        end
+        --[=[
+        if type(OPCODES[op]) == number then
+            rect[OPCODES[op]] = args
+        elseif OPCODES == x then
+
+        elseif OPCODES == y then
+            y = args
+        end
+        --]=]
+    end
+    local OPCODES = {
+        A = true,
+        B = true,
+        C = true,
+        D = true,
+        X = true,
+        Y = true,
+        S = true
+    }
+    local getarg = false
+    local op = ''
+    local a = ''
+    for i = 1, #str + 1 do
+        local s = string.sub(str, i, i)
+        if OPCODES[s] or (i == #str + 1) then
+            if getarg then
+                Execute(op, a)
+            end
+            getarg = true
+            op = s
+            a = ''
+        else
+            if getarg then
+                a = a .. s
+            else
+                error('Invalid opcode: ' .. s .. ', i: ' .. i)
+            end
+        end
+    end
+    return new
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BenchmarkOn = false
+function Pixel.Benchmark()
+    if BenchmarkOn then
+        local o = os.clock() - BenchmarkOn
+        print(o)
+    else
+        BenchmarkOn = os.clock()
+    end
+end
+
+BenchmarkFunctionStats = {
+    {'', 'Test Length', 'Count', 'Per Second', 'Per Operation'}
+}
+function Pixel.BenchmarkFunction(func, arg, noinsert)
+    if type(arg[1]) == 'table' and arg[1].Data then
+
+    else
+        if noinsert then
+
+        else
+            table.insert(arg, 1, Pixel.New())
+        end
+    end
+    local f
+    if type(func) == 'function' then
+        f = func
+    elseif type(func) == 'string' then
+        f = Pixel[func]
+    else
+        error('Invalid Function.')
+    end
+    local b = 5
+    local c = 0
+    --local str = Pixel.New()
+    local a = os.clock()
+    repeat
+        --f(str, unpack(arg))
+        f(unpack(arg))
+        c = c + 1
+    until a + b <= os.clock()
+    local t = {}
+    t[1] = tostring(func)
+    t[2] = b
+    t[3] = c
+    t[4] = c / b
+    t[5] = b / c
+    table.insert(BenchmarkFunctionStats, t)
+    --[[
+    local out = 'Function: ' .. tostring(func) .. '\nCount: ' .. c .. '\nPer Second: ' .. (c/b) .. '\nPer Operation: ' .. (b/c) .. '\nTest Length: ' .. b
+    print(out)
+    return out
+    --]]
+end
+
+function Pixel.BenchmarkFunctionChart()
+    local function Chart(t)
+        --organized in x, y fashion
+        --make rows
+        local rows = {}
+        for x = 1, #t do
+            for y = 1, #t[x] do
+                rows[y] = rows[y] or {}
+                rows[y][x] = t[x][y]
+            end
+        end
+        --get column index
+        local x = {}
+        for i = 1, #t do
+            table.insert(x, t[i][1])
+        end
+        --get row index
+        local y = {}
+        for i = 1, #t[1] do
+            table.insert(y, t[1][i])
+        end
+        --find min distances
+        local min = {}
+        for i = 1, #t do
+            local max = 0
+            for i2 = 1, #t[i] do
+                local a = #tostring(t[i][i2])
+                max = (a > max) and a or max 
+            end
+            table.insert(min, max + 1)
+        end
+        local final = {}
+        for i = 1, #rows do
+            for i2 = 1, #rows[i] do
+                local a = tostring(rows[i][i2])
+                table.insert(final, a .. string.rep(' ', min[i2] - #a))
+            end
+            table.insert(final, '\n')
+        end
+        return table.concat(final)
+    end
+    local jit = pcall(function()require'jit'end)
+    local out = 'Version: ' .. _VERSION .. (jit and ' JIT' or '') .. '\n' .. Chart(BenchmarkFunctionStats) .. '\n'
+    print(out)
+    return out
+    --[[
+    print(Chart({
+        {'', 'Pixel.Test', 'Pixel.TestFunction'},
+        {'Count', '123', '4567'},
+        {'Per Second', '1', '33'},
+    }))
+    --]]
+end
+
+
+
+return Pixel

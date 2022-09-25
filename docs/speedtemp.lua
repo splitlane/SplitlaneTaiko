@@ -36,6 +36,18 @@ speed = distance / ms
 print(speed)
 print(9600*noteradius*scroll/(bpm*mspermeasure))
 
+
+
+--[[
+speed = (noteradius * scroll * (ms / 25)) / ms
+speed = (noteradius * scroll / 25)
+]]
+
+
+
+
+
+
 --full formula
 --(noteradius * scroll * ms / ((bpm*mspermeasure/240000) * 25)) / ms
 --[[
