@@ -1161,6 +1161,10 @@ function Taiko.ParseTJA(source)
                         end
                     elseif match[1] == 'END' then
                         if Parser.songstarted then
+                            if #Parser.currentmeasure ~= 0 then
+                                ParseError(match[1], 'Current measure is not empty')
+                            end
+
                             table.insert(Out, Parsed)
                             Parsed = {
                                 Metadata = Table.Clone(Parsed.OriginalMetadata),
@@ -1387,6 +1391,8 @@ function Taiko.ParseTJA(source)
                 Parser.mpm = Parser.bpm * Parser.sign / 4
                 Parser.mspermeasure = 60000 * Parser.sign * 4 / Parser.bpm
 
+                --[=[
+                --UPDATE: ADD WHEN PUSHING
                 --Barline
                 --get first note and make barline
                 if Parser.barline and #Parser.currentmeasure == 0 then
@@ -1401,7 +1407,9 @@ function Taiko.ParseTJA(source)
                     note.ms = Parser.ms
                     note.data = 'event'
                     note.event = 'barline'
+                    table.insert(Parser.currentmeasure, note)
                 end
+                --]=]
 
                 --Could not recognize command, probably just raw data
                 --example: 11,
@@ -1429,6 +1437,27 @@ function Taiko.ParseTJA(source)
                     Parser.mpm = Parser.bpm * Parser.sign / 4
                     Parser.mspermeasure = 60000 * Parser.sign * 4 / Parser.bpm
                     --]]
+
+
+
+
+                    --BARLINE
+                    if Parser.barline then
+                        --[[
+                        table.insert(Parsed.Data, {
+                            ms = Parser.ms,
+                            data = 'event',
+                            event = 'barline'
+                        })
+                        --]]
+                        local note = Parser.createnote()
+                        note.ms = Parser.ms
+                        note.data = 'event'
+                        note.event = 'barline'
+                        --table.insert(Parser.currentmeasure, 1, note)
+                        table.insert(Parsed.Data, 1, note)
+                    end
+
 
 
                     --add notes
@@ -1737,24 +1766,41 @@ function Taiko.PlaySong(Parsed, Difficulty)
         noteradius coordinates
         123456789
     ]]
+
+
+    --[[
+    --Discontinued, most of performance is renderering
+    local precalculate = true --Biggest modifier
+    --]]
     
     
 
     local buffer = 100 --Buffer (ms)
     local bufferlength = 10 --Pixels
 
-    local startms = 1000 --Added to all notes (ms)
+    --[[ Extracted from metadata
+    local startms = 0 --Subtracted from all notes (ms)
+    --]]
     local endms = 100 --Added to last note (ms)
 
     local noteradius = 4 --Default: 2
 
 
     local y = 0 --Pixels, y render center
+    local tracky = 10 --Pixels, radius of track width
+    local trackstart = 0 --Pixels, start of track
+
+
     local tracklength = 40  --In noteradius from left (taiko-web)
     local target = 3 --In noteradius from left, representing center (taiko-web)
     local factor = 1 --Zoom factor / Size Multiplier
     local renderconfig = {
-        {color = 'red'}, {color = 'blue'}, {color = 'red'}, {color = 'blue'}
+        [1] = {color = 'red'},
+        [2] = {color = 'blue'},
+        [3] = {color = 'red'},
+        [4] = {color = 'blue'},
+        [5] = {color = 'yellow'},
+        [6] = {color = 'yellow'},
     }
 
 
@@ -1764,6 +1810,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     --Multiply noteradius
     tracklength = math.floor(tracklength * noteradius)
+    local trackend = trackstart + tracklength
     target = math.floor(target * noteradius)
 
 
@@ -1771,8 +1818,9 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     local Pixel = require('Pixels')
 
-
-    local minx, maxx = 0, tracklength
+    --min, max, to prevent screen bobbing
+    local minx, maxx = trackstart, tracklength
+    local miny, maxy = -tracky, tracky
 
     --minx and maxx not needed, modified
     Pixel.Convert.ToDots = function(str) --converts a given data table
@@ -1834,7 +1882,6 @@ function Taiko.PlaySong(Parsed, Difficulty)
             end
             return func(t2)
         end
-        local miny, maxy = itrow(data, getmin), itrow(data, getmax)
         --print(minx, maxx, miny, maxy)
         --Optimizations
         local out = {}
@@ -1914,13 +1961,26 @@ function Taiko.PlaySong(Parsed, Difficulty)
         return table.concat(out)
     end
 
+    local function RenderBarline(out, note)
+        local x = math.floor(note.p)
+        local y1, y2 = y - tracky, y + tracky
+        for y = y1, y2 do
+            local a = Pixel.GetPixel(out, x, y)
+            if a == '0' or a == nil then
+                Pixel.SetPixel(out, x, y, '1')
+            end
+        end
+    end
+
     local function RenderCircle(out, note)
         Pixel.Circle(out, math.floor(note.p), y, noteradius * note.radius, renderconfig[note.type])
     end
 
-    local function RenderRect(out, x1, x2)
+    local function RenderRect(out, x1, x2, y1, y2, options)
+        local options = options or {}
+        color = options.color
         --Clip
-        local a1 = (0 - bufferlength)
+        local a1 = (trackstart - bufferlength)
         if x1 < a1 then
             x1 = a1
         end
@@ -1929,11 +1989,12 @@ function Taiko.PlaySong(Parsed, Difficulty)
             x2 = a2
         end
         --Actual rendering
-        local y1 = y - noteradius
-        local y2 = y + noteradius
         for y = y1, y2 do
             for x = x1, x2 do
                 Pixel.SetPixel(out, x, y, '1')
+                if color then
+                    Pixel.SetColor(out, x, y, color)
+                end
             end
         end
     end
@@ -1950,8 +2011,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
             --Render start and end, and rect
             RenderCircle(out, note)
             --RenderCircle(out, endnote)
+            local r = noteradius * note.radius
             local x1, x2 = math.floor(note.p), math.floor(note.p + length)
-            RenderRect(out, x1, x2)
+            local y1 = y - r
+            local y2 = y + r
+            RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
         elseif n == 8 then
             if note.renderproxy then
                 note.renderproxy.p = note.p
@@ -1995,6 +2059,30 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     Parsed = Taiko.CalculateSpeedAll(Taiko.GetDifficulty(Parsed, Difficulty), noteradius)
 
+
+
+
+
+
+
+
+
+
+
+
+    --METADATA
+    local startms = Parsed.Metadata.OFFSET
+
+
+
+
+
+
+
+
+
+
+
     --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
 
 
@@ -2025,7 +2113,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local timet = {}
     for k, v in pairs(Parsed.Data) do
         table.insert(timet, v.ms)
-        v.ms = v.ms + startms
+        v.ms = v.ms - startms
         v.s = MsToS(v.ms)
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
@@ -2055,7 +2143,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     --]]
 
     --Calculate end time
-    ends = MsToS(math.max(unpack(timet)) + endms)
+    local endms = math.max(unpack(timet)) + endms
 
 
 
@@ -2071,20 +2159,19 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     while true do
         if nextnote then
+            nextnotel = nextnote.loads
             if nextnotel < 0 then
-                nextnote.p = CalculatePosition(nextnote, 0)
+                --nextnote.p = CalculatePosition(nextnote, nextnotel)
 
                 loaded.n = loaded.n + 1
                 loaded[loaded.n] = nextnote
+            else
+                break
             end
         else
             break
         end
-        if nextnotel > 0 then
-            break
-        end
         nextnote = nextnote.nextnote
-        nextnotel = nextnote.loads
     end
 
     loaded.e = loaded.n
@@ -2093,6 +2180,12 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
+
+    --Statistics
+    local padding = 10
+    local function Statistic(k, v)
+        print(k .. ': ' .. tostring(v) .. string.rep(' ', padding))
+    end
 
 
 
@@ -2119,49 +2212,55 @@ function Taiko.PlaySong(Parsed, Difficulty)
         local ms = s * 1000
 
         --See if next note is ready to be loaded
-        if nextnote and nextnote.loadms < ms then
-            --load
-            --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+        if nextnote then
+            if nextnote and nextnote.loadms < ms then
+                --load
+                --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
 
 
-            loaded.n = loaded.n + 1
-            --loaded.e = loaded.n
-            loaded.e = nextnote.n
-            loaded[nextnote.n] = nextnote
+                loaded.n = loaded.n + 1
+                --loaded.e = loaded.n
+                loaded.e = nextnote.n
+                loaded[nextnote.n] = nextnote
 
-            
+                
 
-            nextnote = nextnote.nextnote
-            
-            --[[
-            if loaded.s == 0 then
-                loaded.s = 1
-            end
-            loaded.e = loaded.n
-            loaded.n = loaded.n + 1
-            loaded[loaded.n + 1] = nextnote
-            nextnote = nextnote.nextnote
-            --]]
-
-
+                nextnote = nextnote.nextnote
+                
+                --[[
+                if loaded.s == 0 then
+                    loaded.s = 1
+                end
+                loaded.e = loaded.n
+                loaded.n = loaded.n + 1
+                loaded[loaded.n + 1] = nextnote
+                nextnote = nextnote.nextnote
+                --]]
 
 
 
-            --[[
-            local breaker = false
-            if not nextnote then
-                while true do
-                    local s = os.clock() - startt
-                    if s > ends then
-                        breaker = true
+
+
+                --[[
+                local breaker = false
+                if not nextnote then
+                    while true do
+                        local s = os.clock() - startt
+                        if s > ends then
+                            breaker = true
+                            break
+                        end
+                    end
+                    if breaker then
                         break
                     end
                 end
-                if breaker then
-                    break
-                end
+                --]]
             end
-            --]]
+        else
+            if ms > endms then
+                break
+            end
         end
 
         --[[
@@ -2175,33 +2274,61 @@ function Taiko.PlaySong(Parsed, Difficulty)
             if note then
                 --print(ms, loaded.s, loaded.e, loaded.n)
                 note.p = CalculatePosition(note, ms)
-                if (note.p < (0-bufferlength)) and (note.endnote == nil) then
-                    --unload
-                    --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
-                    --loaded[note.n] = nil
-                    --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
-                    loaded[i] = nil
-                    --loaded.n = loaded.n - 1
-                    if loaded.n == 0 then
-                        loaded.s = nextnote.n
-                    elseif note.n == loaded.s then
-                        if note.n == loaded.e then
-                            loaded.n = 0
-                        else
-                            local i2 = loaded.s
-                            repeat
-                                i2 = i2 + 1
-                                loaded.n = loaded.n - 1
-                            until loaded[i2]
-                            loaded.s = i2
-                        end
-                    end
+                --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
 
-                    --[[
-                    loaded[note.n] = nil
-                    loaded.s = note.n + 1
-                    loaded.n = loaded.n - 1
-                    --]]
+
+                --[[
+                    Check if it is ready to be unloaded
+                    If it is, check if endnote is not valid
+                    Warning: note.endnote yields false results
+
+                    if note.endnote then
+                        if loaded[note.endnote.n] == nil then
+                            --delete
+
+                        else
+
+                        end
+                    else
+                        --delete
+                    end
+                --]]
+                --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
+                if (note.p < (trackstart - bufferlength)) then
+                    --print(note.endnote and (loaded[note.endnote.n] ~= nil))
+                    --if note.endnote and (loaded[note.endnote.n] ~= nil) then
+                    if note.endnote and note.endnote.done ~= true then
+                        --Still has endnote loaded
+                        --Don't unload
+                    else
+                        --unload
+                        --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
+                        --loaded[note.n] = nil
+                        --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+                        note.done = true
+                        loaded[i] = nil
+                        --loaded.n = loaded.n - 1
+                        if loaded.n == 0 then
+                            loaded.s = nextnote.n
+                        elseif note.n == loaded.s then
+                            if note.n == loaded.e then
+                                loaded.n = 0
+                            else
+                                local i2 = loaded.s
+                                repeat
+                                    i2 = i2 + 1
+                                    loaded.n = loaded.n - 1
+                                until loaded[i2]
+                                loaded.s = i2
+                            end
+                        end
+
+                        --[[
+                        loaded[note.n] = nil
+                        loaded.s = note.n + 1
+                        loaded.n = loaded.n - 1
+                        --]]
+                    end
                 end
 
                 if note.p < tracklength then
@@ -2224,12 +2351,18 @@ function Taiko.PlaySong(Parsed, Difficulty)
                     --]]
 
 
-
-                    RenderNote(out, note)
+                    if note.data == 'event' then
+                        if note.event == 'barline' then
+                            RenderBarline(out, note)
+                        end
+                    elseif note.data == 'note' then
+                        RenderNote(out, note)
+                    else
+                        error('Invalid note.data')
+                    end
                 end
             end
         end
-
 
 
         -- [=[
@@ -2248,10 +2381,21 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
         --statistics
+        Statistic('S', s)
+        Statistic('Ms', ms)
+        Statistic('Loaded', loaded.n)
+        Statistic('FPS', 1000 / (ms - lastms))
+        lastms = ms
+        --[=[
+        --[[
         print(ms - lastms)
         local fps = 1000 / (ms - lastms)
         print(fps)
         lastms = ms
+        --]]
+        print(loaded.n .. '     ')
+        --]]
+        --]=]
 
 
 
@@ -2311,8 +2455,10 @@ end
 
 -- [[
 file = './tja/donkama.tja'
---file = 'test.tja'
---file = './tja/ekiben.tja'
+--file = './tja/test.tja'
+file = './tja/ekiben.tja'
+--file = './tja/lag.tja'
+--file = './tja/drumroll2.tja'
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 
 
