@@ -336,7 +336,26 @@ Taiko.Data = {
             l = true
         }
     },
+    Branch = {
+        PathId = {
+            N = 0,
+            E = 1,
+            M = 2
+        },
+        PathName = {
+            [0] = 'N',
+            [1] = 'E',
+            [2] = 'M'
+        },
+        Requirements = {
+            r = function()
 
+            end,
+            p = function()
+
+            end
+        }
+    }
 }
 
 
@@ -404,6 +423,7 @@ function Taiko.ParseTJA(source)
             GAUGEINCR = 'NORMAL',
             TOTAL = nil,
             HIDDENBRANCH = 0,
+            DIVERGENOTES = false
         },
         Data = {}
         --[[
@@ -441,6 +461,7 @@ function Taiko.ParseTJA(source)
         },
 
 
+
         bpm = 0,
         ms = 0,
         songstarted = false,
@@ -455,7 +476,19 @@ function Taiko.ParseTJA(source)
         gogo = false,
         --noteparse
         lastlong = nil,
-        balloonn = 1
+        balloonn = 1,
+
+        --branch
+        currentbranch = nil,
+        branch = {
+            on = false,
+            Requirements = {
+
+            },
+            Paths = {
+
+            }
+        }
     }
 
 
@@ -1279,7 +1312,29 @@ function Taiko.ParseTJA(source)
                             - The first measure's line after #BRANCHSTART is always yellow.
                             - Branch can be ended either with #BRANCHEND or with another #BRANCHSTART.
                         ]]
-                    elseif match[1] == 'N' then
+                        if Parser.branch.on then
+                            ParseError(match[1], 'Branch has not ended')
+                        else
+                            Parsed.Metadata.DIVERGENOTES = true
+                            local t = ParseCSV(match[1], match[2])
+                            local f = Check(match[1], Taiko.Data.Branch.Requirements[string.lower(t[1])], 'Invalid type', t[1])
+                            Parser.branch.Requirements = {f}
+                            local i = 2
+                            while true do
+                                if not t[i] then
+                                    break
+                                end
+                                local p = Taiko.Data.Branch.PathName[i - 1]
+                                if p then
+                                    Parser.branch.Requirements[p] = t[i]
+                                else
+                                    break
+                                end
+                                i = i + 1
+                            end
+                        end
+                    --elseif match[1] == 'N' then
+                    elseif Taiko.Data.Branch.PathId[match[1]] then
                         --[[
                             - Starts a song notation for a path:
                                 - #N - starts Normal path, background is the default grey.
@@ -1291,13 +1346,35 @@ function Taiko.ParseTJA(source)
                             - All paths can be omitted, ending the branch with #BRANCHEND immediately.
                             - All paths are required to have their measures complete in the same time at the end.
                         ]]
-                    elseif match[1] == 'E' then
-                    elseif match[1] == 'M' then
+                        if Parser.branch.on then
+                            Parser.currentbranch = match[1]
+                            Parser.branch.Paths[match[1]] = {}
+                        else
+                            ParseError(match[1], 'Branch has not started')
+                        end
+                    --elseif match[1] == 'E' then
+                    --elseif match[1] == 'M' then
                     elseif match[1] == 'BRANCHEND' then
                         --[[
                             - Begins a normal song notation without branching.
                             - Retains the visual branch from previous #BRANCHSTART.
                         ]]
+                        if Parser.branch.on then
+                            ParseError(match[1], 'Branch has already ended')
+                        else
+                            --Copy (Move) branches into Parsed.Data
+                            local n = Parser.createnote()
+                            n.data = 'event'
+                            n.event = 'branch'
+                            n.branch = {
+                                Requirements = Parser.branch.Requirements,
+                                Paths = Parser.branch.Paths
+                            }
+                            Parser.branch.on = false
+                            Parser.branch.Requirements = {}
+                            Parser.branch.Paths = {}
+                            table.insert(Parsed.Data, n)
+                        end
                     elseif match[1] == 'SECTION' then
                         --[[
                             - Reset accuracy values for notes and drumrolls on the next measure.
@@ -2089,7 +2166,9 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     --Precalculate
 
-
+    local function IsNote(note)
+        return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
+    end
 
     local function CalculateLoadMs(note, ms)
         return ms - ((tracklength / note.speed) + buffer)
@@ -2130,9 +2209,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local nextnote = nil
     for i = #Parsed.Data, 1, -1 do
         local v = Parsed.Data[i]
-        v.n = i
-        v.nextnote = nextnote
-        nextnote = v
+        if IsNote(v) then
+            v.n = i
+            v.nextnote = nextnote
+            nextnote = v
+        end
     end
 
     --[[
@@ -2202,7 +2283,10 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     --Main loop
     local startt = os.clock()
-    local lastms = startt * 1000 --fps
+
+
+    --FPS
+    local framen = 0
     while true do
         --Make canvas
         local out = Pixel.New()
@@ -2331,7 +2415,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
                     end
                 end
 
-                if note.p < tracklength then
+                if note.p < (tracklength + buffer) then
                     --Draw note on canvas
 
                     --Only for noteradius = 0.5
@@ -2364,7 +2448,6 @@ function Taiko.PlaySong(Parsed, Difficulty)
             end
         end
 
-
         -- [=[
 
         Ansi.SetCursor(1, 1)
@@ -2374,7 +2457,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
         Pixel.SetPixel(out, lastpixel, 0, '1')
         --]]
         print(out)
-
+        framen = framen + 1
 
         --]=]
 
@@ -2384,8 +2467,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
         Statistic('S', s)
         Statistic('Ms', ms)
         Statistic('Loaded', loaded.n)
-        Statistic('FPS', 1000 / (ms - lastms))
-        lastms = ms
+        --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
+        Statistic('FPS (Frame)', framen / (s - startt))
         --[=[
         --[[
         print(ms - lastms)
