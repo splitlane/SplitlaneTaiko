@@ -1,8 +1,14 @@
 --[[
-Taikov3.lua
+Taikov5.lua
 
 
 Changes: Taiko.PlaySong improved!
+
+
+Changes:
+Barline Fixed (Generated at start of measure, not when pushed)
+Playsong supports branches!
+Parser resets after every difficulty
 
 
 Objectives:
@@ -14,6 +20,7 @@ Tags: --WIP, --FIX, --TODO, --PERFORMANCE
 
 TODO:
 modes
+scoreinit
 
 
 
@@ -28,6 +35,41 @@ X 0
 X0
 0
 ]]
+
+
+
+
+
+--[[
+How to run on powershell
+
+cd C:\Users\User\OneDrive\code\Taiko\Versions\
+lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -425,7 +467,13 @@ function Taiko.ParseTJA(source)
             GAUGEINCR = 'NORMAL',
             TOTAL = nil,
             HIDDENBRANCH = 0,
-            DIVERGENOTES = false
+            DIVERGENOTES = false,
+
+
+
+            --temprary values
+            SCOREINIT = 0,
+            SCOREDIFF = 0
         },
         Data = {}
         --[[
@@ -442,57 +490,9 @@ function Taiko.ParseTJA(source)
             }
         ]]
     }
-    local Parser = {
-        settings = {
-            noteparse = {
-                notealias = {
-                    A = 3,
-                    B = 4
-                },
-                noteexceptions = {
-                    [','] = true,
-                    [' '] = true,
-                    ['\t'] = true
-                }
-            },
-            command = {
-                matchexceptions = {
-                    --scrapped
-                }
-            }
-        },
 
 
 
-        bpm = 0,
-        ms = 0,
-        songstarted = false,
-        timingpoint = nil,
-        sign = 4/4,
-        mpm = 0,
-        mspermeasure = 0,
-        scroll = 1,
-        measuredone = true,
-        currentmeasure = {},
-        measurepushto = Parsed.Data,
-        barline = true,
-        gogo = false,
-        --noteparse
-        lastlong = nil,
-        balloonn = 1,
-
-        --branch
-        currentbranch = nil,
-        branch = {
-            on = false,
-            requirements = {
-
-            },
-            paths = {
-
-            }
-        }
-    }
 
 
 
@@ -601,107 +601,6 @@ function Taiko.ParseTJA(source)
 
 
 
-    --Parser functions
-    function Parser.createnote(n)
-        if n then
-            --[[
-            Notes:
-                - 0 - Blank, no note.
-                - 1 - Don.
-                - 2 - Ka.
-                - 3 - DON (Big).
-                - 4 - KA (Big).
-                - 5 - Drumroll.
-                    - Should end with an 8.
-                - 6 - DRUMROLL (Big).
-                    - Should end with an 8.
-                - 7 - Balloon.
-                    - Should end with an 8.
-                - 8 - End of a balloon or drumroll.
-                - 9 - Kusudama, yam, oimo, or big balloon (has the same appearance as a regular balloon in taiko-web).
-                    - Should end with an 8.
-                    - Use another 9 to specify when to lower the points for clearing.
-                    - Ignored in taiko-web.
-                - A - DON (Both), multiplayer note with hands.
-                - B - KA (Both), multiplayer note with hands.
-                - F - ADLIB, hidden note that will increase combo if discovered and does not give a BAD when missed.
-                    - Ignored in taiko-web.
-            ]]
-
-
-            local note = {
-                ms = nil,
-                data = nil, --'note'
-                type = n,
-                txt = nil,
-                gogo = Parser.gogo,
-                --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                mspermeasure = Parser.mspermeasure,
-                bpm = Parser.bpm,
-                --measuredensity = nil,
-                nextnote = nil,
-                radius = 1, --multiplier
-                requiredhits = nil,
-                length = nil,
-                endnote = nil,
-
-
-
-
-                onnotepush = nil
-            }
-            note.type = n
-
-            --Big note
-            if n == 3 or n == 4 or n == 6 then
-                note.radius = note.radius * 1.6
-            end
-
-            if n == 5 or n == 6 or n == 7 or n == 9 then
-                if Parser.lastlong then
-                    ParseError('parser.noteparse', 'Last long note has not ended')
-                else
-                    Parser.lastlong = note
-                    if n == 7 or n == 9 then
-                        note.requiredhits = Check('parser.noteparse', Parsed.Metadata.BALLOON[Parser.balloonn], 'Invalid number of balloons', Parser.balloonn)
-                        Parser.balloonn = Parser.balloonn + 1
-                    end
-                end
-            end
-
-            if n == 8 then
-                local lastlong = Parser.lastlong
-                note.startnote = lastlong
-                if lastlong then
-                    note.onnotepush = function()
-                        lastlong.length = note.ms - lastlong.ms
-                        lastlong.endnote = note
-                        Parser.lastlong = nil
-                        --note.type = 0 --to delete note
-                    end
-                else
-                    ParseError('parser.noteparse', 'Last long note has ended')
-                end
-            end
-
-            return note
-        else
-            return {
-                ms = nil,
-                data = nil, --'note'
-                type = nil,
-                txt = nil,
-                gogo = Parser.gogo,
-                --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                mspermeasure = Parser.mspermeasure,
-                bpm = Parser.bpm,
-                --measuredensity = nil,
-                nextnote = nil
-            }
-        end
-    end
 
 
 
@@ -710,26 +609,228 @@ function Taiko.ParseTJA(source)
 
 
 
+    local Parser = {}
+
+    local function GetParser()
+        local Parser = {
+            settings = {
+                noteparse = {
+                    notealias = {
+                        A = 3,
+                        B = 4
+                    },
+                    noteexceptions = {
+                        [','] = true,
+                        [' '] = true,
+                        ['\t'] = true
+                    }
+                },
+                command = {
+                    matchexceptions = {
+                        --scrapped
+                    }
+                }
+            },
+    
+    
+    
+            bpm = 0,
+            ms = 0,
+            songstarted = false,
+            timingpoint = nil,
+            sign = 4/4,
+            mpm = 0,
+            mspermeasure = 0,
+            scroll = 1,
+            measuredone = true,
+            currentmeasure = {},
+            measurepushto = Parsed.Data,
+            barline = true,
+            gogo = false,
+            --noteparse
+            lastlong = nil,
+            balloonn = 1,
+    
+            --branch
+            currentbranch = nil,
+            branch = {
+                on = false,
+                requirements = {
+    
+                },
+                paths = {
+    
+                }
+            },
+            msbeforebranch = nil,
 
 
-
-    function Parser.endbranch()
-        --Copy (Move) branches into Parsed.Data
-        local n = Parser.createnote()
-        n.data = 'event'
-        n.event = 'branch'
-        n.branch = {
-            requirements = Parser.branch.requirements,
-            paths = Parser.branch.paths
         }
-        Parser.branch.on = false
-        Parser.branch.requirements = {}
-        Parser.branch.paths = {}
-        table.insert(Parsed.Data, n)
-        Parser.measurepushto = Parsed.Data
+
+
+
+
+
+
+        --Parser functions
+        function Parser.createnote(n)
+            if n then
+                --[[
+                Notes:
+                    - 0 - Blank, no note.
+                    - 1 - Don.
+                    - 2 - Ka.
+                    - 3 - DON (Big).
+                    - 4 - KA (Big).
+                    - 5 - Drumroll.
+                        - Should end with an 8.
+                    - 6 - DRUMROLL (Big).
+                        - Should end with an 8.
+                    - 7 - Balloon.
+                        - Should end with an 8.
+                    - 8 - End of a balloon or drumroll.
+                    - 9 - Kusudama, yam, oimo, or big balloon (has the same appearance as a regular balloon in taiko-web).
+                        - Should end with an 8.
+                        - Use another 9 to specify when to lower the points for clearing.
+                        - Ignored in taiko-web.
+                    - A - DON (Both), multiplayer note with hands.
+                    - B - KA (Both), multiplayer note with hands.
+                    - F - ADLIB, hidden note that will increase combo if discovered and does not give a BAD when missed.
+                        - Ignored in taiko-web.
+                ]]
+
+
+                local note = {
+                    ms = nil,
+                    data = nil, --'note'
+                    type = n,
+                    txt = nil,
+                    gogo = Parser.gogo,
+                    --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    mspermeasure = Parser.mspermeasure,
+                    bpm = Parser.bpm,
+                    --measuredensity = nil,
+                    nextnote = nil,
+                    radius = 1, --multiplier
+                    requiredhits = nil,
+                    length = nil,
+                    endnote = nil,
+
+
+
+
+                    onnotepush = nil
+                }
+                note.type = n
+
+                --Big note
+                if n == 3 or n == 4 or n == 6 then
+                    note.radius = note.radius * 1.6
+                end
+
+                if n == 5 or n == 6 or n == 7 or n == 9 then
+                    if Parser.lastlong then
+                        --9 is special, so exclude
+                        if n == 9 then
+
+                        else
+                            ParseError('parser.noteparse', 'Last long note has not ended')
+                        end
+                    else
+                        --print('set', LineN)
+                        Parser.lastlong = note
+                        if n == 7 or n == 9 then
+                            --print(LineN)
+                            note.requiredhits = Check('parser.noteparse', Parsed.Metadata.BALLOON[Parser.balloonn], 'Invalid number of balloons', Parser.balloonn)
+                            Parser.balloonn = Parser.balloonn + 1
+                        end
+                    end
+                end
+
+                if n == 8 then
+                    --print('unset', LineN)
+                    local lastlong = Parser.lastlong
+                    Parser.lastlong = nil
+                    note.startnote = lastlong
+                    if lastlong then
+                        note.onnotepush = function()
+                            lastlong.length = note.ms - lastlong.ms
+                            lastlong.endnote = note
+                            --Parser.lastlong = nil
+                            --note.type = 0 --to delete note
+                        end
+                    else
+                        --ParseError('parser.noteparse', 'Last long note has ended')
+                    end
+                end
+
+                return note
+            else
+                return {
+                    ms = nil,
+                    data = nil, --'note'
+                    type = nil,
+                    txt = nil,
+                    gogo = Parser.gogo,
+                    --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    mspermeasure = Parser.mspermeasure,
+                    bpm = Parser.bpm,
+                    --measuredensity = nil,
+                    nextnote = nil
+                }
+            end
+        end
+
+
+
+
+
+
+
+
+
+
+
+        function Parser.endbranch()
+            --Copy (Move) branches into Parsed.Data
+            local n = Parser.createnote()
+            n.data = 'event'
+            n.event = 'branch'
+            n.branch = {
+                requirements = Parser.branch.requirements,
+                paths = Parser.branch.paths
+            }
+            Parser.branch.on = false
+            Parser.branch.requirements = {}
+            Parser.branch.paths = {}
+            table.insert(Parsed.Data, n)
+            Parser.measurepushto = Parsed.Data        
+            --Parser.ms = Parser.msbeforebranch + Parser.msinbranch
+        end
+
+
+
+
+
+
+
+        return Parser
     end
 
 
+
+    Parser = GetParser()
+
+
+
+
+
+
+
+
+    
 
 
 
@@ -766,7 +867,8 @@ function Taiko.ParseTJA(source)
     for i = 1, #lines do
         LineN = i
 
-        local line = TrimLeft(lines[i])
+        --local line = TrimLeft(lines[i])
+        local line = Trim(lines[i])
         if StartsWith(line, '//') or line == '' then
             --Do nothing
         else
@@ -1265,6 +1367,8 @@ function Taiko.ParseTJA(source)
                                 Data = {}
                             }
                             --reset parser?
+                            Parser = GetParser()
+                            --reset parser?
                             Parser.songstarted = false
                             Parser.measurepushto = Parsed.Data --Very important
                         else
@@ -1379,6 +1483,7 @@ function Taiko.ParseTJA(source)
                             --ParseError(match[1], 'Branch has not ended')
                             Parser.endbranch()
                         end
+                        Parser.msbeforebranch = Parser.ms
                         Parser.branch.on = true
                         Parsed.Metadata.DIVERGENOTES = true
                         local t = CheckCSV(match[1], match[2])
@@ -1411,6 +1516,7 @@ function Taiko.ParseTJA(source)
                             - All paths are required to have their measures complete in the same time at the end.
                         ]]
                         if Parser.branch.on then
+                            Parser.ms = Parser.msbeforebranch
                             Parser.currentbranch = match[1]
                             Parser.branch.paths[match[1]] = {}
                             Parser.measurepushto = Parser.branch.paths[match[1]]
@@ -1542,10 +1648,39 @@ function Taiko.ParseTJA(source)
                 end
                 --]=]
 
+
+
+                --BARLINE
+                if Parser.barline and #Parser.currentmeasure == 0 then
+                    --[[
+                    table.insert(Parsed.Data, {
+                        ms = Parser.ms,
+                        data = 'event',
+                        event = 'barline'
+                    })
+                    --]]
+                    local note = Parser.createnote()
+                    note.ms = Parser.ms
+                    note.data = 'event'
+                    note.event = 'barline'
+                    --table.insert(Parser.currentmeasure, 1, note)
+                    table.insert(Parser.measurepushto, 1, note)
+                end
+
+
+
+
+
+
+
+
+
+
+
                 --Could not recognize command, probably just raw data
                 --example: 11,
                 --get raw data
-                local data = {}
+                --local data = {}
 
                 for i = 1, #line do
                     local s = string.sub(line, i, i)
@@ -1562,7 +1697,7 @@ function Taiko.ParseTJA(source)
                     end
                 end
 
-                if EndsWith(line, ',') then
+                if EndsWith(TrimRight(line), ',') then
                     -- [[
                     --Recalculate --FIX
                     Parser.mpm = Parser.bpm * Parser.sign / 4
@@ -1572,22 +1707,7 @@ function Taiko.ParseTJA(source)
 
 
 
-                    --BARLINE
-                    if Parser.barline then
-                        --[[
-                        table.insert(Parsed.Data, {
-                            ms = Parser.ms,
-                            data = 'event',
-                            event = 'barline'
-                        })
-                        --]]
-                        local note = Parser.createnote()
-                        note.ms = Parser.ms
-                        note.data = 'event'
-                        note.event = 'barline'
-                        --table.insert(Parser.currentmeasure, 1, note)
-                        table.insert(Parser.measurepushto, 1, note)
-                    end
+
 
 
 
@@ -1688,19 +1808,93 @@ function Taiko.GetDifficulty(Parsed, Difficulty)
 end
 
 
+function Taiko.ForAll(ParsedData, f)
+    --[[
+    for k, v in pairs(ParsedData) do
+        if v.branch then
 
-
-
-
-
-
-
-function Taiko.ExtractBranch(branch, path)
-    return branch.paths[path]
+        else
+            f(v)
+        end
+    end
+    --]]
+    local n = 1 --Absolute
+    for i = 1, #ParsedData do --i is relative
+        local v = ParsedData[i]
+        if v.branch then
+            local n3 = -1
+            for k2, v2 in pairs(v.branch.paths) do
+                local n2 = n
+                for i2 = 1, #v2 do
+                    f(v2[i2], i2, n2)
+                    n2 = n2 + 1
+                end
+                n3 = (n3 < n2) and n2 or n3
+            end
+            n = n3
+        else
+            f(v, i, n)
+        end
+        n = n + 1
+    end
+    return ParsedData
 end
 
-function Taiko.ConnnectNextNote(Parsed)
-    
+
+function Taiko.GetAllNotes(ParsedData)
+    --Remember, objects are tables
+    local t = {}
+    for k, v in pairs(ParsedData) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                --[[
+                local a = Taiko.GetAllNotes(v2)
+                for i = 1, #a do
+                    table.insert(t, a[i])
+                end--]]
+                for i = 1, #v2 do
+                    table.insert(t, v2[i])
+                end
+            end
+        else
+            table.insert(t, v)
+        end
+    end
+    return t
+end
+
+
+
+
+function Taiko.ConnectNotes(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local n = ParsedData[i]
+        n.nextnote = nextnote
+        nextnote = n
+    end
+    return ParsedData
+end
+
+function Taiko.ExtractBranch(branch, path)
+    return branch.branch.paths[path]
+end
+
+function Taiko.ConnectAll(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local note = ParsedData[i]
+        if note.branch then
+            for k, v in pairs(note.branch.paths) do
+                local path = Taiko.ConnectNotes(v)
+                --Remember, tables are objects
+                path[#path].nextnote = nextnote
+            end
+        else
+            note.nextnote = nextnote
+        end
+        nextnote = note
+    end
 end
 
 
@@ -1803,14 +1997,14 @@ function Taiko.CalculateSpeed(note, noteradius)
     return speed
 end
 
-function Taiko.CalculateSpeedAll(Parsed, noteradius)
+function Taiko.CalculateSpeedAll(ParsedData, noteradius)
     --local t = {}
-    for i = 1, #Parsed.Data do
-        Parsed.Data[i].speed = Taiko.CalculateSpeed(Parsed.Data[i], noteradius)
+    for i = 1, #ParsedData do
+        ParsedData[i].speed = Taiko.CalculateSpeed(ParsedData[i], noteradius)
         --print(Parsed.Data[i].speed)
         --table.insert(t, Parsed.Data[i].speed)
     end
-    return Parsed
+    return ParsedData
 end
 
 
@@ -1916,7 +2110,6 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    --for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty)) do
     --[[
     local i = 0
     for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty).Data) do
@@ -1941,6 +2134,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
+
     --[[
         noteradius coordinates
         123456789
@@ -1951,6 +2145,13 @@ function Taiko.PlaySong(Parsed, Difficulty)
     --Discontinued, most of performance is renderering
     local precalculate = true --Biggest modifier
     --]]
+
+    --Really dumb idea, memory intensive, trading memory with performance
+    local prerender = {
+        on = true, --Biggest modifier
+        fps = 60, --Desired fps
+        frames = {} --Internal frame storage
+    } --Biggest modifier
     
     
 
@@ -2236,8 +2437,14 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    Parsed = Taiko.CalculateSpeedAll(Taiko.GetDifficulty(Parsed, Difficulty), noteradius)
+    Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
 
+
+    local notetable = Taiko.GetAllNotes(Parsed.Data)
+
+
+
+    --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
 
 
 
@@ -2291,6 +2498,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
     --Convert everything to seconds + fill up timet
+    --[[
     local timet = {}
     for k, v in pairs(Parsed.Data) do
         table.insert(timet, v.ms)
@@ -2301,13 +2509,66 @@ function Taiko.PlaySong(Parsed, Difficulty)
         v.loadp = CalculateLoadPosition(v, v.loadms)
         --v.n = k --MISTAKE: after sorted
     end
+    --]]
+    local timet = {}
+    for k, v in pairs(notetable) do
+        v.ms = v.ms - startms
+        v.s = MsToS(v.ms)
+        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.loadms = CalculateLoadMs(v, v.ms)
+        v.loads = MsToS(v.loadms)
+        v.loadp = CalculateLoadPosition(v, v.loadms)
+        --v.n = k --MISTAKE: after sorted
+        table.insert(timet, v.ms)
+    end
 
     --Sort by loadms
+    --Sort all branches firt
+    for k, v in pairs(Parsed.Data) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                table.sort(v2, function(a, b)
+                    return a.loadms < b.loadms
+                end)
+            end
+        end
+    end
+
+
+    --Path doesn't matter, they should all have same loadms
     table.sort(Parsed.Data, function(a, b)
-        return a.loadms < b.loadms
+        if a.branch and b.branch then
+            --both branches
+            for k, v in pairs(a.branch.paths) do
+                for k2, v2 in pairs(b.branch.paths) do
+                    return v[1].loadms < v2[1].loadms
+                end
+            end
+        elseif a.branch then
+            --a is branch
+            for k, v in pairs(a.branch.paths) do
+                return v[1].loadms < b.loadms
+            end
+        elseif b.branch then
+            --b is branch
+            for k, v in pairs(b.branch.paths) do
+                return a.loadms < v[1].loadms
+            end
+        else
+            --notes
+            return a.loadms < b.loadms
+        end
     end)
 
     --Relink and reindex after sorting
+    Taiko.ConnectAll(Parsed.Data)
+    Taiko.ForAll(Parsed.Data, function(note, i, n)
+        --print(note.loadms)
+        note.n = n
+    end)
+    --]]
+
+    --[[
     local nextnote = nil
     for i = #Parsed.Data, 1, -1 do
         local v = Parsed.Data[i]
@@ -2317,6 +2578,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
             nextnote = v
         end
     end
+    --]]
 
     --[[
     --ppp
@@ -2340,6 +2602,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local nextnote = Parsed.Data[1]
     local nextnotel = nextnote.loads
 
+    --[[
+    --redesign
     while true do
         if nextnote then
             nextnotel = nextnote.loads
@@ -2356,6 +2620,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
         end
         nextnote = nextnote.nextnote
     end
+    --]]
 
     loaded.e = loaded.n
 
@@ -2368,6 +2633,14 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local padding = 10
     local function Statistic(k, v)
         print(k .. ': ' .. tostring(v) .. string.rep(' ', padding))
+    end
+    --Log (Debug system)
+    local logs = ''
+    local function Log(s)
+        logs = logs .. '\n' .. s
+    end
+    local function RenderLog()
+        print(logs)
     end
 
 
@@ -2383,13 +2656,21 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
     --]]
 
-    --Main loop
-    local startt = os.clock()
+    local branch = 'M'
+
 
 
     --Statistics
     local framen = 0
     local framerenderstotal = 0
+
+
+
+    --Main loop
+    local startt = os.clock()
+
+
+
 
     while true do
         --Make canvas
@@ -2410,12 +2691,28 @@ function Taiko.PlaySong(Parsed, Difficulty)
                 loaded.n = loaded.n + 1
                 --loaded.e = loaded.n
                 loaded.e = nextnote.n
+
                 loaded[nextnote.n] = nextnote
 
                 
 
                 nextnote = nextnote.nextnote
                 
+                if nextnote.branch then
+                    Log('branch')
+                    --[[
+                    Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                        print(note.ms)
+                    end)
+                    error()
+                    --]]
+
+                    nextnote = nextnote.branch.paths[branch][1]
+
+                end
+                
+
+
                 --[[
                 if loaded.s == 0 then
                     loaded.s = 1
@@ -2561,6 +2858,10 @@ function Taiko.PlaySong(Parsed, Difficulty)
         Pixel.SetPixel(out, firstpixel, 0, '1')
         Pixel.SetPixel(out, lastpixel, 0, '1')
         --]]
+
+
+
+        
         print(out)
         framen = framen + 1
         local framerenders = os.clock() - raws
@@ -2570,6 +2871,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
         --statistics
+        --[[
         Statistic('S', s)
         Statistic('Ms', ms)
         Statistic('Loaded', loaded.n)
@@ -2581,7 +2883,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
         Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
         Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
         Statistic('FPS (Frame)', framen / s)
-
+        Statistic('nextloadms', nextnote.loadms)
+        Statistic('nextms', nextnote.ms)
+        Statistic('nextn', nextnote.n)
+        RenderLog()
+        --]]
 
 
 
@@ -2638,6 +2944,51 @@ end
 
 
 
+--Parse Testing
+
+--https://stackoverflow.com/questions/5303174/how-to-get-list-of-directories-in-lua
+-- Lua implementation of PHP scandir function
+function scandir(directory)
+    local i, t, popen = 0, {}, io.popen
+    local pfile = popen('dir "'..directory..'" /b')
+    for filename in pfile:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+    pfile:close()
+    return t
+end
+
+local dir = [[C:\Users\User\OneDrive\code\Taiko\Versions\taikobuipm]]
+local t = scandir(dir)
+local exclude = {
+    ['Koibumi 2000.tja'] = true
+}
+for i = 1, #t do
+    local file = t[i]
+    if (not exclude[file]) and EndsWith(file, 'tja') then
+        print(file)
+        Taiko.ParseTJA(io.open(dir .. '\\'.. file,'r'):read('*all'))
+    end
+end
+--error()
+
+
+
+
+
+--[[
+    Funny / Notable Songs list
+donkama.tja weird note scroll
+waraeru.tja weird barline + 938 balloon
+]]
+
+
+
+
+
+
+
 -- [[
 file = './tja/donkama.tja'
 --file = './tja/test.tja'
@@ -2645,7 +2996,10 @@ file = './tja/ekiben.tja'
 --file = './tja/lag.tja'
 --file = './tja/drumroll2.tja'
 --file = './tja/branchtest.tja'
---file = './tja/saitama.tja'
+file = './tja/saitama.tja'
+--file = './tja/donkama.tja'
+file = './tja/funny2000.tja'
+file = './tja/waraeru.tja'
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 
 

@@ -1,0 +1,1 @@
+Make sure to modify file names before minifying, since u are moving into dif folder / path

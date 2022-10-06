@@ -1,8 +1,13 @@
 --[[
-Taikov3.lua
+Taikov9.lua
 
 
 Changes: Taiko.PlaySong improved!
+
+PRERENDERING IS OLD CODE! FIX
+
+Changes:
+CompactTJA
 
 
 Objectives:
@@ -14,6 +19,7 @@ Tags: --WIP, --FIX, --TODO, --PERFORMANCE
 
 TODO:
 modes
+scoreinit
 
 
 
@@ -28,6 +34,41 @@ X 0
 X0
 0
 ]]
+
+
+
+
+
+--[[
+How to run on powershell
+
+cd C:\Users\User\OneDrive\code\Taiko\Versions\
+lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -425,7 +466,13 @@ function Taiko.ParseTJA(source)
             GAUGEINCR = 'NORMAL',
             TOTAL = nil,
             HIDDENBRANCH = 0,
-            DIVERGENOTES = false
+            DIVERGENOTES = false,
+
+
+
+            --temprary values
+            SCOREINIT = 0,
+            SCOREDIFF = 0
         },
         Data = {}
         --[[
@@ -442,57 +489,9 @@ function Taiko.ParseTJA(source)
             }
         ]]
     }
-    local Parser = {
-        settings = {
-            noteparse = {
-                notealias = {
-                    A = 3,
-                    B = 4
-                },
-                noteexceptions = {
-                    [','] = true,
-                    [' '] = true,
-                    ['\t'] = true
-                }
-            },
-            command = {
-                matchexceptions = {
-                    --scrapped
-                }
-            }
-        },
 
 
 
-        bpm = 0,
-        ms = 0,
-        songstarted = false,
-        timingpoint = nil,
-        sign = 4/4,
-        mpm = 0,
-        mspermeasure = 0,
-        scroll = 1,
-        measuredone = true,
-        currentmeasure = {},
-        measurepushto = Parsed.Data,
-        barline = true,
-        gogo = false,
-        --noteparse
-        lastlong = nil,
-        balloonn = 1,
-
-        --branch
-        currentbranch = nil,
-        branch = {
-            on = false,
-            requirements = {
-
-            },
-            paths = {
-
-            }
-        }
-    }
 
 
 
@@ -601,107 +600,6 @@ function Taiko.ParseTJA(source)
 
 
 
-    --Parser functions
-    function Parser.createnote(n)
-        if n then
-            --[[
-            Notes:
-                - 0 - Blank, no note.
-                - 1 - Don.
-                - 2 - Ka.
-                - 3 - DON (Big).
-                - 4 - KA (Big).
-                - 5 - Drumroll.
-                    - Should end with an 8.
-                - 6 - DRUMROLL (Big).
-                    - Should end with an 8.
-                - 7 - Balloon.
-                    - Should end with an 8.
-                - 8 - End of a balloon or drumroll.
-                - 9 - Kusudama, yam, oimo, or big balloon (has the same appearance as a regular balloon in taiko-web).
-                    - Should end with an 8.
-                    - Use another 9 to specify when to lower the points for clearing.
-                    - Ignored in taiko-web.
-                - A - DON (Both), multiplayer note with hands.
-                - B - KA (Both), multiplayer note with hands.
-                - F - ADLIB, hidden note that will increase combo if discovered and does not give a BAD when missed.
-                    - Ignored in taiko-web.
-            ]]
-
-
-            local note = {
-                ms = nil,
-                data = nil, --'note'
-                type = n,
-                txt = nil,
-                gogo = Parser.gogo,
-                --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                mspermeasure = Parser.mspermeasure,
-                bpm = Parser.bpm,
-                --measuredensity = nil,
-                nextnote = nil,
-                radius = 1, --multiplier
-                requiredhits = nil,
-                length = nil,
-                endnote = nil,
-
-
-
-
-                onnotepush = nil
-            }
-            note.type = n
-
-            --Big note
-            if n == 3 or n == 4 or n == 6 then
-                note.radius = note.radius * 1.6
-            end
-
-            if n == 5 or n == 6 or n == 7 or n == 9 then
-                if Parser.lastlong then
-                    ParseError('parser.noteparse', 'Last long note has not ended')
-                else
-                    Parser.lastlong = note
-                    if n == 7 or n == 9 then
-                        note.requiredhits = Check('parser.noteparse', Parsed.Metadata.BALLOON[Parser.balloonn], 'Invalid number of balloons', Parser.balloonn)
-                        Parser.balloonn = Parser.balloonn + 1
-                    end
-                end
-            end
-
-            if n == 8 then
-                local lastlong = Parser.lastlong
-                note.startnote = lastlong
-                if lastlong then
-                    note.onnotepush = function()
-                        lastlong.length = note.ms - lastlong.ms
-                        lastlong.endnote = note
-                        Parser.lastlong = nil
-                        --note.type = 0 --to delete note
-                    end
-                else
-                    ParseError('parser.noteparse', 'Last long note has ended')
-                end
-            end
-
-            return note
-        else
-            return {
-                ms = nil,
-                data = nil, --'note'
-                type = nil,
-                txt = nil,
-                gogo = Parser.gogo,
-                --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                mspermeasure = Parser.mspermeasure,
-                bpm = Parser.bpm,
-                --measuredensity = nil,
-                nextnote = nil
-            }
-        end
-    end
 
 
 
@@ -710,26 +608,228 @@ function Taiko.ParseTJA(source)
 
 
 
+    local Parser = {}
+
+    local function GetParser()
+        local Parser = {
+            settings = {
+                noteparse = {
+                    notealias = {
+                        A = 3,
+                        B = 4
+                    },
+                    noteexceptions = {
+                        [','] = true,
+                        [' '] = true,
+                        ['\t'] = true
+                    }
+                },
+                command = {
+                    matchexceptions = {
+                        --scrapped
+                    }
+                }
+            },
+    
+    
+    
+            bpm = 0,
+            ms = 0,
+            songstarted = false,
+            timingpoint = nil,
+            sign = 4/4,
+            mpm = 0,
+            mspermeasure = 0,
+            scroll = 1,
+            measuredone = true,
+            currentmeasure = {},
+            measurepushto = Parsed.Data,
+            barline = true,
+            gogo = false,
+            --noteparse
+            lastlong = nil,
+            balloonn = 1,
+    
+            --branch
+            currentbranch = nil,
+            branch = {
+                on = false,
+                requirements = {
+    
+                },
+                paths = {
+    
+                }
+            },
+            msbeforebranch = nil,
 
 
-
-    function Parser.endbranch()
-        --Copy (Move) branches into Parsed.Data
-        local n = Parser.createnote()
-        n.data = 'event'
-        n.event = 'branch'
-        n.branch = {
-            requirements = Parser.branch.requirements,
-            paths = Parser.branch.paths
         }
-        Parser.branch.on = false
-        Parser.branch.requirements = {}
-        Parser.branch.paths = {}
-        table.insert(Parsed.Data, n)
-        Parser.measurepushto = Parsed.Data
+
+
+
+
+
+
+        --Parser functions
+        function Parser.createnote(n)
+            if n then
+                --[[
+                Notes:
+                    - 0 - Blank, no note.
+                    - 1 - Don.
+                    - 2 - Ka.
+                    - 3 - DON (Big).
+                    - 4 - KA (Big).
+                    - 5 - Drumroll.
+                        - Should end with an 8.
+                    - 6 - DRUMROLL (Big).
+                        - Should end with an 8.
+                    - 7 - Balloon.
+                        - Should end with an 8.
+                    - 8 - End of a balloon or drumroll.
+                    - 9 - Kusudama, yam, oimo, or big balloon (has the same appearance as a regular balloon in taiko-web).
+                        - Should end with an 8.
+                        - Use another 9 to specify when to lower the points for clearing.
+                        - Ignored in taiko-web.
+                    - A - DON (Both), multiplayer note with hands.
+                    - B - KA (Both), multiplayer note with hands.
+                    - F - ADLIB, hidden note that will increase combo if discovered and does not give a BAD when missed.
+                        - Ignored in taiko-web.
+                ]]
+
+
+                local note = {
+                    ms = nil,
+                    data = nil, --'note'
+                    type = n,
+                    txt = nil,
+                    gogo = Parser.gogo,
+                    --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    mspermeasure = Parser.mspermeasure,
+                    bpm = Parser.bpm,
+                    --measuredensity = nil,
+                    nextnote = nil,
+                    radius = 1, --multiplier
+                    requiredhits = nil,
+                    length = nil,
+                    endnote = nil,
+
+
+
+
+                    onnotepush = nil
+                }
+                note.type = n
+
+                --Big note
+                if n == 3 or n == 4 or n == 6 then
+                    note.radius = note.radius * 1.6
+                end
+
+                if n == 5 or n == 6 or n == 7 or n == 9 then
+                    if Parser.lastlong then
+                        --9 is special, so exclude
+                        if n == 9 then
+
+                        else
+                            ParseError('parser.noteparse', 'Last long note has not ended')
+                        end
+                    else
+                        --print('set', LineN)
+                        Parser.lastlong = note
+                        if n == 7 or n == 9 then
+                            --print(LineN)
+                            note.requiredhits = Check('parser.noteparse', Parsed.Metadata.BALLOON[Parser.balloonn], 'Invalid number of balloons', Parser.balloonn)
+                            Parser.balloonn = Parser.balloonn + 1
+                        end
+                    end
+                end
+
+                if n == 8 then
+                    --print('unset', LineN)
+                    local lastlong = Parser.lastlong
+                    Parser.lastlong = nil
+                    note.startnote = lastlong
+                    if lastlong then
+                        note.onnotepush = function()
+                            lastlong.length = note.ms - lastlong.ms
+                            lastlong.endnote = note
+                            --Parser.lastlong = nil
+                            --note.type = 0 --to delete note
+                        end
+                    else
+                        --ParseError('parser.noteparse', 'Last long note has ended')
+                    end
+                end
+
+                return note
+            else
+                return {
+                    ms = nil,
+                    data = nil, --'note'
+                    type = nil,
+                    txt = nil,
+                    gogo = Parser.gogo,
+                    --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    mspermeasure = Parser.mspermeasure,
+                    bpm = Parser.bpm,
+                    --measuredensity = nil,
+                    nextnote = nil
+                }
+            end
+        end
+
+
+
+
+
+
+
+
+
+
+
+        function Parser.endbranch()
+            --Copy (Move) branches into Parsed.Data
+            local n = Parser.createnote()
+            n.data = 'event'
+            n.event = 'branch'
+            n.branch = {
+                requirements = Parser.branch.requirements,
+                paths = Parser.branch.paths
+            }
+            Parser.branch.on = false
+            Parser.branch.requirements = {}
+            Parser.branch.paths = {}
+            table.insert(Parsed.Data, n)
+            Parser.measurepushto = Parsed.Data        
+            --Parser.ms = Parser.msbeforebranch + Parser.msinbranch
+        end
+
+
+
+
+
+
+
+        return Parser
     end
 
 
+
+    Parser = GetParser()
+
+
+
+
+
+
+
+
+    
 
 
 
@@ -766,7 +866,8 @@ function Taiko.ParseTJA(source)
     for i = 1, #lines do
         LineN = i
 
-        local line = TrimLeft(lines[i])
+        --local line = TrimLeft(lines[i])
+        local line = Trim(lines[i])
         if StartsWith(line, '//') or line == '' then
             --Do nothing
         else
@@ -1164,7 +1265,7 @@ function Taiko.ParseTJA(source)
                                 Check(match[1], Taiko.Data.StyleName[a], 'Invalid course id', Taiko.Data.STYLE)
                                 Parsed.Metadata.STYLE = a
                             else
-                                Parsed.Metadata.STYLE = Check(match[1], Taiko.Data.CourseId[string.lower(Parsed.Metadata.STYLE)], 'Invalid course name', Parsed.Metadata.STYLE)
+                                Parsed.Metadata.STYLE = Check(match[1], Taiko.Data.StyleId[string.lower(Parsed.Metadata.STYLE)], 'Invalid course name', Parsed.Metadata.STYLE)
                             end
                             --[[
                             EXAM1:, EXAM2:, EXAM3: (?)
@@ -1264,6 +1365,8 @@ function Taiko.ParseTJA(source)
                                 Metadata = Table.Clone(Parsed.OriginalMetadata),
                                 Data = {}
                             }
+                            --reset parser?
+                            Parser = GetParser()
                             --reset parser?
                             Parser.songstarted = false
                             Parser.measurepushto = Parsed.Data --Very important
@@ -1379,6 +1482,7 @@ function Taiko.ParseTJA(source)
                             --ParseError(match[1], 'Branch has not ended')
                             Parser.endbranch()
                         end
+                        Parser.msbeforebranch = Parser.ms
                         Parser.branch.on = true
                         Parsed.Metadata.DIVERGENOTES = true
                         local t = CheckCSV(match[1], match[2])
@@ -1411,6 +1515,7 @@ function Taiko.ParseTJA(source)
                             - All paths are required to have their measures complete in the same time at the end.
                         ]]
                         if Parser.branch.on then
+                            Parser.ms = Parser.msbeforebranch
                             Parser.currentbranch = match[1]
                             Parser.branch.paths[match[1]] = {}
                             Parser.measurepushto = Parser.branch.paths[match[1]]
@@ -1542,10 +1647,39 @@ function Taiko.ParseTJA(source)
                 end
                 --]=]
 
+
+
+                --BARLINE
+                if Parser.barline and #Parser.currentmeasure == 0 then
+                    --[[
+                    table.insert(Parsed.Data, {
+                        ms = Parser.ms,
+                        data = 'event',
+                        event = 'barline'
+                    })
+                    --]]
+                    local note = Parser.createnote()
+                    note.ms = Parser.ms
+                    note.data = 'event'
+                    note.event = 'barline'
+                    --table.insert(Parser.currentmeasure, 1, note)
+                    table.insert(Parser.measurepushto, 1, note)
+                end
+
+
+
+
+
+
+
+
+
+
+
                 --Could not recognize command, probably just raw data
                 --example: 11,
                 --get raw data
-                local data = {}
+                --local data = {}
 
                 for i = 1, #line do
                     local s = string.sub(line, i, i)
@@ -1562,7 +1696,7 @@ function Taiko.ParseTJA(source)
                     end
                 end
 
-                if EndsWith(line, ',') then
+                if EndsWith(TrimRight(line), ',') then
                     -- [[
                     --Recalculate --FIX
                     Parser.mpm = Parser.bpm * Parser.sign / 4
@@ -1572,22 +1706,7 @@ function Taiko.ParseTJA(source)
 
 
 
-                    --BARLINE
-                    if Parser.barline then
-                        --[[
-                        table.insert(Parsed.Data, {
-                            ms = Parser.ms,
-                            data = 'event',
-                            event = 'barline'
-                        })
-                        --]]
-                        local note = Parser.createnote()
-                        note.ms = Parser.ms
-                        note.data = 'event'
-                        note.event = 'barline'
-                        --table.insert(Parser.currentmeasure, 1, note)
-                        table.insert(Parser.measurepushto, 1, note)
-                    end
+
 
 
 
@@ -1688,19 +1807,93 @@ function Taiko.GetDifficulty(Parsed, Difficulty)
 end
 
 
+function Taiko.ForAll(ParsedData, f)
+    --[[
+    for k, v in pairs(ParsedData) do
+        if v.branch then
 
-
-
-
-
-
-
-function Taiko.ExtractBranch(branch, path)
-    return branch.paths[path]
+        else
+            f(v)
+        end
+    end
+    --]]
+    local n = 1 --Absolute
+    for i = 1, #ParsedData do --i is relative
+        local v = ParsedData[i]
+        if v.branch then
+            local n3 = -1
+            for k2, v2 in pairs(v.branch.paths) do
+                local n2 = n
+                for i2 = 1, #v2 do
+                    f(v2[i2], i2, n2)
+                    n2 = n2 + 1
+                end
+                n3 = (n3 < n2) and n2 or n3
+            end
+            n = n3
+        else
+            f(v, i, n)
+        end
+        n = n + 1
+    end
+    return ParsedData
 end
 
-function Taiko.ConnnectNextNote(Parsed)
-    
+
+function Taiko.GetAllNotes(ParsedData)
+    --Remember, objects are tables
+    local t = {}
+    for k, v in pairs(ParsedData) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                --[[
+                local a = Taiko.GetAllNotes(v2)
+                for i = 1, #a do
+                    table.insert(t, a[i])
+                end--]]
+                for i = 1, #v2 do
+                    table.insert(t, v2[i])
+                end
+            end
+        else
+            table.insert(t, v)
+        end
+    end
+    return t
+end
+
+
+
+
+function Taiko.ConnectNotes(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local n = ParsedData[i]
+        n.nextnote = nextnote
+        nextnote = n
+    end
+    return ParsedData
+end
+
+function Taiko.ExtractBranch(branch, path)
+    return branch.branch.paths[path]
+end
+
+function Taiko.ConnectAll(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local note = ParsedData[i]
+        if note.branch then
+            for k, v in pairs(note.branch.paths) do
+                local path = Taiko.ConnectNotes(v)
+                --Remember, tables are objects
+                path[#path].nextnote = nextnote
+            end
+        else
+            note.nextnote = nextnote
+        end
+        nextnote = note
+    end
 end
 
 
@@ -1803,14 +1996,14 @@ function Taiko.CalculateSpeed(note, noteradius)
     return speed
 end
 
-function Taiko.CalculateSpeedAll(Parsed, noteradius)
+function Taiko.CalculateSpeedAll(ParsedData, noteradius)
     --local t = {}
-    for i = 1, #Parsed.Data do
-        Parsed.Data[i].speed = Taiko.CalculateSpeed(Parsed.Data[i], noteradius)
+    for i = 1, #ParsedData do
+        ParsedData[i].speed = Taiko.CalculateSpeed(ParsedData[i], noteradius)
         --print(Parsed.Data[i].speed)
         --table.insert(t, Parsed.Data[i].speed)
     end
-    return Parsed
+    return ParsedData
 end
 
 
@@ -1916,7 +2109,6 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    --for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty)) do
     --[[
     local i = 0
     for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty).Data) do
@@ -1941,6 +2133,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
+
     --[[
         noteradius coordinates
         123456789
@@ -1951,16 +2144,23 @@ function Taiko.PlaySong(Parsed, Difficulty)
     --Discontinued, most of performance is renderering
     local precalculate = true --Biggest modifier
     --]]
+
+    --Really dumb idea, memory intensive, trading memory with performance
+    local prerender = {
+        on = false, --Biggest modifier
+        fps = 60, --Desired fps
+        frames = {} --Internal frame storage
+    } --Biggest modifier
     
     
 
-    local buffer = 100 --Buffer (ms)
+    --local buffer = 100 --Buffer (ms)
     local bufferlength = 10 --Pixels
 
     --[[ Extracted from metadata
     local startms = 0 --Subtracted from all notes (ms)
     --]]
-    local endms = 100 --Added to last note (ms)
+    local endms = 1000 --Added to last note (ms)
 
     local noteradius = 4 --Default: 2
 
@@ -1997,11 +2197,18 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     local Pixel = require('Pixels')
 
+
+
+    
+
+
+
     --min, max, to prevent screen bobbing
     local minx, maxx = trackstart, tracklength
     local miny, maxy = -tracky, tracky
 
-    --minx and maxx not needed, modified
+    --minx and maxx not needed, modified, OPTIMIZED
+    --write to str, row scanning removed
     Pixel.Convert.ToDots = function(str) --converts a given data table
         --The pixels might look off, but they are not
         --[[
@@ -2011,7 +2218,10 @@ function Taiko.PlaySong(Parsed, Difficulty)
         ]]
         --Data
         str = GetPixelData(str) --Read Only
-        local data, color = str.Data, str.Color
+        local data, colordata = str.Data, str.Color
+        
+        --local data, color = str.Data, str.Color
+        --[[
         if ReverseY then
             local function reversey(t)
                 local new = {}
@@ -2026,12 +2236,16 @@ function Taiko.PlaySong(Parsed, Difficulty)
             data = reversey(data)
             color = reversey(color)
         end
+        --]]
         --Make sure to not write to str
+        --[[
         str = {
             Data = data,
             Color = color
         }
+        --]]
         --Stats
+        --[[
         local function getmin(t)
             local c = nil
             for k, v in pairs(t) do
@@ -2061,6 +2275,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
             end
             return func(t2)
         end
+        --]]
         --print(minx, maxx, miny, maxy)
         --Optimizations
         local out = {}
@@ -2068,11 +2283,13 @@ function Taiko.PlaySong(Parsed, Difficulty)
         local zerodot = Pixel.Data.Dot[zerostring]
         local currentcolor = nil
         local allcolor = nil
+        local resetcolor = tostring(Pixel.Color('reset'))
         if str.Color.All then
             local c = tostring(Pixel.Color(str.Color.All))
             table.insert(out, c)
             allcolor = c
         end
+        --[[
         local rows = {}
         for x, v in pairs(data) do
             for y, v2 in pairs(v) do
@@ -2080,6 +2297,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
                 rows[y][x] = v2
             end
         end
+        --]]
         --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
         --Main loop
         if not miny then
@@ -2091,21 +2309,54 @@ function Taiko.PlaySong(Parsed, Difficulty)
             for x = minx, maxx, 2 do
                 --print(x, y)
                 --Get Pixels
+                --[[
                 local pixel = ''
                 local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
                 for i = 1, 8 do
                     local x, y = x + c[i][1], y + c[i][2]
                     pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
                 end
+                --]]
+
+
+
+
+
+
+                --ugly formula
+
+                --v1
+                -- [[
+                local dx = data[x]
+                local dx2 = data[x + 1]
+                local pixel = ((dx) and ((dx[y] or '0') .. (dx[y + 1] or '0') .. (dx[y + 2] or '0') .. (dx[y + 3] or '0')) or '0000') .. ((dx2) and ((dx2[y] or '0') .. (dx2[y + 1] or '0') .. (dx2[y + 2] or '0') .. (dx2[y + 3] or '0')) or '0000')
+                --]]
+
+
+                --v2
+                --[[
+                local dx = data[x]
+                local dx2 = data[x + 1]
+                local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
+                --]]
+
+
+
+
+
                 --print(pixel, x, y, color)
                 if pixel ~= zerostring then
                     pixel = Pixel.Data.Dot[pixel]
                     --local x, y = Pixel.PushColor(x, y)
                     if not allcolor then
-                        local color = Pixel.GetColor(str, x, y)
+                        --local color = Pixel.GetColor(str, x, y)
+                        --local color = color[x] and color[x][y]
+
                         --if color==nil then print(x, y, color) end
                         --if not allcolor and color then
                         --find all 8 pixels
+
+                        --[[
                         if not color then
                             local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
                             for i = 1, 8 do
@@ -2115,10 +2366,31 @@ function Taiko.PlaySong(Parsed, Difficulty)
                                 end
                             end
                         end
+                        --]]
+
+
+
+                        --Ugly formula time!
+                        --v1
+                        local dx = colordata[x]
+                        local dx2 = colordata[x + 1]
+                        local color = ((dx) and (dx[y] or dx[y + 1] or dx[y + 2] or dx[y + 3])) or ((dx2) and (dx2[y] or dx2[y + 1] or dx2[y + 2] or dx2[y + 3]))
+
+
+
+
+
+
+
+
+
+
+
+
                         if color then
                             color = tostring(Pixel.Color(color))
                         else
-                            color = tostring(Pixel.Color('reset'))
+                            color = resetcolor
                         end
                         if currentcolor == color then
                             --Do Nothing
@@ -2135,10 +2407,122 @@ function Taiko.PlaySong(Parsed, Difficulty)
             end
             table.insert(out, Pixel.Data.NewLine)
         end
-        table.insert(out, tostring(Pixel.Color('reset')))
+        table.insert(out, resetcolor)
         --ppp(out)
         return table.concat(out)
     end
+
+
+
+
+
+
+    --Optimize!
+    Pixel.Circle = function(self, cx, cy, r, options)
+        str = GetPixelData(self)
+        options = options or {}
+        local color = options.color
+        --[[
+        Scanline Algorithm
+        https://stackoverflow.com/questions/10322341/simple-algorithm-for-drawing-filled-ellipse-in-c-c
+        Do a quarter, then mirror
+        Region is: Right Down
+        --]]
+
+        --[[
+        local function check(x, y)
+            --if r can be negative
+            --return x * x * r * r + y * y * r * r <= r * r * r * r
+            --if r is positive
+            return x * x + y * y <= r * r
+        end
+        --]]
+
+
+
+        --precompute
+        local r2 = r * r
+
+        local x = r
+        for y = 0, r do
+            --[[
+            local a = false
+            repeat
+                a = x * x + y * y <= r2
+                x = x - 1
+            until a
+            x = x + 1
+            --]]
+            -- [[
+            x = x + 1
+            repeat
+                x = x - 1
+            until x * x + y * y <= r2
+            --]]
+           
+            
+            for x2 = 0, x do
+                --[[
+                Pixel.SetPixel(str, cx + x2, cy + y, '1', options)
+                Pixel.SetPixel(str, cx - x2, cy + y, '1', options)
+                Pixel.SetPixel(str, cx + x2, cy - y, '1', options)
+                Pixel.SetPixel(str, cx - x2, cy - y, '1', options)
+                --]]
+                str.Data[cx + x2] = str.Data[cx + x2] or {}
+                str.Data[cx - x2] = str.Data[cx - x2] or {}
+                str.Data[cx + x2][cy + y] = '1'
+                str.Data[cx - x2][cy + y] = '1'
+                str.Data[cx + x2][cy - y] = '1'
+                str.Data[cx - x2][cy - y] = '1'
+    
+    
+                --color --FIX
+                --if true then
+                    str.Color[cx + x2] = str.Color[cx + x2] or {}
+                    str.Color[cx - x2] = str.Color[cx - x2] or {}
+                    str.Color[cx + x2][cy + y] = color
+                    str.Color[cx - x2][cy + y] = color
+                    str.Color[cx + x2][cy - y] = color
+                    str.Color[cx - x2][cy - y] = color
+                --end
+            end
+    
+        end
+        return str
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     local function RenderBarline(out, note)
         local x = math.floor(note.p)
@@ -2151,8 +2535,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
         end
     end
 
-    local function RenderCircle(out, note)
-        Pixel.Circle(out, math.floor(note.p), y, noteradius * note.radius, renderconfig[note.type])
+    local function RenderCircle(out, note, p)     
+        --Pixel.Circle(out, math.floor(note.p), y, noteradius * note.radius, renderconfig[note.type])
+        --add support for ends (faster)
+        p = p or note.p
+        Pixel.Circle(out, math.floor(p), y, noteradius * note.radius, renderconfig[note.type])
     end
 
     local function RenderRect(out, x1, x2, y1, y2, options)
@@ -2196,19 +2583,27 @@ function Taiko.PlaySong(Parsed, Difficulty)
             local y2 = y + r
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
         elseif n == 8 then
+            RenderCircle(out, note.startnote, note.p)
+            --[=[
+            --lazy, do this faster
             if note.renderproxy then
                 note.renderproxy.p = note.p
             else
                 local startnote = note.startnote
                 note.renderproxy = {}
                 for k, v in pairs(startnote) do
+                    --[[
                     if k ~= 'type' then
                         note.renderproxy[k] = v
                     end
+                    --]]
+                    --color
+                    note.renderproxy[k] = v
                 end
             end
             note.renderproxy.p = note.p
             RenderCircle(out, note.renderproxy)
+            --]=]
         end
     end
 
@@ -2236,8 +2631,14 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    Parsed = Taiko.CalculateSpeedAll(Taiko.GetDifficulty(Parsed, Difficulty), noteradius)
+    Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
 
+
+    local notetable = Taiko.GetAllNotes(Parsed.Data)
+
+
+
+    --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
 
 
 
@@ -2273,7 +2674,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
     end
 
     local function CalculateLoadMs(note, ms)
-        return ms - ((tracklength / note.speed) + buffer)
+        --return ms - ((tracklength / note.speed) + buffer)
+        --support negative speed
+        --return ms - ((tracklength / math.abs(note.speed)) + buffer)
+        --bufferlength
+        return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
     end
     local function CalculateLoadPosition(note, lms)
         return (note.ms - lms) * note.speed + target
@@ -2291,6 +2696,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
     --Convert everything to seconds + fill up timet
+    --[[
     local timet = {}
     for k, v in pairs(Parsed.Data) do
         table.insert(timet, v.ms)
@@ -2301,13 +2707,69 @@ function Taiko.PlaySong(Parsed, Difficulty)
         v.loadp = CalculateLoadPosition(v, v.loadms)
         --v.n = k --MISTAKE: after sorted
     end
+    --]]
+    local timet = {}
+    for k, v in pairs(notetable) do
+        v.ms = v.ms - startms
+        v.s = MsToS(v.ms)
+        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.loadms = CalculateLoadMs(v, v.ms)
+        v.loads = MsToS(v.loadms)
+        v.loadp = CalculateLoadPosition(v, v.loadms)
+        --v.n = k --MISTAKE: after sorted
+        table.insert(timet, v.ms)
+        --print(v.speed, v.loadms, v.loadp)
+    end
 
     --Sort by loadms
+    --Sort all branches firt
+    for k, v in pairs(Parsed.Data) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                table.sort(v2, function(a, b)
+                    return a.loadms < b.loadms
+                end)
+            end
+        end
+    end
+
+
+    --Path doesn't matter, they should all have same loadms
     table.sort(Parsed.Data, function(a, b)
-        return a.loadms < b.loadms
+        if a.branch and b.branch then
+            --both branches
+            for k, v in pairs(a.branch.paths) do
+                for k2, v2 in pairs(b.branch.paths) do
+                    return v[1].loadms < v2[1].loadms
+                end
+            end
+        elseif a.branch then
+            --a is branch
+            for k, v in pairs(a.branch.paths) do
+                return v[1].loadms < b.loadms
+            end
+        elseif b.branch then
+            --b is branch
+            for k, v in pairs(b.branch.paths) do
+                return a.loadms < v[1].loadms
+            end
+        else
+            --notes
+            return a.loadms < b.loadms
+        end
     end)
 
     --Relink and reindex after sorting
+    Taiko.ConnectAll(Parsed.Data)
+    Taiko.ForAll(Parsed.Data, function(note, i, n)
+        --print(note.loadms)
+        note.n = n
+        --print(note.ms)
+    end)
+    --error()
+    --]]
+
+    --[[
     local nextnote = nil
     for i = #Parsed.Data, 1, -1 do
         local v = Parsed.Data[i]
@@ -2317,6 +2779,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
             nextnote = v
         end
     end
+    --]]
 
     --[[
     --ppp
@@ -2340,6 +2803,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local nextnote = Parsed.Data[1]
     local nextnotel = nextnote.loads
 
+    --[[
+    --redesign
     while true do
         if nextnote then
             nextnotel = nextnote.loads
@@ -2356,6 +2821,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
         end
         nextnote = nextnote.nextnote
     end
+    --]]
 
     loaded.e = loaded.n
 
@@ -2366,8 +2832,27 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     --Statistics
     local padding = 10
+    local paddingstr = string.rep(' ', padding)
+    local statistics = {}
     local function Statistic(k, v)
-        print(k .. ': ' .. tostring(v) .. string.rep(' ', padding))
+        --print(k .. ': ' .. tostring(v) .. string.rep(' ', padding))
+        table.insert(statistics, k)
+        table.insert(statistics, ': ')
+        table.insert(statistics, v)
+        table.insert(statistics, paddingstr)
+        table.insert(statistics, '\n')
+    end
+    local function RenderStatistic()
+        print(table.concat(statistics))
+        statistics = {}
+    end
+    --Log (Debug system)
+    local logs = ''
+    local function Log(s)
+        logs = logs .. '\n' .. s
+    end
+    local function RenderLog()
+        print(logs)
     end
 
 
@@ -2383,218 +2868,730 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
     --]]
 
-    --Main loop
-    local startt = os.clock()
+    local branch = 'M'
+
 
 
     --Statistics
     local framen = 0
     local framerenderstotal = 0
 
-    while true do
-        --Make canvas
-        local out = Pixel.New()
-
-        local raws = os.clock()
-
-        local s = raws - startt
-        local ms = s * 1000
-
-        --See if next note is ready to be loaded
-        if nextnote then
-            if nextnote and nextnote.loadms < ms then
-                --load
-                --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
 
 
-                loaded.n = loaded.n + 1
-                --loaded.e = loaded.n
-                loaded.e = nextnote.n
-                loaded[nextnote.n] = nextnote
-
-                
-
-                nextnote = nextnote.nextnote
-                
-                --[[
-                if loaded.s == 0 then
-                    loaded.s = 1
-                end
-                loaded.e = loaded.n
-                loaded.n = loaded.n + 1
-                loaded[loaded.n + 1] = nextnote
-                nextnote = nextnote.nextnote
-                --]]
+    --Main loop
+    local startt = os.clock()
 
 
+    if not prerender.on then
+
+        while true do
+            --Make canvas
+            local out = Pixel.New()
+
+            local raws = os.clock()
+
+            local s = raws - startt
+            local ms = s * 1000
+
+            --See if next note is ready to be loaded
+            if nextnote then
+                if nextnote.loadms < ms then
+                    --load
+                    --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
 
 
+                    loaded.n = loaded.n + 1
+                    --loaded.e = loaded.n
+                    loaded.e = nextnote.n
 
-                --[[
-                local breaker = false
-                if not nextnote then
-                    while true do
-                        local s = os.clock() - startt
-                        if s > ends then
-                            breaker = true
-                            break
-                        end
-                    end
-                    if breaker then
-                        break
-                    end
-                end
-                --]]
-            end
-        else
-            if ms > endms then
-                break
-            end
-        end
+                    loaded[nextnote.n] = nextnote
 
-        --[[
-        print(loaded.s, loaded.e, loaded.n)
-        io.read()
-        --]]
+                    
 
-
-        for i = loaded.s, loaded.e do
-            local note = loaded[i]
-            if note then
-                --print(ms, loaded.s, loaded.e, loaded.n)
-                note.p = CalculatePosition(note, ms)
-                --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
-
-
-                --[[
-                    Check if it is ready to be unloaded
-                    If it is, check if endnote is not valid
-                    Warning: note.endnote yields false results
-
-                    if note.endnote then
-                        if loaded[note.endnote.n] == nil then
-                            --delete
-
-                        else
-
-                        end
-                    else
-                        --delete
-                    end
-                --]]
-                --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
-                if (note.p < (trackstart - bufferlength)) then
-                    --print(note.endnote and (loaded[note.endnote.n] ~= nil))
-                    --if note.endnote and (loaded[note.endnote.n] ~= nil) then
-                    if note.endnote and note.endnote.done ~= true then
-                        --Still has endnote loaded
-                        --Don't unload
-                    else
-                        --unload
-                        --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
-                        --loaded[note.n] = nil
-                        --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
-                        note.done = true
-                        loaded[i] = nil
-                        --loaded.n = loaded.n - 1
-                        if loaded.n == 0 then
-                            loaded.s = nextnote.n
-                        elseif note.n == loaded.s then
-                            if note.n == loaded.e then
-                                loaded.n = 0
-                            else
-                                local i2 = loaded.s
-                                repeat
-                                    i2 = i2 + 1
-                                    loaded.n = loaded.n - 1
-                                until loaded[i2]
-                                loaded.s = i2
-                            end
-                        end
-
+                    nextnote = nextnote.nextnote
+                    
+                    if nextnote and nextnote.branch then
+                        Log('branch')
                         --[[
-                        loaded[note.n] = nil
-                        loaded.s = note.n + 1
-                        loaded.n = loaded.n - 1
+                        Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                            print(note.ms)
+                        end)
+                        error()
                         --]]
+
+                        nextnote = nextnote.branch.paths[branch][1]
+
                     end
-                end
-
-                if note.p < (tracklength + buffer) then
-                    --Draw note on canvas
-
-                    --Only for noteradius = 0.5
-                    --Pixel.SetPixel(out, math.floor(note.p * noteradius * factor), 0, '1')
-
-                    --Pixel.Circle(out, math.floor(note.p * noteradius), 0, noteradius, renderconfig[note.type])
+                    
 
 
-                    --debug
-
-                    --BEST DEBUG
                     --[[
-                    local a = loaded[note.n - 1]
-                    if a then
-                        print(note.p - a.p, (note.p - a.p) / noteradius)
+                    if loaded.s == 0 then
+                        loaded.s = 1
                     end
+                    loaded.e = loaded.n
+                    loaded.n = loaded.n + 1
+                    loaded[loaded.n + 1] = nextnote
+                    nextnote = nextnote.nextnote
                     --]]
 
 
-                    if note.data == 'event' then
-                        if note.event == 'barline' then
-                            RenderBarline(out, note)
+
+
+
+                    --[[
+                    local breaker = false
+                    if not nextnote then
+                        while true do
+                            local s = os.clock() - startt
+                            if s > ends then
+                                breaker = true
+                                break
+                            end
                         end
-                    elseif note.data == 'note' then
-                        RenderNote(out, note)
+                        if breaker then
+                            break
+                        end
+                    end
+                    --]]
+                end
+            else
+                if ms > endms then
+                    break
+                end
+            end
+
+            --[[
+            print(loaded.s, loaded.e, loaded.n)
+            io.read()
+            --]]
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+            --draw target
+
+            --normal
+            Pixel.Circle(out, math.floor(target), y, noteradius, {color = 'purple'})
+            --big note (1.6x)
+            --Pixel.Circle(out, math.floor(target), y, noteradius * 1.6, {color = 'purple'})
+
+
+
+            --notes
+            for i = loaded.s, loaded.e do
+                local note = loaded[i]
+                if note then
+                    --print(ms, loaded.s, loaded.e, loaded.n)
+                    note.p = CalculatePosition(note, ms)
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
+
+
+                    --[[
+                        Check if it is ready to be unloaded
+                        If it is, check if endnote is not valid
+                        Warning: note.endnote yields false results
+
+                        if note.endnote then
+                            if loaded[note.endnote.n] == nil then
+                                --delete
+
+                            else
+
+                            end
+                        else
+                            --delete
+                        end
+                    --]]
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
+
+
+
+
+                    
+
+                    --unload after track
+                    --if (note.p < (trackstart - bufferlength)) then
+
+
+                    --auto
+                    --if (note.p < target) then
+
+
+                    
+                    --do not unload
+                    --if false then
+
+
+                    --distance unload (slow)
+                    --100 is extra buffer so it doesnt unload asap
+                    if math.abs(note.p - target) > (tracklength + bufferlength + 1) then
+                        --print(note.endnote and (loaded[note.endnote.n] ~= nil))
+                        --if note.endnote and (loaded[note.endnote.n] ~= nil) then
+                        if note.endnote and note.endnote.done ~= true then
+                            --Still has endnote loaded
+                            --Don't unload
+                        else
+                            --unload
+                            --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
+                            --loaded[note.n] = nil
+                            --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+                            note.done = true
+                            loaded[i] = nil
+                            --loaded.n = loaded.n - 1
+                            if nextnote and loaded.n == 0 then
+                                loaded.s = nextnote.n
+                            elseif note.n == loaded.s then
+                                if note.n == loaded.e then
+                                    loaded.n = 0
+                                else
+                                    local i2 = loaded.s
+                                    repeat
+                                        i2 = i2 + 1
+                                        loaded.n = loaded.n - 1
+                                    until loaded[i2]
+                                    loaded.s = i2
+                                end
+                            end
+
+                            --[[
+                            loaded[note.n] = nil
+                            loaded.s = note.n + 1
+                            loaded.n = loaded.n - 1
+                            --]]
+                        end
+                    --end
+
+
+
+                    --default (fast)
+                    --if note.p < (tracklength + buffer) then
+
+
+                    --distance (slow)
+                    --if math.abs(note.p - target) > (tracklength + bufferlength + 100) then
+
+
+
+                    --just connect with else
                     else
-                        error('Invalid note.data')
+                        --Draw note on canvas
+
+                        --Only for noteradius = 0.5
+                        --Pixel.SetPixel(out, math.floor(note.p * noteradius * factor), 0, '1')
+
+                        --Pixel.Circle(out, math.floor(note.p * noteradius), 0, noteradius, renderconfig[note.type])
+
+
+                        --debug
+
+                        --BEST DEBUG
+                        --[[
+                        local a = loaded[note.n - 1]
+                        if a then
+                            print(note.p - a.p, (note.p - a.p) / noteradius)
+                        end
+                        --]]
+
+
+                        if note.data == 'event' then
+                            if note.event == 'barline' then
+                                RenderBarline(out, note)
+                            end
+                        elseif note.data == 'note' then
+                            RenderNote(out, note)
+                        else
+                            error('Invalid note.data')
+                        end
                     end
                 end
             end
+
+            -- [=[
+
+            Ansi.SetCursor(1, 1)
+            --[[
+            --Set boundaries
+            Pixel.SetPixel(out, firstpixel, 0, '1')
+            Pixel.SetPixel(out, lastpixel, 0, '1')
+            --]]
+
+
+            -- [[
+            --Legacy renderer (Fast)
+            print(out)
+            framen = framen + 1
+            local framerenders = os.clock() - raws
+            framerenderstotal = framerenderstotal + framerenders
+            --]]
+
+
+
+            
+
+
+            --statistics
+            -- [[
+            Statistic('S', s)
+            Statistic('Ms', ms)
+            Statistic('Loaded', loaded.n)
+            --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
+            Statistic('Frames Rendered', framen)
+            Statistic('Last Frame Render (s)', framerenders)
+            Statistic('Last Frame Render (ms)', framerenders * 1000)
+            Statistic('Frame Render Total (s)', framerenderstotal)
+            Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
+            Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
+            Statistic('FPS (Frame)', framen / s)
+
+            --[=[
+            Statistic('nextloadms', nextnote and nextnote.loadms)
+            Statistic('nextms', nextnote and nextnote.ms)
+            Statistic('nextn', nextnote and nextnote.n)
+            --]=]
+
+            Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
+            Statistic('Finished (%)', ms / (endms) * 100)
+
+
+
+
+            Statistic('Song Name', Parsed.Metadata.TITLE)
+            Statistic('Difficulty (id)', Parsed.Metadata.COURSE)
+            Statistic('Stars', Parsed.Metadata.LEVEL)
+
+
+            RenderStatistic()
+            RenderLog()
+            
+            
+            --]]
+
+
         end
 
-        -- [=[
 
-        Ansi.SetCursor(1, 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    else
+
+
+
+        while true do
+            --Make canvas
+            local out = Pixel.New()
+
+
+            local raws = os.clock()
+
+
+
+            local s = (1 / prerender.fps) * framen
+            local ms = s * 1000
+
+            --See if next note is ready to be loaded
+            if nextnote then
+                if nextnote.loadms < ms then
+                    --load
+                    --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+
+
+                    loaded.n = loaded.n + 1
+                    --loaded.e = loaded.n
+                    loaded.e = nextnote.n
+
+                    loaded[nextnote.n] = nextnote
+
+                    
+
+                    nextnote = nextnote.nextnote
+                    
+                    if nextnote and nextnote.branch then
+                        Log('branch')
+                        --[[
+                        Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                            print(note.ms)
+                        end)
+                        error()
+                        --]]
+
+                        nextnote = nextnote.branch.paths[branch][1]
+
+                    end
+                    
+
+
+                    --[[
+                    if loaded.s == 0 then
+                        loaded.s = 1
+                    end
+                    loaded.e = loaded.n
+                    loaded.n = loaded.n + 1
+                    loaded[loaded.n + 1] = nextnote
+                    nextnote = nextnote.nextnote
+                    --]]
+
+
+
+
+
+                    --[[
+                    local breaker = false
+                    if not nextnote then
+                        while true do
+                            local s = os.clock() - startt
+                            if s > ends then
+                                breaker = true
+                                break
+                            end
+                        end
+                        if breaker then
+                            break
+                        end
+                    end
+                    --]]
+                end
+            else
+                if ms > endms then
+                    break
+                end
+            end
+
+            --[[
+            print(loaded.s, loaded.e, loaded.n)
+            io.read()
+            --]]
+
+
+            for i = loaded.s, loaded.e do
+                local note = loaded[i]
+                if note then
+                    --print(ms, loaded.s, loaded.e, loaded.n)
+                    note.p = CalculatePosition(note, ms)
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
+
+
+                    --[[
+                        Check if it is ready to be unloaded
+                        If it is, check if endnote is not valid
+                        Warning: note.endnote yields false results
+
+                        if note.endnote then
+                            if loaded[note.endnote.n] == nil then
+                                --delete
+
+                            else
+
+                            end
+                        else
+                            --delete
+                        end
+                    --]]
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
+                    if (note.p < (trackstart - bufferlength)) then
+                        --print(note.endnote and (loaded[note.endnote.n] ~= nil))
+                        --if note.endnote and (loaded[note.endnote.n] ~= nil) then
+                        if note.endnote and note.endnote.done ~= true then
+                            --Still has endnote loaded
+                            --Don't unload
+                        else
+                            --unload
+                            --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
+                            --loaded[note.n] = nil
+                            --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+                            note.done = true
+                            loaded[i] = nil
+                            --loaded.n = loaded.n - 1
+                            if nextnote and loaded.n == 0 then
+                                loaded.s = nextnote.n
+                            elseif note.n == loaded.s then
+                                if note.n == loaded.e then
+                                    loaded.n = 0
+                                else
+                                    local i2 = loaded.s
+                                    repeat
+                                        i2 = i2 + 1
+                                        loaded.n = loaded.n - 1
+                                    until loaded[i2]
+                                    loaded.s = i2
+                                end
+                            end
+
+                            --[[
+                            loaded[note.n] = nil
+                            loaded.s = note.n + 1
+                            loaded.n = loaded.n - 1
+                            --]]
+                        end
+                    end
+
+                    if note.p < (tracklength + buffer) then
+                        --Draw note on canvas
+
+                        --Only for noteradius = 0.5
+                        --Pixel.SetPixel(out, math.floor(note.p * noteradius * factor), 0, '1')
+
+                        --Pixel.Circle(out, math.floor(note.p * noteradius), 0, noteradius, renderconfig[note.type])
+
+
+                        --debug
+
+                        --BEST DEBUG
+                        --[[
+                        local a = loaded[note.n - 1]
+                        if a then
+                            print(note.p - a.p, (note.p - a.p) / noteradius)
+                        end
+                        --]]
+
+
+                        if note.data == 'event' then
+                            if note.event == 'barline' then
+                                RenderBarline(out, note)
+                            end
+                        elseif note.data == 'note' then
+                            RenderNote(out, note)
+                        else
+                            error('Invalid note.data')
+                        end
+                    end
+                end
+            end
+
+            -- [=[
+
+            Ansi.SetCursor(1, 1)
+            --[[
+            --Set boundaries
+            Pixel.SetPixel(out, firstpixel, 0, '1')
+            Pixel.SetPixel(out, lastpixel, 0, '1')
+            --]]
+
+
+            -- [[
+            --Pre renderer (Fast)
+            prerender.frames[framen] = out
+            framen = framen + 1
+            local framerenders = os.clock() - raws
+            framerenderstotal = framerenderstotal + framerenders
+            --]]
+
+
+
+            
+
+
+            --statistics
+            -- [[
+            Statistic('S', s)
+            Statistic('Ms', ms)
+            Statistic('Loaded', loaded.n)
+            --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
+            Statistic('Frames Rendered', framen)
+            Statistic('Last Frame Render (s)', framerenders)
+            Statistic('Last Frame Render (ms)', framerenders * 1000)
+            Statistic('Frame Render Total (s)', framerenderstotal)
+            Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
+            Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
+            Statistic('FPS (Frame)', framen / s)
+            --[[
+            Statistic('nextloadms', nextnote and nextnote.loadms)
+            Statistic('nextms', nextnote and nextnote.ms)
+            Statistic('nextn', nextnote and nextnote.n)
+            --]]
+            Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
+            Statistic('Finished (%)', ms / (endms) * 100)
+            RenderLog()
+            --]]
+
+            
+        end
+
+
         --[[
-        --Set boundaries
-        Pixel.SetPixel(out, firstpixel, 0, '1')
-        Pixel.SetPixel(out, lastpixel, 0, '1')
+
+        print('Converting frame indexes to seconds...')
+        for k, v in pairs(prerender.frames) do
+            prerender.frames[(1 / prerender.fps) * k] = v
+            prerender.frames[k] = nil
+        end
         --]]
-        print(out)
-        framen = framen + 1
-        local framerenders = os.clock() - raws
-        framerenderstotal = framerenderstotal + framerenders
-        --]=]
 
 
+        print('Prerendering Finished!\nPress enter to start')
+        io.read()
+        local starts = os.clock()
+        --[[
+        local framen = 0
+        local frames = 0
+        --]]
+        local increment = (1 / prerender.fps)
+        while true do
+            local s = os.clock() - starts
 
-        --statistics
-        Statistic('S', s)
-        Statistic('Ms', ms)
-        Statistic('Loaded', loaded.n)
-        --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
-        Statistic('Frames Rendered', framen)
-        Statistic('Last Frame Render (s)', framerenders)
-        Statistic('Last Frame Render (ms)', framerenders * 1000)
-        Statistic('Frame Render Total (s)', framerenderstotal)
-        Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
-        Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
-        Statistic('FPS (Frame)', framen / s)
+            --Get frame
+            --[[
+            local frame
+            while frames < s do
+                --local frame = prerender.frames[framen]
+                frames = (1 / 60) * framen
+                framen = framen + 1
+            end
+            --]]
+            --diy round function included
+            local frame = prerender.frames[math.floor(((s - s % increment) / increment) + 0.5)]
 
+            --Render ended
+            if frame == nil then
+                break
+            end
 
-
-
-
-
-
-
-
-
-
+            Ansi.SetCursor(1, 1)
+            print(frame)
+        end
 
 
     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2638,15 +3635,119 @@ end
 
 
 
--- [[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--Parse Testing
+
+
+--[=[
+--https://stackoverflow.com/questions/5303174/how-to-get-list-of-directories-in-lua
+-- Lua implementation of PHP scandir function
+function scandir(directory)
+    local i, t, popen = 0, {}, io.popen
+    local pfile = popen('dir "'..directory..'" /b')
+    for filename in pfile:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+    pfile:close()
+    return t
+end
+
+local dir = [[C:\Users\User\OneDrive\code\Taiko\Versions\taikobuipm]]
+local t = scandir(dir)
+local exclude = {
+    ['Koibumi 2000.tja'] = true --weird balloon
+}
+for i = 1, #t do
+    local file = t[i]
+    if (not exclude[file]) and EndsWith(file, 'tja') then
+        print(file)
+        Taiko.ParseTJA(io.open(dir .. '\\'.. file,'r'):read('*all'))
+    end
+end
+--error()
+--]=]
+
+
+
+
+--[[
+    Funny / Notable Songs list
+donkama.tja weird note scroll
+waraeru.tja weird barline + 938 balloon
+]]
+
+
+
+
+
+
+
+--[[
 file = './tja/donkama.tja'
 --file = './tja/test.tja'
 file = './tja/ekiben.tja'
 --file = './tja/lag.tja'
 --file = './tja/drumroll2.tja'
 --file = './tja/branchtest.tja'
---file = './tja/saitama.tja'
+file = './tja/saitama.tja'
+--file = './tja/donkama.tja'
+file = './tja/funny2000.tja'
+file = './tja/waraeru.tja' --somehow unload doesnt work
+
+
+
+
+file = './tja/ekiben.tja'
+--file = './tja/_mc08.tja'
+--file = './tja/scrolltest.tja'
+
+
+--file = './tja/ekiben.tja'
+
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
+--]]
+
+
+local file = './CompactTJA/taikobuipm.tjac'
+file = './CompactTJA/ESE/06 Classical.tjac'
+
+
+local Compact = require('./CompactTJA/compactv4')
+Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Oni')
 
 
 --]]

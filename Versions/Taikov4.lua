@@ -1,8 +1,9 @@
 --[[
-Taikov3.lua
+Taikov4.lua
 
 
 Changes: Taiko.PlaySong improved!
+MAJOR BREAKING CHANGES: Pass along a notetable to most functions
 
 
 Objectives:
@@ -28,6 +29,41 @@ X 0
 X0
 0
 ]]
+
+
+
+
+
+--[[
+How to run on powershell
+
+cd C:\Users\User\OneDrive\code\Taiko\Versions\
+lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -491,7 +527,8 @@ function Taiko.ParseTJA(source)
             paths = {
 
             }
-        }
+        },
+        msbeforebranch = nil,
     }
 
 
@@ -726,7 +763,8 @@ function Taiko.ParseTJA(source)
         Parser.branch.requirements = {}
         Parser.branch.paths = {}
         table.insert(Parsed.Data, n)
-        Parser.measurepushto = Parsed.Data
+        Parser.measurepushto = Parsed.Data        
+        --Parser.ms = Parser.msbeforebranch + Parser.msinbranch
     end
 
 
@@ -1379,6 +1417,7 @@ function Taiko.ParseTJA(source)
                             --ParseError(match[1], 'Branch has not ended')
                             Parser.endbranch()
                         end
+                        Parser.msbeforebranch = Parser.ms
                         Parser.branch.on = true
                         Parsed.Metadata.DIVERGENOTES = true
                         local t = CheckCSV(match[1], match[2])
@@ -1411,6 +1450,7 @@ function Taiko.ParseTJA(source)
                             - All paths are required to have their measures complete in the same time at the end.
                         ]]
                         if Parser.branch.on then
+                            Parser.ms = Parser.msbeforebranch
                             Parser.currentbranch = match[1]
                             Parser.branch.paths[match[1]] = {}
                             Parser.measurepushto = Parser.branch.paths[match[1]]
@@ -1688,19 +1728,93 @@ function Taiko.GetDifficulty(Parsed, Difficulty)
 end
 
 
+function Taiko.ForAll(ParsedData, f)
+    --[[
+    for k, v in pairs(ParsedData) do
+        if v.branch then
 
-
-
-
-
-
-
-function Taiko.ExtractBranch(branch, path)
-    return branch.paths[path]
+        else
+            f(v)
+        end
+    end
+    --]]
+    local n = 1 --Absolute
+    for i = 1, #ParsedData do --i is relative
+        local v = ParsedData[i]
+        if v.branch then
+            local n3 = -1
+            for k2, v2 in pairs(v.branch.paths) do
+                local n2 = n
+                for i2 = 1, #v2 do
+                    f(v2[i2], i2, n2)
+                    n2 = n2 + 1
+                end
+                n3 = (n3 < n2) and n2 or n3
+            end
+            n = n3
+        else
+            f(v, i, n)
+        end
+        n = n + 1
+    end
+    return ParsedData
 end
 
-function Taiko.ConnnectNextNote(Parsed)
-    
+
+function Taiko.GetAllNotes(ParsedData)
+    --Remember, objects are tables
+    local t = {}
+    for k, v in pairs(ParsedData) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                --[[
+                local a = Taiko.GetAllNotes(v2)
+                for i = 1, #a do
+                    table.insert(t, a[i])
+                end--]]
+                for i = 1, #v2 do
+                    table.insert(t, v2[i])
+                end
+            end
+        else
+            table.insert(t, v)
+        end
+    end
+    return t
+end
+
+
+
+
+function Taiko.ConnectNotes(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local n = ParsedData[i]
+        n.nextnote = nextnote
+        nextnote = n
+    end
+    return ParsedData
+end
+
+function Taiko.ExtractBranch(branch, path)
+    return branch.branch.paths[path]
+end
+
+function Taiko.ConnectAll(ParsedData)
+    local nextnote = nil
+    for i = #ParsedData, 1, -1 do
+        local note = ParsedData[i]
+        if note.branch then
+            for k, v in pairs(note.branch.paths) do
+                local path = Taiko.ConnectNotes(v)
+                --Remember, tables are objects
+                path[#path].nextnote = nextnote
+            end
+        else
+            note.nextnote = nextnote
+        end
+        nextnote = note
+    end
 end
 
 
@@ -1803,14 +1917,14 @@ function Taiko.CalculateSpeed(note, noteradius)
     return speed
 end
 
-function Taiko.CalculateSpeedAll(Parsed, noteradius)
+function Taiko.CalculateSpeedAll(ParsedData, noteradius)
     --local t = {}
-    for i = 1, #Parsed.Data do
-        Parsed.Data[i].speed = Taiko.CalculateSpeed(Parsed.Data[i], noteradius)
+    for i = 1, #ParsedData do
+        ParsedData[i].speed = Taiko.CalculateSpeed(ParsedData[i], noteradius)
         --print(Parsed.Data[i].speed)
         --table.insert(t, Parsed.Data[i].speed)
     end
-    return Parsed
+    return ParsedData
 end
 
 
@@ -1916,7 +2030,6 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    --for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty)) do
     --[[
     local i = 0
     for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty).Data) do
@@ -1928,6 +2041,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     print(i)
     error()
     --]]
+
 
 
 
@@ -2236,8 +2350,14 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    Parsed = Taiko.CalculateSpeedAll(Taiko.GetDifficulty(Parsed, Difficulty), noteradius)
+    Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
 
+
+    local notetable = Taiko.GetAllNotes(Parsed.Data)
+
+
+
+    --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
 
 
 
@@ -2291,6 +2411,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
     --Convert everything to seconds + fill up timet
+    --[[
     local timet = {}
     for k, v in pairs(Parsed.Data) do
         table.insert(timet, v.ms)
@@ -2301,13 +2422,66 @@ function Taiko.PlaySong(Parsed, Difficulty)
         v.loadp = CalculateLoadPosition(v, v.loadms)
         --v.n = k --MISTAKE: after sorted
     end
+    --]]
+    local timet = {}
+    for k, v in pairs(notetable) do
+        v.ms = v.ms - startms
+        v.s = MsToS(v.ms)
+        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.loadms = CalculateLoadMs(v, v.ms)
+        v.loads = MsToS(v.loadms)
+        v.loadp = CalculateLoadPosition(v, v.loadms)
+        --v.n = k --MISTAKE: after sorted
+        table.insert(timet, v.ms)
+    end
 
     --Sort by loadms
+    --Sort all branches firt
+    for k, v in pairs(Parsed.Data) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                table.sort(v2, function(a, b)
+                    return a.loadms < b.loadms
+                end)
+            end
+        end
+    end
+
+
+    --Path doesn't matter, they should all have same loadms
     table.sort(Parsed.Data, function(a, b)
-        return a.loadms < b.loadms
+        if a.branch and b.branch then
+            --both branches
+            for k, v in pairs(a.branch.paths) do
+                for k2, v2 in pairs(b.branch.paths) do
+                    return v[1].loadms < v2[1].loadms
+                end
+            end
+        elseif a.branch then
+            --a is branch
+            for k, v in pairs(a.branch.paths) do
+                return v[1].loadms < b.loadms
+            end
+        elseif b.branch then
+            --b is branch
+            for k, v in pairs(b.branch.paths) do
+                return a.loadms < v[1].loadms
+            end
+        else
+            --notes
+            return a.loadms < b.loadms
+        end
     end)
 
     --Relink and reindex after sorting
+    Taiko.ConnectAll(Parsed.Data)
+    Taiko.ForAll(Parsed.Data, function(note, i, n)
+        --print(note.loadms)
+        note.n = n
+    end)
+    --]]
+
+    --[[
     local nextnote = nil
     for i = #Parsed.Data, 1, -1 do
         local v = Parsed.Data[i]
@@ -2317,6 +2491,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
             nextnote = v
         end
     end
+    --]]
 
     --[[
     --ppp
@@ -2340,6 +2515,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local nextnote = Parsed.Data[1]
     local nextnotel = nextnote.loads
 
+    --[[
+    --redesign
     while true do
         if nextnote then
             nextnotel = nextnote.loads
@@ -2356,6 +2533,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
         end
         nextnote = nextnote.nextnote
     end
+    --]]
 
     loaded.e = loaded.n
 
@@ -2368,6 +2546,14 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local padding = 10
     local function Statistic(k, v)
         print(k .. ': ' .. tostring(v) .. string.rep(' ', padding))
+    end
+    --Log (Debug system)
+    local logs = ''
+    local function Log(s)
+        logs = logs .. '\n' .. s
+    end
+    local function RenderLog()
+        print(logs)
     end
 
 
@@ -2383,13 +2569,21 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
     --]]
 
-    --Main loop
-    local startt = os.clock()
+    local branch = 'M'
+
 
 
     --Statistics
     local framen = 0
     local framerenderstotal = 0
+
+
+
+    --Main loop
+    local startt = os.clock()
+
+
+
 
     while true do
         --Make canvas
@@ -2410,12 +2604,28 @@ function Taiko.PlaySong(Parsed, Difficulty)
                 loaded.n = loaded.n + 1
                 --loaded.e = loaded.n
                 loaded.e = nextnote.n
+
                 loaded[nextnote.n] = nextnote
 
                 
 
                 nextnote = nextnote.nextnote
                 
+                if nextnote.branch then
+                    Log('branch')
+                    --[[
+                    Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                        print(note.ms)
+                    end)
+                    error()
+                    --]]
+
+                    nextnote = nextnote.branch.paths[branch][1]
+
+                end
+                
+
+
                 --[[
                 if loaded.s == 0 then
                     loaded.s = 1
@@ -2570,6 +2780,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
         --statistics
+        --[[
         Statistic('S', s)
         Statistic('Ms', ms)
         Statistic('Loaded', loaded.n)
@@ -2581,7 +2792,11 @@ function Taiko.PlaySong(Parsed, Difficulty)
         Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
         Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
         Statistic('FPS (Frame)', framen / s)
-
+        Statistic('nextloadms', nextnote.loadms)
+        Statistic('nextms', nextnote.ms)
+        Statistic('nextn', nextnote.n)
+        RenderLog()
+        --]]
 
 
 
@@ -2645,7 +2860,8 @@ file = './tja/ekiben.tja'
 --file = './tja/lag.tja'
 --file = './tja/drumroll2.tja'
 --file = './tja/branchtest.tja'
---file = './tja/saitama.tja'
+file = './tja/saitama.tja'
+file = './tja/donkama.tja'
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 
 
