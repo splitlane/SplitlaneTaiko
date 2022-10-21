@@ -18,6 +18,8 @@ error()
 local dir = [[C:\Users\User\OneDrive\code\Taiko\Versions]]
 dir = [[C:\Users\User\Documents\ChromeUserData\taiko\TJA\ESE]]
 dir = [[C:\Users\User\Documents\ChromeUserData\taiko\TJA\RAWTJAS\06 Classical]]
+dir = [[C:\Users\User\Documents\BACKUP\taiko\TJA\ESE\ALLTJA\TJANONAME]]
+
 Compact.Write('out.tjac', Compact.CompressDir(dir))
 
 

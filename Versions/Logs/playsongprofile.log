@@ -1,0 +1,49 @@
+> Total time: 126.900000 s
+--------------------------------------------------------------------------------------
+| FILE                : FUNCTION                    : LINE   : TIME   : %     : #    |
+--------------------------------------------------------------------------------------
+| c:\Users\User\OneDri: RenderNote                  :  2768  : 26.9050: 21.2  : 297746|
+| c:\Users\User\OneDri: RenderCircle                :  2734  : 23.9820: 18.9  : 299496|
+| c:\Users\User\OneDri: Circle                      :  2660  : 22.3120: 17.6  : 313950|
+| c:\Users\User\OneDri: RenderStatistic             :  3122  : 13.7150: 10.8  : 14454|
+| c:\Users\User\OneDri: Statistic                   :  3114  : 5.6210 : 4.4   : 274626|
+| c:\Users\User\OneDri: SetCursor                   :  2877  : 3.9760 : 3.1   : 14454|
+| .\Pixels            : GetPixelData                :   527  : 2.2840 : 1.8   : 328406|
+| c:\Users\User\OneDri: CalculatePosition           :  2945  : 1.7910 : 1.4   : 337119|
+| c:\Users\User\OneDri: RenderLog                   :  3131  : 1.4060 : 1.1   : 14454|
+| c:\Users\User\OneDri: RenderBarline               :  2720  : 0.4470 : 0.4   : 38156|
+| .\taikocurses       : getkeyname                  :   242  : 0.4450 : 0.4   : 28908|
+| c:\Users\User\OneDri: RenderRect                  :  2741  : 0.2360 : 0.2   : 1750 |
+| .\Pixels            : Anon                        :     0  : 0.1470 : 0.1   :    1 |
+| c:\Users\User\OneDri: New                         :  2684  : 0.1250 : 0.1   : 14457|
+| .\Pixels            : GenerateDotData             :   381  : 0.0560 : 0.0   :    1 |
+| c:\Users\User\OneDri: MsToS                       :   175  : 0.0500 : 0.0   : 1994 |
+| .\Pixels            : ToBinary                    :   398  : 0.0440 : 0.0   :  256 |
+| c:\Users\User\OneDri: Anon                        :  2997  : 0.0420 : 0.0   : 11202|
+| c:\Users\User\OneDri: CalculateLoadMs             :  2935  : 0.0180 : 0.0   :  997 |
+| c:\Users\User\OneDri: CalculateLoadPosition       :  2942  : 0.0090 : 0.0   :  997 |
+| c:\Users\User\OneDri: CalculateSpeed              :  1988  : 0.0070 : 0.0   :  997 |
+| .\Pixels            : Split                       :   352  : 0.0060 : 0.0   :    1 |
+| c:\Users\User\OneDri: ForAll                      :  1869  : 0.0060 : 0.0   :    1 |
+| .\taikocurses       : Anon                        :     0  : 0.0060 : 0.0   :    1 |
+| c:\Users\User\OneDri: GetAllNotes                 :  1902  : 0.0050 : 0.0   :    1 |
+| c:\Users\User\OneDri: f                           :  3023  : 0.0030 : 0.0   :  997 |
+| .\Pixels            : format                      :   409  : 0.0020 : 0.0   :  256 |
+| .\taikocurses       : raw                         :    77  : 0.0010 : 0.0   :    1 |
+--------------------------------------------------------------------------------------
+| c:\Users\User\OneDri: ClearScreen                 :  2874  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: ConnectAll                  :  1941  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: CircleGen                   :  2586  : ~      : ~     :    2 |
+| .\profiler          : stop                        :   228  : ~      : ~     :    1 |
+| .\profiler          : report                      :   236  : ~      : ~     :    1 |
+| .\taikocurses       : getch                       :    54  : ~      : ~     : 14454|
+| c:\Users\User\OneDri: ToDots                      :  2372  : ~      : ~     : 14454|
+| .\taikocurses       : keypad                      :    47  : ~      : ~     :    1 |
+| .\taikocurses       : initscr                     :    71  : ~      : ~     :    1 |
+| .\taikocurses       : echo                        :    75  : ~      : ~     :    1 |
+| .\taikocurses       : nl                          :    76  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: TIMING                      :   411  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: GetDifficulty               :  1857  : ~      : ~     :    1 |
+| .\taikocurses       : cbreak                      :    79  : ~      : ~     :    1 |
+| .\taikocurses       : nodelay                     :    49  : ~      : ~     :    1 |
+--------------------------------------------------------------------------------------

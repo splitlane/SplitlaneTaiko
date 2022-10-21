@@ -31,7 +31,7 @@ local seperatorchar = '\\'
 local success, search = pcall(require, ('./CompactTJA/search'))
 
 if not success then
-    print('Unable to require \'search.\'')
+    print('Unable to require \'search\'')
 end
 
 local function Escape(str, sep)
@@ -285,7 +285,16 @@ local function EncodeHeader(t)
     local titles = {}
     for i = 1, #t do
         print(string.match(t[i], '\nTITLE:(.-)\n'))
-        titles[#titles + 1] = Escape(string.match(t[i], 'TITLE:(.-)\n'), headersepchar)
+
+
+        local title = string.match(t[i], 'TITLE:(.-)\n') or string.match(t[i], 'TITLE:(.-)\r')
+        if not title then
+            print'input title'
+            title = io.read()
+        end
+
+
+        titles[#titles + 1] = Escape(title, headersepchar)
     end
 
 
@@ -302,8 +311,7 @@ local function DecodeHeader(str)
     end
     return header, string.sub(str, e + 1, -1)
 end
-local function SearchHeader(header, str)
-
+local function SearchHeaderAll(header, str)
     local t = {}
     for i = 1, #header do
         --print(header[i])
@@ -313,6 +321,21 @@ local function SearchHeader(header, str)
     table.sort(t, function(a, b)
         return a[2] > b[2]
     end)
+    return t
+end
+local function SearchHeader(header, str)
+    local t = SearchHeaderAll(header, str)
+    --[[
+    local t = {}
+    for i = 1, #header do
+        --print(header[i])
+        t[i] = {i, search(header[i], str), header[i]}
+    end
+
+    table.sort(t, function(a, b)
+        return a[2] > b[2]
+    end)
+    --]]
 
     --[[
     for i = 1, #t do
@@ -464,8 +487,9 @@ function Compact.CompressDir(path, base)
     local dir = path
     local t = scandir(dir)
     local exclude = {
-
+        --['1 (1347).tja'] = true --Mirai, UTF-16 le + lf
     }
+
     local str = {}
     for i = 1, #t do
         local file = t[i]
@@ -522,6 +546,13 @@ function Compact.CompressDir(path, base)
         return Compact.Compress(str)
     end
 end
+
+
+
+--Utils
+
+Compact.SearchHeader = SearchHeader
+Compact.SearchHeaderAll = SearchHeaderAll
 
 
 

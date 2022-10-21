@@ -1,5 +1,5 @@
 --[[
-Taikov11.lua
+TaikovERRORTEST.lua
 
 
 Changes: Taiko.PlaySong improved!
@@ -14,7 +14,6 @@ Playing:
     prerendering removed!
     Pixel.Color / GetAnsi Optimized
     status
-    big long note fix
 
 
 WIP: FIX statusanimationlength
@@ -155,27 +154,42 @@ end
 
 function Error(msg)
     --error(msg)
+    --print(msg)
+    --print(SongName)
+
+
+    if LastSongName ~= SongName then
+        print('\n' .. SongName)
+    end
     print(msg)
+    --print(LineN)
+    --print(LineData)
+    LastSongName = SongName
     
     --[[
-    if msg:sub(-1, -1) == '@' then
+    if msg:sub(-6, -1) == 'scroll' then
         if LastSongName ~= SongName then
             print('\n' .. SongName)
         end
         print(msg)
+        --print(LineN)
+        --print(LineData)
         LastSongName = SongName
     end
     --]]
 end
 
---[[
+-- [[
 LastSongName = nil
 SongName = ''
+LineData = ''
 --]]
 LineN = nil
 function ParseError(cmd, msg, data)
     --Error(cmd .. ': ' .. msg .. (data and (', ' .. data) or ''))
+    if cmd:lower() == 'last' then
     Error('Line: ' .. LineN .. '\n' .. cmd .. ': ' .. msg .. (data and (', ' .. data) or ''))
+    end
 end
 
 
@@ -561,6 +575,7 @@ function Taiko.ParseTJA(source)
 
 
 
+    local bpmdata = {}
 
 
 
@@ -734,8 +749,7 @@ function Taiko.ParseTJA(source)
 
         }
 
-
-
+        
 
 
 
@@ -932,6 +946,9 @@ function Taiko.ParseTJA(source)
     --Start
     local lines = Split(source, '\n')
     for i = 1, #lines do
+
+        LineData = lines[i]
+
         LineN = i
 
         --local line = TrimLeft(lines[i])
@@ -1479,6 +1496,7 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure, therefore it is necessary to calculate milliseconds per measure value for each note.
                         ]]
                         --Parsed.Metadata.BPM = tonumber(match[2]) or Parsed.Metadata.BPM --UNSAFE
+                        bpmdata[Parsed.Metadata.COURSE] = true
                         Parser.bpm = CheckN(match[1], match[2], 'Invalid bpmchange') or Parser.bpm --UNSAFE
                     elseif match[1] == 'DELAY' then
                         --[[
@@ -1856,8 +1874,23 @@ function Taiko.ParseTJA(source)
     end
 
 
+    local onierror = nil
+    local a = 3
+    if bpmdata[a] then
+        onierror = true
+        for k, v in pairs(bpmdata) do
+            if k ~= a then
+                onierror = false
+            end
+        end
+    else
+        onierror = false
+    end
 
-    print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
+    if onierror then ParseError('Last', 'bpmchange found in oni only') end
+
+
+    --print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
 
 
     return Out
@@ -2805,8 +2838,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
             --RenderCircle(out, endnote)
             local r = noteradius * note.radius
             local x1, x2 = math.floor(note.p), math.floor(note.p + length)
-            local y1 = math.floor(y - r)
-            local y2 = math.floor(y + r)
+            local y1 = y - r
+            local y2 = y + r
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
         elseif n == 8 then
             RenderCircle(out, note.startnote, note.p)
@@ -3924,8 +3957,6 @@ file = './tja/ekiben.tja'
 
 --file = './tja/ekiben.tja'
 
-file = './tja/biglongtest.tja'
-
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 --]]
 
@@ -3948,12 +3979,37 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 local Compact = require('./CompactTJA/compactv4')
 
-
-
-
---[=[
-
 --[[
+--CLASSICAL
+local t, header = Compact.Decompress(Compact.Read(file))
+
+local exclude = {
+    [2] = true,
+    [33] = true,
+    [53] = true,
+    [59] = true,
+    [66] = true,
+    [67] = true,
+    [75] = true,
+    [77] = true,
+}
+
+for k, v in pairs(t) do
+    print(k, header[k])
+    if exclude[k] then
+        print('EXCLUDE')
+    else
+        Taiko.ParseTJA(v)
+    end
+end
+--]]
+
+
+
+
+
+
+-- [[
 --print emulation
 
 local pf = io.open('_stdout.txt','w+')
@@ -3986,8 +4042,9 @@ profiler.start()
 
 
 for k, v in pairs(t) do
-    print(k, header[k])
-    --SongName = header[k]
+    --print(k, header[k])
+    SongName = header[k]
+    io.write(tostring(k) .. ' ' .. tostring(header[k]) .. '\n')
     if exclude[k] then
         print('EXCLUDE')
     else
@@ -4000,11 +4057,11 @@ profiler.report('profiler.log')
 --]]
 
 error()
---]=]
 
 
 
-Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura')
+
+Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Oni')
 
 
 --]]

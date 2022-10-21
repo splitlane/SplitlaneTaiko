@@ -1,5 +1,5 @@
 --[[
-Taikov11.lua
+TaikovERRORTEST.lua
 
 
 Changes: Taiko.PlaySong improved!
@@ -14,7 +14,6 @@ Playing:
     prerendering removed!
     Pixel.Color / GetAnsi Optimized
     status
-    big long note fix
 
 
 WIP: FIX statusanimationlength
@@ -155,22 +154,25 @@ end
 
 function Error(msg)
     --error(msg)
-    print(msg)
+    --print(msg)
     
-    --[[
-    if msg:sub(-1, -1) == '@' then
+    -- [[
+    if msg:sub(-6, -1) == 'scroll' then
         if LastSongName ~= SongName then
             print('\n' .. SongName)
         end
         print(msg)
+        --print(LineN)
+        --print(LineData)
         LastSongName = SongName
     end
     --]]
 end
 
---[[
+-- [[
 LastSongName = nil
 SongName = ''
+LineData = ''
 --]]
 LineN = nil
 function ParseError(cmd, msg, data)
@@ -932,6 +934,9 @@ function Taiko.ParseTJA(source)
     --Start
     local lines = Split(source, '\n')
     for i = 1, #lines do
+
+        LineData = lines[i]
+
         LineN = i
 
         --local line = TrimLeft(lines[i])
@@ -1857,7 +1862,7 @@ function Taiko.ParseTJA(source)
 
 
 
-    print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
+    --print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
 
 
     return Out
@@ -2805,8 +2810,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
             --RenderCircle(out, endnote)
             local r = noteradius * note.radius
             local x1, x2 = math.floor(note.p), math.floor(note.p + length)
-            local y1 = math.floor(y - r)
-            local y2 = math.floor(y + r)
+            local y1 = y - r
+            local y2 = y + r
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
         elseif n == 8 then
             RenderCircle(out, note.startnote, note.p)
@@ -3924,8 +3929,6 @@ file = './tja/ekiben.tja'
 
 --file = './tja/ekiben.tja'
 
-file = './tja/biglongtest.tja'
-
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 --]]
 
@@ -3948,10 +3951,35 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 local Compact = require('./CompactTJA/compactv4')
 
+--[[
+--CLASSICAL
+local t, header = Compact.Decompress(Compact.Read(file))
+
+local exclude = {
+    [2] = true,
+    [33] = true,
+    [53] = true,
+    [59] = true,
+    [66] = true,
+    [67] = true,
+    [75] = true,
+    [77] = true,
+}
+
+for k, v in pairs(t) do
+    print(k, header[k])
+    if exclude[k] then
+        print('EXCLUDE')
+    else
+        Taiko.ParseTJA(v)
+    end
+end
+--]]
 
 
 
---[=[
+
+
 
 --[[
 --print emulation
@@ -3986,8 +4014,8 @@ profiler.start()
 
 
 for k, v in pairs(t) do
-    print(k, header[k])
-    --SongName = header[k]
+    --print(k, header[k])
+    SongName = header[k]
     if exclude[k] then
         print('EXCLUDE')
     else
@@ -4000,11 +4028,11 @@ profiler.report('profiler.log')
 --]]
 
 error()
---]=]
 
 
 
-Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura')
+
+Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Oni')
 
 
 --]]

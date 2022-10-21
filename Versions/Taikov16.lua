@@ -1,20 +1,36 @@
 --[[
-Taikov11.lua
+Taikov16.lua
 
 
 Changes: Taiko.PlaySong improved!
 
-PRERENDERING IS OLD CODE! FIX
+Code Cleanup
+Pixels not required!!!
 
-Changes:
-Added playing!
-Playing:
-    big note fix
-    circlecache
-    prerendering removed!
-    Pixel.Color / GetAnsi Optimized
-    status
-    big long note fix
+
+TODO: FIX rounding
+    PlaySong
+TODO: Song select screen
+    Select Song
+    Scroll Animation
+    URA SUPPORT --Done
+    UNHARDCODE OPTIONS
+    CACHED OPTION LIMITS --Done
+
+TODO: Scoreinit
+TODO: Lyrics
+TODO: SCORE SYSTEM
+    balloon
+    drumroll?
+
+
+TODO: PlaySong
+    Add drumrolls / balloons
+    Combo
+    Score
+    Display
+    BigLeniency --Half Done
+    2P SUPPORT!
 
 
 WIP: FIX statusanimationlength
@@ -44,7 +60,25 @@ X  0
 X 0
 X0
 0
+
+
+
+Notes on curses:
+getch always doesn't display screen on first run
+
+
+
+
+
+
+
+
+
+
+
 ]]
+
+
 
 
 
@@ -56,6 +90,44 @@ How to run on powershell
 cd C:\Users\User\OneDrive\code\Taiko\Versions\
 lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
 ]]
+
+
+
+
+
+
+
+--Optimized Pixels
+local OptimizedPixel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -86,6 +158,7 @@ lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
 
 
 --Utils
+
 
 
 --string
@@ -334,10 +407,11 @@ Taiko.Data = {
         [2] = 1,
         [3] = 2
     },
+    GogoMultiplier = 1.2,
     ScoreMode = {
         --combo: current combo, added note
         --status: 0 = bad, 1 = ok, 2 = good, 3 = biggood
-        [0] = function(score, combo, init, diff, status)
+        [0] = function(score, combo, init, diff, status, gogo)
             --[[
             local a = nil
             if combo < 200 then
@@ -349,15 +423,15 @@ Taiko.Data = {
             --]]
 
 
-            return score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status])
+            return score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
         end,
-        [1] = function(score, combo, init, diff, status)
+        [1] = function(score, combo, init, diff, status, gogo)
             --INIT + max(0, DIFF * floor((min(COMBO, 100) - 1) / 10))
-            return score + (init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status]
+            return score + ((init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
         end,
-        [2] = function(score, combo, init, diff, status)
+        [2] = function(score, combo, init, diff, status, gogo)
             --INIT + DIFF * {100<=COMBO: 8, 50<=COMBO: 4, 30<=COMBO: 2, 10<=COMBO: 1, 0}
-            return score + (init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status]
+            return score + ((init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
         end
     },
     Autoscore = {
@@ -466,18 +540,26 @@ Taiko.Data = {
         [0] = '',
         P1,
         P2
-    }
+    },
+    Combo = { --Notes that affect combo
+        [1] = true,
+        [2] = true,
+        [3] = true,
+        [4] = true
+    },
+    BigLeniency = 2, --How much times easier to hit (x Timing)
 }
 
 
 
 --Wrap scoring
+-- [[
 for k, v in pairs(Taiko.Data.ScoreMode) do
     Taiko.Data.ScoreMode[k] = function(...)
         return math.floor(v(...) / 10) * 10
     end
 end
-
+--]]
 
 
 
@@ -800,7 +882,9 @@ function Taiko.ParseTJA(source)
                     if Parser.lastlong then
                         --9 is special, so exclude
                         if n == 9 then
-
+                            --Parser.lastlong = nil
+                            --Lower points for clearing
+                            
                         else
                             ParseError('parser.noteparse', 'Last long note has not ended')
                         end
@@ -1863,15 +1947,111 @@ function Taiko.ParseTJA(source)
     return Out
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --TJA Utils
 
-
+function Taiko.Score(Parsed, score, combo, status, gogo)
+    if status == 0 then
+        combo = 0
+    else
+        combo = combo + 1
+    end
+    local m = Parsed.Metadata
+    return Taiko.Data.ScoreMode[m.SCOREMODE](score, combo, m.SCOREINIT, m.SCOREDIFF, status, gogo), combo
+end
 
 
 function Taiko.Analyze(Parsed)
-    for i = 1, #Parsed.Data do
-        --WIP
-    end
+    local branch = 'M'
+    local scoredata = {
+        [1] = 2,
+        [2] = 2,
+        [3] = 3,
+        [4] = 3
+    }
+
+    local out = {
+        notes = {
+            n = 0, --N of all notes (including end)
+            validn = 0, --N of notes that increase combo
+        },
+        measures = 0,
+        lengthms = 0, --Until last note
+        drumrollms = 0,
+        drumrollbigms = 0,
+        balloonms = 0,
+        balloonhit = 0,
+        specialms = 0,
+        specialhit = 0,
+        
+        maxcombo = 0, --TODO
+        maxscore = 0, --TODO
+    }
+    
+    local lastnote = nil
+    Taiko.ForAll(Parsed.Data, function(note, i, n)
+        --local note = Parsed.Data[i]
+        if note.data == 'note' then
+            out.notes.n = out.notes.n + 1
+            out.notes[note.type] = out.notes[note.type] and out.notes[note.type] + 1 or 1
+
+            if scoredata[note.type] then
+                out.maxscore, out.maxcombo = Taiko.Score(Parsed, out.maxscore, out.maxcombo, scoredata[note.type], note.gogo)
+            end
+
+            local endnote = note.endnote
+            if endnote then
+                local ms = endnote.ms - note.ms
+                if note.type == 5 then
+                    out.drumrollms = out.drumrollms + ms
+                elseif note.type == 6 then
+                    out.drumrollbigms = out.drumrollbigms + ms
+                elseif note.type == 7 then
+                    out.balloonms = out.balloonms + ms
+                    out.balloonhit = out.balloonhit + note.requiredhits
+                elseif note.type == 9 then
+                    out.specialms = out.specialms + ms
+                    out.specialhit = out.specialhit + note.requiredhits
+                else
+                    --Invalid
+                end
+            end
+            lastnote = note
+        elseif note.data == 'event' and note.event == 'barline' then
+            out.measures = out.measures + 1
+        else
+            --Invalid
+        end
+    end, branch)
+
+
+    out.lengthms = lastnote.ms - Parsed.Metadata.OFFSET
+
+    --out.notes.validn = (out.notes[1] or 0) + (out.notes[2] or 0) + (out.notes[3] or 0) + (out.notes[4] or 0)
+    out.notes.validn = out.maxcombo
+
+
+    --require'ppp'(out)
+
+    return out
 end
 
 function Taiko.GetDifficulty(Parsed, Difficulty)
@@ -1886,8 +2066,10 @@ function Taiko.GetDifficulty(Parsed, Difficulty)
 end
 
 
-function Taiko.ForAll(ParsedData, f)
+function Taiko.ForAll(ParsedData, f, branch)
     --[[
+    f(note, relative, absolute)
+
     for k, v in pairs(ParsedData) do
         if v.branch then
 
@@ -1896,20 +2078,30 @@ function Taiko.ForAll(ParsedData, f)
         end
     end
     --]]
+
     local n = 1 --Absolute
     for i = 1, #ParsedData do --i is relative
         local v = ParsedData[i]
         if v.branch then
-            local n3 = -1
-            for k2, v2 in pairs(v.branch.paths) do
-                local n2 = n
-                for i2 = 1, #v2 do
-                    f(v2[i2], i2, n2)
-                    n2 = n2 + 1
+            if branch then
+                local b = v.branch.paths[branch]
+                for i2 = 1, #b do
+                    f(b[i2], i2, n)
+                    n = n + 1
                 end
-                n3 = (n3 < n2) and n2 or n3
+                n = n - 1
+            else
+                local n3 = -1
+                for k2, v2 in pairs(v.branch.paths) do
+                    local n2 = n
+                    for i2 = 1, #v2 do
+                        f(v2[i2], i2, n2)
+                        n2 = n2 + 1
+                    end
+                    n3 = (n3 < n2) and n2 or n3
+                end
+                n = n3
             end
-            n = n3
         else
             f(v, i, n)
         end
@@ -2181,8 +2373,9 @@ end
 
 
 
-
-function Taiko.PlaySong(Parsed, Difficulty)
+--Make sure to endwin first
+--function Taiko.PlaySong(Parsed, Difficulty, Controls, Window)
+function Taiko.PlaySong(Parsed, Controls, Window)
 
     --[[
     local profiler = require'profiler'
@@ -2238,20 +2431,93 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
+    local framerate = nil --Set frame rate, if nil then it is as fast as it can run
 
-    local auto = true --Autoplay
+
+    local auto = false --Autoplay
     local autoemu = false --Emulate key on auto
 
 
 
     --Controls
-    --1 = don, 2 = ka
-    local controls = {
-        ['4'] = 2,
-        ['v'] = 1,
-        ['n'] = 1,
-        ['8'] = 2
+    --Hit, Escape, L, R, Select
+    local Controls = Controls or {}
+    Controls = {
+        --1 = don, 2 = ka
+        Hit = Controls.Hit or {
+            ['4'] = 2,
+            ['v'] = 1,
+            ['n'] = 1,
+            ['8'] = 2,
+        },
+        --Pause
+        Escape = Controls.Escape or {
+            ['\27'] = true,
+            ALT_ESC = true,
+        },
+        --Scroll
+        L = Controls.L or {
+            --Left
+            KEY_LEFT = true,
+            KEY_SLEFT = true,
+            CTL_LEFT = true,
+            KEY_B1 = true,
+            ALT_LEFT = true,
+
+            KEY_SHIFT_L = true,
+
+
+            --Up
+            KEY_UP = true,
+            KEY_A2 = true,
+        },
+        R = Controls.R or {
+            --Right
+            KEY_RIGHT = true,
+            KEY_SRIGHT = true,
+            CTL_RIGHT = true,
+            KEY_B3 = true,
+            ALT_RIGHT = true,
+
+            KEY_SHIFT_R = true,
+
+
+            --Down
+            KEY_DOWN = true,
+            KEY_C2 = true,
+        },
+        Select = Controls.Select or {
+            --[[
+            KEY_UP = true,
+            KEY_DOWN = true,
+
+            KEY_A2 = true,
+            KEY_C2 = true,
+            --]]
+
+
+            KEY_ENTER = true,
+            PADENTER = true,
+            CTL_PADENTER = true,
+            ALT_PADENTER = true,
+            CTL_PADCENTER = true,
+            ALT_ENTER = true,
+            CTL_ENTER = true,
+            SHF_PADENTER = true,
+
+            ['\n'] = true,
+            ['\r'] = true,
+        }
     }
+
+    local Selected = 1
+    local SelectedPadding = 2
+    local SelectedChar = '>'
+    local MenuConcat = '\n\n\n'
+
+
+
+    
     
 
     --local buffer = 100 --Buffer (ms)
@@ -2309,7 +2575,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    local window = {
+    local window = Window or {
         window = curses.initscr()
     }
 
@@ -2326,7 +2592,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    local Pixel = require('Pixels')
+    --local Pixel = require('Pixels')
 
 
     --pixeltest.lua
@@ -2379,13 +2645,165 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
     --Pixel starts here
 
-    local t = {
-        
-    }
-    for k, v in pairs(Pixel.Color.Data) do
-        t[k] = '\27[' .. v .. 'm'
+    local Pixel
+
+    if OptimizedPixel then
+        Pixel = OptimizedPixel
+    else
+
+
+
+
+
+    os.execute('chcp 65001') --Makes your terminal support unicode. If it is buggy, turn it off
+    Pixel = {}
+
+
+
+
+    --combined 6 and 8
+    --https://github.com/qntm/braille-encode/blob/main/index.js
+    local dotdata = ([[
+⠀ ⢀ ⠠ ⢠ ⠐ ⢐ ⠰ ⢰ ⠈ ⢈ ⠨ ⢨ ⠘ ⢘ ⠸ ⢸
+⡀ ⣀ ⡠ ⣠ ⡐ ⣐ ⡰ ⣰ ⡈ ⣈ ⡨ ⣨ ⡘ ⣘ ⡸ ⣸
+⠄ ⢄ ⠤ ⢤ ⠔ ⢔ ⠴ ⢴ ⠌ ⢌ ⠬ ⢬ ⠜ ⢜ ⠼ ⢼
+⡄ ⣄ ⡤ ⣤ ⡔ ⣔ ⡴ ⣴ ⡌ ⣌ ⡬ ⣬ ⡜ ⣜ ⡼ ⣼
+⠂ ⢂ ⠢ ⢢ ⠒ ⢒ ⠲ ⢲ ⠊ ⢊ ⠪ ⢪ ⠚ ⢚ ⠺ ⢺
+⡂ ⣂ ⡢ ⣢ ⡒ ⣒ ⡲ ⣲ ⡊ ⣊ ⡪ ⣪ ⡚ ⣚ ⡺ ⣺
+⠆ ⢆ ⠦ ⢦ ⠖ ⢖ ⠶ ⢶ ⠎ ⢎ ⠮ ⢮ ⠞ ⢞ ⠾ ⢾
+⡆ ⣆ ⡦ ⣦ ⡖ ⣖ ⡶ ⣶ ⡎ ⣎ ⡮ ⣮ ⡞ ⣞ ⡾ ⣾
+⠁ ⢁ ⠡ ⢡ ⠑ ⢑ ⠱ ⢱ ⠉ ⢉ ⠩ ⢩ ⠙ ⢙ ⠹ ⢹
+⡁ ⣁ ⡡ ⣡ ⡑ ⣑ ⡱ ⣱ ⡉ ⣉ ⡩ ⣩ ⡙ ⣙ ⡹ ⣹
+⠅ ⢅ ⠥ ⢥ ⠕ ⢕ ⠵ ⢵ ⠍ ⢍ ⠭ ⢭ ⠝ ⢝ ⠽ ⢽
+⡅ ⣅ ⡥ ⣥ ⡕ ⣕ ⡵ ⣵ ⡍ ⣍ ⡭ ⣭ ⡝ ⣝ ⡽ ⣽
+⠃ ⢃ ⠣ ⢣ ⠓ ⢓ ⠳ ⢳ ⠋ ⢋ ⠫ ⢫ ⠛ ⢛ ⠻ ⢻
+⡃ ⣃ ⡣ ⣣ ⡓ ⣓ ⡳ ⣳ ⡋ ⣋ ⡫ ⣫ ⡛ ⣛ ⡻ ⣻
+⠇ ⢇ ⠧ ⢧ ⠗ ⢗ ⠷ ⢷ ⠏ ⢏ ⠯ ⢯ ⠟ ⢟ ⠿ ⢿
+⡇ ⣇ ⡧ ⣧ ⡗ ⣗ ⡷ ⣷ ⡏ ⣏ ⡯ ⣯ ⡟ ⣟ ⡿ ⣿]]):gsub('\n', ' ')
+
+
+
+    function GenerateDotData() --im lazy, so this will generate a dictionary with all of the patterns formatted.
+        --generate alphanumeric chars
+        --local badchars = '	%+1234567890%(%)%-\n '
+        --[[
+        local badchars = '%+1234567890%(%)%-'
+        local startpoint = 65
+        local endpoint = 90 --no need for lowercase.
+        for i = startpoint, endpoint do
+            badchars = badchars .. string.char(i)
+        end
+        badchars = '[' .. string.lower(badchars) .. string.upper(badchars) .. ']'
+        --ok now pattern match them
+        dotdata = dotdata:gsub(badchars, '')
+        print(dotdata)
+        ]] --wont use because i need to split str
+
+        --format data into a 't'
+        function ToBinary(a)
+            local t = {}
+            while a > 0 do
+                local r = math.fmod(a, 2)
+                t[#t + 1] = string.sub(r, 1, 1)
+                a=(a - r) / 2
+            end
+            local s = string.reverse(table.concat(t))
+            return string.rep('0', 8 - #s) .. s
+            --return s
+        end
+        local function format(s)
+            --return string.rep('0', 8 - #s) .. s
+            return s
+        end
+        local t = Split(dotdata, ' ')
+        local newt = {}
+        --print(#t) --> 256
+        local inputa = false
+        local str = ''
+        local sep = ' '
+        for i = 1, #t do
+            --print(i, ToBinary(i - 1), t[i])
+            newt[ToBinary(i - 1)] = format(t[i])
+            if inputa then
+                print(ToBinary(i - 1) .. t[i])
+                local input = io.read()
+                if input == '' then
+                    input = t[i]
+                elseif input == 'stop' then
+                    break
+                end
+                str = str .. input .. sep
+            end
+        end
+        if inputa then
+            print(str)
+            io.open('Data.lua', 'a+'):write(str)
+        end
+        return newt
     end
-    Pixel.Color = t
+    Pixel.Data = {}
+    Pixel.Data.Dot = GenerateDotData()
+    --Order: LU, RU, LD, RD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --Pixel.ColorData = Pixel.Color.Data
+    Pixel.ColorData = {
+        --attributes
+        reset = 0, clear = 0, space = 0,
+        bright = 1, bold = 1,
+        dim = 2, faint = 1,
+        italic = 3,
+        underline = 4,
+        blink = 5,
+        reverse = 7,
+        invisible = 8, hidden = 8,
+        strikethrough = 9,
+    
+        --foreground
+        black = 30,
+        red = 31,
+        green = 32,
+        yellow = 33,
+        blue = 34,
+        purple = 35, magenta = 35,
+        cyan = 36,
+        white = 37,
+    
+        --background
+        onblack = 40,
+        onred = 41,
+        ongreen = 42,
+        onyellow = 43,
+        onblue = 44,
+        onpurple = 45, onmagenta = 45,
+        oncyan = 46,
+        onwhite = 47,
+    }
+    Pixel.Color = {}
+    for k, v in pairs(Pixel.ColorData) do
+        Pixel.Color[k] = '\27[' .. v .. 'm'
+    end
 
     --min, max, to prevent screen bobbing
     local minx, maxx = trackstart, tracklength
@@ -2395,6 +2813,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     --minx and maxx not needed, modified, OPTIMIZED
     --write to str, row scanning removed
     --Pixel.Color removed
+    Pixel.Convert = {}
     Pixel.Convert.ToDots = function(str) --converts a given data table
         --The pixels might look off, but they are not
         --[[
@@ -2403,7 +2822,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     
         ]]
         --Data
-        str = GetPixelData(str) --Read Only
+        --str = GetPixelData(str) --Read Only
         local data, colordata = str.Data, str.Color
         
         --local data, color = str.Data, str.Color
@@ -2609,8 +3028,9 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
     --Optimize!
-    Pixel.CircleGen = function(self, cx, cy, r, options)
-        str = GetPixelData(self)
+    --Pixel.CircleGen = function(self, cx, cy, r, options)
+    Pixel.CircleGen = function(str, cx, cy, r, options)
+        --str = GetPixelData(self)
         options = options or {}
         local color = options.color
         --[[
@@ -2683,8 +3103,9 @@ function Taiko.PlaySong(Parsed, Difficulty)
     end
 
     local circlecache = {}
-    Pixel.Circle = function(self, cx, cy, r, options)
-        local str = GetPixelData(self)
+    --Pixel.Circle = function(self, cx, cy, r, options)
+    Pixel.Circle = function(str, cx, cy, r, options)
+        --local str = GetPixelData(self)
         local circle = nil
         if circlecache[r] then
             
@@ -2712,6 +3133,10 @@ function Taiko.PlaySong(Parsed, Difficulty)
             Data = {},
             Color = {}
         }
+    end
+
+
+    OptimizedPixel = Pixel
     end
 
 
@@ -2920,7 +3345,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-    Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
+    --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
 
 
     local notetable = Taiko.GetAllNotes(Parsed.Data)
@@ -2943,6 +3368,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
     local startms = Parsed.Metadata.OFFSET
 
     --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
+    --local framems = 1000 / (framerate or 60) --don't use framerate
     local framems = 1000 / 60
     local timing = Parsed.Metadata.TIMING(framems)
 
@@ -3009,6 +3435,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
         v.loadp = CalculateLoadPosition(v, v.loadms)
+        v.hit = nil --Reset hit just in case
         --v.n = k --MISTAKE: after sorted
         table.insert(timet, v.ms)
         --print(v.speed, v.loadms, v.loadp)
@@ -3190,13 +3617,23 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
     --Statistics
-    local lastkey = -1
+    local lastinput = {-1, nil}
     local framen = 0
     local framerenderstotal = 0
 
+    --Frame Rate
+    if framerate then
+        local frames = 1 / framerate
+        local nextframes = nil
+    end
 
     --Main loop
     local startt = os.clock()
+
+
+    if framerate then
+        nextframes = startt + frames
+    end
 
 
     if not prerender.on then
@@ -3515,7 +3952,30 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
             -- [[
             --Legacy renderer (Fast)
-            print(Pixel.Convert.ToDots(out))
+
+
+
+            --Frame Limiting
+            if framerate then
+                local dots = Pixel.Convert.ToDots(out)
+                repeat
+
+                until os.clock() >= nextframes
+                --nextframes = startt + (framen + 2) * frames
+                nextframes = nextframes + frames
+                print(dots)
+            else
+                --Legacy renderer
+                print(Pixel.Convert.ToDots(out))
+            end
+
+
+
+
+
+
+
+            
             framen = framen + 1
             local framerenders = os.clock() - raws
             framerenderstotal = framerenderstotal + framerenders
@@ -3523,11 +3983,17 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-            --Now Input
-            local input = curses.getch(window)
-            input = curses.getkeyname(input)
 
-            local v = controls[input]
+
+
+
+
+
+            --Now Input
+            local input = curses.getch(window) --Ascii / raw
+            local key = curses.getkeyname(input) --Char
+
+            local v = Controls.Hit[key] --Controls are referenced by keys
             --Statistic('v', v)
 
             --Auto
@@ -3536,13 +4002,16 @@ function Taiko.PlaySong(Parsed, Difficulty)
                 local n2 = nearest[2]
                 local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
                 local n = nearest[testv]
+                local note = nearestnote[testv]
                 --if n and n < (timing.good) then
-                if n and n < 10 then
+                --if n and n < 10 then
+                if n and ms > note.ms and (not note.hit) then
                     if autoemu then
                         v = testv
                     else
                         --good
-                        local a = nearestnote[testv].type
+                        note.hit = true
+                        local a = note.type
                         local status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
                         laststatus = {
                             startms = ms,
@@ -3555,17 +4024,20 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-            if v and nearest[v] then
+            if v and nearest[v] and (not nearestnote[v].hit) then
                 local n = nearest[v]
                 local status
-                if n < timing.good then
+                local a = nearestnote[v].type
+                --No leniency for good
+                local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
+                if n < (timing.good) then
                     --good
                     local a = nearestnote[v].type
                     status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
-                elseif n < timing.ok then
+                elseif n < (timing.ok * leniency) then
                     --ok
                     status = 1
-                elseif n < timing.bad then
+                elseif n < (timing.bad * leniency) then
                     --bad
                     status = 0
                 else
@@ -3573,24 +4045,86 @@ function Taiko.PlaySong(Parsed, Difficulty)
                     status = nil
                 end
                 if status then
+                    nearestnote[v].hit = true
                     laststatus = {
                         startms = ms,
                         status = status
                     }
                 end
-                --Log(Taiko.Data.StatusName[status] or 'MISS')
+            end
+
+
+
+
+            --Pause menu
+            if Controls.Escape[key] then
+                local before = os.clock()
+
+                Ansi.ClearScreen()
+                curses.nodelay(window, false)
+                --Back, Retry, Song Select
+                local Menu = {'Back', 'Retry', 'Back to Select'}
+                while true do
+                    Ansi.SetCursor(1, 1)
+                    local o = {}
+                    for i = 1, #Menu do
+                        --Can't Use Select :(
+                        o[i] = ((i == Selected) and (SelectedChar .. string.rep(' ', SelectedPadding - #SelectedChar)) or string.rep(' ', SelectedPadding)) .. Menu[i]
+                    end
+                    print(table.concat(o, MenuConcat))
+
+                    --local input = Input()
+                    local input = curses.getch(window)
+                    local key = curses.getkeyname(input)
+                    if Controls.L[key] then
+                        Selected = Selected == 1 and 1 or Selected - 1
+                    elseif Controls.R[key] then
+                        Selected = Selected == 3 and 3 or Selected + 1
+                    elseif Controls.Select[key] then
+                        --Dirty
+                        if Selected == 1 then
+                            --Back
+                        elseif Selected == 2 then
+                            --Retry
+                            return 'Retry'
+                        elseif Selected == 3 then
+                            --Back to Select
+                            return nil
+                        end
+                        break
+                    elseif Controls.Escape[key] then
+                        break
+                    end
+                end
+                curses.nodelay(window, true)
+                startt = startt + (os.clock() - before)
             end
 
 
 
 
 
-            if input ~= '-1' then
-                lastkey = input
+
+
+
+
+
+
+
+
+
+
+            --Statistics
+
+
+
+
+            if input ~= -1 then
+                lastinput = {input, key}
             end
             --input statistics
-            Statistic('Input (ascii)', lastkey)
-            Statistic('Input (key)', curses.getkeyname(lastkey))
+            Statistic('Input (ascii)', lastinput[1])
+            Statistic('Input (key)', lastinput[2])
 
 
 
@@ -3622,6 +4156,7 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
             Statistic('Nearest1 (ms)', nearest[1])
+            --Statistic('NearestHIT', (nearestnote[1] and ((nearestnote[1].ms > ms) and (not nearestnote[1].hit))))
             Statistic('Nearest2 (ms)', nearest[2])
 
 
@@ -3736,8 +4271,8 @@ function Taiko.PlaySong(Parsed, Difficulty)
 
 
 
-
-
+    --curses.nodelay(window, false)
+    return true
 
 
 
@@ -3818,6 +4353,801 @@ function Taiko.PlaySong(Parsed, Difficulty)
     end
     --]]
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--works best with compact
+function Taiko.SongSelect(header, data)
+    local Display = {} --2d array starting at {0, 0} (Left, up)
+    local dx, dy = 10, 10
+    local dminx, dmaxx, dminy, dmaxy = -dx, dx, -dy, dy
+
+
+
+
+    local Vertical = true --Vertical mode
+
+    local Selected = 1 --Where selection starts
+    local SelectedOption = 1 --Selected option
+    local SelectedOptionIndex = 4 --Selected option index
+    --local DifficultyMax = 3 --Max difficulty able to be selected --NOW DETECTED
+    local DisplayN = 5 --How much songs to display (per each side)
+    local Spacing = 5 --Spacing
+    local TopSpacing = 2 --Top Spacing
+    local SelectedChar = 'V' --Selected Char
+    local SelectedCharVertical = '>' --Selected Char Vertical
+
+
+    local SearchN = 10 --Number of search results to show
+    local Padding = nil --Padding to erase (nil = cols - 2)
+    local SearchSelected = '>' --Selected Char
+    local OptionSelected = '>' --Selected Char
+    local OptionSpacing = 2 --Option Spacing
+
+    local ParsedCacheOn = true --Parsed Cache On
+
+
+
+    local Options = {
+        [2] = {
+            'Normal', 'Auto'
+        },
+        [3] = {
+            'None', '2x Speed', '3x Speed', '4x Speed'
+        }
+    }
+
+    local OptionsConfig = {
+        4,
+        1,
+        1
+    }
+    local OptionsLimit = {
+        --{min, max, map}
+        nil --Will be recalculated
+    }
+    for k, v in pairs(Options) do
+        OptionsLimit[k] = {1, #v, v}
+    end
+
+
+
+
+
+
+
+
+    local Compact = require('./CompactTJA/compactv4')
+
+
+
+
+    local curses = require('taikocurses')
+
+
+
+
+    local window = {
+        window = curses.initscr()
+    }
+
+    curses.keypad(window, true)
+    curses.echo(false)
+    curses.raw(true)
+    curses.nl(false)
+    curses.cbreak(true)
+
+    --To display first frame
+    curses.nodelay(window, true)
+    curses.getch(window)
+    curses.nodelay(window, false)
+
+
+
+    --ASSUMES NO WINDOW RESIZE
+    local cols, lines = curses.cols(), curses.lines()
+    Padding = Padding or cols - 2
+    --print(curses.cols(), curses.lines())
+    
+    --curses.nodelay(window, true)
+
+
+
+
+
+
+
+    --Data
+
+
+
+
+
+
+
+
+
+
+
+
+
+    local Controls = {
+        Escape = {
+            ['\27'] = true,
+            ALT_ESC = true,
+        },
+        Scroll = {
+            L = {
+                --Left
+                KEY_LEFT = true,
+                KEY_SLEFT = true,
+                CTL_LEFT = true,
+                KEY_B1 = true,
+                ALT_LEFT = true,
+
+                KEY_SHIFT_L = true,
+
+
+                --Up
+                KEY_UP = true,
+                KEY_A2 = true,
+            },
+            R = {
+                --Right
+                KEY_RIGHT = true,
+                KEY_SRIGHT = true,
+                CTL_RIGHT = true,
+                KEY_B3 = true,
+                ALT_RIGHT = true,
+
+                KEY_SHIFT_R = true,
+
+
+                --Down
+                KEY_DOWN = true,
+                KEY_C2 = true,
+            }
+        },
+        Select = {
+            Init = {
+                --[[
+                KEY_UP = true,
+                KEY_DOWN = true,
+
+                KEY_A2 = true,
+                KEY_C2 = true,
+                --]]
+
+
+                KEY_ENTER = true,
+                PADENTER = true,
+                CTL_PADENTER = true,
+                ALT_PADENTER = true,
+                CTL_PADCENTER = true,
+                ALT_ENTER = true,
+                CTL_ENTER = true,
+                SHF_PADENTER = true,
+
+                ['\n'] = true,
+                ['\r'] = true,
+            },
+            Select = {
+                --[[
+                KEY_UP = true,
+                KEY_DOWN = true,
+
+                KEY_A2 = true,
+                KEY_C2 = true,
+                --]]
+
+
+                KEY_ENTER = true,
+                PADENTER = true,
+                CTL_PADENTER = true,
+                ALT_PADENTER = true,
+                CTL_PADCENTER = true,
+                ALT_ENTER = true,
+                CTL_ENTER = true,
+                SHF_PADENTER = true,
+
+                ['\n'] = true,
+                ['\r'] = true,
+            },
+            Escape = {
+                ['\27'] = true,
+                ALT_ESC = true,
+            },
+            L = {
+                --Left
+                KEY_LEFT = true,
+                KEY_SLEFT = true,
+                CTL_LEFT = true,
+                KEY_B1 = true,
+                ALT_LEFT = true,
+
+                KEY_SHIFT_L = true,
+            },
+            R = {
+                --Right
+                KEY_RIGHT = true,
+                KEY_SRIGHT = true,
+                CTL_RIGHT = true,
+                KEY_B3 = true,
+                ALT_RIGHT = true,
+
+                KEY_SHIFT_R = true,
+            },
+            U = {
+                --Up
+                KEY_UP = true,
+                KEY_A2 = true,
+            },
+            D = {
+                --Down
+                KEY_DOWN = true,
+                KEY_C2 = true,
+            },
+            Play = {
+                --1 = don, 2 = ka
+                Hit = {
+                    ['4'] = 2,
+                    ['v'] = 1,
+                    ['n'] = 1,
+                    ['8'] = 2,
+                },
+                --Pause
+                Escape = {
+                    ['\27'] = true,
+                    ALT_ESC = true,
+                },
+                --Scroll
+                L = {
+                    --Left
+                    KEY_LEFT = true,
+                    KEY_SLEFT = true,
+                    CTL_LEFT = true,
+                    KEY_B1 = true,
+                    ALT_LEFT = true,
+        
+                    KEY_SHIFT_L = true,
+        
+        
+                    --Up
+                    KEY_UP = true,
+                    KEY_DOWN = true,
+                },
+                R = {
+                    --Right
+                    KEY_RIGHT = true,
+                    KEY_SRIGHT = true,
+                    CTL_RIGHT = true,
+                    KEY_B3 = true,
+                    ALT_RIGHT = true,
+        
+                    KEY_SHIFT_R = true,
+        
+        
+                    --Down
+                    KEY_DOWN = true,
+                    KEY_C2 = true,
+                },
+                Select = {
+                    --[[
+                    KEY_UP = true,
+                    KEY_DOWN = true,
+        
+                    KEY_A2 = true,
+                    KEY_C2 = true,
+                    --]]
+        
+        
+                    KEY_ENTER = true,
+                    PADENTER = true,
+                    CTL_PADENTER = true,
+                    ALT_PADENTER = true,
+                    CTL_PADCENTER = true,
+                    ALT_ENTER = true,
+                    CTL_ENTER = true,
+                    SHF_PADENTER = true,
+        
+                    ['\n'] = true,
+                    ['\r'] = true,
+                }
+            }
+        },
+        Search = {
+            Init = {
+                ALT_F = true,
+                f = true,
+                F = true,
+            },
+            Backspace = {
+                ['\8'] = true,
+                KEY_BACKSPACE = true,
+                ALT_BKSP,
+                CTL_BKSP,
+            },
+            FirstResult = {
+                KEY_ENTER = true,
+                PADENTER = true,
+                CTL_PADENTER = true,
+                ALT_PADENTER = true,
+                CTL_PADCENTER = true,
+                ALT_ENTER = true,
+                CTL_ENTER = true,
+                SHF_PADENTER = true,
+
+                ['\n'] = true,
+                ['\r'] = true,
+            },
+            Select = {
+                KEY_RIGHT = true,
+                KEY_SRIGHT = true,
+                CTL_RIGHT = true,
+                KEY_B3 = true,
+                ALT_RIGHT = true,
+
+                KEY_SHIFT_R = true,
+            },
+            Up = {
+                KEY_A2 = true,
+                KEY_UP = true,
+            },
+            Down = {
+                KEY_C2 = true,
+                KEY_DOWN = true,
+            },
+            Escape = {
+                ['\27'] = true,
+                ALT_ESC = true,
+            }
+        }
+    }
+
+
+    
+
+
+    --local Pixel = require('Pixels')
+
+
+    local Ansi = {
+        ClearScreen = function()
+            io.write("\27[2J")
+        end,
+        SetCursor = function(x, y)
+            io.write(string.format("\27[%d;%dH", y, x))
+        end
+    }
+
+
+
+
+
+
+
+    local function Pad(str)
+        return str .. string.rep(' ', Padding - #str)
+    end
+    local function Input()
+        local input = curses.getch(window)
+        local key = curses.getkeyname(input)
+        return input, key
+    end
+    local function IsValid(byte)
+        return byte >= 32 and byte <= 126
+    end
+    local function Select(on, char, pad, str)
+        --return (on and (char .. string.rep(' ', pad - #char)) or pad) .. str
+        return (on and (char .. string.sub(pad, #char + 1, -1)) or pad) .. str
+    end
+    local function Wrap(n, min, max)
+        return n > max and min or n < min and max or n
+    end
+
+    local Bool = {
+        [0] = 'No',
+        [1] = 'Yes'
+    }
+    local function ConvertBool(bool)
+        return bool and Bool[1] or Bool[0]
+    end
+    local function ConvertPercent(percent)
+        return percent * 100 .. '%'
+    end
+    local function ConvertMs(ms)
+        return MsToS(ms) .. 's'
+    end
+    local function ConvertS(s)
+        return ConvertMs(SToMs(s))
+    end
+    local function ConvertN(n)
+        return tonumber(n) and tonumber(n) or 0
+    end
+
+
+
+
+
+
+
+    local ParsedCache = {}
+
+
+
+    Ansi.ClearScreen()
+    
+    while true do
+
+
+
+
+
+
+
+        --Render
+
+        --[[
+        if Selected == 0 then
+            Selected = #header
+        elseif Selected == (#header + 1) then
+            Selected = 0
+        end
+        --]]
+
+
+
+        Display = {}
+        
+
+        if Vertical then
+            Display[dminx] = {}
+            for i = Selected - DisplayN, Selected + DisplayN do
+                local index = nil
+                if i < 1 then
+                    index = #header + i
+                elseif i > #header then
+                    index = i - #header
+                else
+                    index = i
+                end
+                local song = header[index]
+                if song then
+                    --[[
+                    local y = (i - Selected) * Spacing
+                    local x = 0
+                    --]]
+                    Display[0] = Display[0] or {}
+                    Display[0][(i - Selected) * Spacing] = song
+                end
+            end
+
+            local out = {}
+            local ts = string.rep(' ', TopSpacing)
+            for y = dminy, dmaxy do
+                --out[#out + 1] = y == 0 and (SelectedCharVertical .. string.rep(' ', #ts - #SelectedCharVertical)) or ts
+                out[#out + 1] = Select(y == 0, SelectedCharVertical, ts, '')
+                out[#out + 1] = Pad(Display[0][y] or '')
+                out[#out + 1] = '\n'
+            end
+
+            Ansi.SetCursor(1, 1)
+            print(table.concat(out))
+
+
+
+
+
+
+
+        else
+            Display[0] = {}
+            Display[0][dminy] = SelectedChar
+            for i = Selected - DisplayN, Selected + DisplayN do
+                local index = nil
+                if i < 1 then
+                    index = #header + i
+                elseif i > #header then
+                    index = i - #header
+                else
+                    index = i
+                end
+                local song = header[index]
+                if song then
+                    local x = (i - Selected) * Spacing
+                    Display[x] = Display[x] or {}
+                    local y = dminy + TopSpacing
+                    for i2 = 1, #song do
+                        Display[x][y] = string.sub(song, i2, i2)
+                        y = y + 1
+                    end
+                end
+            end
+
+            local out = {}
+            for y = dminy, dmaxy do
+                for x = dminx, dmaxx do
+                    if Display[x] and Display[x][y] then
+                        local a = Display[x][y]
+                        if IsValid(string.byte(a)) then
+                            out[#out + 1] = a
+                        else
+                            --Probably a unicode character, temp solution
+                            out[#out + 1] = ' '
+                        end
+                    else
+                        out[#out + 1] = ' '
+                    end
+                end
+                out[#out + 1] = '\n'
+            end
+
+            Ansi.SetCursor(1, 1)
+            print(table.concat(out))
+            --]]
+        end
+
+        --Input
+        local input, key = Input()
+        if Controls.Scroll.L[key] then
+            --Selected = Selected == 1 and #header or Selected - 1
+            Selected = Selected - 1
+        elseif Controls.Scroll.R[key] then
+            --Selected = Selected == #header and 1 or Selected + 1
+            Selected = Selected + 1
+        elseif Controls.Select.Init[key] then
+            local Parsed
+            if ParsedCacheOn then
+                if ParsedCache[Selected] then
+                    Parsed = ParsedCache[Selected]
+                else
+                    Parsed = Taiko.ParseTJA(data[Selected])
+                    ParsedCache[Selected] = Parsed
+                end
+            else
+                Parsed = Taiko.ParseTJA(data[Selected])
+            end
+
+
+            --Find difficulties
+
+            local min, max
+            local map
+            if SelectedOption == 1 then
+                map = {}
+                for k, v in pairs(Parsed) do
+                    map[#map + 1] = {k, v.Metadata.COURSE}
+                end
+                table.sort(map, function(a, b)
+                    return a[2] < b[2]
+                end)
+                min = 1
+                max = #map
+                OptionsLimit[SelectedOption] = {min, max, map}
+            else
+                --2 or 3
+                --[[
+                min = 1
+                map = Options[SelectedOption]
+                max = #map
+                
+                --]]
+                --No need to calculate
+                local a = OptionsLimit[SelectedOption]
+                min, max, map = a[1], a[2], a[3]
+            end
+            SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
+
+
+
+            
+
+            local pad = string.rep(' ', OptionSpacing)
+
+
+            Ansi.ClearScreen()
+            Ansi.SetCursor(1, 1)
+
+
+            local ParsedData = nil
+            local lastoption = SelectedOption
+            while true do
+                Ansi.SetCursor(1, 1)
+                local SelectedDifficulty = map[OptionsConfig[1]][2]
+                ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
+                local m = ParsedData.Metadata
+                local a = Taiko.Analyze(ParsedData)
+                local t = {
+                    {'', m.TITLE},
+                    {'\t', m.SUBTITLE},
+                    {'', ''},
+                    {'', 'Select Options:'},
+                    {Select(SelectedOption == 1, OptionSelected, pad, 'Difficulty: '), Taiko.Data.CourseName[m.COURSE]},
+                    {Select(SelectedOption == 2, OptionSelected, pad, 'Mode: '), Options[2][OptionsConfig[2]]},
+                    {Select(SelectedOption == 3, OptionSelected, pad, 'Modifiers: '), Options[3][OptionsConfig[3]]},
+                    {'', ''},
+                    {'Difficulty: ', Taiko.Data.CourseName[m.COURSE]},
+                    {'Stars: ', m.LEVEL},
+                    {'Diverge Notes: ', ConvertBool(m.DIVERGENOTES)},
+                    {'', ''},
+                    {'', 'Statistics:'},
+                    {'Don (DON) / Ka (KA): ', ConvertN(a.notes[1]) .. ' + (' .. ConvertN(a.notes[3]) .. ') / ' .. ConvertN(a.notes[2]) .. ' + (' .. ConvertN(a.notes[4]) .. ') = ' .. ConvertPercent((ConvertN(a.notes[1]) + ConvertN(a.notes[3])) / a.notes.validn) .. ' / ' .. ConvertPercent((ConvertN(a.notes[2]) + ConvertN(a.notes[4])) / a.notes.validn)},
+                    {'Max Score (without drumroll): ', a.maxscore},
+                    {'Max Combo: ', a.maxcombo},
+                    {'Drumroll Time (total): ', ConvertMs(a.drumrollms + a.drumrollbigms)},
+                    {'Balloon Time: ', ConvertMs(a.balloonms)},
+                    {'Balloon Hits: ', a.balloonhit},
+                    {'Special Time: ', ConvertMs(a.specialms)},
+                    {'Special Hits: ', a.specialhit},
+                    {'', ''},
+                    {'', 'Press Enter to Play!'}
+                }
+                for i = 1, #t do
+                    local d = t[i]
+                    print(Pad(d[1] .. tostring(d[2])))
+                end
+
+                --Input
+                local input, key = Input()
+
+                if Controls.Select.L[key] then
+                    --SelectedOptionIndex = SelectedOptionIndex == min and min or SelectedOptionIndex - 1
+                    SelectedOptionIndex = SelectedOptionIndex - 1
+                elseif Controls.Select.R[key] then
+                    --SelectedOptionIndex = SelectedOptionIndex == max and max or SelectedOptionIndex + 1
+                    SelectedOptionIndex = SelectedOptionIndex + 1
+                elseif Controls.Select.U[key] then
+                    SelectedOption = SelectedOption - 1
+                elseif Controls.Select.D[key] then
+                    SelectedOption = SelectedOption + 1
+                elseif Controls.Select.Select[key] then
+                    while true do
+                        --No need to endwin since playsong is using window
+                        --curses.endwin()
+                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), Controls.Select.Play, window)
+                        if success and out then
+                            --Show results
+
+
+
+
+                            break
+                        elseif success == 'Retry' then
+                            --Retry
+                        else
+                            --Quit
+                            break
+                        end
+                    end
+                    curses.nodelay(window, false)
+
+                elseif Controls.Select.Escape[key] then
+                    break
+                end
+
+                SelectedOption = ClipN(SelectedOption, 1, 3)
+
+                if SelectedOption ~= lastoption then
+                    SelectedOptionIndex = OptionsConfig[SelectedOption]
+                    lastoption = SelectedOption
+                end
+                
+
+                local a = OptionsLimit[SelectedOption]
+                min, max = a[1], a[2]
+
+
+
+                --SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
+                SelectedOptionIndex = Wrap(SelectedOptionIndex, min, max)
+
+
+
+                
+
+                OptionsConfig[SelectedOption] = SelectedOptionIndex
+
+            end
+
+
+        elseif Controls.Search.Init[key] then
+            local str = ''
+            local results = {}
+            local max = 1
+            local result = nil
+            local selected = 1
+            Ansi.ClearScreen()
+            Ansi.SetCursor(1, 1)
+            print('Searching...')
+            while true do
+                Ansi.SetCursor(#str + 1, 2)
+                --Input
+                local input, key = Input()
+                Ansi.SetCursor(1, 2)
+                if Controls.Search.Backspace[key] then
+                    str = string.sub(str, 1, -2)
+                elseif Controls.Search.FirstResult[key] then
+                    result = results[1]
+                    break
+                elseif Controls.Search.Select[key] then
+                    result = results[selected]
+                    break
+                elseif Controls.Search.Down[key] then
+                    --selected = selected < #results and selected + 1 or selected
+                    selected = selected + 1
+                elseif Controls.Search.Up[key] then
+                    --selected = selected > 1 and selected - 1 or selected
+                    selected = selected - 1
+                elseif Controls.Search.Escape[key] then
+                    break
+                else
+                    str = str .. key
+                end
+
+                print(Pad(str))
+                --Compute
+                local t = Compact.SearchHeaderAll(header, str)
+                --Find max
+                for i = 1, SearchN do
+                    if t[i][2] == -math.huge then
+                        max = i - 1
+                        break
+                    elseif i == SearchN then
+                        max = i
+                    end
+                end
+                
+                selected = ClipN(selected, 1, max)
+
+                --Render
+                local padmode = false
+                for i = 1, SearchN do
+                    local a = t[i]
+                    if padmode then
+                        print(Pad(''))
+                    else
+                        if a then
+                            if a[2] == -math.huge then
+                                padmode = true
+                                print(Pad(''))
+                            else
+                                print(Pad((i == selected and SearchSelected or i) .. '. ' .. t[i][3]))
+                                --Dirty
+                                --print(Pad(Select(i == selected, i == SearchSelected and SearchSelected or tostring(i), ' . ', t[i][3])))
+                                results[i] = a
+                            end
+                        end
+                    end
+                end
+            end
+            Selected = (result and result[1] or Selected) or Selected
+        elseif Controls.Escape[key] then
+            return
+        end
+        Selected = Wrap(Selected, 1, #header)
+    end
+end
+
+
+
+
+
+
 
 
 
@@ -3924,10 +5254,48 @@ file = './tja/ekiben.tja'
 
 --file = './tja/ekiben.tja'
 
-file = './tja/biglongtest.tja'
+--file = './tja/biglongtest.tja'
 
 Taiko.PlaySong(Taiko.ParseTJA(io.open(file,'r'):read('*all')), 'Oni')
 --]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+Taiko.SongSelect({
+    'ekiben',
+    'saitama',
+    'taiko'
+})
+error()
+--]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 local file = './CompactTJA/taikobuipm.tjac'
@@ -3946,7 +5314,35 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 
 
+
+
+
+
+
+
+
+
+
 local Compact = require('./CompactTJA/compactv4')
+
+
+
+local t, header = Compact.Decompress(Compact.Read(file))
+
+
+
+-- [[
+Taiko.SongSelect(header, t)
+error()
+--]]
+
+
+
+
+
+
+
+
 
 
 
@@ -4004,7 +5400,7 @@ error()
 
 
 
-Taiko.PlaySong(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura')
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura'))
 
 
 --]]

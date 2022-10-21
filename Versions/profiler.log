@@ -1,0 +1,32 @@
+> Total time: 571.545000 s
+--------------------------------------------------------------------------------------
+| FILE                : FUNCTION                    : LINE   : TIME   : %     : #    |
+--------------------------------------------------------------------------------------
+| c:\Users\User\OneDri: ParseTJA                    :   489  : 555.0900: 97.1  : 2455 |
+| c:\Users\User\OneDri: CheckN                      :   568  : 104.9720: 18.4  : 17772971|
+| c:\Users\User\OneDri: createnote                  :   728  : 76.3610: 13.4  : 18245746|
+| c:\Users\User\OneDri: Split                       :    92  : 9.7540 : 1.7   : 2455 |
+| c:\Users\User\OneDri: Trim                        :    93  : 9.1940 : 1.6   : 1267600|
+| c:\Users\User\OneDri: StartsWith                  :    96  : 7.8420 : 1.4   : 1221072|
+| c:\Users\User\OneDri: TrimRight                   :    95  : 5.8470 : 1.0   : 778724|
+| c:\Users\User\OneDri: Clone                       :   111  : 5.7370 : 1.0   : 955252|
+| c:\Users\User\OneDri: EndsWith                    :    97  : 4.6580 : 0.8   : 778724|
+| c:\Users\User\OneDri: ParseError                  :   161  : 1.9580 : 0.3   : 1796 |
+| c:\Users\User\OneDri: Error                       :   155  : 1.9210 : 0.3   : 1796 |
+| c:\Users\User\OneDri: CheckBalloon                :   626  : 0.7200 : 0.1   : 7729 |
+| c:\Users\User\OneDri: Check                       :   576  : 0.6320 : 0.1   : 84977|
+| c:\Users\User\OneDri: CheckCSV                    :   601  : 0.3260 : 0.1   : 8774 |
+| c:\Users\User\OneDri: onnotepush                  :   809  : 0.2730 : 0.0   : 71601|
+| c:\Users\User\OneDri: GetParser                   :   666  : 0.1700 : 0.0   : 12485|
+| c:\Users\User\OneDri: CheckBalloon                :   633  : 0.1220 : 0.0   : 40120|
+| c:\Users\User\OneDri: CheckExam                   :   640  : 0.1120 : 0.0   : 30090|
+| c:\Users\User\OneDri: SToMs                       :   183  : 0.1040 : 0.0   : 22822|
+| c:\Users\User\OneDri: GetTranslated               :   558  : 0.0660 : 0.0   : 20060|
+| c:\Users\User\OneDri: CheckB                      :   583  : 0.0650 : 0.0   : 10030|
+| c:\Users\User\OneDri: ClipN                       :   136  : 0.0390 : 0.0   : 10030|
+| c:\Users\User\OneDri: GetFunction                 :   414  : 0.0290 : 0.0   : 10030|
+| c:\Users\User\OneDri: endbranch                   :   848  : 0.0080 : 0.0   : 1015 |
+--------------------------------------------------------------------------------------
+| .\profiler          : stop                        :   228  : ~      : ~     :    1 |
+| .\profiler          : report                      :   236  : ~      : ~     :    1 |
+--------------------------------------------------------------------------------------
