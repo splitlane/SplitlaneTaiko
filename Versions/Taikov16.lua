@@ -6,6 +6,7 @@ Changes: Taiko.PlaySong improved!
 
 Code Cleanup
 Pixels not required!!!
+BREAKING: Changed order of Taiko.PlaySong arguments
 
 
 TODO: FIX rounding
@@ -2375,14 +2376,14 @@ end
 
 --Make sure to endwin first
 --function Taiko.PlaySong(Parsed, Difficulty, Controls, Window)
-function Taiko.PlaySong(Parsed, Controls, Window)
+function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --[[
     local profiler = require'profiler'
     profiler.start()
     --]]
 
-
+    --collectgarbage('stop')
 
     --[[
     local i = 0
@@ -2434,8 +2435,44 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     local framerate = nil --Set frame rate, if nil then it is as fast as it can run
 
 
-    local auto = false --Autoplay
+
+    --SETTINGS (map from selectsong)
+
+
+
+    
+    --SUS
+    local optionsmap = {
+        auto = {
+            [1] = false,
+            [2] = true,
+        },
+        notespeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        },
+        songspeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        }
+    }
+
+
+    local auto = optionsmap.auto[Settings[2]] or false --Autoplay
     local autoemu = false --Emulate key on auto
+
+    local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
+    local songspeedmul = optionsmap.songspeedmul[Settings[4]] or 1 --Actual speed multiplier
 
 
 
@@ -3429,9 +3466,12 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     --]]
     local timet = {}
     for k, v in pairs(notetable) do
-        v.ms = v.ms - startms
+        --v.oms is original ms
+        v.ms = v.oms or v.ms
+        v.oms = v.ms
+        v.ms = (v.ms - startms) / songspeedmul
         v.s = MsToS(v.ms)
-        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.speed = (Taiko.CalculateSpeed(v, noteradius)) * notespeedmul
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
         v.loadp = CalculateLoadPosition(v, v.loadms)
@@ -3509,7 +3549,7 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     --]]
 
     --Calculate end time
-    local endms = math.max(unpack(timet)) + endms
+    local endms = math.max(unpack(timet)) + (endms / songspeedmul)
 
 
 
@@ -4408,14 +4448,23 @@ function Taiko.SongSelect(header, data)
             'Normal', 'Auto'
         },
         [3] = {
-            'None', '2x Speed', '3x Speed', '4x Speed'
+            'Normal', '2x Speed', '3x Speed', '4x Speed', '0.25x Speed', '0.5x Speed', '0.75x Speed'
+        },
+        [4] = {
+            'Normal', '2x Speed', '3x Speed', '4x Speed', '0.25x Speed', '0.5x Speed', '0.75x Speed'
+        },
+        [5] = {
+            'TODO Normal'
         }
     }
-
+    --SUS
     local OptionsConfig = {
         4,
         1,
-        1
+        1,
+        1,
+        1,
+        1,
     }
     local OptionsLimit = {
         --{min, max, map}
@@ -4926,32 +4975,37 @@ function Taiko.SongSelect(header, data)
 
             --Find difficulties
 
+            
+            local map = {}
+            for k, v in pairs(Parsed) do
+                map[#map + 1] = {k, v.Metadata.COURSE}
+            end
+            table.sort(map, function(a, b)
+                return a[2] < b[2]
+            end)
+            min = 1
+            max = #map
+            OptionsLimit[SelectedOption] = {min, max, map}
+            DifficultyMap = map
+
+
+
+            --[=[
             local min, max
             local map
-            if SelectedOption == 1 then
-                map = {}
-                for k, v in pairs(Parsed) do
-                    map[#map + 1] = {k, v.Metadata.COURSE}
-                end
-                table.sort(map, function(a, b)
-                    return a[2] < b[2]
-                end)
-                min = 1
-                max = #map
-                OptionsLimit[SelectedOption] = {min, max, map}
-            else
-                --2 or 3
-                --[[
-                min = 1
-                map = Options[SelectedOption]
-                max = #map
-                
-                --]]
-                --No need to calculate
-                local a = OptionsLimit[SelectedOption]
-                min, max, map = a[1], a[2], a[3]
-            end
-            SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
+            --2 or 3
+            --[[
+            min = 1
+            map = Options[SelectedOption]
+            max = #map
+            
+            --]]
+            --No need to calculate
+            local a = OptionsLimit[SelectedOption]
+            min, max, map = a[1], a[2], a[3]
+            --]=]
+            
+            --SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
 
 
 
@@ -4968,7 +5022,7 @@ function Taiko.SongSelect(header, data)
             local lastoption = SelectedOption
             while true do
                 Ansi.SetCursor(1, 1)
-                local SelectedDifficulty = map[OptionsConfig[1]][2]
+                local SelectedDifficulty = DifficultyMap[OptionsConfig[1]][2]
                 ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
                 local m = ParsedData.Metadata
                 local a = Taiko.Analyze(ParsedData)
@@ -4979,7 +5033,9 @@ function Taiko.SongSelect(header, data)
                     {'', 'Select Options:'},
                     {Select(SelectedOption == 1, OptionSelected, pad, 'Difficulty: '), Taiko.Data.CourseName[m.COURSE]},
                     {Select(SelectedOption == 2, OptionSelected, pad, 'Mode: '), Options[2][OptionsConfig[2]]},
-                    {Select(SelectedOption == 3, OptionSelected, pad, 'Modifiers: '), Options[3][OptionsConfig[3]]},
+                    {Select(SelectedOption == 3, OptionSelected, pad, 'Note Speed: '), Options[3][OptionsConfig[3]]},
+                    {Select(SelectedOption == 4, OptionSelected, pad, 'Song Speed: '), Options[4][OptionsConfig[4]]},
+                    {Select(SelectedOption == 5, OptionSelected, pad, 'Modifiers: '), Options[5][OptionsConfig[5]]},
                     {'', ''},
                     {'Difficulty: ', Taiko.Data.CourseName[m.COURSE]},
                     {'Stars: ', m.LEVEL},
@@ -5019,7 +5075,7 @@ function Taiko.SongSelect(header, data)
                     while true do
                         --No need to endwin since playsong is using window
                         --curses.endwin()
-                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), Controls.Select.Play, window)
+                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), window, OptionsConfig, Controls.Select.Play)
                         if success and out then
                             --Show results
 
@@ -5040,7 +5096,7 @@ function Taiko.SongSelect(header, data)
                     break
                 end
 
-                SelectedOption = ClipN(SelectedOption, 1, 3)
+                SelectedOption = ClipN(SelectedOption, 1, 5)
 
                 if SelectedOption ~= lastoption then
                     SelectedOptionIndex = OptionsConfig[SelectedOption]

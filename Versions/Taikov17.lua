@@ -1,12 +1,10 @@
 --[[
-Taikov16.lua
+Taikov17.lua
 
 
 Changes: Taiko.PlaySong improved!
 
-Code Cleanup
-Pixels not required!!!
-
+Taiko.PlaySong SpeedOPT
 
 TODO: FIX rounding
     PlaySong
@@ -227,8 +225,8 @@ end
 --error
 
 function Error(msg)
-    --error(msg)
-    print(msg)
+    error(msg)
+    --print(msg)
     
     --[[
     if msg:sub(-1, -1) == '@' then
@@ -2375,14 +2373,14 @@ end
 
 --Make sure to endwin first
 --function Taiko.PlaySong(Parsed, Difficulty, Controls, Window)
-function Taiko.PlaySong(Parsed, Controls, Window)
+function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --[[
     local profiler = require'profiler'
     profiler.start()
     --]]
 
-
+    --collectgarbage('stop')
 
     --[[
     local i = 0
@@ -2434,8 +2432,44 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     local framerate = nil --Set frame rate, if nil then it is as fast as it can run
 
 
-    local auto = false --Autoplay
+
+    --SETTINGS (map from selectsong)
+
+
+
+    
+    --SUS
+    local optionsmap = {
+        auto = {
+            [1] = false,
+            [2] = true,
+        },
+        notespeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        },
+        songspeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        }
+    }
+
+
+    local auto = optionsmap.auto[Settings[2]] or false --Autoplay
     local autoemu = false --Emulate key on auto
+
+    local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
+    local songspeedmul = optionsmap.songspeedmul[Settings[4]] or 1 --Actual speed multiplier
 
 
 
@@ -2603,7 +2637,8 @@ function Taiko.PlaySong(Parsed, Controls, Window)
         --OK
         [1] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[8]='1'},[5]={[2]='1',[8]='1'},[6]={'0','0','1','1','1','1','1','0'},[8]={'0','1','1','1','1','1','1','1'},[9]={[5]='1'},[10]={[4]='1',[6]='1'},[11]={[3]='1',[7]='1'},[12]={[2]='1',[8]='1'}},Color={All='white'},Offset={-1,0}},
         --GOOD
-        [2] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={'0','1','0','0','1','1','1','1'},[8]={'0','0','1','1','1','1','1','0'},[9]={[2]='1',[8]='1'},[10]={[2]='1',[8]='1'},[11]={[2]='1',[8]='1'},[12]={[2]='1',[8]='1'},[13]={'0','0','1','1','1','1','1','0'},[15]={'0','0','1','1','1','1','1','0'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'},[22]={'0','1','1','1','1','1','1','1'},[23]={[2]='1',[8]='1'},[24]={[2]='1',[8]='1'},[25]={[2]='1',[8]='1'},[26]={[2]='1',[8]='1'},[27]={'0','0','1','1','1','1','1','0'}},Color={All='yellow'},Offset={-1,0}}
+        [2] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={'0','1','0','0','1','1','1','1'},[8]={'0','0','1','1','1','1','1','0'},[9]={[2]='1',[8]='1'},[10]={[2]='1',[8]='1'},[11]={[2]='1',[8]='1'},[12]={[2]='1',[8]='1'},[13]={'0','0','1','1','1','1','1','0'},[15]={'0','0','1','1','1','1','1','0'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'},[22]={'0','1','1','1','1','1','1','1'},[23]={[2]='1',[8]='1'},[24]={[2]='1',[8]='1'},[25]={[2]='1',[8]='1'},[26]={[2]='1',[8]='1'},[27]={'0','0','1','1','1','1','1','0'}},Color={All='yellow'},Offset={-1,0}},
+        Size = {27, 8}
     }
     --[[
     for k, v in pairs(timingpixel) do
@@ -2814,7 +2849,20 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     --write to str, row scanning removed
     --Pixel.Color removed
     Pixel.Convert = {}
-    Pixel.Convert.ToDots = function(str) --converts a given data table
+    Pixel.Convert.ToDots = function(str, outoffsetx) --converts a given data table
+        outoffsetx = outoffsetx or 0
+        local minx, maxx = minx + outoffsetx, maxx + outoffsetx
+        --[[
+        if nomax then
+            local min, max = nil, nil
+            for x, v in pairs(str.Data) do
+                min = min and (x < min and x or min) or x
+                max = max and (x > max and x or max) or x
+            end
+            minx, maxx = min, max
+        end
+        --]]
+
         --The pixels might look off, but they are not
         --[[
         Format:
@@ -3021,6 +3069,242 @@ function Taiko.PlaySong(Parsed, Controls, Window)
         --ppp(out)
         return table.concat(out)
     end
+
+
+
+
+
+
+
+
+
+
+    local function ToDotsParallel(str, str2, outoffsetx) --converts a given data table
+        outoffsetx = outoffsetx or 0
+        local minx, maxx = minx + outoffsetx, maxx + outoffsetx
+        --[[
+        if nomax then
+            local min, max = nil, nil
+            for x, v in pairs(str.Data) do
+                min = min and (x < min and x or min) or x
+                max = max and (x > max and x or max) or x
+            end
+            minx, maxx = min, max
+        end
+        --]]
+
+        --The pixels might look off, but they are not
+        --[[
+        Format:
+        t[x][y]
+    
+        ]]
+        --Data
+        --str = GetPixelData(str) --Read Only
+        local data, colordata = str.Data, str.Color
+        local data2, colordata2 = str2.Data, str2.Color
+        --local data, color = str.Data, str.Color
+        --[[
+        if ReverseY then
+            local function reversey(t)
+                local new = {}
+                for x, v in pairs(t) do
+                    for y, v2 in pairs(v) do
+                        new[x] = new[x] or {}
+                        new[x][-y] = v2
+                    end
+                end
+                return new
+            end
+            data = reversey(data)
+            color = reversey(color)
+        end
+        --]]
+        --Make sure to not write to str
+        --[[
+        str = {
+            Data = data,
+            Color = color
+        }
+        --]]
+        --Stats
+        --[[
+        local function getmin(t)
+            local c = nil
+            for k, v in pairs(t) do
+                if not c or k < c then
+                    c = k
+                end
+            end
+            return c
+        end
+        local function getmax(t)
+            local c = nil
+            for k, v in pairs(t) do
+                if not c or k > c then
+                    c = k
+                end
+            end
+            return c
+        end
+        local function itrow(t, func)
+            local t2 = {}
+            for k, v in pairs(t) do
+                --table.insert(t2, func(v))
+                local a = func(v)
+                if a then
+                    t2[a] = true
+                end
+            end
+            return func(t2)
+        end
+        --]]
+        --print(minx, maxx, miny, maxy)
+        --Optimizations
+        local out = {}
+        local zerostring = string.rep('0', 8)
+        local zerodot = Pixel.Data.Dot[zerostring]
+        local currentcolor = nil
+        local allcolor = nil
+        --local resetcolor = tostring(Pixel.Color('reset'))
+        local resetcolor = Pixel.Color['reset']
+        if str.Color.All then
+            --local c = tostring(Pixel.Color(str.Color.All))
+            local c = Pixel.Color[str.Color.All]
+            table.insert(out, c)
+            allcolor = c
+        end
+        --[[
+        local rows = {}
+        for x, v in pairs(data) do
+            for y, v2 in pairs(v) do
+                rows[y] = rows[y] or {}
+                rows[y][x] = v2
+            end
+        end
+        --]]
+        --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
+        --Main loop
+        if not miny then
+            return ''
+        end
+        for y = miny, maxy, 4 do
+            --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
+            --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
+            for x = minx, maxx, 2 do
+                --print(x, y)
+                --Get Pixels
+                --[[
+                local pixel = ''
+                local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                for i = 1, 8 do
+                    local x, y = x + c[i][1], y + c[i][2]
+                    pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
+                end
+                --]]
+
+
+
+
+
+
+                --ugly formula
+
+                --v1
+                -- [[
+                local dx21 = data2[x]
+                local dx22 = data2[x + 1]
+                local dx = data[x]
+                local dx2 = data[x + 1]
+                local pixel = ((dx or dx21) and ((dx[y] or dx21[y] or '0') .. (dx[y + 1] or dx21[y + 1] or '0') .. (dx[y + 2] or dx21[y + 2] or '0') .. (dx[y + 3] or dx21[y + 3] or '0')) or '0000') .. ((dx2 or dx22) and ((dx2[y] or dx22[y] or '0') .. (dx2[y + 1] or dx22[y + 1] or '0') .. (dx2[y + 2] or dx22[y + 2] or '0') .. (dx2[y + 3] or dx22[y + 3] or '0')) or '0000')
+                --]]
+
+
+                --v2
+                --[[
+                local dx = data[x]
+                local dx2 = data[x + 1]
+                local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
+                --]]
+
+
+
+
+
+                --print(pixel, x, y, color)
+                if pixel ~= zerostring then
+                    pixel = Pixel.Data.Dot[pixel]
+                    --local x, y = Pixel.PushColor(x, y)
+                    if not allcolor then
+                        --local color = Pixel.GetColor(str, x, y)
+                        --local color = color[x] and color[x][y]
+
+                        --if color==nil then print(x, y, color) end
+                        --if not allcolor and color then
+                        --find all 8 pixels
+
+                        --[[
+                        if not color then
+                            local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                            for i = 1, 8 do
+                                color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
+                                if color then
+                                    break
+                                end
+                            end
+                        end
+                        --]]
+
+
+
+                        --Ugly formula time!
+                        --v1
+                        local dx21 = data2[x]
+                        local dx22 = data2[x + 1]
+                        local dx = data[x]
+                        local dx2 = data[x + 1]
+                        local pixel = ((dx or dx21) and ((dx[y] or dx21[y]) or (dx[y + 1] or dx21[y + 1]) or (dx[y + 2] or dx21[y + 2]) or (dx[y + 3] or dx21[y + 3]))) or ((dx2 or dx22) and ((dx2[y] or dx22[y]) or (dx2[y + 1] or dx22[y + 1]) or (dx2[y + 2] or dx22[y + 2]) or (dx2[y + 3] or dx22[y + 3])))
+
+
+
+
+
+
+
+
+
+
+
+
+                        if color then
+                            --color = tostring(Pixel.Color(color))
+                            color = Pixel.Color[color]
+
+                        else
+                            color = resetcolor
+                        end
+                        if currentcolor == color then
+                            --Do Nothing
+                        else
+                            table.insert(out, color)
+                            currentcolor = color
+                        end
+                    end
+                    --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
+                    table.insert(out, pixel)
+                else
+                    table.insert(out, zerodot)
+                end
+            end
+            --table.insert(out, Pixel.Data.NewLine)
+            table.insert(out, '\n')
+        end
+        table.insert(out, resetcolor)
+        --ppp(out)
+        return table.concat(out)
+    end
+
+
 
 
 
@@ -3258,7 +3542,7 @@ function Taiko.PlaySong(Parsed, Controls, Window)
         end
     end
 
-    local function RenderStatus(out, status, ms)
+    local function RenderStatus(out, status, ms, outoffsetx)
         --[[
         local slope = statusanimationmove / (statusanimationlength / 2)
         local anim = -slope * math.abs((ms - status.startms) - (statuslength / ))
@@ -3271,10 +3555,26 @@ function Taiko.PlaySong(Parsed, Controls, Window)
         local o = t.Offset
         local c = t.Color.All --Color for all
         local ox, oy = 0, -math.floor(noteradius * 1.6) - 8 - math.floor(anim)
+        local tox, toy = o[1] + ox + outoffsetx, o[2] + oy
+        --print(tox, toy)
+
+        for x = 1, timingpixel.Size[1] do
+            for y = 1, timingpixel.Size[2] do
+                local px, py = x + tox, y + toy
+                out.Data[px] = out.Data[px] or {}
+                out.Data[px][py] = t.Data[x] and t.Data[x][y]
+
+
+                out.Color[px] = out.Color[px] or {}
+                out.Color[px][py] = c
+            end
+        end
+        --print(Pixel.Convert.ToDots(out, nil, true))io.read()
+        --[=[
         for x, v in pairs(t.Data) do
             for y, v2 in pairs(v) do
                 if v2 == '1' then
-                    local x, y = x + o[1] + ox, y + o[2] + oy
+                    local x, y = x + tox, y + toy
                     out.Data[x] = out.Data[x] or {}
                     out.Data[x][y] = v2
 
@@ -3290,6 +3590,7 @@ function Taiko.PlaySong(Parsed, Controls, Window)
                 end
             end
         end
+        --]=]
     end
 
     --Render OVER! the note
@@ -3429,9 +3730,12 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     --]]
     local timet = {}
     for k, v in pairs(notetable) do
-        v.ms = v.ms - startms
+        --v.oms is original ms
+        v.ms = v.oms or v.ms
+        v.oms = v.ms
+        v.ms = (v.ms - startms) / songspeedmul
         v.s = MsToS(v.ms)
-        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.speed = (Taiko.CalculateSpeed(v, noteradius)) * notespeedmul
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
         v.loadp = CalculateLoadPosition(v, v.loadms)
@@ -3509,7 +3813,7 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     --]]
 
     --Calculate end time
-    local endms = math.max(unpack(timet)) + endms
+    local endms = math.max(unpack(timet)) + (endms / songspeedmul)
 
 
 
@@ -3621,6 +3925,18 @@ function Taiko.PlaySong(Parsed, Controls, Window)
     local framen = 0
     local framerenderstotal = 0
 
+    local dorender = true
+    
+    --Optimizations
+    local dospeedopt = true
+
+    local speedopt = false
+    local speedoptspeed = nil
+    local speedoptoldpos = nil
+    local speedoptout = nil
+    local speedoptfirstnote = nil
+    local speedoptstartms = nil
+
     --Frame Rate
     if framerate then
         local frames = 1 / framerate
@@ -3660,7 +3976,40 @@ function Taiko.PlaySong(Parsed, Controls, Window)
 
                     loaded[nextnote.n] = nextnote
 
-                    
+
+
+
+
+
+                    --speedopt
+                    if speedopt and nextnote.speed ~= speedoptspeed then
+                        speedopt = false
+                    end
+                    if speedopt then
+                        --nextnote.p = CalculatePosition(nextnote, ms)
+                        --nextnote.p = nextnote.loadp
+                        nextnote.p = CalculatePosition(nextnote, speedoptstartms)
+                        --Log(nextnote.p)
+                        --print(nextnote.p, io.read())
+                        if nextnote.data == 'event' then
+                            if nextnote.event == 'barline' then
+                                RenderBarline(speedoptout, nextnote)
+                            end
+                        elseif nextnote.data == 'note' then
+                            RenderNote(speedoptout, nextnote)
+                        else
+                            error('Invalid note.data')
+                        end
+                    end
+
+
+
+
+
+
+
+
+                    --nextnote
 
                     nextnote = nextnote.nextnote
                     
@@ -3676,6 +4025,9 @@ function Taiko.PlaySong(Parsed, Controls, Window)
                         nextnote = nextnote.branch.paths[branch][1]
 
                     end
+
+
+
                     
 
 
@@ -3728,6 +4080,91 @@ function Taiko.PlaySong(Parsed, Controls, Window)
 
 
 
+            --SPEEDOPT
+            if dospeedopt and speedopt == false then
+
+                --Check if we can use optimization
+                local s = nil
+                for i = loaded.s, loaded.e do
+                    if s then
+                        if loaded[i] and s ~= loaded[i].speed then
+                            s = false
+                            break
+                        end
+                    else
+                        s = loaded[i].speed
+                    end
+                end
+                if s then
+                    speedoptstartms = ms
+                    speedoptspeed = s
+                    speedoptout = false
+                    speedoptfirstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty way, dirty
+                    speedopt = true
+                else
+                    speedopt = false
+                end
+            end
+
+            local outoffsetx = 0
+            if speedopt and speedoptout then
+                dorender = false
+
+                local firstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty fix, --dirty
+                local oldpos = speedoptoldpos or firstnote.p
+                speedoptoldpos = oldpos
+                local newpos = CalculatePosition(speedoptfirstnote, ms)
+                oldpos = oldpos or newpos
+
+
+                local dif = math.floor(oldpos - newpos + 0.5)
+
+                if dif >= 1 then
+                    --[[
+                    --move canvas left by dif
+                    local newout = Pixel.New()
+
+                    --draw target
+                    Pixel.Circle(newout, math.floor(target), y, noteradius, {color = 'purple'})
+
+
+                    for x, v in pairs(speedoptout.Data) do
+                        newout.Data[x - dif] = v
+                    end
+
+                    for x, v in pairs(speedoptout.Color) do
+                        newout.Color[x - dif] = v
+                    end
+                    out = newout
+                    --]]
+                    outoffsetx = dif
+                    out = speedoptout
+                    --[[
+                    speedoptout = newout
+                    speedoptoldpos = speedoptoldpos - (oldpos - newpos)
+                    --]]
+                else
+                    --do nothing
+                    out = speedoptout
+                end
+            else
+                speedoptoldpos = nil
+                dorender = true
+            end
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3739,7 +4176,9 @@ function Taiko.PlaySong(Parsed, Controls, Window)
             --draw target
 
             --normal
-            Pixel.Circle(out, math.floor(target), y, noteradius, {color = 'purple'})
+            if dorender then
+                Pixel.Circle(out, math.floor(target), y, noteradius, {color = 'purple'})
+            end
             --big note (1.6x)
             --Pixel.Circle(out, math.floor(target), y, noteradius * 1.6, {color = 'purple'})
 
@@ -3892,19 +4331,27 @@ function Taiko.PlaySong(Parsed, Controls, Window)
                         end
                         --]]
 
-
-                        if note.data == 'event' then
-                            if note.event == 'barline' then
-                                RenderBarline(out, note)
+                        if dorender then
+                            if note.data == 'event' then
+                                if note.event == 'barline' then
+                                    RenderBarline(out, note)
+                                end
+                            elseif note.data == 'note' then
+                                RenderNote(out, note)
+                            else
+                                error('Invalid note.data')
                             end
-                        elseif note.data == 'note' then
-                            RenderNote(out, note)
-                        else
-                            error('Invalid note.data')
                         end
                     end
                 end
             end
+
+
+            if speedoptout == false then
+                speedoptout = out
+            end
+
+
 
             --Status
             if laststatus.status then
@@ -3917,7 +4364,13 @@ function Taiko.PlaySong(Parsed, Controls, Window)
                         RenderStatus(out, laststatus, ms)
                     end
                     --]]
-                    RenderStatus(out, laststatus, ms)
+                    if speedopt then
+                        local out = RenderStatus(Pixel.New(), laststatus, ms, outoffsetx)
+                        ToDotsParallel(out, out2, outoffsetx)
+                    else
+                        RenderStatus(out, laststatus, ms, outoffsetx)
+                    end
+                    --print(outoffsetx)io.read()
                 end
             end
 
@@ -3957,7 +4410,7 @@ function Taiko.PlaySong(Parsed, Controls, Window)
 
             --Frame Limiting
             if framerate then
-                local dots = Pixel.Convert.ToDots(out)
+                local dots = Pixel.Convert.ToDots(out, outoffsetx)
                 repeat
 
                 until os.clock() >= nextframes
@@ -3966,9 +4419,8 @@ function Taiko.PlaySong(Parsed, Controls, Window)
                 print(dots)
             else
                 --Legacy renderer
-                print(Pixel.Convert.ToDots(out))
+                print(Pixel.Convert.ToDots(out, outoffsetx))
             end
-
 
 
 
@@ -4408,14 +4860,23 @@ function Taiko.SongSelect(header, data)
             'Normal', 'Auto'
         },
         [3] = {
-            'None', '2x Speed', '3x Speed', '4x Speed'
+            'Normal', '2x Speed', '3x Speed', '4x Speed', '0.25x Speed', '0.5x Speed', '0.75x Speed'
+        },
+        [4] = {
+            'Normal', '2x Speed', '3x Speed', '4x Speed', '0.25x Speed', '0.5x Speed', '0.75x Speed'
+        },
+        [5] = {
+            'TODO Normal'
         }
     }
-
+    --SUS
     local OptionsConfig = {
         4,
         1,
-        1
+        1,
+        1,
+        1,
+        1,
     }
     local OptionsLimit = {
         --{min, max, map}
@@ -4926,32 +5387,37 @@ function Taiko.SongSelect(header, data)
 
             --Find difficulties
 
+            
+            local map = {}
+            for k, v in pairs(Parsed) do
+                map[#map + 1] = {k, v.Metadata.COURSE}
+            end
+            table.sort(map, function(a, b)
+                return a[2] < b[2]
+            end)
+            min = 1
+            max = #map
+            OptionsLimit[SelectedOption] = {min, max, map}
+            DifficultyMap = map
+
+
+
+            --[=[
             local min, max
             local map
-            if SelectedOption == 1 then
-                map = {}
-                for k, v in pairs(Parsed) do
-                    map[#map + 1] = {k, v.Metadata.COURSE}
-                end
-                table.sort(map, function(a, b)
-                    return a[2] < b[2]
-                end)
-                min = 1
-                max = #map
-                OptionsLimit[SelectedOption] = {min, max, map}
-            else
-                --2 or 3
-                --[[
-                min = 1
-                map = Options[SelectedOption]
-                max = #map
-                
-                --]]
-                --No need to calculate
-                local a = OptionsLimit[SelectedOption]
-                min, max, map = a[1], a[2], a[3]
-            end
-            SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
+            --2 or 3
+            --[[
+            min = 1
+            map = Options[SelectedOption]
+            max = #map
+            
+            --]]
+            --No need to calculate
+            local a = OptionsLimit[SelectedOption]
+            min, max, map = a[1], a[2], a[3]
+            --]=]
+            
+            --SelectedOptionIndex = ClipN(SelectedOptionIndex, min, max)
 
 
 
@@ -4968,7 +5434,7 @@ function Taiko.SongSelect(header, data)
             local lastoption = SelectedOption
             while true do
                 Ansi.SetCursor(1, 1)
-                local SelectedDifficulty = map[OptionsConfig[1]][2]
+                local SelectedDifficulty = DifficultyMap[OptionsConfig[1]][2]
                 ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
                 local m = ParsedData.Metadata
                 local a = Taiko.Analyze(ParsedData)
@@ -4979,7 +5445,9 @@ function Taiko.SongSelect(header, data)
                     {'', 'Select Options:'},
                     {Select(SelectedOption == 1, OptionSelected, pad, 'Difficulty: '), Taiko.Data.CourseName[m.COURSE]},
                     {Select(SelectedOption == 2, OptionSelected, pad, 'Mode: '), Options[2][OptionsConfig[2]]},
-                    {Select(SelectedOption == 3, OptionSelected, pad, 'Modifiers: '), Options[3][OptionsConfig[3]]},
+                    {Select(SelectedOption == 3, OptionSelected, pad, 'Note Speed: '), Options[3][OptionsConfig[3]]},
+                    {Select(SelectedOption == 4, OptionSelected, pad, 'Song Speed: '), Options[4][OptionsConfig[4]]},
+                    {Select(SelectedOption == 5, OptionSelected, pad, 'Modifiers: '), Options[5][OptionsConfig[5]]},
                     {'', ''},
                     {'Difficulty: ', Taiko.Data.CourseName[m.COURSE]},
                     {'Stars: ', m.LEVEL},
@@ -5019,7 +5487,7 @@ function Taiko.SongSelect(header, data)
                     while true do
                         --No need to endwin since playsong is using window
                         --curses.endwin()
-                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), Controls.Select.Play, window)
+                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), window, OptionsConfig, Controls.Select.Play)
                         if success and out then
                             --Show results
 
@@ -5040,7 +5508,7 @@ function Taiko.SongSelect(header, data)
                     break
                 end
 
-                SelectedOption = ClipN(SelectedOption, 1, 3)
+                SelectedOption = ClipN(SelectedOption, 1, 5)
 
                 if SelectedOption ~= lastoption then
                     SelectedOptionIndex = OptionsConfig[SelectedOption]
@@ -5320,7 +5788,10 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 
 
-local Compact = require('../CompactTJA/compactv4.lua')
+
+
+
+local Compact = require('./CompactTJA/compactv4')
 
 
 

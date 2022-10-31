@@ -1,32 +1,44 @@
-> Total time: 571.545000 s
+> Total time: 126.648000 s
 --------------------------------------------------------------------------------------
 | FILE                : FUNCTION                    : LINE   : TIME   : %     : #    |
 --------------------------------------------------------------------------------------
-| c:\Users\User\OneDri: ParseTJA                    :   489  : 555.0900: 97.1  : 2455 |
-| c:\Users\User\OneDri: CheckN                      :   568  : 104.9720: 18.4  : 17772971|
-| c:\Users\User\OneDri: createnote                  :   728  : 76.3610: 13.4  : 18245746|
-| c:\Users\User\OneDri: Split                       :    92  : 9.7540 : 1.7   : 2455 |
-| c:\Users\User\OneDri: Trim                        :    93  : 9.1940 : 1.6   : 1267600|
-| c:\Users\User\OneDri: StartsWith                  :    96  : 7.8420 : 1.4   : 1221072|
-| c:\Users\User\OneDri: TrimRight                   :    95  : 5.8470 : 1.0   : 778724|
-| c:\Users\User\OneDri: Clone                       :   111  : 5.7370 : 1.0   : 955252|
-| c:\Users\User\OneDri: EndsWith                    :    97  : 4.6580 : 0.8   : 778724|
-| c:\Users\User\OneDri: ParseError                  :   161  : 1.9580 : 0.3   : 1796 |
-| c:\Users\User\OneDri: Error                       :   155  : 1.9210 : 0.3   : 1796 |
-| c:\Users\User\OneDri: CheckBalloon                :   626  : 0.7200 : 0.1   : 7729 |
-| c:\Users\User\OneDri: Check                       :   576  : 0.6320 : 0.1   : 84977|
-| c:\Users\User\OneDri: CheckCSV                    :   601  : 0.3260 : 0.1   : 8774 |
-| c:\Users\User\OneDri: onnotepush                  :   809  : 0.2730 : 0.0   : 71601|
-| c:\Users\User\OneDri: GetParser                   :   666  : 0.1700 : 0.0   : 12485|
-| c:\Users\User\OneDri: CheckBalloon                :   633  : 0.1220 : 0.0   : 40120|
-| c:\Users\User\OneDri: CheckExam                   :   640  : 0.1120 : 0.0   : 30090|
-| c:\Users\User\OneDri: SToMs                       :   183  : 0.1040 : 0.0   : 22822|
-| c:\Users\User\OneDri: GetTranslated               :   558  : 0.0660 : 0.0   : 20060|
-| c:\Users\User\OneDri: CheckB                      :   583  : 0.0650 : 0.0   : 10030|
-| c:\Users\User\OneDri: ClipN                       :   136  : 0.0390 : 0.0   : 10030|
-| c:\Users\User\OneDri: GetFunction                 :   414  : 0.0290 : 0.0   : 10030|
-| c:\Users\User\OneDri: endbranch                   :   848  : 0.0080 : 0.0   : 1015 |
+| c:\Users\User\OneDri: RenderNote                  :  3630  : 21.7620: 17.2  : 227689|
+| c:\Users\User\OneDri: RenderCircle                :  3596  : 19.2410: 15.2  : 228821|
+| c:\Users\User\OneDri: Circle                      :  3518  : 17.3830: 13.7  : 239998|
+| c:\Users\User\OneDri: RenderStatistic             :  4014  : 14.6560: 11.6  : 11177|
+| c:\Users\User\OneDri: Statistic                   :  4006  : 6.3970 : 5.1   : 212363|
+| c:\Users\User\OneDri: SetCursor                   :  3764  : 4.3420 : 3.4   : 11177|
+| c:\Users\User\OneDri: RenderLog                   :  4023  : 1.7870 : 1.4   : 11177|
+| c:\Users\User\OneDri: CalculatePosition           :  3833  : 1.4690 : 1.2   : 257864|
+| c:\Users\User\OneDri: RenderStatus                :  3672  : 1.1780 : 0.9   : 8642 |
+| c:\Users\User\OneDri: RenderBarline               :  3582  : 0.4690 : 0.4   : 29019|
+| .\taikocurses       : getkeyname                  :   522  : 0.3400 : 0.3   : 11177|
+| c:\Users\User\OneDri: RenderRect                  :  3603  : 0.1650 : 0.1   : 1132 |
+| c:\Users\User\OneDri: New                         :  3542  : 0.0980 : 0.1   : 11180|
+| c:\Users\User\OneDri: Anon                        :  3889  : 0.0550 : 0.0   : 11202|
+| c:\Users\User\OneDri: CalculateLoadMs             :  3823  : 0.0070 : 0.0   :  997 |
+| c:\Users\User\OneDri: MsToS                       :   265  : 0.0050 : 0.0   : 1994 |
+| c:\Users\User\OneDri: CalculateSpeed              :  2198  : 0.0040 : 0.0   :  997 |
+| c:\Users\User\OneDri: GetAllNotes                 :  2112  : 0.0040 : 0.0   :    1 |
+| c:\Users\User\OneDri: GenerateDotData             :  2721  : 0.0030 : 0.0   :    1 |
+| c:\Users\User\OneDri: Split                       :   164  : 0.0020 : 0.0   :    1 |
+| c:\Users\User\OneDri: CalculateLoadPosition       :  3830  : 0.0020 : 0.0   :  997 |
 --------------------------------------------------------------------------------------
+| c:\Users\User\OneDri: CircleGen                   :  3443  : ~      : ~     :    2 |
+| c:\Users\User\OneDri: ToDots                      :  2853  : ~      : ~     : 11177|
 | .\profiler          : stop                        :   228  : ~      : ~     :    1 |
 | .\profiler          : report                      :   236  : ~      : ~     :    1 |
+| .\taikocurses       : getch                       :    59  : ~      : ~     : 11177|
+| c:\Users\User\OneDri: ClearScreen                 :  3761  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: ForAll                      :  2067  : ~      : ~     :    1 |
+| .\taikocurses       : raw                         :    82  : ~      : ~     :    1 |
+| .\taikocurses       : nl                          :    81  : ~      : ~     :    1 |
+| .\taikocurses       : cbreak                      :    84  : ~      : ~     :    1 |
+| .\taikocurses       : echo                        :    80  : ~      : ~     :    1 |
+| .\taikocurses       : keypad                      :    52  : ~      : ~     :    1 |
+| .\taikocurses       : nodelay                     :    54  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: ConnectAll                  :  2151  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: f                           :  3915  : ~      : ~     :  997 |
+| c:\Users\User\OneDri: TIMING                      :   502  : ~      : ~     :    1 |
+| c:\Users\User\OneDri: format                      :  2749  : ~      : ~     :  256 |
 --------------------------------------------------------------------------------------
