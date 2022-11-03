@@ -2075,13 +2075,94 @@ end
 
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
-    --TODO
+    --[[
+        TODO:
+        BMSCROLL, HBSCROLL
+    ]]
 
+
+
+
+
+
+
+
+    --Simple, can't handle complex
+    local function SerializeCSV(t)
+        for i = 1, #t do
+            t[i] = tostring(t[i])
+        end
+        return table.concat(t, ',')
+    end
+
+    local function Serialize(ParsedData)
+        local Out = {}
+
+        local MsData = {
+            OFFSET = true,
+            DEMOSTART = true,
+        }
+
+        --Metadata
+        --This also stores debug information + unneeded, since there is no efficient way to filter metadata
+        for k, v in pairs(ParsedData.Metadata) do
+            local v2
+            if type(v) == 'number' then
+                --figure out if ms or not
+                if MsData[k] then
+                    v2 = tostring(MsToS(tonumber(v)))
+                else
+                    v2 = tostring(v)
+                end
+            elseif type(v) == 'table' then
+                --assume csv
+                v2 = SerializeCSV(v)
+            else
+                v2 = nil
+            end
+
+            if v2 then
+                Out[#Out + 1] = k
+                Out[#Out + 1] = ':'
+                Out[#Out + 1] = v2
+                Out[#Out + 1] = '\n'
+            end
+        end
+        Out[#Out + 1] = '\n'
+
+
+
+
+
+        --Do notes
+        local current = {
+            scroll = {'#SCROLL', nil},
+        }
+        for i = 1, #ParsedData.Data do
+            local note = ParsedData.Data[i]
+            for k, v in pairs(current) do
+
+            end
+        end
+
+
+        return table.concat(Out)
+    end
+
+
+
+    local Out = {'// Automatically Serialized by Taiko.SerializeTJA'}
+    for k, v in pairs(Parsed) do
+        Out[#Out + 1] = Serialize(v)
+    end
+    Out = table.concat(Out, '\n\n')
     return Out
 end
 
-
-
+--[[
+print(Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')))
+error()
+--]]
 
 
 
@@ -4290,12 +4371,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --Check for spawns before game starts
 
+    --[[
     local loaded = {
         s = 1, --Start
         e = 0, --End
         n = 0, --Number of loaded notes
         --nearestnote = {} --Table of nearest notes
     }
+    --]]
+    loaded = {}
 
     --Generate nearestnote
     --[[
@@ -4336,7 +4420,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     end
     --]]
 
-    loaded.e = loaded.n
+    --loaded.e = loaded.n
 
 
 
@@ -4460,11 +4544,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
 
 
-                    loaded.n = loaded.n + 1
+                    --loaded.n = loaded.n + 1
                     --loaded.e = loaded.n
-                    loaded.e = nextnote.n
+                    --loaded.e = nextnote.n
 
-                    loaded[nextnote.n] = nextnote
+                    --loaded[nextnote.n] = nextnote
+                    loaded[#loaded + 1] = nextnote
 
 
 
@@ -4575,7 +4660,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                 --Check if we can use optimization
                 local s = nil
-                for i = loaded.s, loaded.e do
+                for i = 1, #loaded do
                     if s then
                         if loaded[i] and s ~= loaded[i].speed then
                             s = false
@@ -4589,7 +4674,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     speedoptstartms = ms
                     speedoptspeed = s
                     speedoptout = false
-                    speedoptfirstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty way, dirty
+                    --speedoptfirstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty way, dirty
+                    speedoptfirstnote = loaded[1]
                     speedopt = true
                 else
                     speedopt = false
@@ -4600,7 +4686,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if speedopt and speedoptout then
                 dorender = false
 
-                local firstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty fix, --dirty
+                --local firstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty fix, --dirty
+                local firstnote = loaded[1]
                 local oldpos = speedoptoldpos or firstnote.p
                 speedoptoldpos = oldpos
                 local newpos = CalculatePosition(speedoptfirstnote, ms)
@@ -4696,8 +4783,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local nearestnote2 = nil
             --]]
 
-            for i = loaded.s, loaded.e do
-                local note = loaded[i]
+            --for i = loaded.s, loaded.e do
+            local offseti = 0
+            for i = 1, #loaded do
+                local i2 = i + offseti
+                local note = loaded[i2]
                 if note then
                     --nearest
                     --if not nearest or (ms - note.ms > 0 and ms - note.ms < nearest) or (note.ms - ms > 0 and note.ms - ms < nearest)
@@ -4817,6 +4907,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             --loaded[note.n] = nil
                             --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
                             note.done = true
+
+                            --[[
                             loaded[i] = nil
                             --loaded.n = loaded.n - 1
                             if nextnote and loaded.n == 0 then
@@ -4833,6 +4925,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                     loaded.s = i2
                                 end
                             end
+                            --]]
+                            table.remove(loaded, i2)
+                            offseti = offseti - 1
 
                             --[[
                             loaded[note.n] = nil
@@ -5151,7 +5246,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             -- [[
             Statistic('S', s)
             Statistic('Ms', ms)
-            Statistic('Loaded', loaded.n)
+            Statistic('Loaded', #loaded)
             --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
             Statistic('Frames Rendered', framen)
             Statistic('Last Frame Render (s)', framerenders)
