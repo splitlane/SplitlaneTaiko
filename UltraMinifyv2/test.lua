@@ -4,13 +4,6 @@ Taikov19.lua
 
 Changes: Taiko.PlaySong improved!
 
-Fixed Taiko.ParseTJA Delay counting as notes
-Supports BMSCROLL, HBSCROLL!
-
-TODO: Check for match[2] so no error
-TODO: Note lyrics
-TODO: Docs
-TODO: Taiko.SerializeTJA
 
 
 
@@ -842,17 +835,6 @@ function Taiko.ParseTJA(source)
             section = false,
 
 
-
-            --bmscroll and hbscroll
-            disablescroll = false,
-            stopsong = false,
-            delay = 0,
-
-
-
-
-
-
             --note chain
             notechain = {}
 
@@ -911,7 +893,6 @@ function Taiko.ParseTJA(source)
                     endnote = nil,
                     section = nil,
                     text = nil,
-                    delay = Parser.delay,
                     
 
 
@@ -983,9 +964,7 @@ function Taiko.ParseTJA(source)
                     mspermeasure = Parser.mspermeasure,
                     bpm = Parser.bpm,
                     --measuredensity = nil,
-                    nextnote = nil,
-
-                    delay = Parser.delay,
+                    nextnote = nil
 
                     --outdated
                 }
@@ -1118,7 +1097,7 @@ function Taiko.ParseTJA(source)
             end
 
             --Command
-            if (Parser.songstarted or StartsWith(line, '#START') or StartsWith(line, '#BMSCROLL') or StartsWith(line, '#HBSCROLL')) and done == false then
+            if (Parser.songstarted or StartsWith(line, '#START')) and done == false then
                 local match = {string.match(line, '#(%u-)%s(.*)')}
                 if not match[1] then
                     match = {string.match(line, '#(%u+)')}
@@ -1629,35 +1608,10 @@ function Taiko.ParseTJA(source)
                             Can be placed in the middle of a measure.
                         ]]
                         --Parser.ms = Parser.ms + (1000 * (tonumber(match[2]) or 0)) --UNSAFE --QUESTIONABLE
-                        local a = SToMs((CheckN(match[1], match[2], 'Invalid delay') or 0)) --UNSAFE
-                        if Parser.stopsong then
-                            Parser.delay = Parser.delay + a
-                            --[[
-                            table.insert(Parser.currentmeasure, {
-                                --match[1] .. '2',
-                                'DELAY2',
-                                a
-                            })
-                            --]]
-                        end
-                        -- [[
                         table.insert(Parser.currentmeasure, {
-                            --match[1],
-                            'DELAY',
-                            a
+                            match[1],
+                            SToMs((CheckN(match[1], match[2], 'Invalid delay') or 0)) --UNSAFE
                         })
-                        --]]
-                        --[[
-                        --don't add ms delay if stopsong (wrong)
-                        if Parser.stopsong then
-                            Parser.delay = Parser.delay + a
-                        else
-                            table.insert(Parser.currentmeasure, {
-                                match[1],
-                                a
-                            })
-                        end
-                        --]]
                     elseif match[1] == 'SCROLL' then
                         --[[
                             - Multiplies the default scrolling speed by this value
@@ -1666,13 +1620,9 @@ function Taiko.ParseTJA(source)
                             - The value cannot be 0.
                             - Can be placed in the middle of a measure.
                         ]]
-                        if Parser.disablescroll then
-
-                        else
-                            Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
-                            if Parser.scroll == 0 then
-                                ParseError(match[1], 'Scroll cannot be 0')
-                            end
+                        Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
+                        if Parser.scroll == 0 then
+                            ParseError(match[1], 'Scroll cannot be 0')
                         end
                     elseif match[1] == 'GOGOSTART' then
                         --[[
@@ -1811,22 +1761,7 @@ function Taiko.ParseTJA(source)
                             - Behaviour can be turned off by the user.
                             - Ignored in taiko-web.
                         ]]
-                        --[[
-                        https://wikiwiki.jp/jiro/%E5%A4%AA%E9%BC%93%E3%81%95%E3%82%93%E6%AC%A1%E9%83%8E
-                            - Please describe before #START.
-                            - If this command is present, the musical score is forcibly scrolled in the same manner as Taiko-san Taro (the value of #SCROLL is ignored).
-                            - Also, at this time, the score stops scrolling at the point where #DELAY is.
-                            - In short, the score scrolls according to the current BPM.
-                        ]]
-                        Parser.disablescroll = true
-                        Parser.stopsong = true
                     elseif match[1] == 'HBSCROLL' then
-                        --[[
-                        https://wikiwiki.jp/jiro/%E5%A4%AA%E9%BC%93%E3%81%95%E3%82%93%E6%AC%A1%E9%83%8E
-                            - Please describe before #START.
-                            - If this instruction is present, the scroll method will include the effect of #SCROLL in BMSCROLL.
-                        ]]
-                        Parser.stopsong = true
                     elseif match[1] == 'SENOTECHANGE' then
                         --[[
                             - Force note lyrics with a specific value, which is an integer index for the following lookup table:
@@ -2027,8 +1962,8 @@ function Taiko.ParseTJA(source)
                                     --increment = (c.mspermeasure / notes) / c.speed
                                     increment = c.mspermeasure / notes
                                 end
-                                Parser.ms = Parser.ms + increment
                             end
+                            Parser.ms = Parser.ms + increment
                         end
                     end
                     Parser.measuredone = true
@@ -2049,47 +1984,6 @@ function Taiko.ParseTJA(source)
 
     return Out
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---Serialize TJA Parsed into TJA
-function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
-    --TODO
-
-    return Out
-end
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2617,8 +2511,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
     local songspeedmul = optionsmap.songspeedmul[Settings[4]] or 1 --Actual speed multiplier
 
-    local stopsong = true --Stop song enabled?
-
 
 
     --Controls
@@ -2704,7 +2596,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --local buffer = 100 --Buffer (ms)
     local bufferlength = 10 --Pixels
-    local unloadbuffer = 10 --Pixels (added to bufferlength)
 
     --[[ Extracted from metadata
     local startms = 0 --Subtracted from all notes (ms)
@@ -3796,8 +3687,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
     end
 
-    local clipx1 = (trackstart - bufferlength)
-    local clipx2 = (tracklength + bufferlength)
     local function RenderNote(out, note, speedopt)
         local n = note.type
         if n == 1 or n == 2 or n == 3 or n == 4 then
@@ -3808,44 +3697,29 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Distance = speed * time
             local length = (endnote.ms - note.ms) * note.speed
             --Render start and end, and rect
-            --RenderCircle(out, note)
+            RenderCircle(out, note)
             --RenderCircle(out, endnote)
             local r = noteradius * note.radius
             local x1, x2 = math.floor(note.p), math.floor(note.p + length)
             local y1 = math.floor(y - r)
             local y2 = math.floor(y + r)
         
-            RenderCircle(out, endnote, x2)
-
             if speedopt then
-                
+
             else
-                --x reverse (x only (y is irrelevant right now))
-                if x1 > x2 then
-                    x1, x2 = x2, x1
+                --Clip
+                local a1 = (trackstart - bufferlength)
+                if x1 < a1 then
+                    x1 = a1
                 end
-
-
-                --Clip!
-                --Don't use ClipN since function overhead
-                if x1 < clipx1 then
-                    x1 = clipx1
+                local a2 = (tracklength + bufferlength)
+                if x2 > a2 then
+                    x2 = a2
                 end
-
-                if x2 > clipx2 then
-                    x2 = clipx2
-                end
-
-
-                --[[
-                if y1 > y2 then
-                    y1, y2 = y2, y1
-                end
-                --]]
             end
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
         elseif n == 8 then
-            --RenderCircle(out, note.startnote, note.p)
+            RenderCircle(out, note.startnote, note.p)
             --[=[
             --lazy, do this faster
             if note.renderproxy then
@@ -4030,16 +3904,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local function CalculateLoadPosition(note, lms)
         return (note.ms - lms) * note.speed + target
     end
-    local function CalculatePosition(note, ms, d)
+    local function CalculatePosition(note, ms)
         return note.loadp - (note.speed * (ms - note.loadms))
-        --[[
-        if d then
-            --disable delay
-            return note.loadp - (note.speed * (ms - note.loadms))
-        else
-            return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
-        end
-        --]]
     end
 
 
@@ -4066,22 +3932,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local timet = {}
     for k, v in pairs(notetable) do
         --v.oms is original ms
-        --oms
         v.ms = v.oms or v.ms
         v.oms = v.ms
-
         v.ms = (v.ms - startms) / songspeedmul
         v.s = MsToS(v.ms)
-        --odelay
-        v.delay = v.odelay or v.delay
-        v.odelay = v.delay
-
-        v.delay = v.delay / songspeedmul
         v.speed = (Taiko.CalculateSpeed(v, noteradius)) * notespeedmul
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
         v.loadp = CalculateLoadPosition(v, v.loadms)
-        --v.pdelay = 0
         v.hit = nil --Reset hit just in case
         --v.n = k --MISTAKE: after sorted
         --table.insert(timet, v.ms)
@@ -4089,126 +3947,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --print(v.speed, v.loadms, v.loadp)
     end
 
-    if stopsong then
-        --sort with ms
-        for k, v in pairs(Parsed.Data) do
-            if v.branch then
-                for k2, v2 in pairs(v.branch.paths) do
-                    table.sort(v2, function(a, b)
-                        return a.ms < b.ms
-                    end)
-                end
-            end
-        end
-    
-    
-        --Path doesn't matter, they should all have same loadms
-        table.sort(Parsed.Data, function(a, b)
-            if a.branch and b.branch then
-                --both branches
-                for k, v in pairs(a.branch.paths) do
-                    for k2, v2 in pairs(b.branch.paths) do
-                        return v[1].ms < v2[1].ms
-                    end
-                end
-            elseif a.branch then
-                --a is branch
-                for k, v in pairs(a.branch.paths) do
-                    return v[1].ms < b.ms
-                end
-            elseif b.branch then
-                --b is branch
-                for k, v in pairs(b.branch.paths) do
-                    return a.ms < v[1].ms
-                end
-            else
-                --notes
-                return a.ms < b.ms
-            end
-        end)
-
-
-
-
-
-        local lastnote
-        local zerodelay = true
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
-            --print(note.ms, note.delay, i, n)
-            if note.delay ~= 0 then
-                --recalculate time related
-                --[[
-                print(i)
-                print('ms\tloadms\tloads\tloadp')
-                print(note.ms, note.loadms, note.loads, note.loadp)
-                --]]
-
-
-                note.ms = note.ms - note.delay
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                note.ms = note.ms + note.delay
-                note.s = MsToS(note.ms)
-
-                --[[
-                note.ms = note.ms - (note.delay / songspeedmul)
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                --]]
-
-
-
-
-
-
-                --[[
-                print(note.ms, note.loadms, note.loads, note.loadp)
-                io.read()
-                --]]
-                --print(note.delay)
-                --[[
-                note.ms = note.ms - (note.delay / songspeedmul)
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                --]]
-                if zerodelay then
-                    lastnote.stopms = note.delay - lastnote.delay
-                    lastnote.stopstart = lastnote.ms
-                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                    
-                    zerodelay = false
-                end
-
-                if note.nextnote and note.nextnote.delay ~= note.delay then
-                    note.stopms = note.nextnote.delay - note.delay
-                    note.stopstart = note.ms
-                    note.stopend = note.stopstart + note.stopms
-                end
-            end
-            lastnote = note
-
-        end)
-
-        --[[
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
-            print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
-        end)
-
-        io.read()
-
-        stopsong = true --error()
-        --]]
-    end
-    --error()
-    --print(Parsed.Data[68].ms)error()
-
-    --error()
     --Sort by loadms
     --Sort all branches firt
     for k, v in pairs(Parsed.Data) do
@@ -4252,10 +3990,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     Taiko.ForAll(Parsed.Data, function(note, i, n)
         --print(note.loadms)
         note.n = n
-        --delay
-        -- [[
-        --moved
-        --]]
         --print(note.ms)
         --print(note.loadms, note.ms)
     end)
@@ -4365,13 +4099,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         statistics = {}
     end
     --Log (Debug system)
-    local logs = {}
+    local logs = ''
     local function Log(s)
-        logs[#logs + 1] = s
+        logs = logs .. '\n' .. s
     end
     local function RenderLog()
-        print(table.concat(logs, '\n'))
-        logs = {}
+        print(logs)
     end
 
 
@@ -4396,13 +4129,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     }
 
 
-    --Stop (delay)
-    local stopfreezems = nil
-    local stopstart = nil
-    local stopend = nil
-    --local adddelay = false
-    local totaldelay = 0
-
 
     --Statistics
     local lastinput = {-1, nil}
@@ -4412,7 +4138,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local dorender = true
     
     --Optimizations
-    local dospeedopt = false
+    local dospeedopt = true
 
     local speedopt = false
     local speedoptspeed = nil
@@ -4447,10 +4173,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             local s = raws - startt
             local ms = s * 1000
-
-            if stopend and ms > stopend then
-                stopfreezems, stopstart, stopend = nil, nil, nil
-            end
 
             --See if next note is ready to be loaded
             if nextnote then
@@ -4711,39 +4433,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
 
 
-                    --[[
-                    if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
-                        stopfreezems = totaldelay + note.stopstart
-                        stopms = note.stopms
-                        totaldelay = totaldelay - note.stopms
-                        stopstart = note.stopstart
-                        stopend = note.stopend
 
-                        --to prevent retriggering
-                        note.stopstart = nil
-                    end
-                    --]]
+
 
                     --print(ms, loaded.s, loaded.e, loaded.n)
-                    note.p = CalculatePosition(note, stopfreezems or (ms + totaldelay))
-
-
-                    -- [[
-                    --if stopsong and note.stopstart and note.p < target then
-                    if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
-                        stopfreezems = totaldelay + note.stopstart
-                        stopms = note.stopms
-                        totaldelay = totaldelay - note.stopms
-                        stopstart = note.stopstart
-                        stopend = note.stopend
-
-                        --to prevent retriggering
-                        note.stopstart = nil
-                    end
-                    --]]
-
-
-
+                    note.p = CalculatePosition(note, ms)
                     --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
 
 
@@ -4784,33 +4478,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                     --distance unload (slow)
-                    --formula before delay
-                    --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
                     --100 is extra buffer so it doesnt unload asap
-                    if math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer) then
+                    if math.abs(note.p - target) > (tracklength + bufferlength + 1) then
                         --print(note.endnote and (loaded[note.endnote.n] ~= nil))
                         --if note.endnote and (loaded[note.endnote.n] ~= nil) then
                         if note.endnote and note.endnote.done ~= true then
                             --Still has endnote loaded
                             --Don't unload
-                            --However, we must render since else statement and we are already in here
-
-                        if dorender then
-                            if note.data == 'event' then
-                                if note.event == 'barline' then
-                                    RenderBarline(out, note)
-                                end
-                            elseif note.data == 'note' then
-                                RenderNote(out, note)
-                            else
-                                error('Invalid note.data')
-                            end
-                        end
-
-
-
                         else
-                            --Log(tostring(note.p))
                             --unload
                             --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
                             --loaded[note.n] = nil
@@ -4883,24 +4558,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                 error('Invalid note.data')
                             end
                         end
-
-
-
                     end
                 end
             end
-
-            --[[
-            if adddelay then
-                for i = loaded.s, loaded.e do
-                    local note = loaded[i]
-                    if note then
-                        note.pdelay = note.pdelay + adddelay
-                    end
-                end
-                adddelay = false
-            end
-            --]]
 
 
             if speedoptout == false then
@@ -5174,21 +4834,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Statistic('NearestHIT', (nearestnote[1] and ((nearestnote[1].ms > ms) and (not nearestnote[1].hit))))
             Statistic('Nearest2 (ms)', nearest[2])
 
-            --Delay
-            Statistic('Stop Start', stopstart or '')
-            Statistic('Stop End', stopend or '')
-            Statistic('Total Delay', totaldelay)
 
-            --[[
-            --Song info
 
             Statistic('Song Name', Parsed.Metadata.TITLE)
             Statistic('Difficulty (id)', Parsed.Metadata.COURSE)
             Statistic('Stars', Parsed.Metadata.LEVEL)
-            
 
 
-            --]]
 
 
             RenderStatistic()
@@ -6112,11 +5764,9 @@ function Taiko.SongSelect(header, data)
             end)
             min = 1
             max = #map
-            OptionsLimit[1] = {min, max, map}
+            OptionsLimit[SelectedOption] = {min, max, map}
             DifficultyMap = map
 
-            --clip
-            OptionsConfig[1] = ClipN(OptionsConfig[1], min, max)
 
 
             --[=[
@@ -6249,7 +5899,6 @@ function Taiko.SongSelect(header, data)
                         end
                     end
                     curses.nodelay(window, false)
-                    Ansi.ClearScreen()
 
                 elseif Controls.Select.Escape[key] then
                     break
@@ -6383,10 +6032,8 @@ end
 
 
 
---full taiko game
-function Taiko.Game()
-    --TODO
-end
+
+
 
 
 

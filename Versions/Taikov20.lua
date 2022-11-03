@@ -1,11 +1,12 @@
 --[[
-Taikov19.lua
+Taikov20.lua
 
 
 Changes: Taiko.PlaySong improved!
 
 Fixed Taiko.ParseTJA Delay counting as notes
 Supports BMSCROLL, HBSCROLL!
+Major Restructuring of loaded system (Taiko.PlaySong)
 
 TODO: Check for match[2] so no error
 TODO: Note lyrics
