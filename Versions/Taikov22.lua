@@ -2235,52 +2235,14 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
             elseif note.data == 'event' and note.event == 'barline' then
                 currentmeasure.startms = note.ms
-                currentmeasure.barline = note
+
+                currentmeasure[#currentmeasure + 1] = note
             end
 
             local nextnote = ParsedData.Data[i + 1]
             if (nextnote and nextnote.data == 'event' and nextnote.event == 'barline') or (i == #ParsedData.Data) then
                 --push
 
-                --[[
-                --measure change?
-                --local sign = current.measure[3](nil, currentmeasure.barline)
-                if sign == current.measure[2] then
-
-                else
-                    current.measure[2] = sign
-                    if Out[#Out] ~= '\n' then
-                        Out[#Out + 1] = '\n'
-                    end
-                    Out[#Out + 1] = '#MEASURE '
-                    Out[#Out + 1] = sign
-                    Out[#Out + 1] = '\n'
-                end
-                --]]
-
-                local n = currentmeasure.barline
-                for k, v in pairs(current) do
-                    if not v[4] and n[k] == v[2] then
-                        --they are equal!
-                    else
-                        local o = n[k]
-                        if v[3] then
-                            o = v[3](o, n)
-                        end
-                        if v[4] and v[2] == o then
-
-                        else
-                            v[2] = o
-                            if Out[#Out] ~= '\n' then
-                                Out[#Out + 1] = '\n'
-                            end
-                            Out[#Out + 1] = v[1]
-                            Out[#Out + 1] = ' '
-                            Out[#Out + 1] = o
-                            Out[#Out + 1] = '\n'
-                        end
-                    end
-                end
 
 
 
@@ -2289,8 +2251,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                 if #currentmeasure == 0 then
                     --empty measure
                     --current note is barline, next is barline too
-                    Out[#Out + 1] = ','
-                    Out[#Out + 1] = '\n'
+                    error('No barline')
                 else
                     --push
 
@@ -2302,7 +2263,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                         difs[#difs + 1] = (n2.ms - n2.delay) - (n.ms - n.delay)
                     end
                     --start
-                    difs[#difs + 1] = (currentmeasure[1].ms - currentmeasure[1].delay) - currentmeasure.startms
+                    --difs[#difs + 1] = (currentmeasure[1].ms - currentmeasure[1].delay) - currentmeasure.startms
                     --end
                     difs[#difs + 1] = (currentmeasure.startms + currentmeasure[1].mspermeasure) - (currentmeasure[#currentmeasure].ms - currentmeasure[#currentmeasure].delay)
 
@@ -2328,11 +2289,6 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                     --currentmeasure
                     local startms = currentmeasure.startms
                     local endms = startms + currentmeasure[1].mspermeasure
-                    local a = currentmeasure[1].ms - startms
-                    if a > 0 then
-                        --print(a, a/gcd)
-                        Out[#Out + 1] = string.rep('0', a / gcd)
-                    end
                     --loop
                     for i2 = 1, #currentmeasure do
                         local n = currentmeasure[i2]
@@ -2362,7 +2318,10 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                         end
 
                         --note type
-                        Out[#Out + 1] = tostring(n.type)
+                        if i2 ~= 1 then
+                            --note
+                            Out[#Out + 1] = tostring(n.type)
+                        end
 
                         Out[#Out + 1] = string.rep('0', ((currentmeasure[i2 + 1] and currentmeasure[i2 + 1].ms or endms) - n.ms) / gcd - 1)
 
