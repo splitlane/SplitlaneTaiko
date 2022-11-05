@@ -2210,7 +2210,8 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
         --Measure grouping will be dirty, but as long as it works
 
         local currentmeasure = {
-            startms = nil
+            startms = nil,
+            barline = nil
         }
         local mspermeasure = nil
         local measurestartms = 0
@@ -2233,32 +2234,36 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
             elseif note.data == 'event' and note.event == 'barline' then
                 currentmeasure.startms = note.ms
-
+                currentmeasure.barline = note
             end
 
             local nextnote = ParsedData.Data[i + 1]
             if (nextnote and nextnote.data == 'event' and nextnote.event == 'barline') or (i == #ParsedData.Data) then
                 --push
+
+
+                --measure change?
+
+                local sign = current.measure[3](nil, currentmeasure[1] or currentmeasure.barline)
+                if sign == current.measure[2] then
+
+                else
+                    current.measure[2] = sign
+                    if Out[#Out] ~= '\n' then
+                        Out[#Out + 1] = '\n'
+                    end
+                    Out[#Out + 1] = '#MEASURE '
+                    Out[#Out + 1] = sign
+                    Out[#Out + 1] = '\n'
+                end
+
+
+                
                 if #currentmeasure == 0 then
                     --empty measure
                     --current note is barline, next is barline too
-                    if nextnote then
-                        --EMPTY MEASURES NOT WORKING, FIX (USE MSPERMEASURE)
-                        local sign = current.measure[3](nil, note)
-                        if sign == current.measure[2] then
-
-                        else
-                            current.measure[2] = sign
-                            if Out[#Out] ~= '\n' then
-                                Out[#Out + 1] = '\n'
-                            end
-                            Out[#Out + 1] = '#MEASURE '
-                            Out[#Out + 1] = sign
-                            Out[#Out + 1] = '\n'
-                        end
-                        Out[#Out + 1] = ','
-                        Out[#Out + 1] = '\n'
-                    end
+                    Out[#Out + 1] = ','
+                    Out[#Out + 1] = '\n'
                 else
                     --push
 
@@ -2282,9 +2287,16 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                         gcd = Gcd(gcd, difs[i])
                     end
                     if gcd == nil then
-                        error(1)
+                        error('gcd invalid, probably delay')
                         gcd = currentmeasure[1] and (currentmeasure[1].ms - measurestartms)
                     end
+
+
+
+
+
+
+
 
                     --currentmeasure
                     local startms = currentmeasure.startms
@@ -2361,8 +2373,8 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
         return table.concat(Out)
     end
-    --a = Serialize(Parsed[4]) --easy
-    a = Serialize(Parsed[1])
+    a = Serialize(Parsed[4]) --easy
+    --a = Serialize(Parsed[1]) --oni
     --io.open('outtest.tja','w+'):write(a)
     print(a)error()
 
