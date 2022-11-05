@@ -10,6 +10,7 @@ TODO: Rewrite SerializeTJA note attribute parsing
 TODO: Check for match[2] so no error
 TODO: Note lyrics
 TODO: Docs
+TODO: Use io.write instead of print in PlaySong
 
 
 
@@ -2237,6 +2238,10 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
         --parser / ram
         local state = {
+            scroll = 0,
+            bpm = ParsedData.Metadata.BPM,
+            measure = nil,
+            gogo = false,
             delay = 0
         }
 
@@ -2244,31 +2249,49 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
         local current = {
             --name = {'#CMD', currentvalue, function to get value, recompute every time?, don't replace with value}
             scroll = {'#SCROLL ', nil, function(note)
-                return note.scroll / ParsedData.Metadata.HEADSCROLL
+                local a = note.scroll / ParsedData.Metadata.HEADSCROLL
+                if a ~= state.scroll then
+                    state.scroll = a
+                    return tostring(a)
+                end
             end},
-            bpm = {'#BPMCHANGE ', ParsedData.Metadata.BPM},
-            measure = {'#MEASURE ', nil, function(note)
+            bpm = {'#BPMCHANGE ', tostring(ParsedData.Metadata.BPM), function(note)
+                local a = note.bpm
+                if a ~= state.bpm then
+                    state.bpm = a
+                    return tostring(a)
+                end
+            end},
+            measure = {'#MEASURE ', false, function(note)
                 --BPM = MEASURE / SIGN * 4
                 --SIGN = MEASURE / BPM * 4
                 local a, b = ToFraction(note.bpm * note.mspermeasure / 240000)
-                return a .. '/' .. b
-            end, true},
+                local c = a .. '/' .. b
+                if c ~= state.measure then
+                    state.measure = c
+                    return c
+                end
+            end},
             
             --others
-            gogo = {'#GOGO', 'END', function(note)
-                if note.gogo then
-                    return 'START'
-                else
-                    return 'END'
+            gogo = {'#GOGO', false, function(note)
+                local a = note.gogo
+                if a ~= state.gogo then
+                    state.gogo = a
+                    if a then
+                        return 'START'
+                    else
+                        return 'END'
+                    end
                 end
-            end, true},
+            end},
             delay = {'#DELAY ', nil, function(note)
                 if note.delay ~= state.delay then
                     local a = note.delay - state.delay
                     state.delay = note.delay
                     return FloatToString(MsToS(a))
                 end
-            end, true, true}
+            end}
 
         }
 
@@ -2344,21 +2367,12 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
 
                         for k, v in pairs(current) do
-                            if not v[4] and n[k] == v[2] then
-                                --they are equal!
+                            if n[k] == v[2] then
+                                --they are equal
                             else
-                                local o = n[k]
-                                if v[3] then
-                                    o = v[3](n)
-                                end
-                                if v[4] and v[2] == o then
-
-                                else
-                                    if v[5] then
-
-                                    else
-                                        v[2] = o
-                                    end
+                                local o = v[3](n)
+                                if o then
+                                    v[2] = o
                                     if Out[#Out] ~= '\n' then
                                         Out[#Out + 1] = '\n'
                                     end
@@ -2368,6 +2382,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                                     Out[#Out + 1] = '\n'
                                 end
                             end
+
                         end
 
                         --note type
@@ -2430,9 +2445,12 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
 
     --tests
+
+    --[[
     --kita saitama neta
     a = Serialize(Parsed[1])
     print(a)error()
+    --]]
 
 
     --[[
