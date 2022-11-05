@@ -2211,17 +2211,31 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
         local currentmeasure = {
             startms = nil,
-            barline = nil
         }
         local mspermeasure = nil
         local measurestartms = 0
 
         local current = {
-            scroll = {'#SCROLL', nil, function(n) return n / ParsedData.Metadata.HEADSCROLL end},
-            bpm = {'#BPMCHANGE', ParsedData.Metadata.BPM},
-            --BPM = MEASURE / SIGN * 4
-            --SIGN = MEASURE / BPM * 4
-            measure = {'#MEASURE', nil, function(n, note) local a, b = ToFraction(note.bpm * note.mspermeasure / 240000) return a .. '/' .. b end, true},
+            --name = {'#CMD', currentvalue, function to get value, recompute every time?}
+            scroll = {'#SCROLL ', nil, function(note)
+                return note.scroll / ParsedData.Metadata.HEADSCROLL
+            end},
+            bpm = {'#BPMCHANGE ', ParsedData.Metadata.BPM},
+            measure = {'#MEASURE ', nil, function(note)
+                --BPM = MEASURE / SIGN * 4
+                --SIGN = MEASURE / BPM * 4
+                local a, b = ToFraction(note.bpm * note.mspermeasure / 240000)
+                return a .. '/' .. b
+            end, true},
+            
+            --others
+            gogo = {'#GOGO', nil, function(note)
+                if note.gogo then
+                    return 'START'
+                else
+                    return 'END'
+                end
+            end, true}
 
         }
 
@@ -2300,7 +2314,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                             else
                                 local o = n[k]
                                 if v[3] then
-                                    o = v[3](o, n)
+                                    o = v[3](n)
                                 end
                                 if v[4] and v[2] == o then
 
@@ -2310,7 +2324,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                                         Out[#Out + 1] = '\n'
                                     end
                                     Out[#Out + 1] = v[1]
-                                    Out[#Out + 1] = ' '
+                                    --Out[#Out + 1] = ' '
                                     Out[#Out + 1] = o
                                     Out[#Out + 1] = '\n'
                                 end
