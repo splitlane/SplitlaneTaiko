@@ -2229,7 +2229,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
             end, true},
             
             --others
-            gogo = {'#GOGO', nil, function(note)
+            gogo = {'#GOGO', 'END', function(note)
                 if note.gogo then
                     return 'START'
                 else
@@ -2337,7 +2337,13 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                             Out[#Out + 1] = tostring(n.type)
                         end
 
-                        Out[#Out + 1] = string.rep('0', ((currentmeasure[i2 + 1] and currentmeasure[i2 + 1].ms or endms) - n.ms) / gcd - 1)
+                        if i2 == 1 and #currentmeasure ~= 1 then
+                            --include first note
+                            Out[#Out + 1] = string.rep('0', ((currentmeasure[i2 + 1] and currentmeasure[i2 + 1].ms or endms) - n.ms) / gcd)
+                        else
+                            --exclude first note
+                            Out[#Out + 1] = string.rep('0', ((currentmeasure[i2 + 1] and currentmeasure[i2 + 1].ms or endms) - n.ms) / gcd - 1)
+                        end
 
 
                     end
@@ -2373,8 +2379,8 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
         return table.concat(Out)
     end
-    a = Serialize(Parsed[4]) --easy
-    --a = Serialize(Parsed[1]) --oni
+    --a = Serialize(Parsed[4]) --easy
+    a = Serialize(Parsed[1]) --oni
     --io.open('outtest.tja','w+'):write(a)
     print(a)error()
 
