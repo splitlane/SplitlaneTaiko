@@ -2241,8 +2241,24 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                 --push
                 if #currentmeasure == 0 then
                     --empty measure
-                    Out[#Out + 1] = ','
-                    Out[#Out + 1] = '\n'
+                    --current note is barline, next is barline too
+                    if nextnote then
+                        --EMPTY MEASURES NOT WORKING, FIX (USE MSPERMEASURE)
+                        local sign = current.measure[3](nil, note)
+                        if sign == current.measure[2] then
+
+                        else
+                            current.measure[2] = sign
+                            if Out[#Out] ~= '\n' then
+                                Out[#Out + 1] = '\n'
+                            end
+                            Out[#Out + 1] = '#MEASURE '
+                            Out[#Out + 1] = sign
+                            Out[#Out + 1] = '\n'
+                        end
+                        Out[#Out + 1] = ','
+                        Out[#Out + 1] = '\n'
+                    end
                 else
                     --push
 
@@ -2345,7 +2361,8 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
         return table.concat(Out)
     end
-    a = Serialize(Parsed[4])
+    --a = Serialize(Parsed[4]) --easy
+    a = Serialize(Parsed[1])
     --io.open('outtest.tja','w+'):write(a)
     print(a)error()
 
