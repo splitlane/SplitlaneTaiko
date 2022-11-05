@@ -1,11 +1,12 @@
 --[[
-Taikov23.lua
+Taikov24.lua
 
 
 Changes: Taiko.PlaySong improved!
 
 Taiko.SerializeTJA supports delay!
 
+TODO: Rewrite SerializeTJA note attribute parsing
 TODO: Check for match[2] so no error
 TODO: Note lyrics
 TODO: Docs
