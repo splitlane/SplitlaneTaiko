@@ -4,18 +4,12 @@ Taikov21.lua
 
 Changes: Taiko.PlaySong improved!
 
-Fixed Taiko.ParseTJA Delay counting as notes
-Supports BMSCROLL, HBSCROLL!
-Major Restructuring of loaded system (Taiko.PlaySong)
-
 TODO: Check for match[2] so no error
 TODO: Note lyrics
 TODO: Docs
 TODO: Taiko.SerializeTJA
 TODO: Rewrite Taiko.SerializeTJA
 
-Warning:
-Taiko.SerializeTJA is completely broken
 
 
 
@@ -2216,7 +2210,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
         --Measure grouping will be dirty, but as long as it works
 
         local currentmeasure = {
-
+            startms = nil
         }
         local mspermeasure = nil
         local measurestartms = 0
@@ -2231,199 +2225,116 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
 
 
         --createnote
-        local pushonnext = false
         for i = 1, #ParsedData.Data do
             local note = ParsedData.Data[i]
             local ms = note.ms
             if note.data == 'note' then
-                local push = false
-                mspermeasure = mspermeasure or note.mspermeasure
-                if note.mspermeasure ~= mspermeasure then
-                    --new measure, push
-                    --print('pushm', #currentmeasure)
-                    mspermeasure = note.mspermeasure
-                    push = true
-                elseif barline == false and (ms - measurestartms - note.delay) >= mspermeasure then
-                    --print('a', ms - measurestartms, mspermeasure)
-                    --end of measure
-                    push = true
-                elseif pushonnext then
-                    pushonnext = false
-                    push = true
-                end
+                currentmeasure[#currentmeasure + 1] = note
 
+            elseif note.data == 'event' and note.event == 'barline' then
+                currentmeasure.startms = note.ms
 
+            end
 
+            local nextnote = ParsedData.Data[i + 1]
+            if (nextnote and nextnote.data == 'event' and nextnote.event == 'barline') or (i == #ParsedData.Data) then
+                --push
+                if #currentmeasure == 0 then
+                    --empty measure
+                    Out[#Out + 1] = ','
+                    Out[#Out + 1] = '\n'
+                else
+                    --push
 
-                if push then
                     --insert filler
                     local difs = {}
-                    for i = 1, #currentmeasure do
-                        if i == #currentmeasure then
-
-                        else
-                            local n = currentmeasure[i]
-                            local n2 = currentmeasure[i + 1]
-                            difs[#difs + 1] = (n2.ms - n2.delay) - (n.ms - n.delay)
-                        end
+                    for i = 2, #currentmeasure do
+                        local n = currentmeasure[i - 1]
+                        local n2 = currentmeasure[i]
+                        difs[#difs + 1] = (n2.ms - n2.delay) - (n.ms - n.delay)
                     end
+                    --start
+                    difs[#difs + 1] = (currentmeasure[1].ms - currentmeasure[1].delay) - currentmeasure.startms
+                    --end
+                    difs[#difs + 1] = (currentmeasure.startms + currentmeasure[1].mspermeasure) - (currentmeasure[#currentmeasure].ms - currentmeasure[#currentmeasure].delay)
+
+
+
+
                     local gcd = difs[1]
                     for i = 2, #difs do
                         gcd = Gcd(gcd, difs[i])
                     end
                     if gcd == nil then
+                        error(1)
                         gcd = currentmeasure[1] and (currentmeasure[1].ms - measurestartms)
                     end
 
-
-                    --print(gcd)
-                    --[[
-                    if gcd == nil then
-                        for i = 1, #currentmeasure do
-                            local n = currentmeasure[i]
-                            print(n.type, n.ms)
-                        end
-                        print(table.concat(Out))
+                    --currentmeasure
+                    local startms = currentmeasure.startms
+                    local endms = startms + currentmeasure[1].mspermeasure
+                    local a = currentmeasure[1].ms - startms
+                    if a > 0 then
+                        --print(a, a/gcd)
+                        Out[#Out + 1] = string.rep('0', a / gcd)
                     end
-                    --]]
-
-                    if gcd == nil then
-                        --[[
-                        Out[#Out + 1] = ','
-                        Out[#Out + 1] = '\n'
-                        --]]
-                    else
-
-                        --out
-                        local lastn = 0
-                        local firstnotems = currentmeasure[1].ms - currentmeasure[1].delay
-                        for i = 1, #currentmeasure do
-                            local n = currentmeasure[i]
+                    --loop
+                    for i2 = 1, #currentmeasure do
+                        local n = currentmeasure[i2]
 
 
-                            for k, v in pairs(current) do
-                                if not v[4] and n[k] == v[2] then
-                                    --they are equal!
-                                else
-                                    local o = n[k]
-                                    if v[3] then
-                                        o = v[3](o, n)
-                                    end
-                                    if v[4] and v[2] == o then
-
-                                    else
-                                        v[2] = o
-                                        if Out[#Out] ~= '\n' then
-                                            Out[#Out + 1] = '\n'
-                                        end
-                                        Out[#Out + 1] = v[1]
-                                        Out[#Out + 1] = ' '
-                                        Out[#Out + 1] = o
-                                        Out[#Out + 1] = '\n'
-                                    end
+                        for k, v in pairs(current) do
+                            if not v[4] and n[k] == v[2] then
+                                --they are equal!
+                            else
+                                local o = n[k]
+                                if v[3] then
+                                    o = v[3](o, n)
                                 end
-                            end
+                                if v[4] and v[2] == o then
 
-                            --note type
-                            Out[#Out + 1] = tostring(n.type)
-
-
-
-
-                            --zeros
-                            --wtf
-                            local n2 = currentmeasure[i + 1] and (currentmeasure[i + 1].ms - currentmeasure[i + 1].delay) or (currentmeasure[#currentmeasure].mspermeasure + firstnotems)
-                            local ndiv = (n2 - firstnotems) / gcd
-                            Out[#Out + 1] = string.rep('0', ndiv - lastn - 1)
-                            lastn = ndiv
-                        end
-                        Out[#Out + 1] = ','
-                        Out[#Out + 1] = '\n'
-
-
-                        --push empty measures
-                        --msview
-                        --print(ms, currentmeasure[#currentmeasure].mspermeasure + measurestartms, RoundFloat(ms) == RoundFloat(currentmeasure[#currentmeasure].mspermeasure + measurestartms))
-                        --barlineview
-                        --print(ParsedData.Data[i - 2].data, ParsedData.Data[i - 1].data, ParsedData.Data[i].data)
-                        if ParsedData.Data[i - 1] and ParsedData.Data[i - 1].data == 'event' and ParsedData.Data[i - 1].event == 'barline' then
-
-                        else
-                            local dif = ms - (currentmeasure[#currentmeasure].mspermeasure + measurestartms)
-                            local frac = dif / currentmeasure[#currentmeasure].mspermeasure
-                            if frac > 0 then
-                                --3/4 of a measure -> 3/4 of measure
-                                local a, b = ToFraction(frac)
-                                local a2, b2 = FromFraction(current.measure[2])
-                                if a * a2 ~= 0 then
-                                    local sign = (a * a2) .. '/' .. (b * b2)
-                                    current.measure[2] = sign
-
+                                else
+                                    v[2] = o
                                     if Out[#Out] ~= '\n' then
                                         Out[#Out + 1] = '\n'
                                     end
-                                    Out[#Out + 1] = '#MEASURE '
-                                    Out[#Out + 1] = sign
-                                    Out[#Out + 1] = string.rep('\n,', Round(a * a2))
+                                    Out[#Out + 1] = v[1]
+                                    Out[#Out + 1] = ' '
+                                    Out[#Out + 1] = o
                                     Out[#Out + 1] = '\n'
                                 end
                             end
                         end
 
+                        --note type
+                        Out[#Out + 1] = tostring(n.type)
+
+                        Out[#Out + 1] = string.rep('0', ((currentmeasure[i2 + 1] and currentmeasure[i2 + 1].ms or endms) - n.ms) / gcd - 1)
+
 
                     end
+
+                    Out[#Out + 1] = ','
+                    Out[#Out + 1] = '\n'
+
+
 
                     currentmeasure = {}
-                    measurestartms = ms
-
-
-
-
                 end
-
-                currentmeasure[#currentmeasure + 1] = note
-
-
-
-            elseif note.data == 'event' and note.event == 'barline' then
-                --[[
-                local lastms = (currentmeasure[#currentmeasure]) and (currentmeasure[#currentmeasure].mspermeasure) or 0
-                --local dif = ms - ((currentmeasure[#currentmeasure]) and (currentmeasure[#currentmeasure].mspermeasure + measurestartms) or 0)
-                local dif = ms - (lastms + measurestartms)
-                local frac = dif / lastms
-                if frac > 0 then
-                    print(dif, frac)
-                    --3/4 of a measure -> 3/4 of measure
-                    local a, b = ToFraction(frac)
-                    local a2, b2 = FromFraction(current.measure[2])
-                    print(current.measure[2], a2, b2)
-                    if a * a2 ~= 0 then
-                        local sign = (a * a2) .. '/' .. (b * b2)
-                        current.measure[2] = sign
-
-                        if Out[#Out] ~= '\n' then
-                            Out[#Out + 1] = '\n'
-                        end
-                        Out[#Out + 1] = '#MEASURE '
-                        Out[#Out + 1] = sign
-                        Out[#Out + 1] = string.rep('\n,', Round(a * a2))
-                        Out[#Out + 1] = '\n'
-                        print(a * a2)
-                    end
-                end
-                --]]
-                if #currentmeasure == 0 then
-                    --occurs at very start of song
-                else
-                    pushonnext = true
-                end
-                mspermeasure = note.mspermeasure
-
-
-                --print('BARLINE')
-            else
-                
             end
+
+
+
+
+
+
+
+
+                
+
+
+
+            
         end
 
         if Out[#Out] ~= '\n' then
@@ -2447,7 +2358,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
     return Out
 end
 
---[[
+-- [[
 print(Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')))
 error()
 --]]
