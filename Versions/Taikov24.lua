@@ -2010,7 +2010,7 @@ function Taiko.ParseTJA(source)
                                 if not zeroopt or c.type ~= 0 then --zeroopt
                                     c.ms = Parser.ms
                                     --c.measuredensity = notes
-                                    local lastnote = Parsed.Data[#Parsed.Data]
+                                    local lastnote = Parser.measurepushto[#Parser.measurepushto]
                                     if lastnote then
                                         lastnote.nextnote = c
                                         --[[
@@ -4182,6 +4182,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local x = math.floor(note.p)
         local y1, y2 = y - tracky, y + tracky
         for y = y1, y2 do
+            --[[
             --local a = Pixel.GetPixel(out, x, y)
             local a = out.Data[x] and out.Data[x][y]
             if a == '0' or a == nil then
@@ -4189,6 +4190,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 out.Data[x] = out.Data[x] or {}
                 out.Data[x][y] = '1'
             end
+            --]]
+            out.Data[x] = out.Data[x] or {}
+            out.Data[x][y] = '1'
         end
     end
 
@@ -4550,8 +4554,37 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end)
 
 
+        local lastnote = nil
+        local lastdelay = 0
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            --print(note.ms, note.delay)
+            if note.delay ~= lastdelay then
+                if lastnote then
+                    lastnote.stopms = note.delay - lastnote.delay
+                    lastnote.stopstart = lastnote.ms
+                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                end
+                lastdelay = note.delay
+            end
 
-        --[ =[
+            if lastnote and lastnote.delay ~= 0 then
+                --recalculate
+                lastnote.ms = lastnote.ms - lastnote.delay
+                lastnote.s = MsToS(lastnote.ms)
+                lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
+                lastnote.loads = MsToS(lastnote.loadms)
+                lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
+                lastnote.ms = lastnote.ms + lastnote.delay
+                lastnote.s = MsToS(lastnote.ms)
+            end
+
+
+            lastnote = note
+        end)
+
+        --error()
+
+        --[=[
 
         local lastnote
         local zerodelay = true
