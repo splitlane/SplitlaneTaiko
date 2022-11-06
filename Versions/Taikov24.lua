@@ -2333,6 +2333,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                         --difs[#difs + 1] = (n2.ms - n2.delay) - (n.ms - n.delay)
                         difs[#difs + 1] = math.abs(n2.ms - n.ms)
                     end
+                    for i = 1, #currentmeasure do print(currentmeasure[i].ms) end
                     --start (no need for start, there is barline)
                     --difs[#difs + 1] = (currentmeasure[1].ms - currentmeasure[1].delay) - currentmeasure.startms
                     --end
@@ -2352,7 +2353,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                     end
 
 
-
+                    print(gcd)
 
 
 
@@ -2465,21 +2466,47 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
     local Out = {'// Automatically Serialized by Taiko.SerializeTJA'}
     for k, v in pairs(Parsed) do
         Out[#Out + 1] = Serialize(v)
+        
+
+        --testing
+        return table.concat(Out, '\n\n')
     end
     Out = table.concat(Out, '\n\n')
     return Out
 end
 
--- [[
+--[[
 --print(Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')))
 print(Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/neta/kita/kita.tja','r'):read'*all')))
+
+a = Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/neta/kita/kita.tja','r'):read'*all'))
+io.open('outtest.tja','w+'):write(a)
 
 error()
 --]]
 
 
+--[[
+local a = Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')
+for i = 1, #a do
+    local p = a[i]
+    for i2 = 1, #p.Data do
+        local n = p.Data[i2]
 
-
+        if i2 == 2 then
+            n.delay = 1000
+        elseif i2 == 3 then
+            n.delay = 2000
+        elseif i2 >= 4 then
+            n.delay = 3000
+        end
+        n.ms = n.ms + n.delay
+    end
+end
+a = Taiko.SerializeTJA(a)
+io.open('outtest.tja','w+'):write(a)
+error()
+--]]
 
 
 
@@ -4524,7 +4551,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
+        --[ =[
 
         local lastnote
         local zerodelay = true
@@ -4572,7 +4599,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 note.loads = MsToS(note.loadms)
                 note.loadp = CalculateLoadPosition(note, note.loadms)
                 --]]
-                if zerodelay then
+                if zerodelay and lastnote then
                     lastnote.stopms = note.delay - lastnote.delay
                     lastnote.stopstart = lastnote.ms
                     lastnote.stopend = lastnote.stopstart + lastnote.stopms
@@ -4589,6 +4616,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             lastnote = note
 
         end)
+
+        --]=]
 
         --[[
         Taiko.ForAll(Parsed.Data, function(note, i, n)
