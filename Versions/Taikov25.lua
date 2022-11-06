@@ -4,8 +4,7 @@ Taikov24.lua
 
 Changes: Taiko.PlaySong improved!
 
-Taiko.SerializeTJA supports delay!
-Rewrote SerializeTJA note attribute parsing
+Made notes disappear after hitting!
 
 
 TODO: Check for match[2] so no error
@@ -13,6 +12,7 @@ TODO: Note lyrics
 TODO: Docs
 TODO: Use io.write instead of print in PlaySong
 TODO: Fix delay + barline issue
+TODO: Fix serializetja
 
 
 
@@ -2355,7 +2355,7 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
                         --difs[#difs + 1] = (n2.ms - n2.delay) - (n.ms - n.delay)
                         difs[#difs + 1] = math.abs(n2.ms - n.ms)
                     end
-                    for i = 1, #currentmeasure do print(currentmeasure[i].ms) end
+                    --for i = 1, #currentmeasure do print(currentmeasure[i].ms) end
                     --start (no need for start, there is barline)
                     --difs[#difs + 1] = (currentmeasure[1].ms - currentmeasure[1].delay) - currentmeasure.startms
                     --end
@@ -2510,6 +2510,8 @@ error()
 
 --[[
 local a = Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')
+--]]
+--[[
 for i = 1, #a do
     local p = a[i]
     for i2 = 1, #p.Data do
@@ -2525,6 +2527,55 @@ for i = 1, #a do
         n.ms = n.ms + n.delay
     end
 end
+--]]
+
+--[[
+for i = 1, #a do
+    local p = a[i]
+    for i2 = 1, #p.Data do
+        local n = p.Data[i2]
+
+        n.delay = n.ms - 10
+    end
+end
+--]]
+--[[
+
+for i = 1, #a do
+    local lastnote = nil
+    local lastms = 0
+    local totaldelay = 0
+    local p = a[i]
+    local offset = 0
+    for i2 = 1, #p.Data do
+        local n = p.Data[i2 + offset]
+
+        if i2 == (#p.Data + offset) or i2 == 1 then
+
+        else
+            if n.data ~= 'note' then
+                table.remove(p.Data, i2 + offset)
+                    offset = offset - 1
+            else
+                if n.type == 0 and lastms and lastnote then
+                    totaldelay = totaldelay + (n.ms - lastms)
+                    --lastnote.delay = totaldelay
+                    table.remove(p.Data, i2 + offset)
+                    offset = offset - 1
+                else
+                    n.delay = totaldelay
+                    lastnote = n
+        
+                end
+                lastms = n.ms
+            end
+        end
+
+    end
+end
+
+--]]
+--[[
 a = Taiko.SerializeTJA(a)
 io.open('outtest.tja','w+'):write(a)
 error()
@@ -4771,7 +4822,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             endms = timet[i]
         end
     end
-    endms = endms + temp + 10000
+    endms = endms + temp
 
 
 
@@ -5284,10 +5335,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --formula before delay
                     --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
                     --100 is extra buffer so it doesnt unload asap
-                    if math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer) then
+                    if note.hit or math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer) then
                         --print(note.endnote and (loaded[note.endnote.n] ~= nil))
                         --if note.endnote and (loaded[note.endnote.n] ~= nil) then
-                        if note.endnote and note.endnote.done ~= true then
+                        if note.endnote and note.endnote.done ~= true and (not note.hit) then
                             --Still has endnote loaded
                             --Don't unload
                             --However, we must render since else statement and we are already in here
