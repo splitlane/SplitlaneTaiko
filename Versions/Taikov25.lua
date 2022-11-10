@@ -23,7 +23,7 @@ TODO: Song select screen
     Select Song
     Scroll Animation
     URA SUPPORT --Done
-    UNHARDCODE OPTIONS
+    UNHARDCODE OPTIONS --Done
     CACHED OPTION LIMITS --Done
 
 TODO: Scoreinit
@@ -898,6 +898,10 @@ function Taiko.ParseTJA(source)
                     - B - KA (Both), multiplayer note with hands.
                     - F - ADLIB, hidden note that will increase combo if discovered and does not give a BAD when missed.
                         - Ignored in taiko-web.
+
+
+                    https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                    https://outfox.wiki/dev/mode-support/tja-support/
                 ]]
 
 
@@ -5982,6 +5986,7 @@ function Taiko.SongSelect(header, data)
 
 
     local Options = {
+        --https://taikotime.blogspot.com/2010/08/advanced-rules.html
         [2] = {
             'Normal', 'Auto'
         },
@@ -5992,7 +5997,10 @@ function Taiko.SongSelect(header, data)
             'Normal', '2x Speed', '3x Speed', '4x Speed', '0.25x Speed', '0.5x Speed', '0.75x Speed'
         },
         [5] = {
-            'TODO Normal'
+            'Normal',
+            'Reverse', --Abekobe
+            'Invisible', --Doron
+            'Messy', --Detarame
         }
     }
     local OptionsConfig = {

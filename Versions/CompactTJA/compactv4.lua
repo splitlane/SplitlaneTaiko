@@ -1,5 +1,5 @@
 --[[
-compactv3.lua
+compactv4.lua
 
 Goal:
 translate into tja and back
