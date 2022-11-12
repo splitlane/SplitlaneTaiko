@@ -3195,7 +3195,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     local auto = optionsmap.auto[Settings[2]] or false --Autoplay
-    local autoemu = false --Emulate key on auto
+    --local autoemu = false --Emulate key on auto
 
     local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
     local songspeedmul = optionsmap.songspeedmul[Settings[4]] or 1 --Actual speed multiplier
@@ -5716,6 +5716,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 --if n and n < (timing.good) then
                 --if n and n < 10 then
                 if n and ms > note.ms and (not note.hit) then
+                    --[[
                     if autoemu then
                         v = testv
                     else
@@ -5728,6 +5729,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             status = status
                         }
                     end
+                    --]]
+                    v = testv
                 end
             end
 
@@ -5842,7 +5845,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             --statistics
-            -- [[
+
+
+
+
+
+
+            --DEBUG
             Statistic('S', s)
             Statistic('Ms', ms)
             Statistic('Loaded', #loaded)
@@ -5873,6 +5882,24 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Statistic('Stop End', stopend or '')
             Statistic('Total Delay', totaldelay)
 
+
+
+            --Score
+            Statistic('Score', score)
+            Statistic('Gogo', gogo)
+
+
+
+
+
+            --Drumroll
+
+
+
+
+
+            --GAME
+
             --[[
             --Song info
 
@@ -5889,7 +5916,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             RenderLog()
             
             
-            --]]
 
 
         end
