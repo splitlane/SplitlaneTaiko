@@ -1,11 +1,21 @@
 --[[
-Taikov24.lua
+Taikov25.lua
 
 
 Changes: Taiko.PlaySong improved!
 
 Made notes disappear after hitting!
+Cleaned up requires, and bundle them to start of code!
 
+
+TODO: Add Gimmicks
+    Complex Scroll
+    Negative Measures
+
+TODO: Remove OptimizedPixel, just generate it every time
+TODO: Refactor Code
+    Case Consistency
+    Optimize Parser
 
 TODO: Check for match[2] so no error
 TODO: Note lyrics
@@ -107,12 +117,15 @@ lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
 
 
 --Optimized Pixels
-local OptimizedPixel
+local OptimizedPixel = nil --Will be generated later
 
 
 
 
 
+--Requires
+local curses = require('taikocurses')
+local Compact = require('./CompactTJA/compactv4')
 
 
 
@@ -785,6 +798,77 @@ function Taiko.ParseTJA(source)
 
 
 
+    --Parse Functions
+    local DoError = error
+    local function ParseNumber(s)
+        local sign = nil
+        local decimal = false
+        local current = ''
+        for i = 1, #s do
+            local c = string.sub(s, i, i)
+            if c == '+' or c == '-' then
+                if sign then
+                    DoError('There are multiple signs')
+                else
+                    sign = c
+                end
+            elseif c == '.' then
+                if decimal then
+                    DoError('There are multiple decimal points')
+                else
+                    current = current .. c
+                    decimal = true
+                end
+            elseif tonumber(c) then
+                current = current .. c
+            end
+        end
+        if current == '' then
+            DoError('No number was found')
+        end
+        return tonumber((sign or '+') .. current)
+    end
+    local function ParseAnyNumber(s)
+        local a = tonumber(s)
+        if a then
+            return a
+        end
+        local clean = string.gsub(s, '[^%d%.%-%+]', '')
+        if clean == '' then
+            return 0
+        end
+        return tonumber(clean) or ParseNumber(s) or ParseNumber(clean)
+    end
+    local function CheckComplexNumber(s)
+        return string.find(s, 'i')
+    end
+    local function ParseComplexNumber(s)
+        local t = {
+            0, --real
+            0 --imaginary
+        }
+        local imaginary = false
+        local current = ''
+        for i = 1, #s do
+            local c = string.sub(s, i, i)
+            if c == '+' or c == '-' then
+                --t[1] = t[1] + tonumber(current)
+                t[1] = t[1] + ParseAnyNumber(current)
+                current = c
+            elseif c == 'i' then
+                --t[2] = t[2] + tonumber(current)
+                t[2] = t[2] + ParseAnyNumber(current)
+                current = ''
+            else
+                current = current .. c
+            end
+        end
+        if current ~= '' then
+            t[1] = t[1] + ParseAnyNumber(current)
+        end
+        return t
+    end
+    --print(unpack(ParseComplexNumber(source)))error()
 
 
 
@@ -2088,7 +2172,7 @@ end
 
 
 
-
+--Taiko.ParseTJA(io.open('./tja/imaginarytest.tja','r'):read('*all'))error()
 
 
 
@@ -3252,7 +3336,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    local curses = require('taikocurses')
+    --local curses = require('taikocurses')
 
 
 
@@ -4933,7 +5017,31 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
     --]]
 
+
+
+    --Branching
     local branch = 'M'
+
+
+
+
+    --score, combo, init, diff, status, gogo
+
+    --Score
+    local score = 0
+    local scoreinit, scoredif = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF
+    
+    --Combo
+    local combo = 0
+
+    --Gogo
+    local gogo = false
+
+
+
+
+
+
     
     --For rendering status
     local laststatus = {
@@ -4942,12 +5050,26 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     }
 
 
-    --Stop (delay)
+
+
+
+
+
+
+
+
+    --Gimmicks
+
+
+    --Stop (delay) (DELAY)
     local stopfreezems = nil
     local stopstart = nil
     local stopend = nil
     --local adddelay = false
     local totaldelay = 0
+
+
+
 
 
     --Statistics
@@ -4968,17 +5090,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local speedoptstartms = nil
     local speedoptstatus = nil
 
-    --Frame Rate
-    if framerate then
-        local frames = 1 / framerate
-        local nextframes = nil
-    end
+
 
     --Main loop
     local startt = os.clock()
 
 
+    --Frame Rate
+    local frames, nextframes
     if framerate then
+        frames = 1 / framerate
         nextframes = startt + frames
     end
 
@@ -5278,6 +5399,23 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                     --print(ms, loaded.s, loaded.e, loaded.n)
                     note.p = CalculatePosition(note, stopfreezems or (ms + totaldelay))
+
+
+
+
+                    --after target pass
+                    if ms > note.ms then
+                        --gogo
+                        gogo = note.gogo
+                    end
+
+
+
+
+
+
+
+
 
 
                     -- [[
@@ -5708,11 +5846,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Statistic('S', s)
             Statistic('Ms', ms)
             Statistic('Loaded', #loaded)
-            --Statistic('FPS (MsDif)', 1000 / (ms - lastms))
             Statistic('Frames Rendered', framen)
-            Statistic('Last Frame Render (s)', framerenders)
+            --Statistic('Last Frame Render (s)', framerenders)
             Statistic('Last Frame Render (ms)', framerenders * 1000)
-            Statistic('Frame Render Total (s)', framerenderstotal)
+            --Statistic('Frame Render Total (s)', framerenderstotal)
             Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
             Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
             Statistic('FPS (Frame)', framen / s)
@@ -6026,12 +6163,12 @@ function Taiko.SongSelect(header, data)
 
 
 
-    local Compact = require('./CompactTJA/compactv4')
+    --local Compact = require('./CompactTJA/compactv4')
 
 
 
 
-    local curses = require('taikocurses')
+    --local curses = require('taikocurses')
 
 
 
@@ -7113,7 +7250,7 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 
 
-local Compact = require('./CompactTJA/compactv4')
+--local Compact = require('./CompactTJA/compactv4')
 
 
 
