@@ -3365,6 +3365,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local tracklength = 40  --In noteradius from left (taiko-web)
     local target = 3 --In noteradius from left, representing center (taiko-web)
     local factor = 1 --Zoom factor / Size Multiplier
+
+
+    --colors: black, red, green, yellow, blue, magenta, cyan, white
     local renderconfig = {
         [1] = {color = 'red'},
         [2] = {color = 'blue'},
@@ -3372,6 +3375,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         [4] = {color = 'blue'},
         [5] = {color = 'yellow'},
         [6] = {color = 'yellow'},
+        [7] = {color = 'cyan'},
     }
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     --local statusflicker = 50 --Status flicker (Delay from startms render) (good/ok/bad) (ms) --Depracated
@@ -4491,6 +4495,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 --]]
             end
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
+        elseif n == 7 then
+
+            --DEBUG
+            note.radius = 0.8
+            RenderCircle(out, note)
         elseif n == 8 then
             --RenderCircle(out, note.startnote, note.p)
             --[=[
@@ -5882,11 +5891,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                 --Check again (one at a time)
-                if balloonstart and (ms > balloonstart and ms < balloonend) then
+                if (v == 1 or v == 2) and balloonstart and (ms > balloonstart and ms < balloonend) then
                     --balloon = hit don or ka
                     score = balloonscoref(score, balloon.type, notegogo)
                 end
-                if drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                if (v == 1) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                     --drumroll = hit don or ka
                     score = drumrollscoref(score, drumroll.type, notegogo)
                 end
