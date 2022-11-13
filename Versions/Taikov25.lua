@@ -431,32 +431,82 @@ Taiko.Data = {
     },
     GogoMultiplier = 1.2,
     ScoreMode = {
-        --combo: current combo, added note
-        --status: 0 = bad, 1 = ok, 2 = good, 3 = biggood
-        [0] = function(score, combo, init, diff, status, gogo)
-            --[[
-            local a = nil
-            if combo < 200 then
-                a = (init or 1000)
-            else
-                a = (init or 1000) + (diff or 1000)
+        Note = {
+            --combo: current combo, added note
+            --status: 0 = bad, 1 = ok, 2 = good, 3 = biggood
+            [0] = function(score, combo, init, diff, status, gogo)
+                --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
+                --[[
+                local a = nil
+                if combo < 200 then
+                    a = (init or 1000)
+                else
+                    a = (init or 1000) + (diff or 1000)
+                end
+                score = score + (a * Taiko.Data.RatingMultiplier[status])
+                --]]
+
+
+                return score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [1] = function(score, combo, init, diff, status, gogo)
+                --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
+                --INIT + max(0, DIFF * floor((min(COMBO, 100) - 1) / 10))
+                return score + ((init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [2] = function(score, combo, init, diff, status, gogo)
+                --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
+                --INIT + DIFF * {100<=COMBO: 8, 50<=COMBO: 4, 30<=COMBO: 2, 10<=COMBO: 1, 0}
+                return math.floor(score + ((init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1)) / 10) * 10
             end
-            score = score + (a * Taiko.Data.RatingMultiplier[status])
-            --]]
-
-
-            return score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
-        end,
-        [1] = function(score, combo, init, diff, status, gogo)
-            --INIT + max(0, DIFF * floor((min(COMBO, 100) - 1) / 10))
-            return score + ((init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
-        end,
-        [2] = function(score, combo, init, diff, status, gogo)
-            --INIT + DIFF * {100<=COMBO: 8, 50<=COMBO: 4, 30<=COMBO: 2, 10<=COMBO: 1, 0}
-            return score + ((init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
-        end
+        },
+        Drumroll = {
+            [0] = function(score, notetype, gogo)
+                --https://www.youtube.com/watch?v=tsrP10HpNk0&list=PLDAsXb4iso2c_J51wrq4IrP_SkaiYXBdF
+                --checked a video in slow motion
+                --300 normal, 600 bi
+                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [1] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --300 normal, 600 big
+                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [2] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --100 normal, 200 big
+                return score + ((notetype == 5 and 100 or notetype == 6 and 200) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end
+        },
+        Balloon = {
+            [0] = function(score, notetype, gogo)
+                --https://www.youtube.com/watch?v=tsrP10HpNk0&list=PLDAsXb4iso2c_J51wrq4IrP_SkaiYXBdF
+                --checked a video in slow motion
+                --300 normal, 600 bi
+                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [1] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --300 normal, 600 big
+                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [2] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --100 normal, 200 big
+                return score + ((notetype == 5 and 100 or notetype == 6 and 200) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end
+        }
     },
-    Autoscore = {
+    ScoreModeDrumroll = {
+        [0] = function(score, notetype)
+            if notetype == 5 then
+
+            elseif notetype == 6 then
+
+            end
+        end,
+    }
+    Autoscore = { --TODO
         [0] = function(Parsed)
 
         end,
@@ -593,9 +643,9 @@ Taiko.Data = {
 
 
 --Wrap scoring
--- [[
-for k, v in pairs(Taiko.Data.ScoreMode) do
-    Taiko.Data.ScoreMode[k] = function(...)
+--[[
+for k, v in pairs(Taiko.Data.ScoreMode.Note) do
+    Taiko.Data.ScoreMode.Note[k] = function(...)
         return math.floor(v(...) / 10) * 10
     end
 end
@@ -2702,7 +2752,7 @@ function Taiko.Score(Parsed, score, combo, status, gogo)
         combo = combo + 1
     end
     local m = Parsed.Metadata
-    return Taiko.Data.ScoreMode[m.SCOREMODE](score, combo, m.SCOREINIT, m.SCOREDIFF, status, gogo), combo
+    return Taiko.Data.ScoreMode.Note[m.SCOREMODE](score, combo, m.SCOREINIT, m.SCOREDIFF, status, gogo), combo
 end
 
 
@@ -5030,7 +5080,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --Score
     --don't use Taiko.Score because it is inefficient
     local score = 0
-    local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE]
+    local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE]
     
     --Combo
     local combo = 0
@@ -5038,7 +5088,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --Gogo
     local gogo = false
 
-
+    --Drumroll
+    local drumroll = nil
+    local drumrollstart = nil
+    local drumrollend = nil
 
 
 
@@ -5116,9 +5169,18 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local s = raws - startt
             local ms = s * 1000
 
+
+            --Event checking
             if stopend and ms > stopend then
                 stopfreezems, stopstart, stopend = nil, nil, nil
             end
+            if drumroll and ms > drumrollend then
+                drumroll, drumrollstart, drumrollend = nil, nil, nil
+            end
+
+
+
+
 
             --See if next note is ready to be loaded
             if nextnote then
@@ -5413,7 +5475,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
+                    --Drumroll
+                    if note.type == 5 or note.type == 6 then
+                        drumroll = note
+                        drumrollstart = note.ms
+                        drumrollend = note.ms + note.length
+                    end
 
 
 
@@ -5421,7 +5488,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                     -- [[
                     --if stopsong and note.stopstart and note.p < target then
-                    if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
+                    --if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
+                    if stopsong and note.stopstart and ms > note.stopstart then
                         stopfreezems = totaldelay + note.stopstart
                         stopms = note.stopms
                         totaldelay = totaldelay - note.stopms
@@ -5739,39 +5807,46 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-            if v and nearest[v] and (not nearestnote[v].hit) then
-                local n = nearest[v]
-                local status
-                local a = nearestnote[v].type
-                --No leniency for good
-                local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
-                if n < (timing.good) then
-                    --good
+            if v then
+                if nearest[v] and (not nearestnote[v].hit) then
+                    local n = nearest[v]
+                    local status
                     local a = nearestnote[v].type
-                    status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
-                    combo = combo + 1
-                elseif n < (timing.ok * leniency) then
-                    --ok
-                    status = 1
-                    combo = combo + 1
-                elseif n < (timing.bad * leniency) then
-                    --bad
-                    status = 0
-                    combo = 0
-                else
-                    --complete miss
-                    status = nil
-                end
-                if status then
-                    --Calculate Score
-                    score = scoref(score, combo, scoreinit, scorediff, status)
+                    --No leniency for good
+                    local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
+                    if n < (timing.good) then
+                        --good
+                        local a = nearestnote[v].type
+                        status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
+                        combo = combo + 1
+                    elseif n < (timing.ok * leniency) then
+                        --ok
+                        status = 1
+                        combo = combo + 1
+                    elseif n < (timing.bad * leniency) then
+                        --bad
+                        status = 0
+                        combo = 0
+                    else
+                        --complete miss
+                        status = nil
+                    end
+                    if status then
+                        --Calculate Score
+                        score = scoref(score, combo, scoreinit, scorediff, status)
 
-                    --Effects
-                    nearestnote[v].hit = true
-                    laststatus = {
-                        startms = ms,
-                        status = status
-                    }
+                        --Effects
+                        nearestnote[v].hit = true
+                        laststatus = {
+                            startms = ms,
+                            status = status
+                        }
+                    end
+
+                elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                    --drumroll = hit don or ka
+                    --DRUMROLLSCORE
+                    score = score + 100
                 end
             end
 
