@@ -5098,10 +5098,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --Gogo
     local gogo = false
 
+
+
+    --Balloon
+    local balloon = nil
+    local balloonstart = nil
+    local balloonend = nil
+    local balloonscoref = Taiko.Data.ScoreMode.Balloon[Parsed.Metadata.SCOREMODE]
+    local balloonpopscoref = Taiko.Data.ScoreMode.BalloonPop[Parsed.Metadata.SCOREMODE]
+
     --Drumroll
     local drumroll = nil
     local drumrollstart = nil
     local drumrollend = nil
+    local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
 
 
 
@@ -5183,6 +5193,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Event checking
             if stopend and ms > stopend then
                 stopfreezems, stopstart, stopend = nil, nil, nil
+            end
+            if balloon and ms > balloonend then
+                balloon, balloonstart, balloonend = nil, nil, nil
             end
             if drumroll and ms > drumrollend then
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
@@ -5480,16 +5493,25 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     if ms > note.ms then
                         --gogo
                         gogo = note.gogo
-                    end
-
-
-
-
-                    --Drumroll
-                    if note.type == 5 or note.type == 6 then
-                        drumroll = note
-                        drumrollstart = note.ms
-                        drumrollend = note.ms + note.length
+                        if note.type == 7 then
+                            if balloon then
+                                if balloon.n == note.n then
+                                    --Same balloon
+                                    note.p = target
+                                else
+                                    --Previous balloon hasn't ended yet
+                                    --Replace
+                                end
+                            end
+                            balloon = note
+                            balloon = note.ms
+                            balloon = note.ms + note.length
+                        elseif note.type == 5 or note.type == 6 then
+                            --Drumroll
+                            drumroll = note
+                            drumrollstart = note.ms
+                            drumrollend = note.ms + note.length
+                        end
                     end
 
 
@@ -5818,16 +5840,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             if v then
-                if nearest[v] and (not nearestnote[v].hit) then
+                if nearest[v] and (not nearestnote[v].hit) then --sanity check for miss (--DIRTY --TODO)
                     local n = nearest[v]
                     local status
-                    local a = nearestnote[v].type
+                    local note = nearestnote[v]
+                    local notetype = note.type
+                    local notegogo = note.gogo
                     --No leniency for good
                     local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
                     if n < (timing.good) then
                         --good
-                        local a = nearestnote[v].type
-                        status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
+                        --local a = nearestnote[v].type
+                        --TODO: Easy big notes config
+                        status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
                         combo = combo + 1
                     elseif n < (timing.ok * leniency) then
                         --ok
@@ -5843,7 +5868,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     if status then
                         --Calculate Score
-                        score = scoref(score, combo, scoreinit, scorediff, status)
+                        score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
 
                         --Effects
                         nearestnote[v].hit = true
@@ -5852,11 +5877,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             status = status
                         }
                     end
+                end
 
+
+                --Check again
+                if balloonstart and (ms > balloonstart and ms < balloonend) then
+                    --balloon = hit don or ka
+                    score = balloonscoref(score, notetype, notegogo)
                 elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                     --drumroll = hit don or ka
-                    --DRUMROLLSCORE
-                    score = score + 100
+                    score = drumrollscoref(score, notetype, notegogo)
                 end
             end
 
@@ -5993,7 +6023,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             --Drumroll
-
+            Statistic('Drumroll Start', drumrollstart)
+            Statistic('Drumroll End', drumrollend)
 
 
 
