@@ -5587,95 +5587,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --formula before delay
                     --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
                     --100 is extra buffer so it doesnt unload asap
-                    if note.hit or math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer) then
-                        --print(note.endnote and (loaded[note.endnote.n] ~= nil))
-                        --if note.endnote and (loaded[note.endnote.n] ~= nil) then
-                        if note.endnote and note.endnote.done ~= true and (not note.hit) then
-                            --Still has endnote loaded
-                            --Don't unload
-                            --However, we must render since else statement and we are already in here
+                    if (note.hit or math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer)) --is note ready to be unloaded?
+                    and (not (note.endnote and note.endnote.done ~= true and (not note.hit))) --check if endnote unloaded
+                    then
 
-                        if dorender then
-                            if note.data == 'event' then
-                                if note.event == 'barline' then
-                                    RenderBarline(out, note)
-                                end
-                            elseif note.data == 'note' then
-                                RenderNote(out, note)
-                            else
-                                error('Invalid note.data')
-                            end
-                        end
-
-
-
-                        else
-                            --Log(tostring(note.p))
-                            --unload
-                            --for k,v in pairs(loaded) do print(k, type(v) == 'table' and v.n)end
-                            --loaded[note.n] = nil
-                            --print('unload i'..i ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
-                            note.done = true
-
-                            --[[
-                            loaded[i] = nil
-                            --loaded.n = loaded.n - 1
-                            if nextnote and loaded.n == 0 then
-                                loaded.s = nextnote.n
-                            elseif note.n == loaded.s then
-                                if note.n == loaded.e then
-                                    loaded.n = 0
-                                else
-                                    local i2 = loaded.s
-                                    repeat
-                                        i2 = i2 + 1
-                                        loaded.n = loaded.n - 1
-                                    until loaded[i2]
-                                    loaded.s = i2
-                                end
-                            end
-                            --]]
-                            table.remove(loaded, i2)
-                            offseti = offseti - 1
-
-                            --[[
-                            loaded[note.n] = nil
-                            loaded.s = note.n + 1
-                            loaded.n = loaded.n - 1
-                            --]]
-                        end
-                    --end
-
-
-
-                    --default (fast)
-                    --if note.p < (tracklength + buffer) then
-
-
-                    --distance (slow)
-                    --if math.abs(note.p - target) > (tracklength + bufferlength + 100) then
-
-
+                        note.done = true
+                        table.remove(loaded, i2)
+                        offseti = offseti - 1
 
                     --just connect with else
                     else
                         --Draw note on canvas
 
-                        --Only for noteradius = 0.5
-                        --Pixel.SetPixel(out, math.floor(note.p * noteradius * factor), 0, '1')
 
-                        --Pixel.Circle(out, math.floor(note.p * noteradius), 0, noteradius, renderconfig[note.type])
-
-
-                        --debug
-
-                        --BEST DEBUG
-                        --[[
-                        local a = loaded[note.n - 1]
-                        if a then
-                            print(note.p - a.p, (note.p - a.p) / noteradius)
-                        end
-                        --]]
 
                         if dorender then
                             if note.data == 'event' then
@@ -5842,10 +5766,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     --]]
                     v = testv
-                elseif balloonstart and (ms > balloonstart and ms < balloonend) then
-                    v = 1
-                elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
-                    v = 1
+                elseif not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                    --make sure we can't hit note as bad
+                    if balloonstart and (ms > balloonstart and ms < balloonend) then
+                        v = 1
+                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                        v = 1
+                    end
                 end
             end
 
@@ -5861,7 +5788,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     local n = nearest[v]
                     local status
                     --No leniency for good
-                    local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
+                    local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
                     if n < (timing.good) then
                         --good
                         --local a = nearestnote[v].type
