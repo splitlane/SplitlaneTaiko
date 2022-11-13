@@ -5028,8 +5028,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --score, combo, init, diff, status, gogo
 
     --Score
+    --don't use Taiko.Score because it is inefficient
     local score = 0
-    local scoreinit, scoredif = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF
+    local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE]
     
     --Combo
     local combo = 0
@@ -5715,7 +5716,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 local note = nearestnote[testv]
                 --if n and n < (timing.good) then
                 --if n and n < 10 then
-                if n and ms > note.ms and (not note.hit) then
+                --if n and ms > note.ms and (not note.hit) then
+                if n and ms >= note.ms and (not note.hit) then
                     --[[
                     if autoemu then
                         v = testv
@@ -5747,17 +5749,24 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --good
                     local a = nearestnote[v].type
                     status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
+                    combo = combo + 1
                 elseif n < (timing.ok * leniency) then
                     --ok
                     status = 1
+                    combo = combo + 1
                 elseif n < (timing.bad * leniency) then
                     --bad
                     status = 0
+                    combo = 0
                 else
                     --complete miss
                     status = nil
                 end
                 if status then
+                    --Calculate Score
+                    score = scoref(score, combo, scoreinit, scorediff, status)
+
+                    --Effects
                     nearestnote[v].hit = true
                     laststatus = {
                         startms = ms,
@@ -5869,6 +5878,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Statistic('nextn', nextnote and nextnote.n)
             --]=]
 
+
+            --[[ --temp 11/12/2022
+
             Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
             Statistic('Finished (%)', ms / (endms) * 100)
 
@@ -5882,11 +5894,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Statistic('Stop End', stopend or '')
             Statistic('Total Delay', totaldelay)
 
+            --]]
 
 
             --Score
             Statistic('Score', score)
+            Statistic('Combo', combo)
             Statistic('Gogo', gogo)
+            
 
 
 
