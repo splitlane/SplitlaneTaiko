@@ -1,5 +1,5 @@
 --[[
-Taikov25.lua
+Taikov26.lua
 
 
 Changes: Taiko.PlaySong improved!

@@ -515,45 +515,11 @@ end
 
 
 --extra 11/13/2022
-
-function curses.tounicode(code)
-    --only call for code > 255
-
-    --lazy, --dirty
-
-    --just convert to binary and take 8 bit indices
-
-    local function ToBinary(a, b)
-        local t = {}
-        while a > 0 do
-            local r = math.fmod(a, 2)
-            t[#t + 1] = string.sub(r, 1, 1)
-            a=(a - r) / 2
-        end
-        local s = string.reverse(table.concat(t))
-        return string.rep('0', b - #s) .. s
-        --return s
-    end
-    local s = ToBinary(code, 0)
-    print(s)
-    s = string.rep('0', 8 - (#s % 8)) .. s
-    
-    local out = {}
-    for i = 1, #s, 8 do
-        local a = string.sub(s, i, i + 7)
-        print(a, tonumber(a, 2))
-        out[#out + 1] = string.char(tonumber(a, 2))
-    end
-
-    return table.concat(out)
-end
-
-print(curses.tounicode(12363))
-
-local a = 'か'
-for i = 1, #a do
-    print(string.sub(a, i, i), string.sub(a, i, i):byte())
-end
+--[[
+    unicode support
+    just init curses
+    https://invisible-island.net/ncurses/man/ncurses.3x.html#h3-Initialization
+]]
 
 --extra 10/3/2022
 
@@ -567,7 +533,7 @@ function curses.getkeyname(code)
     --with keyname
     -- [[
     local n = tonumber(code)
-    return curses.keyname[code] or (n and ((n >= 0 and n <= 255) and string.char(n) or curses.tounicode(code))) or code
+    return curses.keyname[code] or (n and ((n >= 0 and n <= 255) and string.char(n) or code)) or code
     --With keyname + valid char only
     --breaks
     --]]
