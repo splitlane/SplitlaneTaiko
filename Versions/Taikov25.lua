@@ -4654,7 +4654,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
     --local framems = 1000 / (framerate or 60) --don't use framerate
     local framems = 1000 / 60
-    local timing = Parsed.Metadata.TIMING(framems)
+    local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
 
 
 
@@ -5842,6 +5842,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     --]]
                     v = testv
+                elseif balloonstart and (ms > balloonstart and ms < balloonend) then
+                    v = 1
+                elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                    v = 1
                 end
             end
 
