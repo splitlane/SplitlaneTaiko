@@ -5504,8 +5504,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                 end
                             end
                             balloon = note
-                            balloon = note.ms
-                            balloon = note.ms + note.length
+                            balloonstart = note.ms
+                            balloonend = note.ms + note.length
                         elseif note.type == 5 or note.type == 6 then
                             --Drumroll
                             drumroll = note
@@ -5840,12 +5840,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             if v then
-                if nearest[v] and (not nearestnote[v].hit) then --sanity check for miss (--DIRTY --TODO)
-                    local n = nearest[v]
-                    local status
+                if nearest[v] and (not nearestnote[v].hit) then
                     local note = nearestnote[v]
                     local notetype = note.type
                     local notegogo = note.gogo
+
+                    local n = nearest[v]
+                    local status
                     --No leniency for good
                     local leniency = ((a == 3 or a == 4) and Taiko.Data.BigLeniency) or 1
                     if n < (timing.good) then
@@ -5880,13 +5881,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 end
 
 
-                --Check again
+                --Check again (one at a time)
                 if balloonstart and (ms > balloonstart and ms < balloonend) then
                     --balloon = hit don or ka
-                    score = balloonscoref(score, notetype, notegogo)
-                elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                    score = balloonscoref(score, balloon.type, notegogo)
+                end
+                if drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                     --drumroll = hit don or ka
-                    score = drumrollscoref(score, notetype, notegogo)
+                    score = drumrollscoref(score, drumroll.type, notegogo)
                 end
             end
 
