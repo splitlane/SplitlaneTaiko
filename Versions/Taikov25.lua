@@ -482,33 +482,43 @@ Taiko.Data = {
             [0] = function(score, notetype, gogo)
                 --https://www.youtube.com/watch?v=tsrP10HpNk0&list=PLDAsXb4iso2c_J51wrq4IrP_SkaiYXBdF
                 --checked a video in slow motion
-                --300 normal, 600 bi
-                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 300) * (gogo and Taiko.Data.GogoMultiplier or 1))
             end,
             [1] = function(score, notetype, gogo)
-                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
-                --300 normal, 600 big
-                return score + ((notetype == 5 and 300 or notetype == 6 and 600) * (gogo and Taiko.Data.GogoMultiplier or 1))
+                --https://youtu.be/aRyHC00qMY4?t=61
+                --checked a video in slow motion
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 300) * (gogo and Taiko.Data.GogoMultiplier or 1))
             end,
             [2] = function(score, notetype, gogo)
                 --https://taikotime.blogspot.com/2010/08/advanced-rules.html
-                --100 normal, 200 big
-                return score + ((notetype == 5 and 100 or notetype == 6 and 200) * (gogo and Taiko.Data.GogoMultiplier or 1))
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 300) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end
+        },
+        BalloonPop = {
+            [0] = function(score, notetype, gogo)
+                --https://www.youtube.com/watch?v=tsrP10HpNk0&list=PLDAsXb4iso2c_J51wrq4IrP_SkaiYXBdF
+                --checked a video in slow motion
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 5000) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [1] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 5000) * (gogo and Taiko.Data.GogoMultiplier or 1))
+            end,
+            [2] = function(score, notetype, gogo)
+                --https://taikotime.blogspot.com/2010/08/advanced-rules.html
+                --for last balloon, call balloon and balloonpop
+                return score + ((notetype == 7 and 5000) * (gogo and Taiko.Data.GogoMultiplier or 1))
             end
         }
     },
-    ScoreModeDrumroll = {
-        [0] = function(score, notetype)
-            if notetype == 5 then
-
-            elseif notetype == 6 then
-
-            end
-        end,
-    }
     Autoscore = { --TODO
         [0] = function(Parsed)
-
+            --https://youtu.be/4diqeVUp_NI?list=PLDAsXb4iso2ff7y8rI1zzOFCfKbnVYmkH&t=148
         end,
         [1] = function(Parsed)
 
@@ -1396,7 +1406,7 @@ function Taiko.ParseTJA(source)
                                 - Default is "1".
                             ]]
                             Parsed.Metadata.SCOREMODE = CheckN(match[1], Parsed.Metadata.SCOREMODE, 'Invalid scoremode')
-                            Check(match[1], Taiko.Data.ScoreMode[Parsed.Metadata.SCOREMODE], 'Invalid scoremode', Parsed.Metadata.SCOREMODE)
+                            Check(match[1], Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE], 'Invalid scoremode', Parsed.Metadata.SCOREMODE)
                             --[[
                             MAKER: (i)
                                 - Chart creator's name.
