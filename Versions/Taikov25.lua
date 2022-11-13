@@ -5891,11 +5891,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                 --Check again (one at a time)
-                if (v == 1 or v == 2) and balloonstart and (ms > balloonstart and ms < balloonend) then
+                if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) then
                     --balloon = hit don or ka
                     score = balloonscoref(score, balloon.type, notegogo)
                 end
-                if (v == 1) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                     --drumroll = hit don or ka
                     score = drumrollscoref(score, drumroll.type, notegogo)
                 end
