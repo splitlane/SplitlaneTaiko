@@ -6,6 +6,8 @@ Changes: Taiko.PlaySong improved!
 
 Made notes disappear after hitting!
 Cleaned up requires, and bundle them to start of code!
+Added drumroll and balloon (untextured) support!
+Added Scoring!
 
 
 TODO: Add Gimmicks
@@ -30,25 +32,15 @@ TODO: Fix serializetja
 TODO: FIX rounding
     PlaySong
 TODO: Song select screen
-    Select Song
+    Results
     Scroll Animation
-    URA SUPPORT --Done
-    UNHARDCODE OPTIONS --Done
-    CACHED OPTION LIMITS --Done
 
 TODO: Scoreinit
 TODO: Lyrics
-TODO: SCORE SYSTEM
-    balloon
-    drumroll?
 
 
 TODO: PlaySong
-    Add drumrolls / balloons
-    Combo
-    Score
     Display
-    BigLeniency --Half Done
     2P SUPPORT!
 
 
@@ -6690,6 +6682,7 @@ function Taiko.SongSelect(header, data)
         local oldpos = pos
         while true do
             local input, key = Input()
+            print(input, key)error()
             if Controls.StandardInput.Backspace[key] then
                 str = string.sub(str, 1, pos - 1) .. string.sub(str, pos + 1, -1)
                 pos = pos - 1
