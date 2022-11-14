@@ -940,6 +940,7 @@ function Taiko.ParseTJA(source)
         local Parser = {
             settings = {
                 noteparse = {
+                    --[[
                     notealias = {
                         A = 3,
                         B = 4
@@ -948,6 +949,21 @@ function Taiko.ParseTJA(source)
                         [','] = true,
                         [' '] = true,
                         ['\t'] = true
+                    }
+                    --]]
+                    notes = {
+                        [0] = true,
+                        [1] = true,
+                        [2] = true,
+                        [3] = true,
+                        [4] = true,
+                        [5] = true,
+                        [6] = true,
+                        [7] = true,
+                        [8] = true,
+                        [9] = true,
+                        ['A'] = true,
+                        ['B'] = true,
                     }
                 },
                 command = {
@@ -1047,6 +1063,16 @@ function Taiko.ParseTJA(source)
                 ]]
 
 
+                
+                --[[
+                if Parser.settings.noteparse.notes[n] then
+                    
+                else
+                    return nil
+                end
+                --]]
+
+
                 local note = {
                     ms = nil,
                     data = nil, --'note'
@@ -1073,7 +1099,7 @@ function Taiko.ParseTJA(source)
 
                     onnotepush = nil
                 }
-                note.type = n
+                --note.type = n
 
                 --Big note
                 if n == 3 or n == 4 or n == 6 then
@@ -2055,7 +2081,9 @@ function Taiko.ParseTJA(source)
                         ]]
 
 
-                        --https://github.com/0auBSQ/OpenTaiko/issues/290
+                        --[[
+                            https://github.com/0auBSQ/OpenTaiko/issues/290
+                        ]]
                         if match[1] == 'GAMEMODE' then
                             --[[
                                 - Change the gamemode in realtime ([game mode] : "Taiko" or "Konga")
@@ -2073,7 +2101,18 @@ function Taiko.ParseTJA(source)
                             --[[
                                 - Display a barline at the current position
                             ]]
+                            table.insert(Parser.measurepushto, Parser.createbarline())
+
+
+
+
+
+
+
+
+                        --[[
                             
+                        ]]
                         elseif match[1] == '' then
                         elseif match[1] == '' then
                         elseif match[1] == '' then
@@ -2183,8 +2222,9 @@ function Taiko.ParseTJA(source)
                         table.insert(Parser.currentmeasure, note)
                     end
                     --]]
-                    local note = Parser.createnote(n)
-                    if note then
+                    local n = tonumber(s) or s
+                    if Parser.settings.noteparse.notes[n] then
+                        local note = Parser.createnote(n)
                         note.data = 'note'
                         --note.type = n
                         table.insert(Parser.currentmeasure, note)
