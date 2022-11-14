@@ -4,10 +4,8 @@ Taikov26.lua
 
 Changes: Taiko.PlaySong improved!
 
-Made notes disappear after hitting!
-Cleaned up requires, and bundle them to start of code!
-Added drumroll and balloon (untextured) support!
-Added Scoring!
+Added gimmicks in ParseTJA
+    #BARLINE
 
 
 TODO: Add Gimmicks
@@ -681,6 +679,13 @@ function Taiko.ParseTJA(source)
 
     --Parsing settings
     local zeroopt = flashpixel --Don't parse zeros
+    local gimmick = true --Are gimmicks enabled?
+
+
+
+
+
+
 
 
     local Out = {}
@@ -1148,6 +1153,13 @@ function Taiko.ParseTJA(source)
 
 
 
+        function Parser.createbarline()
+            local note = Parser.createnote()
+            note.ms = Parser.ms
+            note.data = 'event'
+            note.event = 'barline'
+            return note
+        end
 
 
 
@@ -2036,6 +2048,62 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - Ignored in taiko-web.
                         ]]
+                    elseif gimmick then
+
+                        --[[
+                            Gimmicks
+                        ]]
+
+
+                        --https://github.com/0auBSQ/OpenTaiko/issues/290
+                        if match[1] == 'GAMEMODE' then
+                            --[[
+                                - Change the gamemode in realtime ([game mode] : "Taiko" or "Konga")
+                            ]]
+
+                        elseif match[1] == 'SPLITLANE' then
+                            --[[
+                                - Split the lane in 2 distinct lanes, dons appearing at the top lane and kas at the bottom, purple notes are squashed horizontally but overlap the 2 lanes
+                            ]]
+                        elseif match[1] == 'MERGELANE' then
+                            --[[
+                                - Merge back to a single lane if the lane is split
+                            ]]
+                        elseif match[1] == 'BARLINE' then
+                            --[[
+                                - Display a barline at the current position
+                            ]]
+                            
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+                        elseif match[1] == '' then
+
+                        end
+
+
+
+
+
+
+
+
                     else
                         
                     end
@@ -2083,13 +2151,9 @@ function Taiko.ParseTJA(source)
                         event = 'barline'
                     })
                     --]]
-                    local note = Parser.createnote()
-                    note.ms = Parser.ms
-                    note.data = 'event'
-                    note.event = 'barline'
                     --table.insert(Parser.currentmeasure, 1, note)
                     --table.insert(Parser.measurepushto, 1, note)
-                    table.insert(Parser.measurepushto, note)
+                    table.insert(Parser.measurepushto, Parser.createbarline())
                     Parser.insertbarline = false
                 end
 
@@ -2110,16 +2174,20 @@ function Taiko.ParseTJA(source)
 
                 for i = 1, #line do
                     local s = string.sub(line, i, i)
-                    if Parser.settings.noteparse.noteexceptions[s] then
-                        --Do nothing
-                    else
-                        local n = CheckN('parser.noteparse', tonumber(s) or Parser.settings.noteparse.notealias[s] or s, 'Invalid note')
-                        if n then
-                            local note = Parser.createnote(n)
-                            note.data = 'note'
-                            --note.type = n
-                            table.insert(Parser.currentmeasure, note)
-                        end
+                    --[[
+                    local n = CheckN('parser.noteparse', tonumber(s) or Parser.settings.noteparse.notealias[s] or s, 'Invalid note')
+                    if n then
+                        local note = Parser.createnote(n)
+                        note.data = 'note'
+                        --note.type = n
+                        table.insert(Parser.currentmeasure, note)
+                    end
+                    --]]
+                    local note = Parser.createnote(n)
+                    if note then
+                        note.data = 'note'
+                        --note.type = n
+                        table.insert(Parser.currentmeasure, note)
                     end
                 end
 
