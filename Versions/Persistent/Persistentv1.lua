@@ -5,6 +5,11 @@ Goal:
 save scores (numbers) and strings elegantly and compactly
 
 maybe lzw?
+
+
+
+Look at:
+https://github.com/Dynodzzo/Lua_INI_Parser/blob/master/LIP.lua
 ]]
 
 

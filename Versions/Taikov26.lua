@@ -12,6 +12,9 @@ TODO: Add Gimmicks
     Complex Scroll
     Negative Measures
 
+TODO: Add Gimmicks to Playsong, update
+    scrolly
+
 TODO: Remove OptimizedPixel, just generate it every time
 TODO: Refactor Code
     Case Consistency
@@ -926,6 +929,12 @@ function Taiko.ParseTJA(source)
         end
         return t
     end
+    local function CheckPolarNumber(s)
+        return string.find(s, ',')
+    end
+    local function ParsePolarNumber(r, rad)
+        return {r * math.cos(rad), r * math.sin(rad)}
+    end
     --print(unpack(ParseComplexNumber(source)))error()
 
 
@@ -983,6 +992,7 @@ function Taiko.ParseTJA(source)
             mpm = 0,
             mspermeasure = 0,
             scroll = 1,
+            scrolly = 0,
             measuredone = true,
             currentmeasure = {},
             measurepushto = Parsed.Data,
@@ -1081,6 +1091,7 @@ function Taiko.ParseTJA(source)
                     gogo = Parser.gogo,
                     --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
                     scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scrolly = (Parser.scrolly * Parsed.Metadata.HEADSCROLL),
                     mspermeasure = Parser.mspermeasure,
                     bpm = Parser.bpm,
                     --measuredensity = nil,
@@ -1160,6 +1171,7 @@ function Taiko.ParseTJA(source)
                     gogo = Parser.gogo,
                     --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
                     scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    scrolly = (Parser.scrolly * Parsed.Metadata.HEADSCROLL),
                     mspermeasure = Parser.mspermeasure,
                     bpm = Parser.bpm,
                     --measuredensity = nil,
@@ -1867,7 +1879,28 @@ function Taiko.ParseTJA(source)
                         if Parser.disablescroll then
 
                         else
-                            Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
+                            if gimmick and CheckComplexNumber(match[2]) then
+                                --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+                                local complex = ParseComplexNumber(match[2])
+                                Parser.scroll = complex[1]
+                                Parser.scrolly = complex[2]
+                            elseif gimmick and CheckPolarNumber(match[2]) then
+                                --Polar Scroll (TaikoManyGimmicks)
+                                local t = CheckCSVN(match[1], match[2], 'Invalid polar scroll')
+                                if #t == 3 then
+                                    local polar = ParsePolarNumber(t[1], math.rad(t[3] / t[2] * 360))
+                                    Parser.scroll = polar[1]
+                                    Parser.scrolly = polar[2]
+                                else
+                                    ParseError(match[1], 'Invalid polar scroll')
+                                end
+                            else
+                                --Normal Scroll
+                                Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
+                                Parser.scrolly = 0
+                            end
+                            --print(Parser.scroll, Parser.scrolly)
+
                             if Parser.scroll == 0 then
                                 ParseError(match[1], 'Scroll cannot be 0')
                             end
@@ -2083,6 +2116,7 @@ function Taiko.ParseTJA(source)
 
                         --[[
                             https://github.com/0auBSQ/OpenTaiko/issues/290
+                            OpenTaiko-
                         ]]
                         if match[1] == 'GAMEMODE' then
                             --[[
@@ -2111,7 +2145,217 @@ function Taiko.ParseTJA(source)
 
 
                         --[[
-                            
+                            TaikoManyGimmicks
+                            readme.txt
+
+                            Translated
+
+==================================================
+
+                 TaikoManyGimmicks
+
+==================================================
+
+●About this simulator
+
+This simulator is made by a kid named barrier.
+
+●Rules
+
+It's a simulator like taiko no 0 people, but it has nothing to do with the original.
+Secondary distribution of this simulator is "self-responsibility". (I don't know what will happen)
+When posting to SNS such as YouTube, you don't have to ask.
+
+- Contents (file order)
+
+◎Songs folder
+Please put the song and score file here.
+
+◎Graphic Set folder
+It is a creative skin that can only be used in this simulation (sorry).
+
+◎config.ini
+Sim configuration file.
+
+◎DxLib Copyright.txt
+This is the copyright notice of the library used.
+
+◎DxLib.dll
+This file is essential for running this simulator on a 32bit PC (probably).
+
+◎DxLib_x64.dll
+It is an essential file to run this simulator on a 64bitPC (probably).
+
+◎ About GRADATION command sentences.txt
+I wrote a separate explanation about the GRADATION statement.
+
+◎keyconfig.ini
+It is a key setting file when hitting.
+
+◎readme.txt
+It's this file, are you looking at it?
+
+◎TaikoManyGimmicks ver0.6α.exe
+This is the startup file of the simulator.
+
+◎TaikoManyGimmicks ver0.6α.exe.config
+I don't understand this
+
+◎taikosimu(NN) ver0.5α.pdb
+Debug files.
+
+●Functions and command sentences in musical scores
+
+◎ How to operate
+
+Operation is possible with the key data written in keyconfig.ini.
+Due to the use of the library used, the method of specifying key data is different from Taiko Sanjiro.
+
+By default S, D, K, L are edges and F, G, H, J are faces.
+
+If you press the slash key, it will enter command input mode and a list of commands will appear.
+Let's check the effect of the command by yourself! (= troublesome)
+
+If you set TJACreateMode to 1 in config.ini, it will become a mode specialized for music editing
+I'll write down how it works then.
+
+Q key -> Reload sheet music
+PgUp -> move forward one bar
+PgDn -> go back one bar
+Home -> Go to top of score
+End -> go to the end of the score
+
+◎ Supported musical score commands (there are also new commands)
+
+#START
+■ Declare the start of the score data. Of course, without this, the score will not flow.
+
+#END
+■Declare the end of the music data, it is essential when dividing the course.
+
+#SCROLL <rate>
+■N times the speed of music flow.
+
+#SCROLL <Realrate>+<Imaginaryrate>i
+■ Multiply the speed of the musical score by a+bi (eg #SCROLL 1+2i).
+
+#SCROLL <radius>,<divvalue>,<angle>
+■It is a scroll effect consisting of polar coordinates r and θ. If you enter the distance for r, the number of circle divisions for d, and the angle for θ, you can flow from the corresponding angle and distance.
+
+#BPMCHANGE <beattempo>
+■ Set the score BPM to n.
+
+#MEASURE <Left>/<Right>
+■ Change the length of a bar to a fractional length.
+
+#GOGOSTART
+■Start Go Go Time.
+
+#GOGOEND
+■ End Go Go Time.
+
+#BARLINEON
+■ Display bar lines.
+
+#BARLINOFF
+■ Erase bar lines.
+
+#DELAY <second>
+■ Shift the musical score for the specified number of seconds.
+
+#BRANCHSTART <type>,<Expart>,<Master>
+■ After specifying the type of score branch (p for precision branch, r for repeated hit branch, s for score branch), specify the numerical value for expert branching, and the numerical value for expert branching (N < E < M).
+
+#N
+■ Write a normal score from where you wrote this.
+
+#E
+■ Write a professional score from where you wrote this.
+
+#M
+■ Write a master score from where you wrote this.
+
+#BRANCHEND
+■It is for normal completion of musical score branching.
+
+#JUDGEDELAY <x> <y> <z> <w>
+When x is 0, return to the normal position, when x is 1 or 3, enter the number of seconds in y or 2, enter the x-axis coordinate, and when x is 2, enter the y-axis coordinate in z or If 3, enter x-axis coordinates, and if x is 3, enter y-axis coordinates.
+
+#DUMMYSTART
+■It becomes dummy notes.
+
+#DUMMYEND
+■It becomes normal notes.
+
+#NOTESPAWN <type> <second>
+■When type is 0, nothing happens from that place.When type is 1, specify the position in seconds to appear.When type is 2, specify the position in seconds to make transparent.
+
+#LYRIC <string>
+■ Display the lyrics written in string.
+
+#SUDDEN <second> <second>
+■ Appears a seconds ago and starts moving b seconds ago.
+
+#JPOSSCROLL <second> <motionpx> <type>
+■ Specify the travel time, travel distance, direction, and specify the travel distance in a separate txt file.
+
+#SIZE <rate>
+■ Multiply the note size by x
+
+#COLOR <red> <green> <blue> <alpha>
+■You can change the color of your notes.
+
+#ANGLE <angle>
+■ Rotate the Notes image n degrees
+
+#GRADATION <type> <second> <type1> <type2>
+■ Because it is difficult to explain, please see the txt file that explains how to write
+
+#BARLINESIZE <width> <height>
+■ You can change the length and width of bar lines
+
+#RESETCOMMAND
+■ Returns the effects of all commands to their initial values
+
+● Release notes
+
+ver 0.1α
+■For the time being, distribution and repeated hits are not supported yet, but we plan to support them someday.
+
+ver 0.1β
+■ I fixed various bugs and added temporary musical score branches. Also, I diverted the song selection screen that was developed before.
+
+ver 0.2α
+■Implemented musical score branching, fixed some skin file loading bugs, added repeated hits, and added a start screen.
+
+ver 0.3α
+■ Fixed various bugs and added the concept of commands.
+
+ver 0.3.1α
+■ NOTESPAWN bug fix... I thought there was a new bug ()
+
+ver 0.4α
+■Fixed various bugs, forcibly fixed the skin loading bug, stabilized the behavior of HBSCROLL, made it compatible with D&D, and also tried implementing the quota gauge and subtitles (loading the skin just for the quota gauge) I can't say that the mechanism has been renewed...).
+
+ver 0.5α
+■Fixed various bugs, tentatively supported genre division (maybe it works unexpectedly), tried to change the processing at SongPlaySpeed ​​by frequency (please make it lighter).
+
+ver 0.6α
+■Various bug fixes, various original behaviors, more commands added, and since I downgraded to .NET Framework 4, it is now compatible with models up to WinXP (although there may be bugs).
+
+◎Special Thanks
+
+Microsoft
+■It is a company that created a code editor called Visual Studio, which is fully equipped with development environments such as C# and C++.
+
+Takumi Yamada
+■The person who created the super easy-to-use library called DxLib used in this software.
+
+Akasoko
+■This is the person who helped me read the musical score, which is the basis of the taiko drum simulator.
+
+Everyone who DL
+■I would appreciate it if you could download it.
                         ]]
                         elseif match[1] == '' then
                         elseif match[1] == '' then
@@ -2333,7 +2577,7 @@ end
 
 
 
---Taiko.ParseTJA(io.open('./tja/imaginarytest.tja','r'):read('*all'))error()
+Taiko.ParseTJA(io.open('./tja/imaginarytest.tja','r'):read('*all'))error()
 
 
 
@@ -6791,7 +7035,7 @@ function Taiko.SongSelect(header, data)
         local oldpos = pos
         while true do
             local input, key = Input()
-            print(input, key)error()
+            --print(input, key)error()
             if Controls.StandardInput.Backspace[key] then
                 str = string.sub(str, 1, pos - 1) .. string.sub(str, pos + 1, -1)
                 pos = pos - 1

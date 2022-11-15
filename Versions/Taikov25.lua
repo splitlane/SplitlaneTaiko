@@ -6683,7 +6683,7 @@ function Taiko.SongSelect(header, data)
         local oldpos = pos
         while true do
             local input, key = Input()
-            print(input, key)error()
+            --print(input, key)error()
             if Controls.StandardInput.Backspace[key] then
                 str = string.sub(str, 1, pos - 1) .. string.sub(str, pos + 1, -1)
                 pos = pos - 1
