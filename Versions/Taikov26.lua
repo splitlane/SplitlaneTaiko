@@ -6,6 +6,8 @@ Changes: Taiko.PlaySong improved!
 
 Added gimmicks in ParseTJA
     #BARLINE
+Reversed scrollx and scrolly, just multiply with speed
+Added #DIRECTION
 
 
 TODO: Add Gimmicks
@@ -979,6 +981,25 @@ function Taiko.ParseTJA(source)
                     matchexceptions = {
                         --scrapped
                     }
+                },
+                --constant
+                directionweight = {
+                    --In polar degrees
+                    --NOT IN OPENTAIKO OR ANY OTHER!
+                    R = 0,      --From right
+                    U = 90,     --From up
+                    L = 180,    --From left
+                    D = 270,    --From down
+                    --TJA
+                    -- 0: From right, 1: From above, 2: From below, 3: From top-right, 4: From bottom-right, 5: From left, 6: From top-left, 7: From bottom-left
+                    ['0'] = 0,
+                    ['1'] = 90,
+                    ['2'] = 270,
+                    ['3'] = 45,
+                    ['4'] = 315,
+                    ['5'] = 180,
+                    ['6'] = 135,
+                    ['7'] = 225
                 }
             },
     
@@ -991,8 +1012,9 @@ function Taiko.ParseTJA(source)
             sign = 4/4,
             mpm = 0,
             mspermeasure = 0,
-            scroll = 1,
-            scrolly = 0,
+            scroll = 1, --reversed
+            scrollx = -1, --actual
+            scrolly = 0, --actual
             measuredone = true,
             currentmeasure = {},
             measurepushto = Parsed.Data,
@@ -1882,26 +1904,27 @@ function Taiko.ParseTJA(source)
                             if gimmick and CheckComplexNumber(match[2]) then
                                 --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
                                 local complex = ParseComplexNumber(match[2])
-                                Parser.scroll = complex[1]
-                                Parser.scrolly = complex[2]
+                                Parser.scrollx = -complex[1]
+                                Parser.scrolly = -complex[2]
                             elseif gimmick and CheckPolarNumber(match[2]) then
                                 --Polar Scroll (TaikoManyGimmicks)
                                 local t = CheckCSVN(match[1], match[2], 'Invalid polar scroll')
                                 if #t == 3 then
                                     local polar = ParsePolarNumber(t[1], math.rad(t[3] / t[2] * 360))
-                                    Parser.scroll = polar[1]
-                                    Parser.scrolly = polar[2]
+                                    Parser.scrollx = -polar[1]
+                                    Parser.scrolly = -polar[2]
                                 else
                                     ParseError(match[1], 'Invalid polar scroll')
                                 end
                             else
                                 --Normal Scroll
-                                Parser.scroll = CheckN(match[1], match[2], 'Invalid scroll') or Parser.scroll --UNSAFE
+                                Parser.scrollx = -(CheckN(match[1], match[2], 'Invalid scroll') or -Parser.scrollx) --UNSAFE
                                 Parser.scrolly = 0
                             end
+                            Parser.scroll = -Parser.scrollx
                             --print(Parser.scroll, Parser.scrolly)
 
-                            if Parser.scroll == 0 then
+                            if Parser.scroll == 0 and Parser.scrollx == 0 and Parser.scrolly == 0 then
                                 ParseError(match[1], 'Scroll cannot be 0')
                             end
                         end
@@ -2088,6 +2111,31 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             Ignored in taiko-web.
                         ]]
+
+                        --Weight
+                        --Make seperate function?
+                        local str = match[2]
+                        local t = Parser.settings.directionweight
+                        local sum = 0
+                        local n = 0
+                        for i = 1, #str do
+                            local s = string.sub(str, i, i)
+                            if t[s] then
+                                sum = sum + t[s]
+                                n = n + 1
+                            end
+                        end
+                        if n == 0 then
+                            ParseError(match[1], 'Invalid direction')
+                        end
+                        local final = sum / n
+                        local d = math.sqrt(Parser.scrollx ^ 2 + Parser.scrolly ^ 2)
+                        local polar = ParsePolarNumber(d, math.rad(final))
+                        Parser.scrollx = -polar[1]
+                        Parser.scrolly = -polar[2]
+                        --print(Parser.scrollx, Parser.scrolly)
+
+
                     elseif match[1] == 'SUDDEN' then
                         --[[
                             - Delays notes from appearing, starting their movement in the middle of the screen instead of off-screen.
