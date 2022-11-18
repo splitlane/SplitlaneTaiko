@@ -8,6 +8,7 @@ Added gimmicks in ParseTJA
     #BARLINE
 Reversed scrollx and scrolly, just multiply with speed
 Added #DIRECTION
+Added STOPSONG to metadata
 
 
 TODO: Add Gimmicks
@@ -732,7 +733,13 @@ function Taiko.ParseTJA(source)
 
             --temprary values
             SCOREINIT = 0,
-            SCOREDIFF = 0
+            SCOREDIFF = 0,
+
+
+
+
+            --Rendering / Game
+            STOPSONG = false
         },
         Data = {}
         --[[
@@ -938,6 +945,10 @@ function Taiko.ParseTJA(source)
         return {r * math.cos(rad), r * math.sin(rad)}
     end
     --print(unpack(ParseComplexNumber(source)))error()
+    local function ParseArguments(s)
+        --TooManyGimmicks Style
+        return Split(s, ',')
+    end
 
 
 
@@ -1046,7 +1057,9 @@ function Taiko.ParseTJA(source)
             stopsong = false,
             delay = 0,
 
-
+            --sudden
+            suddenappear = nil,
+            suddenmove = nil,
 
 
 
@@ -1125,7 +1138,11 @@ function Taiko.ParseTJA(source)
                     section = nil,
                     text = nil,
                     delay = Parser.delay,
-                    
+                    --Sudden: absolute ms
+                    appearancems = Parser.suddenappear,
+                    movems = Parser.suddenmove,
+
+                    dummy = Parser.dummy,
 
 
 
@@ -1133,6 +1150,9 @@ function Taiko.ParseTJA(source)
                     onnotepush = nil
                 }
                 --note.type = n
+
+
+
 
                 --Big note
                 if n == 3 or n == 4 or n == 6 then
@@ -1202,6 +1222,11 @@ function Taiko.ParseTJA(source)
                     delay = Parser.delay,
 
                     --outdated
+                    --Sudden: absolute ms
+                    appearancems = Parser.suddenappear,
+                    movems = Parser.suddenmove,
+
+                    --OUTDATED: TODO
                 }
             end
         end
@@ -2073,14 +2098,16 @@ function Taiko.ParseTJA(source)
                             - In short, the score scrolls according to the current BPM.
                         ]]
                         Parser.disablescroll = true
-                        Parser.stopsong = true
+                        --Parser.stopsong = true
+                        Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'HBSCROLL' then
                         --[[
                         https://wikiwiki.jp/jiro/%E5%A4%AA%E9%BC%93%E3%81%95%E3%82%93%E6%AC%A1%E9%83%8E
                             - Please describe before #START.
                             - If this instruction is present, the scroll method will include the effect of #SCROLL in BMSCROLL.
                         ]]
-                        Parser.stopsong = true
+                        --Parser.stopsong = true
+                        Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'SENOTECHANGE' then
                         --[[
                             - Force note lyrics with a specific value, which is an integer index for the following lookup table:
@@ -2145,6 +2172,12 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - Ignored in taiko-web.
                         ]]
+                        local t = ParseArguments(match[2])
+                        --Both are relative to note ms
+                        Parser.suddenappear = SToMs(tonumber(t[1]))
+                        Parser.suddenmove = SToMs(tonumber(t[2]))
+
+                        
                     elseif match[1] == 'JPOSSCROLL' then
                         --[[
                             - Linearly transition cursor's position to a different position on a bar.
@@ -2405,8 +2438,16 @@ Akasoko
 Everyone who DL
 ■I would appreciate it if you could download it.
                         ]]
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
+                        elseif match[1] == 'DUMMYSTART' then
+                            --[[
+                                - It becomes dummy notes.
+                            ]]
+                            Parser.dummy = true
+                        elseif match[1] == 'DUMMYEND' then
+                            --[[
+                                - It becomes normal notes.
+                            ]]
+                            Parser.dummy = false
                         elseif match[1] == '' then
                         elseif match[1] == '' then
                         elseif match[1] == '' then
@@ -2557,6 +2598,7 @@ Everyone who DL
                         firstmspermeasure = firstmspermeasure or Parser.mspermeasure
                         --loop
                         local increment = firstmspermeasure / notes
+                        --print(increment)
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
@@ -2567,6 +2609,10 @@ Everyone who DL
                                 --if it is not air
                                 if not zeroopt or c.type ~= 0 then --zeroopt
                                     c.ms = Parser.ms
+
+                                    --sudden?
+                                    c.appearancems = c.appearancems and (c.ms - (c.appearancems))
+                                    c.movems = c.movems and (c.ms - (c.movems))
                                     --c.measuredensity = notes
                                     local lastnote = Parser.measurepushto[#Parser.measurepushto] or Parsed.Data[#Parsed.Data]
                                     if lastnote then
@@ -2625,7 +2671,8 @@ end
 
 
 
-Taiko.ParseTJA(io.open('./tja/imaginarytest.tja','r'):read('*all'))error()
+--Taiko.ParseTJA(io.open('./tja/imaginarytest.tja','r'):read('*all'))error()
+--Taiko.ParseTJA(io.open('./tja/neta/ekiben/ekiben.tja','r'):read('*all'))error()
 
 
 
@@ -3653,7 +3700,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
     local songspeedmul = optionsmap.songspeedmul[Settings[4]] or 1 --Actual speed multiplier
 
-    local stopsong = true --Stop song enabled?
+    --local stopsong = true --Stop song enabled?
+    local stopsong = Parsed.Metadata.STOPSONG
 
 
 
