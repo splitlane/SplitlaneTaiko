@@ -2588,17 +2588,19 @@ Everyone who DL
                         --count notes
                         local notes = 0
                         local firstmspermeasure = nil
+                        --local delaytemp = 0
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
                             if c.data == 'note' then
                                 firstmspermeasure = firstmspermeasure or c.mspermeasure
+                                --delaytemp = delaytemp - (delaytemp - c.delay)
                                 notes = notes + 1
                             end
                         end
                         firstmspermeasure = firstmspermeasure or Parser.mspermeasure
                         --loop
                         local increment = firstmspermeasure / notes
-                        --print(increment)
+                        --print(firstmspermeasure, increment, notes)
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
