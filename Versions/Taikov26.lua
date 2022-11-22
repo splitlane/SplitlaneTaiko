@@ -11,6 +11,8 @@ Added #DIRECTION
 Added STOPSONG to metadata
 
 
+TODO: Add Renaming Song
+
 TODO: Add Gimmicks
     Complex Scroll
     Negative Measures
@@ -6708,7 +6710,7 @@ end
 
 
 --works best with compact
-function Taiko.SongSelect(header, data)
+function Taiko.SongSelect(header, data, FilesSources)
     local Display = {} --2d array starting at {0, 0} (Left, up)
     local dx, dy = 10, 10
     local dminx, dmaxx, dminy, dmaxy = -dx, dx, -dy, dy
@@ -6737,7 +6739,8 @@ function Taiko.SongSelect(header, data)
 
     local ParsedCacheOn = true --Parsed Cache On
 
-
+    local FilesSources = FilesSources or {} --Table of file sources, so we can reload
+    local ReloadName = false --Reload file name (header)
 
     local Options = {
         --https://taikotime.blogspot.com/2010/08/advanced-rules.html
@@ -7151,6 +7154,21 @@ function Taiko.SongSelect(header, data)
                 KEY_DOWN = true,
                 KEY_C2 = true,
             },
+        },
+        Reload = {
+            Init = {
+                r = true,
+            },
+        },
+        ReloadAll = {
+            Init = {
+                R = true,
+            },
+        },
+        Rename = {
+            Init = {
+                KEY_F2 = true,
+            },
         }
     }
 
@@ -7334,7 +7352,7 @@ function Taiko.SongSelect(header, data)
             for y = dminy, dmaxy do
                 --out[#out + 1] = y == 0 and (SelectedCharVertical .. string.rep(' ', #ts - #SelectedCharVertical)) or ts
                 out[#out + 1] = Select(y == 0, SelectedCharVertical, ts, '')
-                out[#out + 1] = Pad(Display[0][y] or '')
+                out[#out + 1] = Pad(Display[0] and Display[0][y] or '')
                 out[#out + 1] = '\n'
             end
 
@@ -7662,24 +7680,116 @@ function Taiko.SongSelect(header, data)
                     if EndsWith(input, '.tja') then
                         print('Enter a song name')
                         local input2 = StandardInput()
-                        header[#header + 1] = input2
-                        data[#data + 1] = data2
+                        local index = #header + 1
+                        header[index] = input2
+                        data[index] = data2
+                        FilesSources[index] = {input}
                         break
                     elseif EndsWith(input, '.tjac') then
                         local t, h = Compact.Decompress(data2)
                         for i = 1, #t do
-                            data[#data + 1] = t[i]
-                            header[#header + 1] = h[i]
+                            local index = #header + 1
+                            header[index] = h[i]
+                            data[index] = t[i]
+                            FilesSources[index] = {input, t}
                         end
                         break
                     else
                         print('Invalid file type')
                     end
-                    io.close(file)
+                    file:close()
                 else
                     print('Unable to read file')
                 end
             end
+        elseif Controls.Reload.Init[key] then
+            print('Reloading selected file...')
+            if FilesSources[Selected] then
+                --print('File source found')
+                local a = FilesSources[Selected]
+                local file = io.open(a[1], 'rb')
+                if file then
+                    local data2 = file:read('*all')
+                    local index = Selected
+                    --print('\n', index, a[1])
+                    if a[2] then
+                        --.tjac
+                        local t, h = Compact.Decompress(data2)
+                        if ReloadName then
+                            header[index] = h[i]
+                        end
+                        data[index] = t[i]
+                        --FilesSources[index] = {input, t}
+                    else
+                        --.tja
+                        --[[
+                        if ReloadName then
+                            header[index] = input2
+                        end
+                        --]]
+                        data[index] = data2
+                    end
+                    if ParsedCacheOn then
+                        ParsedCache[index] = nil
+                    end
+                    file:close()
+                else
+                    print('Unable to read file')
+                end
+            else
+                print('File source not found')
+            end
+        elseif Controls.ReloadAll.Init[key] then
+            print('Reloading all files...')
+            local reloadlist = {}
+            for k, v in pairs(FilesSources) do
+                reloadlist[v[1]] = reloadlist[v[1]] and reloadlist[v[1]] or {}
+                reloadlist[v[1]][#reloadlist[v[1]] + 1] = {k, v[2]}
+            end
+            for k, v in pairs(reloadlist) do
+                local file = io.open(k, 'rb')
+                if file then
+                    local data2 = file:read('*all')
+                    --local index = Selected
+                    if v[1][2] then
+                        --.tjac
+                        local t, h = Compact.Decompress(data2)
+                        for i = 1, #v do
+                            local a = v[i]
+                            if ReloadName then
+                                header[a[1]] = h[a[2]]
+                            end
+                            data[a[1]] = t[a[2]]
+                            if ParsedCacheOn then
+                                ParsedCache[a[1]] = nil
+                            end
+                            --FilesSources[index] = {input, t}
+                        end
+                    else
+                        --.tja
+                        for i = 1, #v do
+                            local a = v[i]
+                            --[=[
+                            if ReloadName then
+                                header[v[1]] = input2
+                            end
+                            --]=]
+                            data[a[1]] = data2
+                            if ParsedCacheOn then
+                                ParsedCache[a[1]] = nil
+                            end
+                        end
+                    end
+                    file:close()
+                else
+                    print('Unable to read file')
+                end
+            end
+        elseif Controls.Rename.Init[key] then
+            print('Enter a song name')
+            local input2 = StandardInput()
+            header[Selected] = input2
+            
         elseif Controls.Escape[key] then
             return
         end
@@ -7873,12 +7983,16 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 
 
-local t, header = Compact.Decompress(Compact.Read(file))
+--local t, header = Compact.Decompress(Compact.Read(file))
 
 
 
 -- [[
-Taiko.SongSelect(header, t)
+--Taiko.SongSelect(header, t)
+--Taiko.SongSelect({}, {})
+local _='./tja/neta/ekiben/neta.tja'local a=io.open(_)local b=a:read('*all')a:close()
+Taiko.SongSelect({'neta'}, {b}, {{_}})
+
 error()
 --]]
 
