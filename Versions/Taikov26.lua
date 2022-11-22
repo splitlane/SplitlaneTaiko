@@ -684,7 +684,7 @@ function Taiko.ParseTJA(source)
     local time = os.clock()
 
     --Parsing settings
-    local zeroopt = flashpixel --Don't parse zeros
+    local zeroopt = true --Don't parse zeros
     local gimmick = true --Are gimmicks enabled?
 
 
@@ -1147,7 +1147,13 @@ function Taiko.ParseTJA(source)
 
 
 
-                    onnotepush = nil
+                    onnotepush = nil,
+
+
+
+
+                    --debug
+                    line = LineN,
                 }
                 --note.type = n
 
@@ -1227,6 +1233,9 @@ function Taiko.ParseTJA(source)
                     movems = Parser.suddenmove,
 
                     --OUTDATED: TODO
+
+                    --debug
+                    line = LineN,
                 }
             end
         end
@@ -2677,14 +2686,22 @@ end
 --Taiko.ParseTJA(io.open('./tja/neta/ekiben/ekiben.tja','r'):read('*all'))error()
 
 
+--[[
+--DELAY MAKER
+print('DIF!')
+a=Taiko.ParseTJA(io.open('./tja/neta/ekiben/ekiben.tja','r'):read('*all'))
+b=Taiko.ParseTJA(io.open('./tja/neta/ekiben/delay.tja','r'):read('*all'))
+a,b=a[1].Data,b[1].Data
+print(#a,#b)
+for k, v in pairs(a) do
+    --if a[k].ms~=b[k].ms then
+    if math.floor(a[k].ms)~=math.floor(b[k].ms) then
+    print(k, a[k].ms, b[k].ms, a[k].type, b[k].line)error()end
+    
+end
+error()
 
-
-
-
-
-
-
-
+--]]
 
 
 
@@ -4824,8 +4841,32 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+    --Calculate Functions
+    local function IsNote(note)
+        return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
+    end
 
-
+    local function CalculateLoadMs(note, ms)
+        --return ms - ((tracklength / note.speed) + buffer)
+        --support negative speed
+        --return ms - ((tracklength / math.abs(note.speed)) + buffer)
+        --bufferlength
+        return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
+    end
+    local function CalculateLoadPosition(note, lms)
+        return (note.ms - lms) * note.speed + target
+    end
+    local function CalculatePosition(note, ms)
+        return note.loadp - (note.speed * (ms - note.loadms))
+        --[[
+        if d then
+            --disable delay
+            return note.loadp - (note.speed * (ms - note.loadms))
+        else
+            return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
+        end
+        --]]
+    end
 
 
 
@@ -4897,6 +4938,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         if n == 1 or n == 2 or n == 3 or n == 4 then
             RenderCircle(out, note)
         elseif n == 5 or n == 6 then
+            --[=[
             RenderCircle(out, note)
             local endnote = note.endnote
             --Distance = speed * time
@@ -4938,6 +4980,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 --]]
             end
             RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
+            --]=]
+
+
+
+
+
         elseif n == 7 then
 
             --DEBUG
@@ -4965,6 +5013,57 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             note.renderproxy.p = note.p
             RenderCircle(out, note.renderproxy)
             --]=]
+
+            --New (11/17/2022)
+            RenderCircle(out, note)
+
+            local startnote = note.startnote
+            --[[
+            --I'm pretty sure p is calculated but recalc just for sure
+            startnote.p = CalculatePosition(startnote)
+            --]]
+            --nvm, just assume it is calced
+            RenderCircle(out, startnote)
+            --Distance = speed * time
+            --local length = endnote.p - note.p
+            --Render start and end, and rect
+            --RenderCircle(out, note)
+            --RenderCircle(out, endnote)
+            local r = noteradius * note.radius
+            local x1, x2 = math.floor(startnote.p), math.floor(note.p)
+            RenderCircle(out, startnote, note.p)
+            local y1 = math.floor(y - r)
+            local y2 = math.floor(y + r)
+        
+            --print(x1, x2)while true do end
+
+            if speedopt then
+                
+            else
+                --x reverse (x only (y is irrelevant right now))
+                if x1 > x2 then
+                    x1, x2 = x2, x1
+                end
+
+
+                --Clip!
+                --Don't use ClipN since function overhead
+                if x1 < clipx1 then
+                    x1 = clipx1
+                end
+
+                if x2 > clipx2 then
+                    x2 = clipx2
+                end
+
+
+                --[[
+                if y1 > y2 then
+                    y1, y2 = y2, y1
+                end
+                --]]
+            end
+            RenderRect(out, x1, x2, y1, y2, renderconfig[startnote.type])
         end
     end
 
@@ -5115,31 +5214,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --Precalculate
 
-    local function IsNote(note)
-        return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
-    end
 
-    local function CalculateLoadMs(note, ms)
-        --return ms - ((tracklength / note.speed) + buffer)
-        --support negative speed
-        --return ms - ((tracklength / math.abs(note.speed)) + buffer)
-        --bufferlength
-        return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
-    end
-    local function CalculateLoadPosition(note, lms)
-        return (note.ms - lms) * note.speed + target
-    end
-    local function CalculatePosition(note, ms, d)
-        return note.loadp - (note.speed * (ms - note.loadms))
-        --[[
-        if d then
-            --disable delay
-            return note.loadp - (note.speed * (ms - note.loadms))
-        else
-            return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
-        end
-        --]]
-    end
 
 
 
@@ -5646,10 +5721,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if stopend and ms > stopend then
                 stopfreezems, stopstart, stopend = nil, nil, nil
             end
-            if balloon and ms > balloonend then
+            if balloonend and ms > balloonend then
                 balloon, balloonstart, balloonend = nil, nil, nil
             end
-            if drumroll and ms > drumrollend then
+            if drumrollend and ms > drumrollend then
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
             end
 
@@ -7441,6 +7516,7 @@ function Taiko.SongSelect(header, data)
                     {'Diverge Notes: ', ConvertBool(m.DIVERGENOTES)},
                     {'', ''},
                     {'', 'Statistics:'},
+                    {'Length: ', ConvertMs(a.lengthms)},
                     {'Don (DON) / Ka (KA): ', ConvertN(a.notes[1]) .. ' + (' .. ConvertN(a.notes[3]) .. ') / ' .. ConvertN(a.notes[2]) .. ' + (' .. ConvertN(a.notes[4]) .. ') = ' .. ConvertPercent((ConvertN(a.notes[1]) + ConvertN(a.notes[3])) / a.notes.validn) .. ' / ' .. ConvertPercent((ConvertN(a.notes[2]) + ConvertN(a.notes[4])) / a.notes.validn)},
                     {'Max Score (without drumroll): ', a.maxscore},
                     {'Max Combo: ', a.maxcombo},
