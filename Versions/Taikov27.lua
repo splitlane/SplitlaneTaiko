@@ -4,13 +4,17 @@ Taikov27.lua
 
 Changes: Taiko.PlaySong improved!
 
+Transition to scrollx, scrolly
+Transition to speed = {x, y}
 Remove OptimizedPixel, just generate it every time
 Remove loadp
 Fixed stopms not executing if note was hit prematurely
+Flipped y in ToDots and RenderStatus!
+    Now renders cartesian coordinates!
 
-TODO: Transition to scrollx, scrolly
 TODO: Remove Speedopt
-TODO: Transition to speed = {x, y}
+
+
 
 
 
@@ -1943,11 +1947,13 @@ function Taiko.ParseTJA(source)
                         else
                             if gimmick and CheckComplexNumber(match[2]) then
                                 --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+                                --(x) + (y)i
                                 local complex = ParseComplexNumber(match[2])
                                 Parser.scrollx = -complex[1]
                                 Parser.scrolly = -complex[2]
                             elseif gimmick and CheckPolarNumber(match[2]) then
                                 --Polar Scroll (TaikoManyGimmicks)
+                                --(r),(div),(n)
                                 local t = CheckCSVN(match[1], match[2], 'Invalid polar scroll')
                                 if #t == 3 then
                                     local polar = ParsePolarNumber(t[1], math.rad(t[3] / t[2] * 360))
@@ -3875,9 +3881,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --revamp
     --{x1, y1, x2, y2}
-    local screenrect = {trackstart, -tracky, trackend, tracky}
+    local screenrect = {trackstart, -tracky * 2, trackend, tracky * 2}
     local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
     local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+
+
+    --LEGACY FlipY
+    --[[
+    screenrect[2], screenrect[4] = -screenrect[4], -screenrect[2]
+    loadrect[2], loadrect[4] = -loadrect[4], -loadrect[2]
+    unloadrect[2], unloadrect[4] = -unloadrect[4], -unloadrect[2]
+    --]]
+
+
     
 
 
@@ -4171,12 +4187,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --min, max, to prevent screen bobbing
     local minx, maxx = screenrect[1], screenrect[3]
     local miny, maxy = screenrect[2], screenrect[4]
-    miny, maxy = -20, 20
+    --miny, maxy = -20, 20
 
     --minx and maxx not needed, modified, OPTIMIZED
     --write to str, row scanning removed
     --Pixel.Color removed
     Pixel.Convert = {}
+
+    --MODIFIED to render cartesian
     Pixel.Convert.ToDots = function(str, outoffsetx) --converts a given data table
         outoffsetx = outoffsetx or 0
         local minx, maxx = minx + outoffsetx, maxx + outoffsetx
@@ -4288,7 +4306,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         if not miny then
             return ''
         end
-        for y = miny, maxy, 4 do
+        --for y = miny, maxy, 4 do
+        for y = maxy, miny, -4 do --FlipY
             --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
             --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
             for x = minx, maxx, 2 do
@@ -4351,15 +4370,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 local pixel = 
                 (dx and (
                     (dx[y] or 0) * 128 + 
-                    (dx[y + 1] or 0) * 64 + 
-                    (dx[y + 2] or 0) * 32 + 
-                    (dx[y + 3] or 0) * 16
+                    (dx[y - 1] or 0) * 64 + 
+                    (dx[y - 2] or 0) * 32 + 
+                    (dx[y - 3] or 0) * 16
                 ) or 0) + 
                 (dx2 and (
                     (dx2[y] or 0) * 8 + 
-                    (dx2[y + 1] or 0) * 4 + 
-                    (dx2[y + 2] or 0) * 2 + 
-                    (dx2[y + 3] or 0)
+                    (dx2[y - 1] or 0) * 4 + 
+                    (dx2[y - 2] or 0) * 2 + 
+                    (dx2[y - 3] or 0)
                 ) or 0)
                 --]]
 
@@ -4394,7 +4413,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         --v1
                         local dx = colordata[x]
                         local dx2 = colordata[x + 1]
-                        local color = ((dx) and (dx[y] or dx[y + 1] or dx[y + 2] or dx[y + 3])) or ((dx2) and (dx2[y] or dx2[y + 1] or dx2[y + 2] or dx2[y + 3]))
+                        local color = ((dx) and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3])) or ((dx2) and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]))
 
 
 
@@ -4560,7 +4579,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         if not miny then
             return ''
         end
-        for y = miny, maxy, 4 do
+        --for y = miny, maxy, 4 do
+        for y = maxy, miny, -4 do --FlipY
             --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
             --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
             for x = minx, maxx, 2 do
@@ -4629,41 +4649,41 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 local pixel = 
                 ((dx and dx21) and (
                     (dx[y] or dx21[y] or 0) * 128 + 
-                    (dx[y + 1] or dx21[y + 1] or 0) * 64 + 
-                    (dx[y + 2] or dx21[y + 2] or 0) * 32 + 
-                    (dx[y + 3] or dx21[y + 3] or 0) * 16
+                    (dx[y - 1] or dx21[y - 1] or 0) * 64 + 
+                    (dx[y - 2] or dx21[y - 2] or 0) * 32 + 
+                    (dx[y - 3] or dx21[y - 3] or 0) * 16
                 ) or
                 (dx) and (
                     (dx[y] or 0) * 128 + 
-                    (dx[y + 1] or 0) * 64 + 
-                    (dx[y + 2] or 0) * 32 + 
-                    (dx[y + 3] or 0) * 16
+                    (dx[y - 1] or 0) * 64 + 
+                    (dx[y - 2] or 0) * 32 + 
+                    (dx[y - 3] or 0) * 16
                 ) or
                 (dx21) and (
                     (dx21[y] or 0) * 128 + 
-                    (dx21[y + 1] or 0) * 64 + 
-                    (dx21[y + 2] or 0) * 32 + 
-                    (dx21[y + 3] or 0) * 16
+                    (dx21[y - 1] or 0) * 64 + 
+                    (dx21[y - 2] or 0) * 32 + 
+                    (dx21[y - 3] or 0) * 16
                 )
                 
                 or 0) + 
                 ((dx2 and dx22) and (
                     (dx2[y] or dx22[y] or 0) * 8 + 
-                    (dx2[y + 1] or dx22[y + 1] or 0) * 4 + 
-                    (dx2[y + 2] or dx22[y + 2] or 0) * 2 + 
-                    (dx2[y + 3] or dx22[y + 3] or 0)
+                    (dx2[y - 1] or dx22[y - 1] or 0) * 4 + 
+                    (dx2[y - 2] or dx22[y - 2] or 0) * 2 + 
+                    (dx2[y - 3] or dx22[y - 3] or 0)
                 ) or
                 (dx2) and (
                     (dx2[y] or 0) * 8 + 
-                    (dx2[y + 1] or 0) * 4 + 
-                    (dx2[y + 2] or 0) * 2 + 
-                    (dx2[y + 3] or 0)
+                    (dx2[y - 1] or 0) * 4 + 
+                    (dx2[y - 2] or 0) * 2 + 
+                    (dx2[y - 3] or 0)
                 ) or
                 (dx22) and (
                     (dx22[y] or 0) * 8 + 
-                    (dx22[y + 1] or 0) * 4 + 
-                    (dx22[y + 2] or 0) * 2 + 
-                    (dx22[y + 3] or 0)
+                    (dx22[y - 1] or 0) * 4 + 
+                    (dx22[y - 2] or 0) * 2 + 
+                    (dx22[y - 3] or 0)
                 )
                 
                 or 0)
@@ -4733,10 +4753,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         local dx = colordata[x]
                         local dx2 = colordata[x + 1]
                         local color = 
-                        dx and (dx[y] or dx[y + 1] or dx[y + 2] or dx[y + 3]) or
-                        dx2 and (dx2[y] or dx2[y + 1] or dx2[y + 2] or dx2[y + 3]) or 
-                        dx21 and (dx21[y] or dx21[y + 1] or dx21[y + 2] or dx21[y + 3]) or 
-                        dx22 and (dx22[y] or dx22[y + 1] or dx22[y + 2] or dx22[y + 3])
+                        dx and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3]) or
+                        dx2 and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]) or 
+                        dx21 and (dx21[y] or dx21[y - 1] or dx21[y - 2] or dx21[y - 3]) or 
+                        dx22 and (dx22[y] or dx22[y - 1] or dx22[y - 2] or dx22[y - 3])
 
 
 
@@ -4998,7 +5018,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
         --]]
 
-        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), target[2] + (-note.speed[2] * (note.ms - ms - note.delay))
+        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
         --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
 
         --[[
@@ -5237,11 +5257,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             for y = 1, timingpixel.Size[2] do
                 local px, py = x + tox, y + toy
                 out.Data[px] = out.Data[px] or {}
-                out.Data[px][py] = t.Data[x] and t.Data[x][y]
+                out.Data[px][-py] = t.Data[x] and t.Data[x][y] --FlipY
 
 
                 out.Color[px] = out.Color[px] or {}
-                out.Color[px][py] = c
+                out.Color[px][-py] = c --FlipY
             end
         end
         --print(Pixel.Convert.ToDots(out, nil, true))io.read()
@@ -5901,7 +5921,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --See if next note is ready to be loaded
             if nextnote then
-                Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
+                --Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
                 if nextnote.loadms < ms + totaldelay then
                     --load
                     --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
@@ -8202,7 +8222,7 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 -- [[
 --Taiko.SongSelect(header, t)
 --Taiko.SongSelect({}, {})
-local _='./tja/neta/ekiben/delay.tja'local a=io.open(_)local b=a:read('*all')a:close()
+local _='./tja/neta/ekiben/ekibenimaginary.tja'local a=io.open(_)local b=a:read('*all')a:close()
 Taiko.SongSelect({'neta'}, {b}, {{_}})
 
 error()
