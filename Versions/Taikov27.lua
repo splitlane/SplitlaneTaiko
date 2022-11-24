@@ -649,6 +649,28 @@ Taiko.Data = {
 
 
 
+    --Utility data for notes
+    --Currently only supports 0-9, check for nil
+    Notes = {
+        ReverseNotes = {
+            [0] = 0,
+            [1] = 2,
+            [2] = 1,
+            [3] = 4,
+            [4] = 3,
+            [5] = 5,
+            [6] = 6,
+            [7] = 7,
+            [8] = 8,
+            [9] = 9,
+        }
+    },
+
+
+
+
+
+
 
     --Strings
     --https://github.com/bui/taiko-web/blob/master/public/src/js/strings.js
@@ -6970,9 +6992,14 @@ function Taiko.SongSelect(header, data, FilesSources)
     local OptionSpacing = 2 --Option Spacing
 
     local ParsedCacheOn = true --Parsed Cache On
+    local ModifyStorage = '_Original_' --Prefix for storage of modified properties
 
     local FilesSources = FilesSources or {} --Table of file sources, so we can reload
     local ReloadName = false --Reload file name (header)
+
+
+
+
 
     local Options = {
         --https://taikotime.blogspot.com/2010/08/advanced-rules.html
@@ -7007,6 +7034,64 @@ function Taiko.SongSelect(header, data, FilesSources)
     for k, v in pairs(Options) do
         OptionsLimit[k] = {1, #v, v}
     end
+
+
+
+
+    local ModifyFunctions = {
+        --[[
+            First value is passed to:
+                ModifyNoteData(note, index, set)
+            Second value is passed to:
+                RestoreNoteData(note, index)
+
+            It is called for every note
+
+            'Normal',
+            'Reverse', --Abekobe
+            'Invisible', --Doron
+            'Messy', --Detarame
+        ]]
+        --Normal
+        [1] = nil,
+
+        --Reverse
+        [2] = {
+            function(note)
+                return note, 'type', note.type and (Taiko.Data.Notes.ReverseNotes[note.type] or note.type) or note.type
+            end,
+            function(note)
+                return note, 'type'
+            end
+        },
+
+        --Invisible
+        --dirty, temporary
+        [3] = {
+            function(note)
+                return note, 'scrollx', 10000
+            end,
+            function(note)
+                return note, 'scrollx'
+            end
+        },
+
+        --Messy
+        [4] = {
+            function(note)
+                return note, 'type', note.type and (
+                    note.type == 1 and math.random(1, 2) or
+                    note.type == 2 and math.random(1, 2) or
+                    note.type == 3 and math.random(3, 4) or
+                    note.type == 4 and math.random(3, 4) or
+                    note.type
+                )
+            end,
+            function(note)
+                return note, 'type'
+            end
+        },
+    }
 
 
 
@@ -7443,6 +7528,7 @@ function Taiko.SongSelect(header, data, FilesSources)
 
 
 
+
     local function Pad(str)
         return str .. string.rep(' ', Padding - #str)
     end
@@ -7522,6 +7608,16 @@ function Taiko.SongSelect(header, data, FilesSources)
         return tonumber(n) and tonumber(n) or 0
     end
 
+
+
+    --Parsed functions
+    local function ModifyNoteData(note, index, set)
+        note[ModifyStorage .. index] = note[index]
+        note[index] = set
+    end
+    local function RestoreNoteData(note, index)
+        note[index] = note[ModifyStorage .. index]
+    end
 
 
 
@@ -7797,10 +7893,20 @@ function Taiko.SongSelect(header, data, FilesSources)
                 elseif Controls.Select.D[key] then
                     SelectedOption = SelectedOption + 1
                 elseif Controls.Select.Select[key] then
+                    --Apply modifiers
+                    local mod = ModifyFunctions[OptionsConfig[5]]
+                    if mod and mod[1] then
+                        local f = mod[1]
+                        Taiko.ForAll(ParsedData.Data, function(note, i, n)
+                            ModifyNoteData(f(note))
+                        end)
+                    end
+
+
                     while true do
                         --No need to endwin since playsong is using window
                         --curses.endwin()
-                        local success, out = Taiko.PlaySong(Taiko.GetDifficulty(Parsed, SelectedDifficulty), window, OptionsConfig, Controls.Select.Play)
+                        local success, out = Taiko.PlaySong(ParsedData, window, OptionsConfig, Controls.Select.Play)
                         if success and out then
                             --Show results
 
@@ -7818,6 +7924,14 @@ function Taiko.SongSelect(header, data, FilesSources)
                     curses.nodelay(window, false)
                     Ansi.ClearScreen()
 
+
+                    --Clear modifiers
+                    if mod and mod[2] then
+                        local f = mod[2]
+                        Taiko.ForAll(ParsedData.Data, function(note, i, n)
+                            RestoreNoteData(f(note))
+                        end)
+                    end
                 elseif Controls.Select.Escape[key] then
                     break
                 end
