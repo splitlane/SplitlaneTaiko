@@ -12,25 +12,16 @@ Fixed stopms not executing if note was hit prematurely
 Flipped y in ToDots and RenderStatus!
     Now renders cartesian coordinates!
 Remove Speedopt
+Modifiers!
+Fixed rounding!
+    Now just floor at render time (drawing circle / rect)
 
-
-
+TODO: Show Results
 TODO: Miss after threshhold (when note passes)
-TODO: Modifiers
 
 
 
 
-
-
-TODO: Add Gimmicks
-    Complex Scroll
-    Negative Measures
-
-TODO: Add Gimmicks to Playsong, update
-    scrolly
-
-TODO: 
 TODO: Refactor Code
     Case Consistency
     Optimize Parser
@@ -39,30 +30,21 @@ TODO: Check for match[2] so no error
 TODO: Note lyrics
 TODO: Docs
 TODO: Use io.write instead of print in PlaySong
-TODO: Fix delay + barline issue
 TODO: Fix serializetja
 TODO: Fix taikocurses unicode support
 
 
-
-
-TODO: FIX rounding
-    PlaySong
 TODO: Song select screen
     Results
     Scroll Animation
 
-TODO: Scoreinit
 TODO: Lyrics
-
 
 TODO: PlaySong
     Display
     2P SUPPORT!
 
 
-WIP: FIX statusanimationlength
-WIP: Remove Pixels Dependancy
 
 
 Objectives:
