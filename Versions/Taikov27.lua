@@ -12,7 +12,10 @@ Fixed stopms not executing if note was hit prematurely
 Flipped y in ToDots and RenderStatus!
     Now renders cartesian coordinates!
 
+
+
 TODO: Remove Speedopt
+TODO: Modifiers
 
 
 
@@ -4195,9 +4198,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     Pixel.Convert = {}
 
     --MODIFIED to render cartesian
-    Pixel.Convert.ToDots = function(str, outoffsetx) --converts a given data table
-        outoffsetx = outoffsetx or 0
-        local minx, maxx = minx + outoffsetx, maxx + outoffsetx
+    Pixel.Convert.ToDots = function(str) --converts a given data table
         --[[
         if nomax then
             local min, max = nil, nil
@@ -4468,9 +4469,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    Pixel.ToDotsParallel = function(str, str2, outoffsetx) --converts a given data table
-        outoffsetx = outoffsetx or 0
-        local minx, maxx = minx + outoffsetx, maxx + outoffsetx
+    Pixel.ToDotsParallel = function(str, str2) --converts a given data table
         --[[
         if nomax then
             local min, max = nil, nil
@@ -5237,7 +5236,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
     end
 
-    local function RenderStatus(out, status, ms, outoffsetx)
+    local function RenderStatus(out, status, ms)
         --[[
         local slope = statusanimationmove / (statusanimationlength / 2)
         local anim = -slope * math.abs((ms - status.startms) - (statuslength / ))
@@ -5250,7 +5249,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local o = t.Offset
         local c = t.Color.All --Color for all
         local ox, oy = 0, -math.floor(noteradius * 1.6) - 8 - math.floor(anim)
-        local tox, toy = o[1] + ox + outoffsetx, o[2] + oy
+        local tox, toy = o[1] + ox, o[2] + oy
         --print(tox, toy)
 
         for x = 1, timingpixel.Size[1] do
@@ -6432,7 +6431,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Legacy renderer (Fast)
             --Frame Limiting
             if framerate then
-                local dots = Pixel.Convert.ToDots(out, outoffsetx)
+                local dots = Pixel.Convert.ToDots(out)
                 repeat
 
                 until os.clock() >= nextframes
@@ -6441,7 +6440,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 print(dots)
             else
                 --Legacy renderer
-                print(Pixel.Convert.ToDots(out, outoffsetx))
+                print(Pixel.Convert.ToDots(out))
             end
             --[[
             if speedopt then
@@ -8222,7 +8221,7 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 -- [[
 --Taiko.SongSelect(header, t)
 --Taiko.SongSelect({}, {})
-local _='./tja/neta/ekiben/ekibenimaginary.tja'local a=io.open(_)local b=a:read('*all')a:close()
+local _='./tja/neta/ekiben/imaginarytest.tja'local a=io.open(_)local b=a:read('*all')a:close()
 Taiko.SongSelect({'neta'}, {b}, {{_}})
 
 error()
