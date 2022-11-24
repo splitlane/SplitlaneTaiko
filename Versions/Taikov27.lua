@@ -11,10 +11,11 @@ Remove loadp
 Fixed stopms not executing if note was hit prematurely
 Flipped y in ToDots and RenderStatus!
     Now renders cartesian coordinates!
+Remove Speedopt
 
 
 
-TODO: Remove Speedopt
+TODO: Miss after threshhold (when note passes)
 TODO: Modifiers
 
 
@@ -4189,7 +4190,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --min, max, to prevent screen bobbing
     local minx, maxx = screenrect[1], screenrect[3]
-    local miny, maxy = screenrect[2], screenrect[4]
+    local miny, maxy = -screenrect[4], -screenrect[2]
     --miny, maxy = -20, 20
 
     --minx and maxx not needed, modified, OPTIMIZED
@@ -8221,7 +8222,7 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 -- [[
 --Taiko.SongSelect(header, t)
 --Taiko.SongSelect({}, {})
-local _='./tja/neta/ekiben/imaginarytest.tja'local a=io.open(_)local b=a:read('*all')a:close()
+local _='./tja/neta/ekiben/neta.tja'local a=io.open(_)local b=a:read('*all')a:close()
 Taiko.SongSelect({'neta'}, {b}, {{_}})
 
 error()
