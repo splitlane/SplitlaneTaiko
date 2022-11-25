@@ -4,6 +4,9 @@ Taikov28.lua
 
 Changes: Taiko.PlaySong improved!
 
+PlaySong: Fixed how only 1 load could occur in a frame!
+    This might cause lag issues on low-end computers, but it looks better + more accurate!
+
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
 TODO: Focus on Playability
@@ -5913,50 +5916,51 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --See if next note is ready to be loaded
             if nextnote then
-                --Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
-                if nextnote.loadms < ms + totaldelay then
-                    --load
-                    --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+                while true do
+                    --Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
+                    if nextnote and nextnote.loadms < ms + totaldelay then
+                        --load
+                        --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
 
 
-                    --loaded.n = loaded.n + 1
-                    --loaded.e = loaded.n
-                    --loaded.e = nextnote.n
+                        --loaded.n = loaded.n + 1
+                        --loaded.e = loaded.n
+                        --loaded.e = nextnote.n
 
-                    --loaded[nextnote.n] = nextnote
-                    loaded[#loaded + 1] = nextnote
-
-
-                    --drumroll loading (endnote)
-                    if nextnote.endnote then
-                        --Log('nextnote')
-                        loaded[#loaded + 1] = nextnote.endnote
-                    end
+                        --loaded[nextnote.n] = nextnote
+                        loaded[#loaded + 1] = nextnote
 
 
+                        --drumroll loading (endnote)
+                        if nextnote.endnote then
+                            --Log('nextnote')
+                            loaded[#loaded + 1] = nextnote.endnote
+                        end
 
-                    --speedopt
-                    --[[
-                    if speedopt and nextnote.speed ~= speedoptspeed then
-                        speedopt = false
-                    end
-                    if speedopt then
-                        --nextnote.p = CalculatePosition(nextnote, ms)
-                        --nextnote.p = nextnote.loadp
-                        nextnote.p = CalculatePosition(nextnote, speedoptstartms)
-                        --Log(nextnote.p)
-                        --print(nextnote.p, io.read())
-                        if nextnote.data == 'event' then
-                            if nextnote.event == 'barline' then
-                                RenderBarline(speedoptout, nextnote, speedopt)
+
+
+                        --speedopt
+                        --[[
+                        if speedopt and nextnote.speed ~= speedoptspeed then
+                            speedopt = false
+                        end
+                        if speedopt then
+                            --nextnote.p = CalculatePosition(nextnote, ms)
+                            --nextnote.p = nextnote.loadp
+                            nextnote.p = CalculatePosition(nextnote, speedoptstartms)
+                            --Log(nextnote.p)
+                            --print(nextnote.p, io.read())
+                            if nextnote.data == 'event' then
+                                if nextnote.event == 'barline' then
+                                    RenderBarline(speedoptout, nextnote, speedopt)
+                                end
+                            elseif nextnote.data == 'note' then
+                                RenderNote(speedoptout, nextnote, speedopt)
+                            else
+                                error('Invalid note.data')
                             end
-                        elseif nextnote.data == 'note' then
-                            RenderNote(speedoptout, nextnote, speedopt)
-                        else
-                            error('Invalid note.data')
                         end
-                    end
-                    --]]
+                        --]]
 
 
 
@@ -5965,66 +5969,69 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-                    --nextnote
+                        --nextnote
 
-                    nextnote = nextnote.nextnote
-                    
-                    if nextnote then
-                        if nextnote.startnote then
-                            --end note
-                            nextnote = nextnote.nextnote
-                        end
+                        nextnote = nextnote.nextnote
+                        
+                        if nextnote then
+                            if nextnote.startnote then
+                                --end note
+                                nextnote = nextnote.nextnote
+                            end
 
 
-                        if nextnote and nextnote.branch then
-                            --Log('branch')
-                            --[[
-                            Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
-                                print(note.ms)
-                            end)
-                            error()
-                            --]]
+                            if nextnote and nextnote.branch then
+                                --Log('branch')
+                                --[[
+                                Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                                    print(note.ms)
+                                end)
+                                error()
+                                --]]
 
-                            nextnote = nextnote.branch.paths[branch][1]
+                                nextnote = nextnote.branch.paths[branch][1]
+                            end
+
+                            --logically, branch should not start with endnote
                         end
 
-                        --logically, branch should not start with endnote
-                    end
+
+                        --Log(tostring(nextnote and nextnote.type or ''))
+                        
 
 
-                    --Log(tostring(nextnote and nextnote.type or ''))
-                    
-
-
-                    --[[
-                    if loaded.s == 0 then
-                        loaded.s = 1
-                    end
-                    loaded.e = loaded.n
-                    loaded.n = loaded.n + 1
-                    loaded[loaded.n + 1] = nextnote
-                    nextnote = nextnote.nextnote
-                    --]]
+                        --[[
+                        if loaded.s == 0 then
+                            loaded.s = 1
+                        end
+                        loaded.e = loaded.n
+                        loaded.n = loaded.n + 1
+                        loaded[loaded.n + 1] = nextnote
+                        nextnote = nextnote.nextnote
+                        --]]
 
 
 
 
 
-                    --[[
-                    local breaker = false
-                    if not nextnote then
-                        while true do
-                            local s = os.clock() - startt
-                            if s > ends then
-                                breaker = true
+                        --[[
+                        local breaker = false
+                        if not nextnote then
+                            while true do
+                                local s = os.clock() - startt
+                                if s > ends then
+                                    breaker = true
+                                    break
+                                end
+                            end
+                            if breaker then
                                 break
                             end
                         end
-                        if breaker then
-                            break
-                        end
+                        --]]
+                    else
+                        break
                     end
-                    --]]
                 end
             else
                 if ms > endms then
@@ -8306,7 +8313,7 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 -- [[
 --Taiko.SongSelect(header, t)
 --Taiko.SongSelect({}, {})
-local _='./tja/neta/ekiben/neta.tja'local a=io.open(_)local b=a:read('*all')a:close()
+local _='./tja/neta/ekiben/spiraltest.tja'local a=io.open(_)local b=a:read('*all')a:close()
 Taiko.SongSelect({'neta'}, {b}, {{_}})
 
 error()
@@ -8376,7 +8383,7 @@ error()
 
 
 
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura'))
+--Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(Compact.InputFile(file)), 'Ura'))
 
 
 --]]
