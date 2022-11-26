@@ -3731,6 +3731,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         [3] = true,
         [4] = true,
     }
+    --[[
+        About AutoPlay:
+        Autoplay now sets the status as good, instead of just emulating the key press. This forces every note hit to be good. However, the timings may not be correct if you are below 60 fps.
+    ]]
+
+
     --local autoemu = false --Emulate key on auto
 
     local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
@@ -6316,6 +6322,46 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --if false then
 
 
+
+
+
+
+
+                    --Auto
+                    --I put this here so that even if note is going to be unloaded on this frame, we can hit it
+                    if auto then
+                        if not note.hit and autohitnotes[note.type] and ms >= note.ms then
+                            local status
+                            status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                            combo = combo + 1
+                            if status then
+                                --Calculate Score
+                                score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
+        
+                                --Effects
+                                note.hit = true
+                                laststatus = {
+                                    startms = ms,
+                                    status = status
+                                }
+                            end
+                        end
+                    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     --distance unload (slow)
                     --formula before delay
                     --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
@@ -6338,26 +6384,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         --Draw note on canvas
 
                         if not note.hit then
-
-                            --Auto
-                            if auto then
-                                if autohitnotes[note.type] and ms >= note.ms then
-                                    local status
-                                    status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
-                                    combo = combo + 1
-                                    if status then
-                                        --Calculate Score
-                                        score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
-                
-                                        --Effects
-                                        note.hit = true
-                                        laststatus = {
-                                            startms = ms,
-                                            status = status
-                                        }
-                                    end
-                                end
-                            end
 
 
                             if dorender then
@@ -8328,8 +8354,31 @@ file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 -- [[
 --Taiko.SongSelect(header, t)
 --Taiko.SongSelect({}, {})
-local _='./tja/neta/ekiben/spiraltest.tja'local a=io.open(_)local b=a:read('*all')a:close()
+
+--[[
+local _='./tja/neta/ekiben/spiraltest.tja'local a=io.open(_,'r')local b=a:read('*all')a:close()
 Taiko.SongSelect({'neta'}, {b}, {{_}})
+--]]
+
+local function list(t) --t = table of files
+    local a, b, c = {}, {}, {}
+    for i = 1, #t do
+        local _ = t[i]
+        a[#a + 1] = _:gsub('(.-)/', '')
+        local ca=io.open(_,'r')local cb=ca:read('*all')ca:close()
+        b[#b + 1] = cb
+        c[#c + 1] = _
+    end
+    return a, b, c
+end
+
+Taiko.SongSelect(list(
+    {
+        './tja/neta/ekiben/spiraltest.tja',
+        './tja/neta/ekiben/delay.tja',
+        './tja/neta/ekiben/neta.tja',
+    }
+))
 
 error()
 --]]
