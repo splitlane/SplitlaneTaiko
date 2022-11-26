@@ -7,10 +7,12 @@ Changes: Taiko.PlaySong improved!
 PlaySong: Fixed how only 1 load could occur in a frame!
     This might cause lag issues on low-end computers, but it looks better + more accurate!
 
+PlaySong: Fixed drumrolls being unloaded instantly
+
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
 TODO: Focus on Playability
-
+TODO: Improve Auto
 
 
 TODO: Refactor Code
@@ -5933,7 +5935,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                         --drumroll loading (endnote)
                         if nextnote.endnote then
-                            --Log('nextnote')
                             loaded[#loaded + 1] = nextnote.endnote
                         end
 
@@ -6193,7 +6194,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 if note then
                     --nearest
                     --if not nearest or (ms - note.ms > 0 and ms - note.ms < nearest) or (note.ms - ms > 0 and note.ms - ms < nearest)
-                    if note.data == 'note' then
+                    if not (note.hit) and note.data == 'note' then
                         if (note.type == 1 or note.type == 3) and (not nearest[1] or math.abs(ms - note.ms) < nearest[1]) then
                             nearest[1] = math.abs(ms - note.ms)
                             nearestnote[1] = note
@@ -6321,7 +6322,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     and (not (note.endnote and note.endnote.done ~= true and (not note.hit))) --check if endnote unloaded
                     then
                     --]]
-                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false then
+                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                        --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                         --Log('remove')
 
                         note.done = true
@@ -6495,13 +6497,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if auto then
                 local n1 = nearest[1]
                 local n2 = nearest[2]
-                local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                local testv =
+                (n1 and n2)
+                and (
+                    (n1 < n2)
+                    and 1 or 2
+                )
+                or (n1 and 1 or 2)
                 local n = nearest[testv]
                 local note = nearestnote[testv]
                 --if n and n < (timing.good) then
                 --if n and n < 10 then
                 --if n and ms > note.ms and (not note.hit) then
-                if n and ms >= note.ms and (not note.hit) then
+                if n and ms >= note.ms and (not note.hit) and n < (timing.good) then
                     --[[
                     if autoemu then
                         v = testv
