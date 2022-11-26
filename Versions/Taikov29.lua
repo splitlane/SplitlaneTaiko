@@ -2714,6 +2714,22 @@ error()
 --]]
 
 
+--[[
+--DELAY MAKER
+print('DIF!')
+a=Taiko.ParseTJA(io.open('./tja/neta/kita/fixedkita.tja','r'):read('*all'))
+b=Taiko.ParseTJA(io.open('./taikobuipm/Kita Saitama 2000.tja','r'):read('*all'))
+a,b=a[1].Data,b[1].Data
+print(#a,#b)
+for k, v in pairs(a) do
+    --if a[k].ms~=b[k].ms then
+    if a[k].type ~=b[k].type then print(k, a[k].ms, b[k].ms, a[k].type, b[k].type, a[k].line, b[k].line) end
+    --if math.floor(a[k].ms + 0.5)~=math.floor(b[k].ms+ 0.5) then print(k, a[k].ms, b[k].ms, a[k].type, b[k].type, a[k].line, b[k].line)error()end
+    
+end
+error()
+
+--]]
 
 
 
@@ -6336,7 +6352,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             combo = combo + 1
                             if status then
                                 --Calculate Score
-                                score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
+                                score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
         
                                 --Effects
                                 note.hit = true
@@ -6575,7 +6591,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 if nearest[v] and (not nearestnote[v].hit) then
                     local note = nearestnote[v]
                     local notetype = note.type
-                    local notegogo = note.gogo
+                   --local notegogo = note.gogo
 
                     local n = nearest[v]
                     local status
@@ -6601,7 +6617,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     if status then
                         --Calculate Score
-                        score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
+                        score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
 
                         --Effects
                         nearestnote[v].hit = true
@@ -6875,7 +6891,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     end
 
 
-
+--for i = 1, #Parsed.Data do local a = Parsed.Data[i] if not a.hit and a.data == 'note' then print(a.n, a.line) end end error()
 
 
 
@@ -8377,6 +8393,8 @@ Taiko.SongSelect(list(
         './tja/neta/ekiben/spiraltest.tja',
         './tja/neta/ekiben/delay.tja',
         './tja/neta/ekiben/neta.tja',
+        './tja/neta/kita/kita.tja',
+        './taikobuipm/Kita Saitama 2000.tja'
     }
 ))
 
