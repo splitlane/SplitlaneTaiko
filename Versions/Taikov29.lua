@@ -1,13 +1,10 @@
 --[[
-Taikov28.lua
+Taikov29.lua
 
 
 Changes: Taiko.PlaySong improved!
 
-PlaySong: Fixed how only 1 load could occur in a frame!
-    This might cause lag issues on low-end computers, but it looks better + more accurate!
-
-PlaySong: Fixed drumrolls being unloaded instantly
+PlaySong: Fixed Auto
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
