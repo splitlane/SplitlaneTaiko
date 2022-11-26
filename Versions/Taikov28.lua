@@ -6512,10 +6512,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 --if n and ms > note.ms and (not note.hit) then
 
                 --good auto
-                --if n and ms >= note.ms and (not note.hit) and n < (timing.good) then
+                if n and ms >= note.ms and (not note.hit) and n < (timing.good) then
 
                 --100% no miss auto
-                if n and (not note.hit) and n < (timing.good) then
+                --if n and (not note.hit) and n < (timing.good) then
 
                     --[[
                     if autoemu then

@@ -3725,6 +3725,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     local auto = optionsmap.auto[Settings[2]] or false --Autoplay
+    local autohitnotes = {
+        [1] = true,
+        [2] = true,
+        [3] = true,
+        [4] = true,
+    }
     --local autoemu = false --Emulate key on auto
 
     local notespeedmul = optionsmap.notespeedmul[Settings[3]] or 1 --Note Speed multiplier
@@ -6333,6 +6339,27 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                         if not note.hit then
 
+                            --Auto
+                            if auto then
+                                if autohitnotes[note.type] and ms >= note.ms then
+                                    local status
+                                    status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                                    combo = combo + 1
+                                    if status then
+                                        --Calculate Score
+                                        score = scoref(score, combo, scoreinit, scorediff, status, notegogo)
+                
+                                        --Effects
+                                        note.hit = true
+                                        laststatus = {
+                                            startms = ms,
+                                            status = status
+                                        }
+                                    end
+                                end
+                            end
+
+
                             if dorender then
                                 if note.data == 'event' then
                                     if note.event == 'barline' then
@@ -6504,32 +6531,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 or (n1 and 1 or 2)
                 local n = nearest[testv]
                 local note = nearestnote[testv]
-                --if n and n < (timing.good) then
-                --if n and n < 10 then
-                --if n and ms > note.ms and (not note.hit) then
 
-                --good auto
-                --if n and ms >= note.ms and (not note.hit) and n < (timing.good) then
-
-                --100% no miss auto
-                if n and (not note.hit) and n < (timing.good) then
-
-                    --[[
-                    if autoemu then
-                        v = testv
-                    else
-                        --good
-                        note.hit = true
-                        local a = note.type
-                        local status = ((a == 3 or a == 4) and 3) or 2 --2 or 3?
-                        laststatus = {
-                            startms = ms,
-                            status = status
-                        }
-                    end
-                    --]]
-                    v = testv
-                elseif not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
                     --make sure we can't hit note as bad
                     if balloonstart and (ms > balloonstart and ms < balloonend) then
                         v = 1
