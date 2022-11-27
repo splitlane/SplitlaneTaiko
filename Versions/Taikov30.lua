@@ -3692,18 +3692,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     ]]
 
 
-    --[[
-    --Discontinued, most of performance is renderering
-    local precalculate = true --Biggest modifier
-    --]]
 
-    --Really dumb idea, memory intensive, trading memory with performance
-    --WARNING: OUTDATED!!!
-    local prerender = {
-        on = false, --Biggest modifier
-        fps = 60, --Desired fps
-        frames = {} --Internal frame storage
-    } --Biggest modifier
+    --BIGGEST MODIFIER
+    local useraylib = false
+
 
 
 
@@ -3970,6 +3962,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+    if useraylib then
 
 
 
@@ -3977,64 +3970,106 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    --local curses = require('taikocurses')
-
-
-
-
-    local window = Window or {
-        window = curses.initscr()
-    }
-
-    curses.keypad(window, true)
-    curses.echo(false)
-    curses.raw(true)
-    curses.nl(false)
-    curses.cbreak(true)
-    
-    curses.nodelay(window, true)
 
 
 
 
 
 
-    --local Pixel = require('Pixels')
 
 
-    --pixeltest.lua
-    --PixelToTable.lua
-    local timingpixel = {
-        --BAD ()
-        [0] = {Data={[1]={'0','1','1','1','1','1','1','1'},[2]={[2]='1',[5]='1',[8]='1'},[3]={[2]='1',[5]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={[3]='1',[4]='1',[6]='1',[7]='1'},[8]={'0','0','1','1','1','1','1','1'},[9]={[2]='1',[5]='1'},[10]={[2]='1',[5]='1'},[11]={[2]='1',[5]='1'},[12]={[2]='1',[5]='1'},[13]={'0','0','1','1','1','1','1','1'},[15]={'0','1','1','1','1','1','1','1'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'}},Color={All='blue'},Offset={-1,0}},
-        --OK
-        [1] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[8]='1'},[5]={[2]='1',[8]='1'},[6]={'0','0','1','1','1','1','1','0'},[8]={'0','1','1','1','1','1','1','1'},[9]={[5]='1'},[10]={[4]='1',[6]='1'},[11]={[3]='1',[7]='1'},[12]={[2]='1',[8]='1'}},Color={All='white'},Offset={-1,0}},
-        --GOOD
-        [2] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={'0','1','0','0','1','1','1','1'},[8]={'0','0','1','1','1','1','1','0'},[9]={[2]='1',[8]='1'},[10]={[2]='1',[8]='1'},[11]={[2]='1',[8]='1'},[12]={[2]='1',[8]='1'},[13]={'0','0','1','1','1','1','1','0'},[15]={'0','0','1','1','1','1','1','0'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'},[22]={'0','1','1','1','1','1','1','1'},[23]={[2]='1',[8]='1'},[24]={[2]='1',[8]='1'},[25]={[2]='1',[8]='1'},[26]={[2]='1',[8]='1'},[27]={'0','0','1','1','1','1','1','0'}},Color={All='yellow'},Offset={-1,0}},
-        Size = {27, 8}
-    }
-    --[[
-    for k, v in pairs(timingpixel) do
-        local c = {}
-        for x, v2 in pairs(v.Data) do
-            for y, v3 in pairs(v2) do
-                c[x] = c[x] or {}
-                c[x][y] = v.Color
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    else
+            
+
+
+
+
+
+
+        --local curses = require('taikocurses')
+
+
+
+
+        local window = Window or {
+            window = curses.initscr()
+        }
+
+        curses.keypad(window, true)
+        curses.echo(false)
+        curses.raw(true)
+        curses.nl(false)
+        curses.cbreak(true)
+        
+        curses.nodelay(window, true)
+
+
+
+
+
+
+        --local Pixel = require('Pixels')
+
+
+        --pixeltest.lua
+        --PixelToTable.lua
+        local timingpixel = {
+            --BAD ()
+            [0] = {Data={[1]={'0','1','1','1','1','1','1','1'},[2]={[2]='1',[5]='1',[8]='1'},[3]={[2]='1',[5]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={[3]='1',[4]='1',[6]='1',[7]='1'},[8]={'0','0','1','1','1','1','1','1'},[9]={[2]='1',[5]='1'},[10]={[2]='1',[5]='1'},[11]={[2]='1',[5]='1'},[12]={[2]='1',[5]='1'},[13]={'0','0','1','1','1','1','1','1'},[15]={'0','1','1','1','1','1','1','1'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'}},Color={All='blue'},Offset={-1,0}},
+            --OK
+            [1] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[8]='1'},[5]={[2]='1',[8]='1'},[6]={'0','0','1','1','1','1','1','0'},[8]={'0','1','1','1','1','1','1','1'},[9]={[5]='1'},[10]={[4]='1',[6]='1'},[11]={[3]='1',[7]='1'},[12]={[2]='1',[8]='1'}},Color={All='white'},Offset={-1,0}},
+            --GOOD
+            [2] = {Data={[1]={'0','0','1','1','1','1','1','0'},[2]={[2]='1',[8]='1'},[3]={[2]='1',[8]='1'},[4]={[2]='1',[5]='1',[8]='1'},[5]={[2]='1',[5]='1',[8]='1'},[6]={'0','1','0','0','1','1','1','1'},[8]={'0','0','1','1','1','1','1','0'},[9]={[2]='1',[8]='1'},[10]={[2]='1',[8]='1'},[11]={[2]='1',[8]='1'},[12]={[2]='1',[8]='1'},[13]={'0','0','1','1','1','1','1','0'},[15]={'0','0','1','1','1','1','1','0'},[16]={[2]='1',[8]='1'},[17]={[2]='1',[8]='1'},[18]={[2]='1',[8]='1'},[19]={[2]='1',[8]='1'},[20]={'0','0','1','1','1','1','1','0'},[22]={'0','1','1','1','1','1','1','1'},[23]={[2]='1',[8]='1'},[24]={[2]='1',[8]='1'},[25]={[2]='1',[8]='1'},[26]={[2]='1',[8]='1'},[27]={'0','0','1','1','1','1','1','0'}},Color={All='yellow'},Offset={-1,0}},
+            Size = {27, 8}
+        }
+        --[[
+        for k, v in pairs(timingpixel) do
+            local c = {}
+            for x, v2 in pairs(v.Data) do
+                for y, v3 in pairs(v2) do
+                    c[x] = c[x] or {}
+                    c[x][y] = v.Color
+                end
             end
+            timingpixel[k].Color = c
         end
-        timingpixel[k].Color = c
-    end
-    --]]
-    timingpixel[3] = timingpixel[2] --BIGGOOD
+        --]]
+        timingpixel[3] = timingpixel[2] --BIGGOOD
 
 
 
-    local flashpixel = {
-        [0] = nil,
-        [1] = {},
-        [2] = {}
-    }
-
+        local flashpixel = {
+            [0] = nil,
+            [1] = {},
+            [2] = {}
+        }
 
 
 
@@ -4051,23 +4086,24 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    --Pixel starts here
 
-    local Pixel
+        --Pixel starts here
 
-
-
-
-
-    os.execute('chcp 65001') --Makes your terminal support unicode. If it is buggy, turn it off
-    Pixel = {}
+        local Pixel
 
 
 
 
-    --combined 6 and 8
-    --https://github.com/qntm/braille-encode/blob/main/index.js
-    local dotdata = ([[
+
+        os.execute('chcp 65001') --Makes your terminal support unicode. If it is buggy, turn it off
+        Pixel = {}
+
+
+
+
+        --combined 6 and 8
+        --https://github.com/qntm/braille-encode/blob/main/index.js
+        local dotdata = ([[
 ⠀ ⢀ ⠠ ⢠ ⠐ ⢐ ⠰ ⢰ ⠈ ⢈ ⠨ ⢨ ⠘ ⢘ ⠸ ⢸
 ⡀ ⣀ ⡠ ⣠ ⡐ ⣐ ⡰ ⣰ ⡈ ⣈ ⡨ ⣨ ⡘ ⣘ ⡸ ⣸
 ⠄ ⢄ ⠤ ⢤ ⠔ ⢔ ⠴ ⢴ ⠌ ⢌ ⠬ ⢬ ⠜ ⢜ ⠼ ⢼
@@ -4087,72 +4123,72 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    function GenerateDotData() --im lazy, so this will generate a dictionary with all of the patterns formatted.
-        --generate alphanumeric chars
-        --local badchars = '	%+1234567890%(%)%-\n '
-        --[[
-        local badchars = '%+1234567890%(%)%-'
-        local startpoint = 65
-        local endpoint = 90 --no need for lowercase.
-        for i = startpoint, endpoint do
-            badchars = badchars .. string.char(i)
-        end
-        badchars = '[' .. string.lower(badchars) .. string.upper(badchars) .. ']'
-        --ok now pattern match them
-        dotdata = dotdata:gsub(badchars, '')
-        print(dotdata)
-        ]] --wont use because i need to split str
-
-        --format data into a 't'
-        function ToBinary(a)
-            local t = {}
-            while a > 0 do
-                local r = math.fmod(a, 2)
-                t[#t + 1] = string.sub(r, 1, 1)
-                a=(a - r) / 2
+        function GenerateDotData() --im lazy, so this will generate a dictionary with all of the patterns formatted.
+            --generate alphanumeric chars
+            --local badchars = '	%+1234567890%(%)%-\n '
+            --[[
+            local badchars = '%+1234567890%(%)%-'
+            local startpoint = 65
+            local endpoint = 90 --no need for lowercase.
+            for i = startpoint, endpoint do
+                badchars = badchars .. string.char(i)
             end
-            local s = string.reverse(table.concat(t))
-            return string.rep('0', 8 - #s) .. s
-            --return s
-        end
-        local function format(s)
-            --return string.rep('0', 8 - #s) .. s
-            return s
-        end
-        local t = Split(dotdata, ' ')
-        local newt = {}
-        --print(#t) --> 256
-        local inputa = false
-        local str = ''
-        local sep = ' '
-        for i = 1, #t do
-            --print(i, ToBinary(i - 1), t[i])
-            --newt[ToBinary(i - 1)] = format(t[i])
-            newt[i - 1] = format(t[i])
+            badchars = '[' .. string.lower(badchars) .. string.upper(badchars) .. ']'
+            --ok now pattern match them
+            dotdata = dotdata:gsub(badchars, '')
+            print(dotdata)
+            ]] --wont use because i need to split str
+
+            --format data into a 't'
+            function ToBinary(a)
+                local t = {}
+                while a > 0 do
+                    local r = math.fmod(a, 2)
+                    t[#t + 1] = string.sub(r, 1, 1)
+                    a=(a - r) / 2
+                end
+                local s = string.reverse(table.concat(t))
+                return string.rep('0', 8 - #s) .. s
+                --return s
+            end
+            local function format(s)
+                --return string.rep('0', 8 - #s) .. s
+                return s
+            end
+            local t = Split(dotdata, ' ')
+            local newt = {}
+            --print(#t) --> 256
+            local inputa = false
+            local str = ''
+            local sep = ' '
+            for i = 1, #t do
+                --print(i, ToBinary(i - 1), t[i])
+                --newt[ToBinary(i - 1)] = format(t[i])
+                newt[i - 1] = format(t[i])
+                --[[
+                if inputa then
+                    print(ToBinary(i - 1) .. t[i])
+                    local input = io.read()
+                    if input == '' then
+                        input = t[i]
+                    elseif input == 'stop' then
+                        break
+                    end
+                    str = str .. input .. sep
+                end
+                --]]
+            end
             --[[
             if inputa then
-                print(ToBinary(i - 1) .. t[i])
-                local input = io.read()
-                if input == '' then
-                    input = t[i]
-                elseif input == 'stop' then
-                    break
-                end
-                str = str .. input .. sep
+                print(str)
+                io.open('Data.lua', 'a+'):write(str)
             end
             --]]
+            return newt
         end
-        --[[
-        if inputa then
-            print(str)
-            io.open('Data.lua', 'a+'):write(str)
-        end
-        --]]
-        return newt
-    end
-    Pixel.Data = {}
-    Pixel.Data.Dot = GenerateDotData()
-    --Order: LU, RU, LD, RD
+        Pixel.Data = {}
+        Pixel.Data.Dot = GenerateDotData()
+        --Order: LU, RU, LD, RD
 
 
 
@@ -4176,1749 +4212,1748 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-    --Pixel.ColorData = Pixel.Color.Data
-    Pixel.ColorData = {
-        --attributes
-        reset = 0, clear = 0, space = 0,
-        bright = 1, bold = 1,
-        dim = 2, faint = 1,
-        italic = 3,
-        underline = 4,
-        blink = 5,
-        reverse = 7,
-        invisible = 8, hidden = 8,
-        strikethrough = 9,
-    
-        --foreground
-        black = 30,
-        red = 31,
-        green = 32,
-        yellow = 33,
-        blue = 34,
-        purple = 35, magenta = 35,
-        cyan = 36,
-        white = 37,
-    
-        --background
-        onblack = 40,
-        onred = 41,
-        ongreen = 42,
-        onyellow = 43,
-        onblue = 44,
-        onpurple = 45, onmagenta = 45,
-        oncyan = 46,
-        onwhite = 47,
-    }
-    Pixel.Color = {}
-    for k, v in pairs(Pixel.ColorData) do
-        Pixel.Color[k] = '\27[' .. v .. 'm'
-    end
-
-    --min, max, to prevent screen bobbing
-    local minx, maxx = screenrect[1], screenrect[3]
-    local miny, maxy = -screenrect[4], -screenrect[2]
-    --miny, maxy = -20, 20
-
-    --minx and maxx not needed, modified, OPTIMIZED
-    --write to str, row scanning removed
-    --Pixel.Color removed
-    Pixel.Convert = {}
-
-    --MODIFIED to render cartesian
-    Pixel.Convert.ToDots = function(str) --converts a given data table
-        --[[
-        if nomax then
-            local min, max = nil, nil
-            for x, v in pairs(str.Data) do
-                min = min and (x < min and x or min) or x
-                max = max and (x > max and x or max) or x
-            end
-            minx, maxx = min, max
-        end
-        --]]
-
-        --The pixels might look off, but they are not
-        --[[
-        Format:
-        t[x][y]
-    
-        ]]
-        --Data
-        --str = GetPixelData(str) --Read Only
-        local data, colordata = str.Data, str.Color
+        --Pixel.ColorData = Pixel.Color.Data
+        Pixel.ColorData = {
+            --attributes
+            reset = 0, clear = 0, space = 0,
+            bright = 1, bold = 1,
+            dim = 2, faint = 1,
+            italic = 3,
+            underline = 4,
+            blink = 5,
+            reverse = 7,
+            invisible = 8, hidden = 8,
+            strikethrough = 9,
         
-        --local data, color = str.Data, str.Color
-        --[[
-        if ReverseY then
-            local function reversey(t)
-                local new = {}
-                for x, v in pairs(t) do
-                    for y, v2 in pairs(v) do
-                        new[x] = new[x] or {}
-                        new[x][-y] = v2
-                    end
-                end
-                return new
-            end
-            data = reversey(data)
-            color = reversey(color)
-        end
-        --]]
-        --Make sure to not write to str
-        --[[
-        str = {
-            Data = data,
-            Color = color
+            --foreground
+            black = 30,
+            red = 31,
+            green = 32,
+            yellow = 33,
+            blue = 34,
+            purple = 35, magenta = 35,
+            cyan = 36,
+            white = 37,
+        
+            --background
+            onblack = 40,
+            onred = 41,
+            ongreen = 42,
+            onyellow = 43,
+            onblue = 44,
+            onpurple = 45, onmagenta = 45,
+            oncyan = 46,
+            onwhite = 47,
         }
-        --]]
-        --Stats
-        --[[
-        local function getmin(t)
-            local c = nil
-            for k, v in pairs(t) do
-                if not c or k < c then
-                    c = k
-                end
-            end
-            return c
+        Pixel.Color = {}
+        for k, v in pairs(Pixel.ColorData) do
+            Pixel.Color[k] = '\27[' .. v .. 'm'
         end
-        local function getmax(t)
-            local c = nil
-            for k, v in pairs(t) do
-                if not c or k > c then
-                    c = k
-                end
-            end
-            return c
-        end
-        local function itrow(t, func)
-            local t2 = {}
-            for k, v in pairs(t) do
-                --table.insert(t2, func(v))
-                local a = func(v)
-                if a then
-                    t2[a] = true
-                end
-            end
-            return func(t2)
-        end
-        --]]
-        --print(minx, maxx, miny, maxy)
-        --Optimizations
-        local out = {}
-        --local zerostring = string.rep('0', 8)
-        local zerostring = 0
-        local zerodot = Pixel.Data.Dot[zerostring]
-        local currentcolor = nil
-        local allcolor = nil
-        --local resetcolor = tostring(Pixel.Color('reset'))
-        local resetcolor = Pixel.Color['reset']
-        if str.Color.All then
-            --local c = tostring(Pixel.Color(str.Color.All))
-            local c = Pixel.Color[str.Color.All]
-            --table.insert(out, c)
-            out[#out + 1] = c
-            allcolor = c
-        end
-        --[[
-        local rows = {}
-        for x, v in pairs(data) do
-            for y, v2 in pairs(v) do
-                rows[y] = rows[y] or {}
-                rows[y][x] = v2
-            end
-        end
-        --]]
-        --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
-        --Main loop
-        if not miny then
-            return ''
-        end
-        --for y = miny, maxy, 4 do
-        for y = maxy, miny, -4 do --FlipY
-            --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
-            --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
-            for x = minx, maxx, 2 do
-                --print(x, y)
-                --Get Pixels
-                --[[
-                local pixel = ''
-                local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
-                for i = 1, 8 do
-                    local x, y = x + c[i][1], y + c[i][2]
-                    pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
-                end
-                --]]
 
-
-
-
-
-
-                --ugly formula
-
-                --v1
-                --[[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = ((dx) and ((dx[y] or '0') .. (dx[y + 1] or '0') .. (dx[y + 2] or '0') .. (dx[y + 3] or '0')) or '0000') .. ((dx2) and ((dx2[y] or '0') .. (dx2[y + 1] or '0') .. (dx2[y + 2] or '0') .. (dx2[y + 3] or '0')) or '0000')
-                --]]
-
-
-                --v2 (SLOW)
-                --[[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
-                --]]
-
-                --v3
-                --[[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = 
-                (dx and (
-                    (dx[y] or 0) + 
-                    (dx[y + 1] or 0) * 2 + 
-                    (dx[y + 2] or 0) * 4 + 
-                    (dx[y + 3] or 0) * 8
-                ) or 0) + 
-                (dx2 and (
-                    (dx2[y] or 0) * 16 + 
-                    (dx2[y + 1] or 0) * 32 + 
-                    (dx2[y + 2] or 0) * 64 + 
-                    (dx2[y + 3] or 0) * 128
-                ) or 0)
-                --]]
-
-                --v4
-                -- [[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = 
-                (dx and (
-                    (dx[y] or 0) * 128 + 
-                    (dx[y - 1] or 0) * 64 + 
-                    (dx[y - 2] or 0) * 32 + 
-                    (dx[y - 3] or 0) * 16
-                ) or 0) + 
-                (dx2 and (
-                    (dx2[y] or 0) * 8 + 
-                    (dx2[y - 1] or 0) * 4 + 
-                    (dx2[y - 2] or 0) * 2 + 
-                    (dx2[y - 3] or 0)
-                ) or 0)
-                --]]
-
-
-                --print(pixel, x, y, color)
-                if pixel ~= zerostring then
-                    pixel = Pixel.Data.Dot[pixel]
-                    --local x, y = Pixel.PushColor(x, y)
-                    if not allcolor then
-                        --local color = Pixel.GetColor(str, x, y)
-                        --local color = color[x] and color[x][y]
-
-                        --if color==nil then print(x, y, color) end
-                        --if not allcolor and color then
-                        --find all 8 pixels
-
-                        --[[
-                        if not color then
-                            local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
-                            for i = 1, 8 do
-                                color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
-                                if color then
-                                    break
-                                end
-                            end
-                        end
-                        --]]
-
-
-
-                        --Ugly formula time!
-                        --v1
-                        local dx = colordata[x]
-                        local dx2 = colordata[x + 1]
-                        local color = ((dx) and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3])) or ((dx2) and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]))
-
-
-
-
-
-
-
-
-
-
-
-
-                        if color then
-                            --color = tostring(Pixel.Color(color))
-                            color = Pixel.Color[color]
-
-                        else
-                            color = resetcolor
-                        end
-                        if currentcolor == color then
-                            --Do Nothing
-                        else
-                            --table.insert(out, color)
-                            out[#out + 1] = color
-                            currentcolor = color
-                        end
-                    end
-                    --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
-                    --table.insert(out, pixel)
-                    out[#out + 1] = pixel
-                else
-                    --table.insert(out, zerodot)
-                    out[#out + 1] = zerodot
-                end
-            end
-            --table.insert(out, Pixel.Data.NewLine)
-            --table.insert(out, '\n')
-            out[#out + 1] = '\n'
-        end
-        --table.insert(out, resetcolor)
-        out[#out + 1] = resetcolor
-        --ppp(out)
-        return table.concat(out)
-    end
-
-
-
-
-
-
-
-
-
-
-    Pixel.ToDotsParallel = function(str, str2) --converts a given data table
-        --[[
-        if nomax then
-            local min, max = nil, nil
-            for x, v in pairs(str.Data) do
-                min = min and (x < min and x or min) or x
-                max = max and (x > max and x or max) or x
-            end
-            minx, maxx = min, max
-        end
-        --]]
-
-        --The pixels might look off, but they are not
-        --[[
-        Format:
-        t[x][y]
-    
-        ]]
-        --Data
-        --str = GetPixelData(str) --Read Only
-        local data, colordata = str.Data, str.Color
-        local data2, colordata2 = str2.Data, str2.Color
-        --local data, color = str.Data, str.Color
-        --[[
-        if ReverseY then
-            local function reversey(t)
-                local new = {}
-                for x, v in pairs(t) do
-                    for y, v2 in pairs(v) do
-                        new[x] = new[x] or {}
-                        new[x][-y] = v2
-                    end
-                end
-                return new
-            end
-            data = reversey(data)
-            color = reversey(color)
-        end
-        --]]
-        --Make sure to not write to str
-        --[[
-        str = {
-            Data = data,
-            Color = color
-        }
-        --]]
-        --Stats
-        --[[
-        local function getmin(t)
-            local c = nil
-            for k, v in pairs(t) do
-                if not c or k < c then
-                    c = k
-                end
-            end
-            return c
-        end
-        local function getmax(t)
-            local c = nil
-            for k, v in pairs(t) do
-                if not c or k > c then
-                    c = k
-                end
-            end
-            return c
-        end
-        local function itrow(t, func)
-            local t2 = {}
-            for k, v in pairs(t) do
-                --table.insert(t2, func(v))
-                local a = func(v)
-                if a then
-                    t2[a] = true
-                end
-            end
-            return func(t2)
-        end
-        --]]
-        --print(minx, maxx, miny, maxy)
-        --Optimizations
-        local out = {}
-        --local zerostring = string.rep('0', 8)
-        local zerostring = 0
-        local zerodot = Pixel.Data.Dot[zerostring]
-        local currentcolor = nil
-        local allcolor = nil
-        --local resetcolor = tostring(Pixel.Color('reset'))
-        local resetcolor = Pixel.Color['reset']
-        if str.Color.All then
-            --local c = tostring(Pixel.Color(str.Color.All))
-            local c = Pixel.Color[str.Color.All]
-            --table.insert(out, c)
-            out[#out + 1] = c
-            allcolor = c
-        end
-        --[[
-        local rows = {}
-        for x, v in pairs(data) do
-            for y, v2 in pairs(v) do
-                rows[y] = rows[y] or {}
-                rows[y][x] = v2
-            end
-        end
-        --]]
-        --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
-        --Main loop
-        if not miny then
-            return ''
-        end
-        --for y = miny, maxy, 4 do
-        for y = maxy, miny, -4 do --FlipY
-            --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
-            --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
-            for x = minx, maxx, 2 do
-                --print(x, y)
-                --Get Pixels
-                --[[
-                local pixel = ''
-                local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
-                for i = 1, 8 do
-                    local x, y = x + c[i][1], y + c[i][2]
-                    pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
-                end
-                --]]
-
-
-
-
-
-
-                --ugly formula
-
-                --v1
-                --[[
-                local dx21 = data2[x]
-                local dx22 = data2[x + 1]
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = ((dx or dx21) and ((dx[y] or dx21[y] or '0') .. (dx[y + 1] or dx21[y + 1] or '0') .. (dx[y + 2] or dx21[y + 2] or '0') .. (dx[y + 3] or dx21[y + 3] or '0')) or '0000') .. ((dx2 or dx22) and ((dx2[y] or dx22[y] or '0') .. (dx2[y + 1] or dx22[y + 1] or '0') .. (dx2[y + 2] or dx22[y + 2] or '0') .. (dx2[y + 3] or dx22[y + 3] or '0')) or '0000')
-                --]]
-
-
-                --v2
-                --[[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
-                --]]
-
-                --v4
-                --[[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local dx21 = data2[x]
-                local dx22 = data2[x + 1]
-                local pixel = 
-                ((dx or dx21) and (
-                    (dx[y] or dx21[y] or 0) * 128 + 
-                    (dx[y + 1] or dx21[y + 1] or 0) * 64 + 
-                    (dx[y + 2] or dx21[y + 2] or 0) * 32 + 
-                    (dx[y + 3] or dx21[y + 3] or 0) * 16
-                ) or 0) + 
-                ((dx2 or dx22) and (
-                    (dx2[y] or dx22[y] or 0) * 8 + 
-                    (dx2[y + 1] or dx22[y + 1] or 0) * 4 + 
-                    (dx2[y + 2] or dx22[y + 2] or 0) * 2 + 
-                    (dx2[y + 3] or dx22[y + 3] or 0)
-                ) or 0)
-                --]]
-
-                --v4
-                -- [[
-                local dx = data[x]
-                local dx2 = data[x + 1]
-                local dx21 = data2[x]
-                local dx22 = data2[x + 1]
-                local pixel = 
-                ((dx and dx21) and (
-                    (dx[y] or dx21[y] or 0) * 128 + 
-                    (dx[y - 1] or dx21[y - 1] or 0) * 64 + 
-                    (dx[y - 2] or dx21[y - 2] or 0) * 32 + 
-                    (dx[y - 3] or dx21[y - 3] or 0) * 16
-                ) or
-                (dx) and (
-                    (dx[y] or 0) * 128 + 
-                    (dx[y - 1] or 0) * 64 + 
-                    (dx[y - 2] or 0) * 32 + 
-                    (dx[y - 3] or 0) * 16
-                ) or
-                (dx21) and (
-                    (dx21[y] or 0) * 128 + 
-                    (dx21[y - 1] or 0) * 64 + 
-                    (dx21[y - 2] or 0) * 32 + 
-                    (dx21[y - 3] or 0) * 16
-                )
-                
-                or 0) + 
-                ((dx2 and dx22) and (
-                    (dx2[y] or dx22[y] or 0) * 8 + 
-                    (dx2[y - 1] or dx22[y - 1] or 0) * 4 + 
-                    (dx2[y - 2] or dx22[y - 2] or 0) * 2 + 
-                    (dx2[y - 3] or dx22[y - 3] or 0)
-                ) or
-                (dx2) and (
-                    (dx2[y] or 0) * 8 + 
-                    (dx2[y - 1] or 0) * 4 + 
-                    (dx2[y - 2] or 0) * 2 + 
-                    (dx2[y - 3] or 0)
-                ) or
-                (dx22) and (
-                    (dx22[y] or 0) * 8 + 
-                    (dx22[y - 1] or 0) * 4 + 
-                    (dx22[y - 2] or 0) * 2 + 
-                    (dx22[y - 3] or 0)
-                )
-                
-                or 0)
-                --]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                --print(pixel, x, y, color)
-                if pixel ~= zerostring then
-                    pixel = Pixel.Data.Dot[pixel]
-                    --local x, y = Pixel.PushColor(x, y)
-                    if not allcolor then
-                        --local color = Pixel.GetColor(str, x, y)
-                        --local color = color[x] and color[x][y]
-
-                        --if color==nil then print(x, y, color) end
-                        --if not allcolor and color then
-                        --find all 8 pixels
-
-                        --[[
-                        if not color then
-                            local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
-                            for i = 1, 8 do
-                                color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
-                                if color then
-                                    break
-                                end
-                            end
-                        end
-                        --]]
-
-
-
-                        --Ugly formula time!
-                        --v1
-                        --[[
-                        local dx21 = data2[x]
-                        local dx22 = data2[x + 1]
-                        local dx = data[x]
-                        local dx2 = data[x + 1]
-                        local pixel = ((dx or dx21) and ((dx[y] or dx21[y]) or (dx[y + 1] or dx21[y + 1]) or (dx[y + 2] or dx21[y + 2]) or (dx[y + 3] or dx21[y + 3]))) or ((dx2 or dx22) and ((dx2[y] or dx22[y]) or (dx2[y + 1] or dx22[y + 1]) or (dx2[y + 2] or dx22[y + 2]) or (dx2[y + 3] or dx22[y + 3])))
-                        --]]
-                        --v2 
-                        local dx21 = colordata2[x]
-                        local dx22 = colordata2[x + 1]
-                        local dx = colordata[x]
-                        local dx2 = colordata[x + 1]
-                        local color = 
-                        dx and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3]) or
-                        dx2 and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]) or 
-                        dx21 and (dx21[y] or dx21[y - 1] or dx21[y - 2] or dx21[y - 3]) or 
-                        dx22 and (dx22[y] or dx22[y - 1] or dx22[y - 2] or dx22[y - 3])
-
-
-
-
-
-
-
-
-
-
-
-
-                        if color then
-                            --color = tostring(Pixel.Color(color))
-                            color = Pixel.Color[color]
-
-                        else
-                            color = resetcolor
-                        end
-                        if currentcolor == color then
-                            --Do Nothing
-                        else
-                            --table.insert(out, color)
-                            out[#out + 1] = color
-                            currentcolor = color
-                        end
-                    end
-                    --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
-                    --table.insert(out, pixel)
-                    out[#out + 1] = pixel
-                else
-                    --table.insert(out, zerodot)
-                    out[#out + 1] = zerodot
-                end
-            end
-            --table.insert(out, Pixel.Data.NewLine)
-            --table.insert(out, '\n')
-            out[#out + 1] = '\n'
-        end
-        --table.insert(out, resetcolor)
-        out[#out + 1] = resetcolor
-        --ppp(out)
-        return table.concat(out)
-    end
-
-
-
-
-
-
-
-
-    --Optimize!
-    --Pixel.CircleGen = function(self, cx, cy, r, options)
-    Pixel.CircleGen = function(str, cx, cy, r, options)
-        --str = GetPixelData(self)
-        options = options or {}
-        local color = options.color
-        --[[
-        Scanline Algorithm
-        https://stackoverflow.com/questions/10322341/simple-algorithm-for-drawing-filled-ellipse-in-c-c
-        Do a quarter, then mirror
-        Region is: Right Down
-        --]]
-
-        --[[
-        local function check(x, y)
-            --if r can be negative
-            --return x * x * r * r + y * y * r * r <= r * r * r * r
-            --if r is positive
-            return x * x + y * y <= r * r
-        end
-        --]]
-
-
-
-        --precompute
-        local r2 = r * r
-
-        local x = r
-        for y = 0, r do
+        --min, max, to prevent screen bobbing
+        local minx, maxx = screenrect[1], screenrect[3]
+        local miny, maxy = -screenrect[4], -screenrect[2]
+        --miny, maxy = -20, 20
+
+        --minx and maxx not needed, modified, OPTIMIZED
+        --write to str, row scanning removed
+        --Pixel.Color removed
+        Pixel.Convert = {}
+
+        --MODIFIED to render cartesian
+        Pixel.Convert.ToDots = function(str) --converts a given data table
             --[[
-            local a = false
-            repeat
-                a = x * x + y * y <= r2
-                x = x - 1
-            until a
-            x = x + 1
+            if nomax then
+                local min, max = nil, nil
+                for x, v in pairs(str.Data) do
+                    min = min and (x < min and x or min) or x
+                    max = max and (x > max and x or max) or x
+                end
+                minx, maxx = min, max
+            end
             --]]
-            -- [[
-            x = x + 1
-            repeat
-                x = x - 1
-            until x * x + y * y <= r2
-            --]]
-           
-            
-            for x2 = 0, x do
-                --[[
-                Pixel.SetPixel(str, cx + x2, cy + y, '1', options)
-                Pixel.SetPixel(str, cx - x2, cy + y, '1', options)
-                Pixel.SetPixel(str, cx + x2, cy - y, '1', options)
-                Pixel.SetPixel(str, cx - x2, cy - y, '1', options)
-                --]]
-                str.Data[cx + x2] = str.Data[cx + x2] or {}
-                str.Data[cx - x2] = str.Data[cx - x2] or {}
-                str.Data[cx + x2][cy + y] = '1'
-                str.Data[cx - x2][cy + y] = '1'
-                str.Data[cx + x2][cy - y] = '1'
-                str.Data[cx - x2][cy - y] = '1'
-    
-    
-                --color --FIX
-                --if true then
-                    str.Color[cx + x2] = str.Color[cx + x2] or {}
-                    str.Color[cx - x2] = str.Color[cx - x2] or {}
-                    str.Color[cx + x2][cy + y] = color
-                    str.Color[cx - x2][cy + y] = color
-                    str.Color[cx + x2][cy - y] = color
-                    str.Color[cx - x2][cy - y] = color
-                --end
-            end
-    
-        end
-        return str
-    end
 
-    local circlecache = {}
-    --Pixel.Circle = function(self, cx, cy, r, options)
-    Pixel.Circle = function(str, cx, cy, r, options)
-        --local str = GetPixelData(self)
-        local circle = nil
-        if circlecache[r] then
-            
-        else
-            circlecache[r] = Pixel.CircleGen(Pixel.New(), 0, 0, r)
-        end
-        local c = options and options.color
-        circle = circlecache[r]
-        for x, v in pairs(circle.Data) do
-            for y, v2 in pairs(v) do
-                local x, y = x + cx, y + cy
-                str.Data[x] = str.Data[x] or {}
-                str.Data[x][y] = v2
-
-                --color
-                str.Color[x] = str.Color[x] or {}
-                str.Color[x][y] = c
-            end
-        end
-        return str
-    end
-
-    Pixel.New = function()
-        return {
-            Data = {},
-            Color = {}
-        }
-    end
-
-
-
-
-
-
-
-
-
-    --Calculate Functions
-    local function IsNote(note)
-        return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
-    end
-    local function IsPointInRectangle(x, y, x1, y1, x2, y2)
-        --[[
-            assumptions
-            x1 < x2
-            y1 < y2
-        ]]
-        return x1 <= x and x <= x2 and y1 <= y and y <= y2
-    end
-    local function RayIntersectsRectangle(x, y, sx, sy, x1, y1, x2, y2)
-        --[[
-            assumptions
-            x1 < x2
-            y1 < y2
-        ]]
-        x1, y1, x2, y2 = x1 - x, y1 - y, x2 - x, y2 - y
-        --now we are at origin!
-    
-    
-        --[[
-            just plug in!
-    
-            y=mx
-            x=y/m
-        ]]
-    
-        local m = sy / sx
-    
-    
-        
-        if sy < 0 then
-            --d (y = y1)
-            local x3, y3 = y1 / m, y1
-            if x1 <= x3 and x3 <= x2 then
-                return x3, y3
-            end
-        else
-            --u (y = y2)
-            local x3, y3 = y2 / m, y2
-            if x1 <= x3 and x3 <= x2 then
-                return x3, y3
-            end
-        end
-    
-        
-        if sx < 0 then
-            --l (x = x1)
-            local x3, y3 = x1, x1 * m
-            if y1 <= y3 and y3 <= y2 then
-                return x3, y3
-            end
-        else
-            --r (x = x2)
-            local x3, y3 = x2, x2 * m
-            if y1 <= y3 and y3 <= y2 then
-                return x3, y3
-            end
-        end
-    
-        return nil
-    end
-
-    local function CalculateLoadMs(note, ms)
-        --return ms - ((tracklength / note.speed) + buffer)
-        --support negative speed
-        --return ms - ((tracklength / math.abs(note.speed)) + buffer)
-        --bufferlength
-        --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
-
-        --x, y
-        local x, y = RayIntersectsRectangle(0, 0, -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-        --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
-        return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
-    end
-    --[[
-    local function CalculateLoadPosition(note, lms)
-        return (note.ms - lms) * note.speed + target
-    end
-    --]]
-    local function CalculatePosition(note, ms)
-        --return note.loadp - (note.speed * (ms - note.loadms))
-
-        --x, y + relative
-        -- if notems is 200 and ms is 100
-        --[[
-        if target[1] + (-note.speed[1] * (note.ms - ms - note.delay)) > unloadrect[3] then
-            error(table.concat({note.n, target[1] + (-note.speed[1] * (note.ms - ms - note.delay))}, '\n'))
-        end
-        --]]
-
-        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
-        --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
-
-        --[[
-        if d then
-            --disable delay
-            return note.loadp - (note.speed * (ms - note.loadms))
-        else
-            return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
-        end
-        --]]
-    end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    local function RenderBarline(out, note)
-        local x = math.floor(note.p[1])
-        local y = math.floor(note.p[2])
-        local y1, y2 = y - tracky, y + tracky
-        for y = y1, y2 do
+            --The pixels might look off, but they are not
             --[[
-            --local a = Pixel.GetPixel(out, x, y)
-            local a = out.Data[x] and out.Data[x][y]
-            if a == '0' or a == nil then
-                --Pixel.SetPixel(out, x, y, '1')
-                out.Data[x] = out.Data[x] or {}
-                out.Data[x][y] = '1'
+            Format:
+            t[x][y]
+        
+            ]]
+            --Data
+            --str = GetPixelData(str) --Read Only
+            local data, colordata = str.Data, str.Color
+            
+            --local data, color = str.Data, str.Color
+            --[[
+            if ReverseY then
+                local function reversey(t)
+                    local new = {}
+                    for x, v in pairs(t) do
+                        for y, v2 in pairs(v) do
+                            new[x] = new[x] or {}
+                            new[x][-y] = v2
+                        end
+                    end
+                    return new
+                end
+                data = reversey(data)
+                color = reversey(color)
             end
             --]]
-            out.Data[x] = out.Data[x] or {}
-            out.Data[x][y] = '1'
-        end
-    end
-
-    local function RenderCircle(out, note, p)     
-        --Pixel.Circle(out, math.floor(note.p), y, noteradius * note.radius, renderconfig[note.type])
-        --add support for ends (faster)
-        p = p or note.p
-        Pixel.Circle(out, math.floor(p[1]), math.floor(p[2]), noteradius * note.radius, renderconfig[note.type])
-    end
-
-    local function RenderRect(out, x1, y1, x2, y2, options)
-        x1 = math.floor(x1)
-        y1 = math.floor(y1)
-        x2 = math.floor(x2)
-        y2 = math.floor(y2)
-        local options = options or {}
-        color = options.color
-        --clipping moved
-        --Actual rendering
-        for y = y1, y2 do
-            for x = x1, x2 do
-                --Pixel.SetPixel(out, x, y, '1')
-                out.Data[x] = out.Data[x] or {}
-                out.Data[x][y] = '1'
-                if color then
-                    --Pixel.SetColor(out, x, y, color)
-                    out.Color[x] = out.Color[x] or {}
-                    out.Color[x][y] = color
+            --Make sure to not write to str
+            --[[
+            str = {
+                Data = data,
+                Color = color
+            }
+            --]]
+            --Stats
+            --[[
+            local function getmin(t)
+                local c = nil
+                for k, v in pairs(t) do
+                    if not c or k < c then
+                        c = k
+                    end
+                end
+                return c
+            end
+            local function getmax(t)
+                local c = nil
+                for k, v in pairs(t) do
+                    if not c or k > c then
+                        c = k
+                    end
+                end
+                return c
+            end
+            local function itrow(t, func)
+                local t2 = {}
+                for k, v in pairs(t) do
+                    --table.insert(t2, func(v))
+                    local a = func(v)
+                    if a then
+                        t2[a] = true
+                    end
+                end
+                return func(t2)
+            end
+            --]]
+            --print(minx, maxx, miny, maxy)
+            --Optimizations
+            local out = {}
+            --local zerostring = string.rep('0', 8)
+            local zerostring = 0
+            local zerodot = Pixel.Data.Dot[zerostring]
+            local currentcolor = nil
+            local allcolor = nil
+            --local resetcolor = tostring(Pixel.Color('reset'))
+            local resetcolor = Pixel.Color['reset']
+            if str.Color.All then
+                --local c = tostring(Pixel.Color(str.Color.All))
+                local c = Pixel.Color[str.Color.All]
+                --table.insert(out, c)
+                out[#out + 1] = c
+                allcolor = c
+            end
+            --[[
+            local rows = {}
+            for x, v in pairs(data) do
+                for y, v2 in pairs(v) do
+                    rows[y] = rows[y] or {}
+                    rows[y][x] = v2
                 end
             end
-        end
-    end
-
-    --[[
-    local clipx1 = (trackstart - bufferlength)
-    local clipx2 = (tracklength + bufferlength)
-    --]]
-    local function RenderNote(out, note, speedopt)
-        local n = note.type
-        if n == 1 or n == 2 or n == 3 or n == 4 then
-            RenderCircle(out, note)
-        elseif n == 5 or n == 6 then
-            --[=[
-            RenderCircle(out, note)
-            local endnote = note.endnote
-            --Distance = speed * time
-            local length = (endnote.ms - note.ms) * note.speed
-            --Render start and end, and rect
-            --RenderCircle(out, note)
-            --RenderCircle(out, endnote)
-            local r = noteradius * note.radius
-            local x1, x2 = math.floor(note.p), math.floor(note.p + length)
-            local y1 = math.floor(y - r)
-            local y2 = math.floor(y + r)
-        
-            RenderCircle(out, endnote, x2)
-
-            if speedopt then
-                
-            else
-                --x reverse (x only (y is irrelevant right now))
-                if x1 > x2 then
-                    x1, x2 = x2, x1
-                end
-
-
-                --Clip!
-                --Don't use ClipN since function overhead
-                if x1 < clipx1 then
-                    x1 = clipx1
-                end
-
-                if x2 > clipx2 then
-                    x2 = clipx2
-                end
-
-
-                --[[
-                if y1 > y2 then
-                    y1, y2 = y2, y1
-                end
-                --]]
+            --]]
+            --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
+            --Main loop
+            if not miny then
+                return ''
             end
-            RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
-            --]=]
-
-
-
-
-
-        elseif n == 7 then
-
-            --DEBUG
-            note.radius = 0.8
-            RenderCircle(out, note)
-        elseif n == 8 then
-            --RenderCircle(out, note.startnote, note.p)
-            --[=[
-            --lazy, do this faster
-            if note.renderproxy then
-                note.renderproxy.p = note.p
-            else
-                local startnote = note.startnote
-                note.renderproxy = {}
-                for k, v in pairs(startnote) do
+            --for y = miny, maxy, 4 do
+            for y = maxy, miny, -4 do --FlipY
+                --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
+                --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
+                for x = minx, maxx, 2 do
+                    --print(x, y)
+                    --Get Pixels
                     --[[
-                    if k ~= 'type' then
+                    local pixel = ''
+                    local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                    for i = 1, 8 do
+                        local x, y = x + c[i][1], y + c[i][2]
+                        pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
+                    end
+                    --]]
+
+
+
+
+
+
+                    --ugly formula
+
+                    --v1
+                    --[[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = ((dx) and ((dx[y] or '0') .. (dx[y + 1] or '0') .. (dx[y + 2] or '0') .. (dx[y + 3] or '0')) or '0000') .. ((dx2) and ((dx2[y] or '0') .. (dx2[y + 1] or '0') .. (dx2[y + 2] or '0') .. (dx2[y + 3] or '0')) or '0000')
+                    --]]
+
+
+                    --v2 (SLOW)
+                    --[[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
+                    --]]
+
+                    --v3
+                    --[[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = 
+                    (dx and (
+                        (dx[y] or 0) + 
+                        (dx[y + 1] or 0) * 2 + 
+                        (dx[y + 2] or 0) * 4 + 
+                        (dx[y + 3] or 0) * 8
+                    ) or 0) + 
+                    (dx2 and (
+                        (dx2[y] or 0) * 16 + 
+                        (dx2[y + 1] or 0) * 32 + 
+                        (dx2[y + 2] or 0) * 64 + 
+                        (dx2[y + 3] or 0) * 128
+                    ) or 0)
+                    --]]
+
+                    --v4
+                    -- [[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = 
+                    (dx and (
+                        (dx[y] or 0) * 128 + 
+                        (dx[y - 1] or 0) * 64 + 
+                        (dx[y - 2] or 0) * 32 + 
+                        (dx[y - 3] or 0) * 16
+                    ) or 0) + 
+                    (dx2 and (
+                        (dx2[y] or 0) * 8 + 
+                        (dx2[y - 1] or 0) * 4 + 
+                        (dx2[y - 2] or 0) * 2 + 
+                        (dx2[y - 3] or 0)
+                    ) or 0)
+                    --]]
+
+
+                    --print(pixel, x, y, color)
+                    if pixel ~= zerostring then
+                        pixel = Pixel.Data.Dot[pixel]
+                        --local x, y = Pixel.PushColor(x, y)
+                        if not allcolor then
+                            --local color = Pixel.GetColor(str, x, y)
+                            --local color = color[x] and color[x][y]
+
+                            --if color==nil then print(x, y, color) end
+                            --if not allcolor and color then
+                            --find all 8 pixels
+
+                            --[[
+                            if not color then
+                                local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                                for i = 1, 8 do
+                                    color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
+                                    if color then
+                                        break
+                                    end
+                                end
+                            end
+                            --]]
+
+
+
+                            --Ugly formula time!
+                            --v1
+                            local dx = colordata[x]
+                            local dx2 = colordata[x + 1]
+                            local color = ((dx) and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3])) or ((dx2) and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]))
+
+
+
+
+
+
+
+
+
+
+
+
+                            if color then
+                                --color = tostring(Pixel.Color(color))
+                                color = Pixel.Color[color]
+
+                            else
+                                color = resetcolor
+                            end
+                            if currentcolor == color then
+                                --Do Nothing
+                            else
+                                --table.insert(out, color)
+                                out[#out + 1] = color
+                                currentcolor = color
+                            end
+                        end
+                        --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
+                        --table.insert(out, pixel)
+                        out[#out + 1] = pixel
+                    else
+                        --table.insert(out, zerodot)
+                        out[#out + 1] = zerodot
+                    end
+                end
+                --table.insert(out, Pixel.Data.NewLine)
+                --table.insert(out, '\n')
+                out[#out + 1] = '\n'
+            end
+            --table.insert(out, resetcolor)
+            out[#out + 1] = resetcolor
+            --ppp(out)
+            return table.concat(out)
+        end
+
+
+
+
+
+
+
+
+
+
+        Pixel.ToDotsParallel = function(str, str2) --converts a given data table
+            --[[
+            if nomax then
+                local min, max = nil, nil
+                for x, v in pairs(str.Data) do
+                    min = min and (x < min and x or min) or x
+                    max = max and (x > max and x or max) or x
+                end
+                minx, maxx = min, max
+            end
+            --]]
+
+            --The pixels might look off, but they are not
+            --[[
+            Format:
+            t[x][y]
+        
+            ]]
+            --Data
+            --str = GetPixelData(str) --Read Only
+            local data, colordata = str.Data, str.Color
+            local data2, colordata2 = str2.Data, str2.Color
+            --local data, color = str.Data, str.Color
+            --[[
+            if ReverseY then
+                local function reversey(t)
+                    local new = {}
+                    for x, v in pairs(t) do
+                        for y, v2 in pairs(v) do
+                            new[x] = new[x] or {}
+                            new[x][-y] = v2
+                        end
+                    end
+                    return new
+                end
+                data = reversey(data)
+                color = reversey(color)
+            end
+            --]]
+            --Make sure to not write to str
+            --[[
+            str = {
+                Data = data,
+                Color = color
+            }
+            --]]
+            --Stats
+            --[[
+            local function getmin(t)
+                local c = nil
+                for k, v in pairs(t) do
+                    if not c or k < c then
+                        c = k
+                    end
+                end
+                return c
+            end
+            local function getmax(t)
+                local c = nil
+                for k, v in pairs(t) do
+                    if not c or k > c then
+                        c = k
+                    end
+                end
+                return c
+            end
+            local function itrow(t, func)
+                local t2 = {}
+                for k, v in pairs(t) do
+                    --table.insert(t2, func(v))
+                    local a = func(v)
+                    if a then
+                        t2[a] = true
+                    end
+                end
+                return func(t2)
+            end
+            --]]
+            --print(minx, maxx, miny, maxy)
+            --Optimizations
+            local out = {}
+            --local zerostring = string.rep('0', 8)
+            local zerostring = 0
+            local zerodot = Pixel.Data.Dot[zerostring]
+            local currentcolor = nil
+            local allcolor = nil
+            --local resetcolor = tostring(Pixel.Color('reset'))
+            local resetcolor = Pixel.Color['reset']
+            if str.Color.All then
+                --local c = tostring(Pixel.Color(str.Color.All))
+                local c = Pixel.Color[str.Color.All]
+                --table.insert(out, c)
+                out[#out + 1] = c
+                allcolor = c
+            end
+            --[[
+            local rows = {}
+            for x, v in pairs(data) do
+                for y, v2 in pairs(v) do
+                    rows[y] = rows[y] or {}
+                    rows[y][x] = v2
+                end
+            end
+            --]]
+            --for x, v in pairs(str.Color) do if type(v) == 'table' then for y, v2 in pairs(v) do print(x, y, v2) end end end
+            --Main loop
+            if not miny then
+                return ''
+            end
+            --for y = miny, maxy, 4 do
+            for y = maxy, miny, -4 do --FlipY
+                --table.insert(out, string.rep(zerodot, (getmin(rows[y]) - minx - 1) / 2))
+                --for x = minx - (getmin(rows[y]) % 2), maxx, 2 do
+                for x = minx, maxx, 2 do
+                    --print(x, y)
+                    --Get Pixels
+                    --[[
+                    local pixel = ''
+                    local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                    for i = 1, 8 do
+                        local x, y = x + c[i][1], y + c[i][2]
+                        pixel = pixel .. ((data[x] and data[x][y] or false) and data[x][y] or Pixel.Data.Empty)
+                    end
+                    --]]
+
+
+
+
+
+
+                    --ugly formula
+
+                    --v1
+                    --[[
+                    local dx21 = data2[x]
+                    local dx22 = data2[x + 1]
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = ((dx or dx21) and ((dx[y] or dx21[y] or '0') .. (dx[y + 1] or dx21[y + 1] or '0') .. (dx[y + 2] or dx21[y + 2] or '0') .. (dx[y + 3] or dx21[y + 3] or '0')) or '0000') .. ((dx2 or dx22) and ((dx2[y] or dx22[y] or '0') .. (dx2[y + 1] or dx22[y + 1] or '0') .. (dx2[y + 2] or dx22[y + 2] or '0') .. (dx2[y + 3] or dx22[y + 3] or '0')) or '0000')
+                    --]]
+
+
+                    --v2
+                    --[[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local pixel = ((dx) and (table.concat{(dx[y] or '0'), (dx[y + 1] or '0'), (dx[y + 2] or '0'), (dx[y + 3] or '0')}) or '0000') .. ((dx2) and (table.concat{(dx2[y] or '0'), (dx2[y + 1] or '0'), (dx2[y + 2] or '0'), (dx2[y + 3] or '0')}) or '0000')
+                    --]]
+
+                    --v4
+                    --[[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local dx21 = data2[x]
+                    local dx22 = data2[x + 1]
+                    local pixel = 
+                    ((dx or dx21) and (
+                        (dx[y] or dx21[y] or 0) * 128 + 
+                        (dx[y + 1] or dx21[y + 1] or 0) * 64 + 
+                        (dx[y + 2] or dx21[y + 2] or 0) * 32 + 
+                        (dx[y + 3] or dx21[y + 3] or 0) * 16
+                    ) or 0) + 
+                    ((dx2 or dx22) and (
+                        (dx2[y] or dx22[y] or 0) * 8 + 
+                        (dx2[y + 1] or dx22[y + 1] or 0) * 4 + 
+                        (dx2[y + 2] or dx22[y + 2] or 0) * 2 + 
+                        (dx2[y + 3] or dx22[y + 3] or 0)
+                    ) or 0)
+                    --]]
+
+                    --v4
+                    -- [[
+                    local dx = data[x]
+                    local dx2 = data[x + 1]
+                    local dx21 = data2[x]
+                    local dx22 = data2[x + 1]
+                    local pixel = 
+                    ((dx and dx21) and (
+                        (dx[y] or dx21[y] or 0) * 128 + 
+                        (dx[y - 1] or dx21[y - 1] or 0) * 64 + 
+                        (dx[y - 2] or dx21[y - 2] or 0) * 32 + 
+                        (dx[y - 3] or dx21[y - 3] or 0) * 16
+                    ) or
+                    (dx) and (
+                        (dx[y] or 0) * 128 + 
+                        (dx[y - 1] or 0) * 64 + 
+                        (dx[y - 2] or 0) * 32 + 
+                        (dx[y - 3] or 0) * 16
+                    ) or
+                    (dx21) and (
+                        (dx21[y] or 0) * 128 + 
+                        (dx21[y - 1] or 0) * 64 + 
+                        (dx21[y - 2] or 0) * 32 + 
+                        (dx21[y - 3] or 0) * 16
+                    )
+                    
+                    or 0) + 
+                    ((dx2 and dx22) and (
+                        (dx2[y] or dx22[y] or 0) * 8 + 
+                        (dx2[y - 1] or dx22[y - 1] or 0) * 4 + 
+                        (dx2[y - 2] or dx22[y - 2] or 0) * 2 + 
+                        (dx2[y - 3] or dx22[y - 3] or 0)
+                    ) or
+                    (dx2) and (
+                        (dx2[y] or 0) * 8 + 
+                        (dx2[y - 1] or 0) * 4 + 
+                        (dx2[y - 2] or 0) * 2 + 
+                        (dx2[y - 3] or 0)
+                    ) or
+                    (dx22) and (
+                        (dx22[y] or 0) * 8 + 
+                        (dx22[y - 1] or 0) * 4 + 
+                        (dx22[y - 2] or 0) * 2 + 
+                        (dx22[y - 3] or 0)
+                    )
+                    
+                    or 0)
+                    --]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    --print(pixel, x, y, color)
+                    if pixel ~= zerostring then
+                        pixel = Pixel.Data.Dot[pixel]
+                        --local x, y = Pixel.PushColor(x, y)
+                        if not allcolor then
+                            --local color = Pixel.GetColor(str, x, y)
+                            --local color = color[x] and color[x][y]
+
+                            --if color==nil then print(x, y, color) end
+                            --if not allcolor and color then
+                            --find all 8 pixels
+
+                            --[[
+                            if not color then
+                                local c = {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {1, 0}, {1, 1}, {1, 2}, {1, 3}}
+                                for i = 1, 8 do
+                                    color = Pixel.GetColor(str, x + c[i][1], y + c[i][2])
+                                    if color then
+                                        break
+                                    end
+                                end
+                            end
+                            --]]
+
+
+
+                            --Ugly formula time!
+                            --v1
+                            --[[
+                            local dx21 = data2[x]
+                            local dx22 = data2[x + 1]
+                            local dx = data[x]
+                            local dx2 = data[x + 1]
+                            local pixel = ((dx or dx21) and ((dx[y] or dx21[y]) or (dx[y + 1] or dx21[y + 1]) or (dx[y + 2] or dx21[y + 2]) or (dx[y + 3] or dx21[y + 3]))) or ((dx2 or dx22) and ((dx2[y] or dx22[y]) or (dx2[y + 1] or dx22[y + 1]) or (dx2[y + 2] or dx22[y + 2]) or (dx2[y + 3] or dx22[y + 3])))
+                            --]]
+                            --v2 
+                            local dx21 = colordata2[x]
+                            local dx22 = colordata2[x + 1]
+                            local dx = colordata[x]
+                            local dx2 = colordata[x + 1]
+                            local color = 
+                            dx and (dx[y] or dx[y - 1] or dx[y - 2] or dx[y - 3]) or
+                            dx2 and (dx2[y] or dx2[y - 1] or dx2[y - 2] or dx2[y - 3]) or 
+                            dx21 and (dx21[y] or dx21[y - 1] or dx21[y - 2] or dx21[y - 3]) or 
+                            dx22 and (dx22[y] or dx22[y - 1] or dx22[y - 2] or dx22[y - 3])
+
+
+
+
+
+
+
+
+
+
+
+
+                            if color then
+                                --color = tostring(Pixel.Color(color))
+                                color = Pixel.Color[color]
+
+                            else
+                                color = resetcolor
+                            end
+                            if currentcolor == color then
+                                --Do Nothing
+                            else
+                                --table.insert(out, color)
+                                out[#out + 1] = color
+                                currentcolor = color
+                            end
+                        end
+                        --table.insert(out, string.rep(zerodot, (x - minx - 1) / 2))
+                        --table.insert(out, pixel)
+                        out[#out + 1] = pixel
+                    else
+                        --table.insert(out, zerodot)
+                        out[#out + 1] = zerodot
+                    end
+                end
+                --table.insert(out, Pixel.Data.NewLine)
+                --table.insert(out, '\n')
+                out[#out + 1] = '\n'
+            end
+            --table.insert(out, resetcolor)
+            out[#out + 1] = resetcolor
+            --ppp(out)
+            return table.concat(out)
+        end
+
+
+
+
+
+
+
+
+        --Optimize!
+        --Pixel.CircleGen = function(self, cx, cy, r, options)
+        Pixel.CircleGen = function(str, cx, cy, r, options)
+            --str = GetPixelData(self)
+            options = options or {}
+            local color = options.color
+            --[[
+            Scanline Algorithm
+            https://stackoverflow.com/questions/10322341/simple-algorithm-for-drawing-filled-ellipse-in-c-c
+            Do a quarter, then mirror
+            Region is: Right Down
+            --]]
+
+            --[[
+            local function check(x, y)
+                --if r can be negative
+                --return x * x * r * r + y * y * r * r <= r * r * r * r
+                --if r is positive
+                return x * x + y * y <= r * r
+            end
+            --]]
+
+
+
+            --precompute
+            local r2 = r * r
+
+            local x = r
+            for y = 0, r do
+                --[[
+                local a = false
+                repeat
+                    a = x * x + y * y <= r2
+                    x = x - 1
+                until a
+                x = x + 1
+                --]]
+                -- [[
+                x = x + 1
+                repeat
+                    x = x - 1
+                until x * x + y * y <= r2
+                --]]
+            
+                
+                for x2 = 0, x do
+                    --[[
+                    Pixel.SetPixel(str, cx + x2, cy + y, '1', options)
+                    Pixel.SetPixel(str, cx - x2, cy + y, '1', options)
+                    Pixel.SetPixel(str, cx + x2, cy - y, '1', options)
+                    Pixel.SetPixel(str, cx - x2, cy - y, '1', options)
+                    --]]
+                    str.Data[cx + x2] = str.Data[cx + x2] or {}
+                    str.Data[cx - x2] = str.Data[cx - x2] or {}
+                    str.Data[cx + x2][cy + y] = '1'
+                    str.Data[cx - x2][cy + y] = '1'
+                    str.Data[cx + x2][cy - y] = '1'
+                    str.Data[cx - x2][cy - y] = '1'
+        
+        
+                    --color --FIX
+                    --if true then
+                        str.Color[cx + x2] = str.Color[cx + x2] or {}
+                        str.Color[cx - x2] = str.Color[cx - x2] or {}
+                        str.Color[cx + x2][cy + y] = color
+                        str.Color[cx - x2][cy + y] = color
+                        str.Color[cx + x2][cy - y] = color
+                        str.Color[cx - x2][cy - y] = color
+                    --end
+                end
+        
+            end
+            return str
+        end
+
+        local circlecache = {}
+        --Pixel.Circle = function(self, cx, cy, r, options)
+        Pixel.Circle = function(str, cx, cy, r, options)
+            --local str = GetPixelData(self)
+            local circle = nil
+            if circlecache[r] then
+                
+            else
+                circlecache[r] = Pixel.CircleGen(Pixel.New(), 0, 0, r)
+            end
+            local c = options and options.color
+            circle = circlecache[r]
+            for x, v in pairs(circle.Data) do
+                for y, v2 in pairs(v) do
+                    local x, y = x + cx, y + cy
+                    str.Data[x] = str.Data[x] or {}
+                    str.Data[x][y] = v2
+
+                    --color
+                    str.Color[x] = str.Color[x] or {}
+                    str.Color[x][y] = c
+                end
+            end
+            return str
+        end
+
+        Pixel.New = function()
+            return {
+                Data = {},
+                Color = {}
+            }
+        end
+
+
+
+
+
+
+
+
+
+        --Calculate Functions
+        local function IsNote(note)
+            return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
+        end
+        local function IsPointInRectangle(x, y, x1, y1, x2, y2)
+            --[[
+                assumptions
+                x1 < x2
+                y1 < y2
+            ]]
+            return x1 <= x and x <= x2 and y1 <= y and y <= y2
+        end
+        local function RayIntersectsRectangle(x, y, sx, sy, x1, y1, x2, y2)
+            --[[
+                assumptions
+                x1 < x2
+                y1 < y2
+            ]]
+            x1, y1, x2, y2 = x1 - x, y1 - y, x2 - x, y2 - y
+            --now we are at origin!
+        
+        
+            --[[
+                just plug in!
+        
+                y=mx
+                x=y/m
+            ]]
+        
+            local m = sy / sx
+        
+        
+            
+            if sy < 0 then
+                --d (y = y1)
+                local x3, y3 = y1 / m, y1
+                if x1 <= x3 and x3 <= x2 then
+                    return x3, y3
+                end
+            else
+                --u (y = y2)
+                local x3, y3 = y2 / m, y2
+                if x1 <= x3 and x3 <= x2 then
+                    return x3, y3
+                end
+            end
+        
+            
+            if sx < 0 then
+                --l (x = x1)
+                local x3, y3 = x1, x1 * m
+                if y1 <= y3 and y3 <= y2 then
+                    return x3, y3
+                end
+            else
+                --r (x = x2)
+                local x3, y3 = x2, x2 * m
+                if y1 <= y3 and y3 <= y2 then
+                    return x3, y3
+                end
+            end
+        
+            return nil
+        end
+
+        local function CalculateLoadMs(note, ms)
+            --return ms - ((tracklength / note.speed) + buffer)
+            --support negative speed
+            --return ms - ((tracklength / math.abs(note.speed)) + buffer)
+            --bufferlength
+            --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
+
+            --x, y
+            local x, y = RayIntersectsRectangle(0, 0, -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+            --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
+            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+        end
+        --[[
+        local function CalculateLoadPosition(note, lms)
+            return (note.ms - lms) * note.speed + target
+        end
+        --]]
+        local function CalculatePosition(note, ms)
+            --return note.loadp - (note.speed * (ms - note.loadms))
+
+            --x, y + relative
+            -- if notems is 200 and ms is 100
+            --[[
+            if target[1] + (-note.speed[1] * (note.ms - ms - note.delay)) > unloadrect[3] then
+                error(table.concat({note.n, target[1] + (-note.speed[1] * (note.ms - ms - note.delay))}, '\n'))
+            end
+            --]]
+
+            return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
+            --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
+
+            --[[
+            if d then
+                --disable delay
+                return note.loadp - (note.speed * (ms - note.loadms))
+            else
+                return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
+            end
+            --]]
+        end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        local function RenderBarline(out, note)
+            local x = math.floor(note.p[1])
+            local y = math.floor(note.p[2])
+            local y1, y2 = y - tracky, y + tracky
+            for y = y1, y2 do
+                --[[
+                --local a = Pixel.GetPixel(out, x, y)
+                local a = out.Data[x] and out.Data[x][y]
+                if a == '0' or a == nil then
+                    --Pixel.SetPixel(out, x, y, '1')
+                    out.Data[x] = out.Data[x] or {}
+                    out.Data[x][y] = '1'
+                end
+                --]]
+                out.Data[x] = out.Data[x] or {}
+                out.Data[x][y] = '1'
+            end
+        end
+
+        local function RenderCircle(out, note, p)     
+            --Pixel.Circle(out, math.floor(note.p), y, noteradius * note.radius, renderconfig[note.type])
+            --add support for ends (faster)
+            p = p or note.p
+            Pixel.Circle(out, math.floor(p[1]), math.floor(p[2]), noteradius * note.radius, renderconfig[note.type])
+        end
+
+        local function RenderRect(out, x1, y1, x2, y2, options)
+            x1 = math.floor(x1)
+            y1 = math.floor(y1)
+            x2 = math.floor(x2)
+            y2 = math.floor(y2)
+            local options = options or {}
+            color = options.color
+            --clipping moved
+            --Actual rendering
+            for y = y1, y2 do
+                for x = x1, x2 do
+                    --Pixel.SetPixel(out, x, y, '1')
+                    out.Data[x] = out.Data[x] or {}
+                    out.Data[x][y] = '1'
+                    if color then
+                        --Pixel.SetColor(out, x, y, color)
+                        out.Color[x] = out.Color[x] or {}
+                        out.Color[x][y] = color
+                    end
+                end
+            end
+        end
+
+        --[[
+        local clipx1 = (trackstart - bufferlength)
+        local clipx2 = (tracklength + bufferlength)
+        --]]
+        local function RenderNote(out, note, speedopt)
+            local n = note.type
+            if n == 1 or n == 2 or n == 3 or n == 4 then
+                RenderCircle(out, note)
+            elseif n == 5 or n == 6 then
+                --[=[
+                RenderCircle(out, note)
+                local endnote = note.endnote
+                --Distance = speed * time
+                local length = (endnote.ms - note.ms) * note.speed
+                --Render start and end, and rect
+                --RenderCircle(out, note)
+                --RenderCircle(out, endnote)
+                local r = noteradius * note.radius
+                local x1, x2 = math.floor(note.p), math.floor(note.p + length)
+                local y1 = math.floor(y - r)
+                local y2 = math.floor(y + r)
+            
+                RenderCircle(out, endnote, x2)
+
+                if speedopt then
+                    
+                else
+                    --x reverse (x only (y is irrelevant right now))
+                    if x1 > x2 then
+                        x1, x2 = x2, x1
+                    end
+
+
+                    --Clip!
+                    --Don't use ClipN since function overhead
+                    if x1 < clipx1 then
+                        x1 = clipx1
+                    end
+
+                    if x2 > clipx2 then
+                        x2 = clipx2
+                    end
+
+
+                    --[[
+                    if y1 > y2 then
+                        y1, y2 = y2, y1
+                    end
+                    --]]
+                end
+                RenderRect(out, x1, x2, y1, y2, renderconfig[note.type])
+                --]=]
+
+
+
+
+
+            elseif n == 7 then
+
+                --DEBUG
+                note.radius = 0.8
+                RenderCircle(out, note)
+            elseif n == 8 then
+                --RenderCircle(out, note.startnote, note.p)
+                --[=[
+                --lazy, do this faster
+                if note.renderproxy then
+                    note.renderproxy.p = note.p
+                else
+                    local startnote = note.startnote
+                    note.renderproxy = {}
+                    for k, v in pairs(startnote) do
+                        --[[
+                        if k ~= 'type' then
+                            note.renderproxy[k] = v
+                        end
+                        --]]
+                        --color
                         note.renderproxy[k] = v
                     end
+                end
+                note.renderproxy.p = note.p
+                RenderCircle(out, note.renderproxy)
+                --]=]
+
+                --New (11/17/2022)
+                RenderCircle(out, note)
+
+                local startnote = note.startnote
+                --[[
+                --I'm pretty sure p is calculated but recalc just for sure
+                startnote.p = CalculatePosition(startnote)
+                --]]
+                --nvm, just assume it is calced
+                RenderCircle(out, startnote)
+                --Distance = speed * time
+                --local length = endnote.p - note.p
+                --Render start and end, and rect
+                --RenderCircle(out, note)
+                --RenderCircle(out, endnote)
+                local r = noteradius * note.radius
+                local x1, x2 = math.floor(startnote.p[1]), math.floor(note.p[1])
+                RenderCircle(out, startnote, note.p)
+                local y1 = math.floor(y - r)
+                local y2 = math.floor(y + r)
+            
+                --print(x1, x2)while true do end
+
+                if speedopt then
+                    
+                else
+                    --x reverse (x only (y is irrelevant right now))
+                    if x1 > x2 then
+                        x1, x2 = x2, x1
+                    end
+
+
+                    --Clip!
+                    --Don't use ClipN since function overhead
+                    if x1 < loadrect[1] then
+                        x1 = loadrect[1]
+                    end
+
+                    if x2 > loadrect[3] then
+                        x2 = loadrect[3]
+                    end
+
+
+                    --[[
+                    if y1 > y2 then
+                        y1, y2 = y2, y1
+                    end
                     --]]
-                    --color
-                    note.renderproxy[k] = v
+                end
+                RenderRect(out, x1, y1, x2, y2, renderconfig[startnote.type])
+            end
+        end
+
+        local function RenderStatus(out, status, ms)
+            --[[
+            local slope = statusanimationmove / (statusanimationlength / 2)
+            local anim = -slope * math.abs((ms - status.startms) - (statuslength / ))
+            --]]
+            local slope = statusanimationmove / (statusanimationlength / 2)
+            local anim = -slope * math.abs(((ms - status.startms) / (statuslength / statusanimationlength)) - (statusanimationmove / slope)) + statusanimationmove
+
+            --print(statusanimationlength, statusanimationmove, anim, ms - status.startms)io.read()
+            local t = timingpixel[status.status]
+            local o = t.Offset
+            local c = t.Color.All --Color for all
+            local ox, oy = 0, -math.floor(noteradius * 1.6) - 8 - math.floor(anim)
+            local tox, toy = o[1] + ox, o[2] + oy
+            --print(tox, toy)
+
+            for x = 1, timingpixel.Size[1] do
+                for y = 1, timingpixel.Size[2] do
+                    local px, py = x + tox, y + toy
+                    out.Data[px] = out.Data[px] or {}
+                    out.Data[px][-py] = t.Data[x] and t.Data[x][y] --FlipY
+
+
+                    out.Color[px] = out.Color[px] or {}
+                    out.Color[px][-py] = c --FlipY
                 end
             end
-            note.renderproxy.p = note.p
-            RenderCircle(out, note.renderproxy)
+            --print(Pixel.Convert.ToDots(out, nil, true))io.read()
+            --[=[
+            for x, v in pairs(t.Data) do
+                for y, v2 in pairs(v) do
+                    if v2 == '1' then
+                        local x, y = x + tox, y + toy
+                        out.Data[x] = out.Data[x] or {}
+                        out.Data[x][y] = v2
+
+
+                        out.Color[x] = out.Color[x] or {}
+                        out.Color[x][y] = c
+                        --[[
+                        if c[x] and c[x][y] then
+                            out.Color[x] = out.Color[x] or {}
+                            out.Color[x][y] = c[x][y]
+                        end
+                        --]]
+                    end
+                end
+            end
+            --]=]
+        end
+
+        --Render OVER! the note
+        --TODO
+        local function RenderFlash(out, status)
+            local t = flashpixel[status.status]
+            local o = t.Offset
+            local c = t.Color.All --Color for all
+            local ox, oy = 0, 0
+            for x, v in pairs(t.Data) do
+                for y, v2 in pairs(v) do
+                    if v2 == '1' then
+                        local x, y = x + o[1] + ox, y + o[2] + oy
+                        out.Data[x] = out.Data[x] or {}
+                        out.Data[x][y] = v2
+
+
+                        
+                        out.Color[x] = out.Color[x] or {}
+                        out.Color[x][y] = c
+                        --[[
+                        if c[x] and c[x][y] then
+                            out.Color[x] = out.Color[x] or {}
+                            out.Color[x][y] = c[x][y]
+                        end
+                        --]]
+                    end
+                end
+            end
+        end
+
+
+
+
+
+        --local Pixels = require([[C:\Users\User\OneDrive\code\Obfuscator\Utils\Graphics\Pixels\Versions\Pixelsv20]])
+        --local Pixels = require[[C:/Users/User/OneDrive/code/Obfuscator/Utils/Graphics/Pixels/Versions/Pixelsv20]]
+
+
+        local Ansi = {
+            ClearScreen = function()
+                io.write("\27[2J")
+            end,
+            SetCursor = function(x, y)
+                io.write(string.format("\27[%d;%dH", y, x))
+            end
+        }
+
+
+
+
+
+
+
+
+        --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
+
+
+        local notetable = Taiko.GetAllNotes(Parsed.Data)
+
+
+
+        --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
+
+
+
+
+
+
+
+
+
+
+
+        --METADATA
+        local startms = Parsed.Metadata.OFFSET
+
+        --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
+        --local framems = 1000 / (framerate or 60) --don't use framerate
+        local framems = 1000 / 60
+        local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
+
+
+
+
+
+
+
+
+
+
+
+        --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
+
+
+
+        --Precalculate
+
+
+
+
+
+
+
+
+
+
+
+        --Convert everything to seconds + fill up timet
+        --[[
+        local timet = {}
+        for k, v in pairs(Parsed.Data) do
+            table.insert(timet, v.ms)
+            v.ms = v.ms - startms
+            v.s = MsToS(v.ms)
+            v.loadms = CalculateLoadMs(v, v.ms)
+            v.loads = MsToS(v.loadms)
+            v.loadp = CalculateLoadPosition(v, v.loadms)
+            --v.n = k --MISTAKE: after sorted
+        end
+        --]]
+        local timet = {}
+        for k, v in pairs(notetable) do
+            --v.oms is original ms
+            --oms
+            v.ms = v.oms or v.ms
+            v.oms = v.ms
+
+            v.ms = (v.ms - startms) / songspeedmul
+            v.s = MsToS(v.ms)
+            --odelay
+            v.delay = v.odelay or v.delay
+            v.odelay = v.delay
+            v.p = {}
+
+            v.delay = v.delay / songspeedmul
+            v.speed = Taiko.CalculateSpeed(v, noteradius)
+            v.speed[1] = v.speed[1] * notespeedmul
+            v.speed[2] = v.speed[2] * notespeedmul
+
+            v.loadms = CalculateLoadMs(v, v.ms)
+            v.loads = MsToS(v.loadms)
+            --v.loadp = CalculateLoadPosition(v, v.loadms)
+            --v.pdelay = 0
+            v.hit = nil --Reset hit just in case
+            --v.n = k --MISTAKE: after sorted
+            --table.insert(timet, v.ms)
+            timet[#timet + 1] = v.ms
+            --print(v.speed, v.loadms, v.loadp)
+        end
+
+        if stopsong then
+            --sort with ms
+            for k, v in pairs(Parsed.Data) do
+                if v.branch then
+                    for k2, v2 in pairs(v.branch.paths) do
+                        table.sort(v2, function(a, b)
+                            return a.ms < b.ms
+                        end)
+                    end
+                end
+            end
+        
+        
+            --Path doesn't matter, they should all have same loadms
+            table.sort(Parsed.Data, function(a, b)
+                if a.branch and b.branch then
+                    --both branches
+                    for k, v in pairs(a.branch.paths) do
+                        for k2, v2 in pairs(b.branch.paths) do
+                            return v[1].ms < v2[1].ms
+                        end
+                    end
+                elseif a.branch then
+                    --a is branch
+                    for k, v in pairs(a.branch.paths) do
+                        return v[1].ms < b.ms
+                    end
+                elseif b.branch then
+                    --b is branch
+                    for k, v in pairs(b.branch.paths) do
+                        return a.ms < v[1].ms
+                    end
+                else
+                    --notes
+                    return a.ms < b.ms
+                end
+            end)
+
+
+            local lastnote = nil
+            local lastdelay = 0
+            local stopmst = {}
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                --print(note.ms, note.delay)
+                if note.delay ~= lastdelay then
+                    if lastnote then
+                        lastnote.stopms = note.delay - lastnote.delay
+                        lastnote.stopstart = lastnote.ms
+                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                    end
+                    lastdelay = note.delay
+                end
+
+                if lastnote and lastnote.delay ~= 0 then
+                    --recalculate
+                    -- [[
+                    lastnote.ms = lastnote.ms - lastnote.delay
+                    lastnote.s = MsToS(lastnote.ms)
+
+                    --calculate the stopms between notems and noteloadms
+                    --loadms = loadms - totalstopmsbetweennotes
+                    --nvm just calc on runtime with totaldelay
+
+                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
+                    lastnote.loads = MsToS(lastnote.loadms)
+                    --lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
+                    lastnote.ms = lastnote.ms + lastnote.delay
+                    lastnote.s = MsToS(lastnote.ms)
+                    --]]
+                end
+
+
+                lastnote = note
+            end)
+
+            --error()
+
+            --[=[
+
+            local lastnote
+            local zerodelay = true
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                --print(note.ms, note.delay, i, n)
+                if note.delay ~= 0 then
+                    --recalculate time related
+                    --[[
+                    print(i)
+                    print('ms\tloadms\tloads\tloadp')
+                    print(note.ms, note.loadms, note.loads, note.loadp)
+                    --]]
+
+
+                    note.ms = note.ms - note.delay
+                    note.s = MsToS(note.ms)
+                    note.loadms = CalculateLoadMs(note, note.ms)
+                    note.loads = MsToS(note.loadms)
+                    note.loadp = CalculateLoadPosition(note, note.loadms)
+                    note.ms = note.ms + note.delay
+                    note.s = MsToS(note.ms)
+
+                    --[[
+                    note.ms = note.ms - (note.delay / songspeedmul)
+                    note.s = MsToS(note.ms)
+                    note.loadms = CalculateLoadMs(note, note.ms)
+                    note.loads = MsToS(note.loadms)
+                    note.loadp = CalculateLoadPosition(note, note.loadms)
+                    --]]
+
+
+
+
+
+
+                    --[[
+                    print(note.ms, note.loadms, note.loads, note.loadp)
+                    io.read()
+                    --]]
+                    --print(note.delay)
+                    --[[
+                    note.ms = note.ms - (note.delay / songspeedmul)
+                    note.s = MsToS(note.ms)
+                    note.loadms = CalculateLoadMs(note, note.ms)
+                    note.loads = MsToS(note.loadms)
+                    note.loadp = CalculateLoadPosition(note, note.loadms)
+                    --]]
+                    if zerodelay and lastnote then
+                        lastnote.stopms = note.delay - lastnote.delay
+                        lastnote.stopstart = lastnote.ms
+                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                        
+                        zerodelay = false
+                    end
+
+                    if note.nextnote and note.nextnote.delay ~= note.delay then
+                        note.stopms = note.nextnote.delay - note.delay
+                        note.stopstart = note.ms
+                        note.stopend = note.stopstart + note.stopms
+                    end
+                end
+                lastnote = note
+
+            end)
+
             --]=]
 
-            --New (11/17/2022)
-            RenderCircle(out, note)
-
-            local startnote = note.startnote
             --[[
-            --I'm pretty sure p is calculated but recalc just for sure
-            startnote.p = CalculatePosition(startnote)
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
+            end)
+
+            io.read()
+
+            stopsong = true --error()
             --]]
-            --nvm, just assume it is calced
-            RenderCircle(out, startnote)
-            --Distance = speed * time
-            --local length = endnote.p - note.p
-            --Render start and end, and rect
-            --RenderCircle(out, note)
-            --RenderCircle(out, endnote)
-            local r = noteradius * note.radius
-            local x1, x2 = math.floor(startnote.p[1]), math.floor(note.p[1])
-            RenderCircle(out, startnote, note.p)
-            local y1 = math.floor(y - r)
-            local y2 = math.floor(y + r)
-        
-            --print(x1, x2)while true do end
-
-            if speedopt then
-                
-            else
-                --x reverse (x only (y is irrelevant right now))
-                if x1 > x2 then
-                    x1, x2 = x2, x1
-                end
-
-
-                --Clip!
-                --Don't use ClipN since function overhead
-                if x1 < loadrect[1] then
-                    x1 = loadrect[1]
-                end
-
-                if x2 > loadrect[3] then
-                    x2 = loadrect[3]
-                end
-
-
-                --[[
-                if y1 > y2 then
-                    y1, y2 = y2, y1
-                end
-                --]]
-            end
-            RenderRect(out, x1, y1, x2, y2, renderconfig[startnote.type])
         end
-    end
 
-    local function RenderStatus(out, status, ms)
-        --[[
-        local slope = statusanimationmove / (statusanimationlength / 2)
-        local anim = -slope * math.abs((ms - status.startms) - (statuslength / ))
-        --]]
-        local slope = statusanimationmove / (statusanimationlength / 2)
-        local anim = -slope * math.abs(((ms - status.startms) / (statuslength / statusanimationlength)) - (statusanimationmove / slope)) + statusanimationmove
 
-        --print(statusanimationlength, statusanimationmove, anim, ms - status.startms)io.read()
-        local t = timingpixel[status.status]
-        local o = t.Offset
-        local c = t.Color.All --Color for all
-        local ox, oy = 0, -math.floor(noteradius * 1.6) - 8 - math.floor(anim)
-        local tox, toy = o[1] + ox, o[2] + oy
-        --print(tox, toy)
+        --error()
+        --print(Parsed.Data[68].ms)error()
 
-        for x = 1, timingpixel.Size[1] do
-            for y = 1, timingpixel.Size[2] do
-                local px, py = x + tox, y + toy
-                out.Data[px] = out.Data[px] or {}
-                out.Data[px][-py] = t.Data[x] and t.Data[x][y] --FlipY
-
-
-                out.Color[px] = out.Color[px] or {}
-                out.Color[px][-py] = c --FlipY
-            end
-        end
-        --print(Pixel.Convert.ToDots(out, nil, true))io.read()
-        --[=[
-        for x, v in pairs(t.Data) do
-            for y, v2 in pairs(v) do
-                if v2 == '1' then
-                    local x, y = x + tox, y + toy
-                    out.Data[x] = out.Data[x] or {}
-                    out.Data[x][y] = v2
-
-
-                    out.Color[x] = out.Color[x] or {}
-                    out.Color[x][y] = c
-                    --[[
-                    if c[x] and c[x][y] then
-                        out.Color[x] = out.Color[x] or {}
-                        out.Color[x][y] = c[x][y]
-                    end
-                    --]]
-                end
-            end
-        end
-        --]=]
-    end
-
-    --Render OVER! the note
-    --TODO
-    local function RenderFlash(out, status)
-        local t = flashpixel[status.status]
-        local o = t.Offset
-        local c = t.Color.All --Color for all
-        local ox, oy = 0, 0
-        for x, v in pairs(t.Data) do
-            for y, v2 in pairs(v) do
-                if v2 == '1' then
-                    local x, y = x + o[1] + ox, y + o[2] + oy
-                    out.Data[x] = out.Data[x] or {}
-                    out.Data[x][y] = v2
-
-
-                    
-                    out.Color[x] = out.Color[x] or {}
-                    out.Color[x][y] = c
-                    --[[
-                    if c[x] and c[x][y] then
-                        out.Color[x] = out.Color[x] or {}
-                        out.Color[x][y] = c[x][y]
-                    end
-                    --]]
-                end
-            end
-        end
-    end
-
-
-
-
-
-    --local Pixels = require([[C:\Users\User\OneDrive\code\Obfuscator\Utils\Graphics\Pixels\Versions\Pixelsv20]])
-    --local Pixels = require[[C:/Users/User/OneDrive/code/Obfuscator/Utils/Graphics/Pixels/Versions/Pixelsv20]]
-
-
-    local Ansi = {
-        ClearScreen = function()
-            io.write("\27[2J")
-        end,
-        SetCursor = function(x, y)
-            io.write(string.format("\27[%d;%dH", y, x))
-        end
-    }
-
-
-
-
-
-
-
-
-    --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
-
-
-    local notetable = Taiko.GetAllNotes(Parsed.Data)
-
-
-
-    --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
-
-
-
-
-
-
-
-
-
-
-
-    --METADATA
-    local startms = Parsed.Metadata.OFFSET
-
-    --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
-    --local framems = 1000 / (framerate or 60) --don't use framerate
-    local framems = 1000 / 60
-    local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
-
-
-
-
-
-
-
-
-
-
-
-    --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
-
-
-
-    --Precalculate
-
-
-
-
-
-
-
-
-
-
-
-    --Convert everything to seconds + fill up timet
-    --[[
-    local timet = {}
-    for k, v in pairs(Parsed.Data) do
-        table.insert(timet, v.ms)
-        v.ms = v.ms - startms
-        v.s = MsToS(v.ms)
-        v.loadms = CalculateLoadMs(v, v.ms)
-        v.loads = MsToS(v.loadms)
-        v.loadp = CalculateLoadPosition(v, v.loadms)
-        --v.n = k --MISTAKE: after sorted
-    end
-    --]]
-    local timet = {}
-    for k, v in pairs(notetable) do
-        --v.oms is original ms
-        --oms
-        v.ms = v.oms or v.ms
-        v.oms = v.ms
-
-        v.ms = (v.ms - startms) / songspeedmul
-        v.s = MsToS(v.ms)
-        --odelay
-        v.delay = v.odelay or v.delay
-        v.odelay = v.delay
-        v.p = {}
-
-        v.delay = v.delay / songspeedmul
-        v.speed = Taiko.CalculateSpeed(v, noteradius)
-        v.speed[1] = v.speed[1] * notespeedmul
-        v.speed[2] = v.speed[2] * notespeedmul
-
-        v.loadms = CalculateLoadMs(v, v.ms)
-        v.loads = MsToS(v.loadms)
-        --v.loadp = CalculateLoadPosition(v, v.loadms)
-        --v.pdelay = 0
-        v.hit = nil --Reset hit just in case
-        --v.n = k --MISTAKE: after sorted
-        --table.insert(timet, v.ms)
-        timet[#timet + 1] = v.ms
-        --print(v.speed, v.loadms, v.loadp)
-    end
-
-    if stopsong then
-        --sort with ms
+        --error()
+        --Sort by loadms
+        --Sort all branches firt
         for k, v in pairs(Parsed.Data) do
             if v.branch then
                 for k2, v2 in pairs(v.branch.paths) do
                     table.sort(v2, function(a, b)
-                        return a.ms < b.ms
+                        return a.loadms < b.loadms
                     end)
                 end
             end
         end
-    
-    
+
+
         --Path doesn't matter, they should all have same loadms
         table.sort(Parsed.Data, function(a, b)
             if a.branch and b.branch then
                 --both branches
                 for k, v in pairs(a.branch.paths) do
                     for k2, v2 in pairs(b.branch.paths) do
-                        return v[1].ms < v2[1].ms
+                        return v[1].loadms < v2[1].loadms
                     end
                 end
             elseif a.branch then
                 --a is branch
                 for k, v in pairs(a.branch.paths) do
-                    return v[1].ms < b.ms
+                    return v[1].loadms < b.loadms
                 end
             elseif b.branch then
                 --b is branch
                 for k, v in pairs(b.branch.paths) do
-                    return a.ms < v[1].ms
+                    return a.loadms < v[1].loadms
                 end
             else
                 --notes
-                return a.ms < b.ms
+                return a.loadms < b.loadms
             end
         end)
 
-
-        local lastnote = nil
-        local lastdelay = 0
-        local stopmst = {}
+        --Relink and reindex after sorting
+        Taiko.ConnectAll(Parsed.Data)
         Taiko.ForAll(Parsed.Data, function(note, i, n)
-            --print(note.ms, note.delay)
-            if note.delay ~= lastdelay then
-                if lastnote then
-                    lastnote.stopms = note.delay - lastnote.delay
-                    lastnote.stopstart = lastnote.ms
-                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                end
-                lastdelay = note.delay
-            end
-
-            if lastnote and lastnote.delay ~= 0 then
-                --recalculate
-                -- [[
-                lastnote.ms = lastnote.ms - lastnote.delay
-                lastnote.s = MsToS(lastnote.ms)
-
-                --calculate the stopms between notems and noteloadms
-                --loadms = loadms - totalstopmsbetweennotes
-                --nvm just calc on runtime with totaldelay
-
-                lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
-                lastnote.loads = MsToS(lastnote.loadms)
-                --lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
-                lastnote.ms = lastnote.ms + lastnote.delay
-                lastnote.s = MsToS(lastnote.ms)
-                --]]
-            end
-
-
-            lastnote = note
+            --print(note.loadms)
+            note.n = n
+            --delay
+            -- [[
+            --moved
+            --]]
+            --print(note.ms)
+            --print(note.loadms, note.ms)
         end)
-
+        --if''then return end
         --error()
-
-        --[=[
-
-        local lastnote
-        local zerodelay = true
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
-            --print(note.ms, note.delay, i, n)
-            if note.delay ~= 0 then
-                --recalculate time related
-                --[[
-                print(i)
-                print('ms\tloadms\tloads\tloadp')
-                print(note.ms, note.loadms, note.loads, note.loadp)
-                --]]
-
-
-                note.ms = note.ms - note.delay
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                note.ms = note.ms + note.delay
-                note.s = MsToS(note.ms)
-
-                --[[
-                note.ms = note.ms - (note.delay / songspeedmul)
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                --]]
-
-
-
-
-
-
-                --[[
-                print(note.ms, note.loadms, note.loads, note.loadp)
-                io.read()
-                --]]
-                --print(note.delay)
-                --[[
-                note.ms = note.ms - (note.delay / songspeedmul)
-                note.s = MsToS(note.ms)
-                note.loadms = CalculateLoadMs(note, note.ms)
-                note.loads = MsToS(note.loadms)
-                note.loadp = CalculateLoadPosition(note, note.loadms)
-                --]]
-                if zerodelay and lastnote then
-                    lastnote.stopms = note.delay - lastnote.delay
-                    lastnote.stopstart = lastnote.ms
-                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                    
-                    zerodelay = false
-                end
-
-                if note.nextnote and note.nextnote.delay ~= note.delay then
-                    note.stopms = note.nextnote.delay - note.delay
-                    note.stopstart = note.ms
-                    note.stopend = note.stopstart + note.stopms
-                end
-            end
-            lastnote = note
-
-        end)
-
-        --]=]
+        --]]
 
         --[[
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
-            print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
-        end)
-
-        io.read()
-
-        stopsong = true --error()
-        --]]
-    end
-
-
-    --error()
-    --print(Parsed.Data[68].ms)error()
-
-    --error()
-    --Sort by loadms
-    --Sort all branches firt
-    for k, v in pairs(Parsed.Data) do
-        if v.branch then
-            for k2, v2 in pairs(v.branch.paths) do
-                table.sort(v2, function(a, b)
-                    return a.loadms < b.loadms
-                end)
+        local nextnote = nil
+        for i = #Parsed.Data, 1, -1 do
+            local v = Parsed.Data[i]
+            if IsNote(v) then
+                v.n = i
+                v.nextnote = nextnote
+                nextnote = v
             end
         end
-    end
+        --]]
+
+        --[[
+        --ppp
+        for i = 1, #Parsed.Data do
+            print(Parsed.Data[i].loads)
+        end
+        --]]
+
+        --Calculate end time
+        --local endms = math.max(unpack(timet)) + (endms / songspeedmul)
+
+        local temp = endms / songspeedmul
+        local endms = timet[1]
+        for i = 1, #timet do
+            if timet[i] > endms then
+                endms = timet[i]
+            end
+        end
+        endms = endms + temp
+        --print(MsToS(endms))error()
 
 
-    --Path doesn't matter, they should all have same loadms
-    table.sort(Parsed.Data, function(a, b)
-        if a.branch and b.branch then
-            --both branches
-            for k, v in pairs(a.branch.paths) do
-                for k2, v2 in pairs(b.branch.paths) do
-                    return v[1].loadms < v2[1].loadms
+
+        --Check for spawns before game starts
+
+        --[[
+        local loaded = {
+            s = 1, --Start
+            e = 0, --End
+            n = 0, --Number of loaded notes
+            --nearestnote = {} --Table of nearest notes
+        }
+        --]]
+        loaded = {}
+
+        --Generate nearestnote
+        --[[
+        local lastms = nil
+        for i = 1, #timet do
+            if i ~= 1 then
+                table.insert(loaded.nearestnote, {})
+            end
+            lastms = timet[i]
+        end
+        loaded.nearestnote = {}
+        --]]
+
+
+
+
+
+        local nextnote = Parsed.Data[1]
+        local nextnotel = nextnote.loads
+
+        --[[
+        --redesign
+        while true do
+            if nextnote then
+                nextnotel = nextnote.loads
+                if nextnotel < 0 then
+                    --nextnote.p = CalculatePosition(nextnote, nextnotel)
+
+                    loaded.n = loaded.n + 1
+                    loaded[loaded.n] = nextnote
+                else
+                    break
                 end
-            end
-        elseif a.branch then
-            --a is branch
-            for k, v in pairs(a.branch.paths) do
-                return v[1].loadms < b.loadms
-            end
-        elseif b.branch then
-            --b is branch
-            for k, v in pairs(b.branch.paths) do
-                return a.loadms < v[1].loadms
-            end
-        else
-            --notes
-            return a.loadms < b.loadms
-        end
-    end)
-
-    --Relink and reindex after sorting
-    Taiko.ConnectAll(Parsed.Data)
-    Taiko.ForAll(Parsed.Data, function(note, i, n)
-        --print(note.loadms)
-        note.n = n
-        --delay
-        -- [[
-        --moved
-        --]]
-        --print(note.ms)
-        --print(note.loadms, note.ms)
-    end)
-    --if''then return end
-    --error()
-    --]]
-
-    --[[
-    local nextnote = nil
-    for i = #Parsed.Data, 1, -1 do
-        local v = Parsed.Data[i]
-        if IsNote(v) then
-            v.n = i
-            v.nextnote = nextnote
-            nextnote = v
-        end
-    end
-    --]]
-
-    --[[
-    --ppp
-    for i = 1, #Parsed.Data do
-        print(Parsed.Data[i].loads)
-    end
-    --]]
-
-    --Calculate end time
-    --local endms = math.max(unpack(timet)) + (endms / songspeedmul)
-
-    local temp = endms / songspeedmul
-    local endms = timet[1]
-    for i = 1, #timet do
-        if timet[i] > endms then
-            endms = timet[i]
-        end
-    end
-    endms = endms + temp
-    --print(MsToS(endms))error()
-
-
-
-    --Check for spawns before game starts
-
-    --[[
-    local loaded = {
-        s = 1, --Start
-        e = 0, --End
-        n = 0, --Number of loaded notes
-        --nearestnote = {} --Table of nearest notes
-    }
-    --]]
-    loaded = {}
-
-    --Generate nearestnote
-    --[[
-    local lastms = nil
-    for i = 1, #timet do
-        if i ~= 1 then
-            table.insert(loaded.nearestnote, {})
-        end
-        lastms = timet[i]
-    end
-    loaded.nearestnote = {}
-    --]]
-
-
-
-
-
-    local nextnote = Parsed.Data[1]
-    local nextnotel = nextnote.loads
-
-    --[[
-    --redesign
-    while true do
-        if nextnote then
-            nextnotel = nextnote.loads
-            if nextnotel < 0 then
-                --nextnote.p = CalculatePosition(nextnote, nextnotel)
-
-                loaded.n = loaded.n + 1
-                loaded[loaded.n] = nextnote
             else
                 break
             end
-        else
-            break
+            nextnote = nextnote.nextnote
         end
-        nextnote = nextnote.nextnote
-    end
-    --]]
-
-    --loaded.e = loaded.n
-
-
-
-
-
-
-    --Statistics
-    local padding = 10
-    local paddingstr = string.rep(' ', padding)
-    local statistics = {}
-    local function Statistic(k, v)
-        --[[
-        table.insert(statistics, k)
-        table.insert(statistics, ': ')
-        table.insert(statistics, tostring(v))
-        table.insert(statistics, paddingstr)
-        table.insert(statistics, '\n')
         --]]
-        statistics[#statistics + 1] = k
-        statistics[#statistics + 1] = ': '
-        statistics[#statistics + 1] = tostring(v)
-        statistics[#statistics + 1] = paddingstr
-        statistics[#statistics + 1] = '\n'
-    end
-    local function RenderStatistic()
-        print(table.concat(statistics))
-        statistics = {}
-    end
-    --Log (Debug system)
-    local logs = {}
-    local function Log(s)
-        logs[#logs + 1] = s
-    end
-    local function RenderLog()
-        print(table.concat(logs, '\n'))
-        logs = {}
-    end
+
+        --loaded.e = loaded.n
 
 
 
 
 
 
-    --error()
-    Ansi.ClearScreen()
-
-    --[[
-    local firstpixel = math.floor(0 - noteradius - 1)
-    local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
-    --]]
-
-
-
-    --Branching
-    local branch = 'M'
-
-
-
-
-    --score, combo, init, diff, status, gogo
-
-    --Score
-    --don't use Taiko.Score because it is inefficient
-    local score = 0
-    local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE]
-    
-    --Combo
-    local combo = 0
-
-    --Gogo
-    local gogo = false
-
-
-
-    --Balloon
-    local balloon = nil
-    local balloonstart = nil
-    local balloonend = nil
-    local balloonscoref = Taiko.Data.ScoreMode.Balloon[Parsed.Metadata.SCOREMODE]
-    local balloonpopscoref = Taiko.Data.ScoreMode.BalloonPop[Parsed.Metadata.SCOREMODE]
-
-    --Drumroll
-    local drumroll = nil
-    local drumrollstart = nil
-    local drumrollend = nil
-    local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
-
-
-
-
-    
-    --For rendering status
-    local laststatus = {
-        startms = nil,
-        status = nil
-    }
+        --Statistics
+        local padding = 10
+        local paddingstr = string.rep(' ', padding)
+        local statistics = {}
+        local function Statistic(k, v)
+            --[[
+            table.insert(statistics, k)
+            table.insert(statistics, ': ')
+            table.insert(statistics, tostring(v))
+            table.insert(statistics, paddingstr)
+            table.insert(statistics, '\n')
+            --]]
+            statistics[#statistics + 1] = k
+            statistics[#statistics + 1] = ': '
+            statistics[#statistics + 1] = tostring(v)
+            statistics[#statistics + 1] = paddingstr
+            statistics[#statistics + 1] = '\n'
+        end
+        local function RenderStatistic()
+            print(table.concat(statistics))
+            statistics = {}
+        end
+        --Log (Debug system)
+        local logs = {}
+        local function Log(s)
+            logs[#logs + 1] = s
+        end
+        local function RenderLog()
+            print(table.concat(logs, '\n'))
+            logs = {}
+        end
 
 
 
 
 
 
+        --error()
+        Ansi.ClearScreen()
+
+        --[[
+        local firstpixel = math.floor(0 - noteradius - 1)
+        local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
+        --]]
+
+
+
+        --Branching
+        local branch = 'M'
 
 
 
 
-    --Gimmicks
+        --score, combo, init, diff, status, gogo
+
+        --Score
+        --don't use Taiko.Score because it is inefficient
+        local score = 0
+        local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE]
+        
+        --Combo
+        local combo = 0
+
+        --Gogo
+        local gogo = false
 
 
-    --Stop (delay) (DELAY)
-    local stopfreezems = nil
-    local stopstart = nil
-    local stopend = nil
-    --local adddelay = false
-    local totaldelay = 0
+
+        --Balloon
+        local balloon = nil
+        local balloonstart = nil
+        local balloonend = nil
+        local balloonscoref = Taiko.Data.ScoreMode.Balloon[Parsed.Metadata.SCOREMODE]
+        local balloonpopscoref = Taiko.Data.ScoreMode.BalloonPop[Parsed.Metadata.SCOREMODE]
+
+        --Drumroll
+        local drumroll = nil
+        local drumrollstart = nil
+        local drumrollend = nil
+        local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
+
+
+
+
+        
+        --For rendering status
+        local laststatus = {
+            startms = nil,
+            status = nil
+        }
 
 
 
 
 
-    --Statistics
-    local lastinput = {-1, nil}
-    local framen = 0
-    local framerenderstotal = 0
-
-    local dorender = true
-    
-    --Optimizations
-    --[[
-    local dospeedopt = false
-
-    local speedopt = false
-    local speedoptspeed = nil
-    local speedoptoldpos = nil
-    local speedoptout = nil
-    local speedoptfirstnote = nil
-    local speedoptstartms = nil
-    local speedoptstatus = nil
-
-    --]]
 
 
-    --Main loop
-    local startt = os.clock()
 
 
-    --Frame Rate
-    local frames, nextframes
-    if framerate then
-        frames = 1 / framerate
-        nextframes = startt + frames
-    end
+
+        --Gimmicks
 
 
-    if not prerender.on then
+        --Stop (delay) (DELAY)
+        local stopfreezems = nil
+        local stopstart = nil
+        local stopend = nil
+        --local adddelay = false
+        local totaldelay = 0
+
+
+
+
+
+        --Statistics
+        local lastinput = {-1, nil}
+        local framen = 0
+        local framerenderstotal = 0
+
+        local dorender = true
+        
+        --Optimizations
+        --[[
+        local dospeedopt = false
+
+        local speedopt = false
+        local speedoptspeed = nil
+        local speedoptoldpos = nil
+        local speedoptout = nil
+        local speedoptfirstnote = nil
+        local speedoptstartms = nil
+        local speedoptstatus = nil
+
+        --]]
+
+
+        --Main loop
+        local startt = os.clock()
+
+
+        --Frame Rate
+        local frames, nextframes
+        if framerate then
+            frames = 1 / framerate
+            nextframes = startt + frames
+        end
+
+
 
         while true do
             --Make canvas
@@ -6811,178 +6846,89 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --for i = 1, #Parsed.Data do local a = Parsed.Data[i] if not a.hit and a.data == 'note' then print(a.n, a.line) end end error()
 
 
 
 
 
+        --curses.nodelay(window, false)
+        return true
 
 
 
 
 
+        --[[
+        while true do
+            local s = os.clock() - startt
+            local ms = s * 1000
+            if s > nextnotet then
+                --Display ASAP
+                --io.write(nextnote.type)
 
 
+                print(nextnotet, s)
+                print(nextnote.speed)
+                --print(nextnote.type)
 
 
+                --delay in seconds
+                --print(os.clock() - t - startt)
 
+                --Now bit of Downtime
+                --ppp(nextnote.nextnote)
+                nextnote, nextnotet, nextnoten = GetNextNote(nextnoten + 1)
+            end
 
+            --Render
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    else
-
-
-        error('Prerendering has been removed')
+            
+            if s > ends then
+                break
+            end
+        end
+        --]]
 
     end
 
 
---for i = 1, #Parsed.Data do local a = Parsed.Data[i] if not a.hit and a.data == 'note' then print(a.n, a.line) end end error()
 
 
 
 
 
-    --curses.nodelay(window, false)
-    return true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    --[[
-    while true do
-        local s = os.clock() - startt
-        local ms = s * 1000
-        if s > nextnotet then
-            --Display ASAP
-            --io.write(nextnote.type)
-
-
-            print(nextnotet, s)
-            print(nextnote.speed)
-            --print(nextnote.type)
-
-
-            --delay in seconds
-            --print(os.clock() - t - startt)
-
-            --Now bit of Downtime
-            --ppp(nextnote.nextnote)
-            nextnote, nextnotet, nextnoten = GetNextNote(nextnoten + 1)
-        end
-
-        --Render
-
-        
-        if s > ends then
-            break
-        end
-    end
-    --]]
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
