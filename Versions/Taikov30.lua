@@ -1,14 +1,20 @@
+#!.\raylua_s.exe 
 --[[
 Taikov30.lua
 
 
 Changes: Taiko.PlaySong improved!
 
+First version to utilize raylib!
+
 
 
 TODO: Add raylib option
     Textures
     Rendering
+    PlaySong
+    SongSelect
+    Fix note rendering priority
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -109,12 +115,19 @@ lua C:\Users\User\OneDrive\code\Taiko\Versions\Taikov4.lua
 
 
 --Requires
-local curses = require('taikocurses')
-local Compact = require('./CompactTJA/compactv4')
+
+--curses + pixels
+--[[
+local curses = require('taikocurses') --required later on
+local Compact = require('./CompactTJA/compact')
+--]]
 
 
 
-
+--raylib
+-- [[
+local Compact = require('CompactTJA/compact')
+--]]
 
 
 
@@ -3694,7 +3707,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     --BIGGEST MODIFIER
-    local useraylib = false
+    local useraylib = true
 
 
 
@@ -3710,6 +3723,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     
     --SUS
+    local Settings = Settings or {}
     local optionsmap = {
         auto = {
             [1] = false,
@@ -3841,6 +3855,68 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+    --Everything will be in terms of screenx and screeny
+    --original tracklength: 40 noteradius (160)
+    local tracklength
+    if useraylib then
+        tracklength = 1600
+    else
+        tracklength = 160
+    end
+    --raylib use only
+    local screenWidth = tracklength --800
+    local screenHeight = tracklength / 16 * 9 --450
+
+
+
+
+
+    local bufferlength = 1/16 * tracklength
+    local unloadbuffer = 5/16 * tracklength --NOT added to bufferlength
+    local endms = 1000 --Added to last note (ms)
+    local noteradius = 1/40 * tracklength
+    local y = 0 * tracklength
+    local tracky = 1/16 * tracklength
+    local trackstart = 0 * tracklength
+    local target = {3/40 * tracklength, 0} --(src: taiko-web)
+    local statuslength = 200 --Status length (good/ok/bad) (ms)
+    local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
+    local statusanimationmove = 1/40 * tracklength --Status animation move
+    local flashlength = 20 --Flash length (normal/big) (good/ok/bad) (ms)
+
+
+
+    --colors: black, red, green, yellow, blue, magenta, cyan, white
+    local renderconfig = {
+        [1] = {color = 'red'},
+        [2] = {color = 'blue'},
+        [3] = {color = 'red'},
+        [4] = {color = 'blue'},
+        [5] = {color = 'yellow'},
+        [6] = {color = 'yellow'},
+        [7] = {color = 'cyan'},
+    }
+
+
+    local trackend = trackstart + tracklength
+    local screenrect = {trackstart, -tracky * 2, trackend, tracky * 2}
+    local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
+    local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --[=[
 
     --local buffer = 100 --Buffer (ms)
     local bufferlength = 10 --Pixels
@@ -3861,7 +3937,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     local tracklength = 40  --In noteradius from left (taiko-web)
     local target = 3 --In noteradius from left, representing center (taiko-web)
-    local factor = 1 --Zoom factor / Size Multiplier
+    --local factor = 1 --Zoom factor / Size Multiplier
 
 
 
@@ -3917,6 +3993,138 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     
+    --]=]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    local function Round(x)
+        --nearest integer
+        return math.floor(x + 0.5)
+    end
+
+
+    --Calculate Functions
+    local function IsNote(note)
+        return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
+    end
+    local function IsPointInRectangle(x, y, x1, y1, x2, y2)
+        --[[
+            assumptions
+            x1 < x2
+            y1 < y2
+        ]]
+        return x1 <= x and x <= x2 and y1 <= y and y <= y2
+    end
+    local function RayIntersectsRectangle(x, y, sx, sy, x1, y1, x2, y2)
+        --[[
+            assumptions
+            x1 < x2
+            y1 < y2
+        ]]
+        x1, y1, x2, y2 = x1 - x, y1 - y, x2 - x, y2 - y
+        --now we are at origin!
+    
+    
+        --[[
+            just plug in!
+    
+            y=mx
+            x=y/m
+        ]]
+    
+        local m = sy / sx
+    
+    
+        
+        if sy < 0 then
+            --d (y = y1)
+            local x3, y3 = y1 / m, y1
+            if x1 <= x3 and x3 <= x2 then
+                return x3, y3
+            end
+        else
+            --u (y = y2)
+            local x3, y3 = y2 / m, y2
+            if x1 <= x3 and x3 <= x2 then
+                return x3, y3
+            end
+        end
+    
+        
+        if sx < 0 then
+            --l (x = x1)
+            local x3, y3 = x1, x1 * m
+            if y1 <= y3 and y3 <= y2 then
+                return x3, y3
+            end
+        else
+            --r (x = x2)
+            local x3, y3 = x2, x2 * m
+            if y1 <= y3 and y3 <= y2 then
+                return x3, y3
+            end
+        end
+    
+        return nil
+    end
+
+    local function CalculateLoadMs(note, ms)
+        --return ms - ((tracklength / note.speed) + buffer)
+        --support negative speed
+        --return ms - ((tracklength / math.abs(note.speed)) + buffer)
+        --bufferlength
+        --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
+
+        --x, y
+        local x, y = RayIntersectsRectangle(0, 0, -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+        --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
+        return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+    end
+    --[[
+    local function CalculateLoadPosition(note, lms)
+        return (note.ms - lms) * note.speed + target
+    end
+    --]]
+    local function CalculatePosition(note, ms)
+        --return note.loadp - (note.speed * (ms - note.loadms))
+
+        --x, y + relative
+        -- if notems is 200 and ms is 100
+        --[[
+        if target[1] + (-note.speed[1] * (note.ms - ms - note.delay)) > unloadrect[3] then
+            error(table.concat({note.n, target[1] + (-note.speed[1] * (note.ms - ms - note.delay))}, '\n'))
+        end
+        --]]
+
+        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
+        --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
+
+        --[[
+        if d then
+            --disable delay
+            return note.loadp - (note.speed * (ms - note.loadms))
+        else
+            return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
+        end
+        --]]
+    end
 
 
 
@@ -3942,11 +4150,505 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+    --Do main precalculations
+
+
+
+
+    --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
+
+
+    local notetable = Taiko.GetAllNotes(Parsed.Data)
+
+
+
+    --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
 
 
 
 
 
+
+
+
+
+
+
+    --METADATA
+    local startms = Parsed.Metadata.OFFSET
+
+    --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
+    --local framems = 1000 / (framerate or 60) --don't use framerate
+    local framems = 1000 / 60
+    local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
+
+
+
+
+
+
+
+
+
+
+
+    --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
+
+
+
+    --Precalculate
+
+
+
+
+
+
+
+
+
+
+
+    --Convert everything to seconds + fill up timet
+    --[[
+    local timet = {}
+    for k, v in pairs(Parsed.Data) do
+        table.insert(timet, v.ms)
+        v.ms = v.ms - startms
+        v.s = MsToS(v.ms)
+        v.loadms = CalculateLoadMs(v, v.ms)
+        v.loads = MsToS(v.loadms)
+        v.loadp = CalculateLoadPosition(v, v.loadms)
+        --v.n = k --MISTAKE: after sorted
+    end
+    --]]
+    local timet = {}
+    for k, v in pairs(notetable) do
+        --v.oms is original ms
+        --oms
+        v.ms = v.oms or v.ms
+        v.oms = v.ms
+
+        v.ms = (v.ms - startms) / songspeedmul
+        v.s = MsToS(v.ms)
+        --odelay
+        v.delay = v.odelay or v.delay
+        v.odelay = v.delay
+        v.p = {}
+
+        v.delay = v.delay / songspeedmul
+        v.speed = Taiko.CalculateSpeed(v, noteradius)
+        v.speed[1] = v.speed[1] * notespeedmul
+        v.speed[2] = v.speed[2] * notespeedmul
+
+        v.loadms = CalculateLoadMs(v, v.ms)
+        v.loads = MsToS(v.loadms)
+        --v.loadp = CalculateLoadPosition(v, v.loadms)
+        --v.pdelay = 0
+        v.hit = nil --Reset hit just in case
+        --v.n = k --MISTAKE: after sorted
+        --table.insert(timet, v.ms)
+        timet[#timet + 1] = v.ms
+        --print(v.speed, v.loadms, v.loadp)
+    end
+
+    if stopsong then
+        --sort with ms
+        for k, v in pairs(Parsed.Data) do
+            if v.branch then
+                for k2, v2 in pairs(v.branch.paths) do
+                    table.sort(v2, function(a, b)
+                        return a.ms < b.ms
+                    end)
+                end
+            end
+        end
+    
+    
+        --Path doesn't matter, they should all have same loadms
+        table.sort(Parsed.Data, function(a, b)
+            if a.branch and b.branch then
+                --both branches
+                for k, v in pairs(a.branch.paths) do
+                    for k2, v2 in pairs(b.branch.paths) do
+                        return v[1].ms < v2[1].ms
+                    end
+                end
+            elseif a.branch then
+                --a is branch
+                for k, v in pairs(a.branch.paths) do
+                    return v[1].ms < b.ms
+                end
+            elseif b.branch then
+                --b is branch
+                for k, v in pairs(b.branch.paths) do
+                    return a.ms < v[1].ms
+                end
+            else
+                --notes
+                return a.ms < b.ms
+            end
+        end)
+
+
+        local lastnote = nil
+        local lastdelay = 0
+        local stopmst = {}
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            --print(note.ms, note.delay)
+            if note.delay ~= lastdelay then
+                if lastnote then
+                    lastnote.stopms = note.delay - lastnote.delay
+                    lastnote.stopstart = lastnote.ms
+                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                end
+                lastdelay = note.delay
+            end
+
+            if lastnote and lastnote.delay ~= 0 then
+                --recalculate
+                -- [[
+                lastnote.ms = lastnote.ms - lastnote.delay
+                lastnote.s = MsToS(lastnote.ms)
+
+                --calculate the stopms between notems and noteloadms
+                --loadms = loadms - totalstopmsbetweennotes
+                --nvm just calc on runtime with totaldelay
+
+                lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
+                lastnote.loads = MsToS(lastnote.loadms)
+                --lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
+                lastnote.ms = lastnote.ms + lastnote.delay
+                lastnote.s = MsToS(lastnote.ms)
+                --]]
+            end
+
+
+            lastnote = note
+        end)
+
+        --error()
+
+        --[=[
+
+        local lastnote
+        local zerodelay = true
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            --print(note.ms, note.delay, i, n)
+            if note.delay ~= 0 then
+                --recalculate time related
+                --[[
+                print(i)
+                print('ms\tloadms\tloads\tloadp')
+                print(note.ms, note.loadms, note.loads, note.loadp)
+                --]]
+
+
+                note.ms = note.ms - note.delay
+                note.s = MsToS(note.ms)
+                note.loadms = CalculateLoadMs(note, note.ms)
+                note.loads = MsToS(note.loadms)
+                note.loadp = CalculateLoadPosition(note, note.loadms)
+                note.ms = note.ms + note.delay
+                note.s = MsToS(note.ms)
+
+                --[[
+                note.ms = note.ms - (note.delay / songspeedmul)
+                note.s = MsToS(note.ms)
+                note.loadms = CalculateLoadMs(note, note.ms)
+                note.loads = MsToS(note.loadms)
+                note.loadp = CalculateLoadPosition(note, note.loadms)
+                --]]
+
+
+
+
+
+
+                --[[
+                print(note.ms, note.loadms, note.loads, note.loadp)
+                io.read()
+                --]]
+                --print(note.delay)
+                --[[
+                note.ms = note.ms - (note.delay / songspeedmul)
+                note.s = MsToS(note.ms)
+                note.loadms = CalculateLoadMs(note, note.ms)
+                note.loads = MsToS(note.loadms)
+                note.loadp = CalculateLoadPosition(note, note.loadms)
+                --]]
+                if zerodelay and lastnote then
+                    lastnote.stopms = note.delay - lastnote.delay
+                    lastnote.stopstart = lastnote.ms
+                    lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                    
+                    zerodelay = false
+                end
+
+                if note.nextnote and note.nextnote.delay ~= note.delay then
+                    note.stopms = note.nextnote.delay - note.delay
+                    note.stopstart = note.ms
+                    note.stopend = note.stopstart + note.stopms
+                end
+            end
+            lastnote = note
+
+        end)
+
+        --]=]
+
+        --[[
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
+        end)
+
+        io.read()
+
+        stopsong = true --error()
+        --]]
+    end
+
+
+    --error()
+    --print(Parsed.Data[68].ms)error()
+
+    --error()
+    --Sort by loadms
+    --Sort all branches firt
+    for k, v in pairs(Parsed.Data) do
+        if v.branch then
+            for k2, v2 in pairs(v.branch.paths) do
+                table.sort(v2, function(a, b)
+                    return a.loadms < b.loadms
+                end)
+            end
+        end
+    end
+
+
+    --Path doesn't matter, they should all have same loadms
+    table.sort(Parsed.Data, function(a, b)
+        if a.branch and b.branch then
+            --both branches
+            for k, v in pairs(a.branch.paths) do
+                for k2, v2 in pairs(b.branch.paths) do
+                    return v[1].loadms < v2[1].loadms
+                end
+            end
+        elseif a.branch then
+            --a is branch
+            for k, v in pairs(a.branch.paths) do
+                return v[1].loadms < b.loadms
+            end
+        elseif b.branch then
+            --b is branch
+            for k, v in pairs(b.branch.paths) do
+                return a.loadms < v[1].loadms
+            end
+        else
+            --notes
+            return a.loadms < b.loadms
+        end
+    end)
+
+    --Relink and reindex after sorting
+    Taiko.ConnectAll(Parsed.Data)
+    Taiko.ForAll(Parsed.Data, function(note, i, n)
+        --print(note.loadms)
+        note.n = n
+        --delay
+        -- [[
+        --moved
+        --]]
+        --print(note.ms)
+        --print(note.loadms, note.ms)
+    end)
+    --if''then return end
+    --error()
+    --]]
+
+    --[[
+    local nextnote = nil
+    for i = #Parsed.Data, 1, -1 do
+        local v = Parsed.Data[i]
+        if IsNote(v) then
+            v.n = i
+            v.nextnote = nextnote
+            nextnote = v
+        end
+    end
+    --]]
+
+    --[[
+    --ppp
+    for i = 1, #Parsed.Data do
+        print(Parsed.Data[i].loads)
+    end
+    --]]
+
+    --Calculate end time
+    --local endms = math.max(unpack(timet)) + (endms / songspeedmul)
+
+    local temp = endms / songspeedmul
+    local endms = timet[1]
+    for i = 1, #timet do
+        if timet[i] > endms then
+            endms = timet[i]
+        end
+    end
+    endms = endms + temp
+    --print(MsToS(endms))error()
+
+
+
+    --Check for spawns before game starts
+
+    --[[
+    local loaded = {
+        s = 1, --Start
+        e = 0, --End
+        n = 0, --Number of loaded notes
+        --nearestnote = {} --Table of nearest notes
+    }
+    --]]
+    loaded = {}
+
+    --Generate nearestnote
+    --[[
+    local lastms = nil
+    for i = 1, #timet do
+        if i ~= 1 then
+            table.insert(loaded.nearestnote, {})
+        end
+        lastms = timet[i]
+    end
+    loaded.nearestnote = {}
+    --]]
+
+
+
+
+
+    local nextnote = Parsed.Data[1]
+    local nextnotel = nextnote.loads
+
+    --[[
+    --redesign
+    while true do
+        if nextnote then
+            nextnotel = nextnote.loads
+            if nextnotel < 0 then
+                --nextnote.p = CalculatePosition(nextnote, nextnotel)
+
+                loaded.n = loaded.n + 1
+                loaded[loaded.n] = nextnote
+            else
+                break
+            end
+        else
+            break
+        end
+        nextnote = nextnote.nextnote
+    end
+    --]]
+
+    --loaded.e = loaded.n
+
+
+
+
+
+
+
+
+
+
+    --Branching
+    local branch = 'M'
+
+
+
+
+    --score, combo, init, diff, status, gogo
+
+    --Score
+    --don't use Taiko.Score because it is inefficient
+    local score = 0
+    local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE]
+    
+    --Combo
+    local combo = 0
+
+    --Gogo
+    local gogo = false
+
+
+
+    --Balloon
+    local balloon = nil
+    local balloonstart = nil
+    local balloonend = nil
+    local balloonscoref = Taiko.Data.ScoreMode.Balloon[Parsed.Metadata.SCOREMODE]
+    local balloonpopscoref = Taiko.Data.ScoreMode.BalloonPop[Parsed.Metadata.SCOREMODE]
+
+    --Drumroll
+    local drumroll = nil
+    local drumrollstart = nil
+    local drumrollend = nil
+    local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
+
+
+
+
+    
+    --For rendering status
+    local laststatus = {
+        startms = nil,
+        status = nil
+    }
+
+
+
+
+
+
+
+
+
+
+    --Gimmicks
+
+
+    --Stop (delay) (DELAY)
+    local stopfreezems = nil
+    local stopstart = nil
+    local stopend = nil
+    --local adddelay = false
+    local totaldelay = 0
+
+
+
+
+
+    --Statistics
+    local lastinput = {-1, nil}
+    local framen = 0
+    local framerenderstotal = 0
+
+    local dorender = true
+    
+    --Optimizations
+    --[[
+    local dospeedopt = false
+
+    local speedopt = false
+    local speedoptspeed = nil
+    local speedoptoldpos = nil
+    local speedoptout = nil
+    local speedoptfirstnote = nil
+    local speedoptstartms = nil
+    local speedoptstatus = nil
+
+    --]]
 
 
 
@@ -3963,6 +4665,1184 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     if useraylib then
+        --[[
+            Notes about Raylib:
+
+            Coordinates:
+            x is from left side of screen
+            y is from top of screen
+        ]]
+
+
+        --Init Raylib
+        --WARNING: INIT FIRST
+        -- Initialization
+        --16:9 aspect ratio (1080p)
+
+        rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+        rl.InitWindow(screenWidth, screenHeight, 'Taiko')
+
+
+        --Config Options
+        local offsetx, offsety = 0, screenHeight / 2 --Added to rendering
+
+
+        local barlinecolor = rl.new('Color', 255, 255, 255, 255)
+
+
+        --Load textures
+        local TextureMap = require('texturemap')
+
+        --Main texture storage
+        local Textures = {
+            Notes = rl.LoadImage('Assets/Textures/Notes.png'),
+
+        }
+        local Map = {
+            --[[
+            Notes = {
+                target = {
+                    0, 0
+                },
+                don = {
+                    1, 0
+                },
+                ka = {
+                    2, 0
+                },
+                DON = {
+                    3, 0
+                },
+                KA = {
+                    4, 0
+                },
+                drumrollnote = {
+                    5, 0
+                },
+                drumrollrect = {
+                    6, 0
+                },
+                drumrollend = {
+                    7, 0
+                },
+                DRUMROLLnote = {
+                    8, 0
+                },
+                DRUMROLLrect = {
+                    9, 0
+                },
+                DRUMROLLend = {
+                    10, 0
+                },
+                balloon = {
+                    11, 0
+                }
+            }
+            --]]
+            Notes = {
+                target = {
+                    0, 0
+                },
+                [1] = {
+                    1, 0
+                },
+                [2] = {
+                    2, 0
+                },
+                [3] = {
+                    3, 0
+                },
+                [4] = {
+                    4, 0
+                },
+                drumrollnote = {
+                    5, 0
+                },
+                drumrollrect = {
+                    6, 0
+                },
+                drumrollend = {
+                    7, 0
+                },
+                DRUMROLLnote = {
+                    8, 0
+                },
+                DRUMROLLrect = {
+                    9, 0
+                },
+                DRUMROLLend = {
+                    10, 0
+                },
+                [7] = {
+                    11, 0
+                }
+            }
+        }
+
+
+
+
+
+
+        --Load!
+
+        local defaultsize = {130, 130}
+
+        local xymul = {130, 130}
+
+
+        Textures.Notes = TextureMap.SplitUsingMap(Textures.Notes, Map.Notes, defaultsize, xymul)
+        Textures.Notes.drumrollstart = rl.ImageFlipHorizontal(rl.ImageCopy(Textures.Notes.drumrollend))
+        Textures.Notes.DRUMROLLstart = rl.ImageFlipHorizontal(rl.ImageCopy(Textures.Notes.DRUMROLLend))
+        for k, v in pairs(Textures.Notes) do
+            rl.ImageResize(v, noteradius * 4, noteradius * 4) --Why is it times 4? We will never know
+        end
+
+
+        local tsizex, tsizey = Textures.Notes.target.width, Textures.Notes.target.height
+        local toffsetx, toffsety = offsetx - (tsizex / 2), offsety - (tsizey / 2)
+        
+
+        --Hacky way to align rects
+        local function addrect(t, x, y)
+            for i = 1, #t do
+                if i % 2 == 0 then
+                    t[i] = t[i] + y
+                else
+                    t[i] = t[i] + x
+                end
+            end
+        end
+        local tempx, tempy = - (tsizex / 2), - (tsizey / 2)
+        addrect(screenrect, tempx, tempy)
+        addrect(loadrect, tempx, tempy)
+        addrect(unloadrect, tempx, tempy)
+
+
+        Textures.Notes = TextureMap.ReplaceWithTexture(Textures.Notes)
+
+
+
+
+
+
+
+
+        --Main loop
+        local startt = os.clock()
+
+
+        --Frame Rate
+        --[[
+        local frames, nextframes
+        if framerate then
+            frames = 1 / framerate
+            nextframes = startt + frames
+        end
+        --]]
+
+
+
+        while true do
+            --Make canvas
+            rl.BeginDrawing()
+
+            rl.ClearBackground(rl.RAYWHITE)
+
+
+
+
+
+
+
+
+
+
+
+            local raws = os.clock()
+
+            local s = raws - startt
+            local ms = s * 1000
+
+
+            --Event checking
+            if stopend and ms > stopend then
+                stopfreezems, stopstart, stopend = nil, nil, nil
+            end
+            if balloonend and ms > balloonend then
+                balloon, balloonstart, balloonend = nil, nil, nil
+            end
+            if drumrollend and ms > drumrollend then
+                drumroll, drumrollstart, drumrollend = nil, nil, nil
+            end
+
+
+
+
+
+            --See if next note is ready to be loaded
+            if nextnote then
+                while true do
+                    --Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
+                    if nextnote and nextnote.loadms < ms + totaldelay then
+                        --load
+                        --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
+
+
+                        --loaded.n = loaded.n + 1
+                        --loaded.e = loaded.n
+                        --loaded.e = nextnote.n
+
+                        --loaded[nextnote.n] = nextnote
+                        loaded[#loaded + 1] = nextnote
+
+
+                        --drumroll loading (endnote)
+                        if nextnote.endnote then
+                            loaded[#loaded + 1] = nextnote.endnote
+                        end
+
+
+
+                        --speedopt
+                        --[[
+                        if speedopt and nextnote.speed ~= speedoptspeed then
+                            speedopt = false
+                        end
+                        if speedopt then
+                            --nextnote.p = CalculatePosition(nextnote, ms)
+                            --nextnote.p = nextnote.loadp
+                            nextnote.p = CalculatePosition(nextnote, speedoptstartms)
+                            --Log(nextnote.p)
+                            --print(nextnote.p, io.read())
+                            if nextnote.data == 'event' then
+                                if nextnote.event == 'barline' then
+                                    RenderBarline(speedoptout, nextnote, speedopt)
+                                end
+                            elseif nextnote.data == 'note' then
+                                RenderNote(speedoptout, nextnote, speedopt)
+                            else
+                                error('Invalid note.data')
+                            end
+                        end
+                        --]]
+
+
+
+
+
+
+
+
+                        --nextnote
+
+                        nextnote = nextnote.nextnote
+                        
+                        if nextnote then
+                            if nextnote.startnote then
+                                --end note
+                                nextnote = nextnote.nextnote
+                            end
+
+
+                            if nextnote and nextnote.branch then
+                                --Log('branch')
+                                --[[
+                                Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
+                                    print(note.ms)
+                                end)
+                                error()
+                                --]]
+
+                                nextnote = nextnote.branch.paths[branch][1]
+                            end
+
+                            --logically, branch should not start with endnote
+                        end
+
+
+                        --Log(tostring(nextnote and nextnote.type or ''))
+                        
+
+
+                        --[[
+                        if loaded.s == 0 then
+                            loaded.s = 1
+                        end
+                        loaded.e = loaded.n
+                        loaded.n = loaded.n + 1
+                        loaded[loaded.n + 1] = nextnote
+                        nextnote = nextnote.nextnote
+                        --]]
+
+
+
+
+
+                        --[[
+                        local breaker = false
+                        if not nextnote then
+                            while true do
+                                local s = os.clock() - startt
+                                if s > ends then
+                                    breaker = true
+                                    break
+                                end
+                            end
+                            if breaker then
+                                break
+                            end
+                        end
+                        --]]
+                    else
+                        break
+                    end
+                end
+            else
+                if ms > endms then
+                    break
+                end
+            end
+
+            --[[
+            print(loaded.s, loaded.e, loaded.n)
+            io.read()
+            --]]
+
+
+
+
+
+
+
+
+
+            --SPEEDOPT
+            --[=[
+            if dospeedopt and speedopt == false then
+
+                --Check if we can use optimization
+                local s = nil
+                for i = 1, #loaded do
+                    if s then
+                        if loaded[i] and s ~= loaded[i].speed then
+                            s = false
+                            break
+                        end
+                    else
+                        s = loaded[i].speed
+                    end
+                end
+                if s then
+                    speedoptstartms = ms
+                    speedoptspeed = s
+                    speedoptout = false
+                    --speedoptfirstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty way, dirty
+                    speedoptfirstnote = loaded[1]
+                    speedopt = true
+                else
+                    speedopt = false
+                end
+            end
+
+            local outoffsetx = 0
+            if speedopt and speedoptout then
+                dorender = false
+
+                --local firstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty fix, --dirty
+                local firstnote = loaded[1]
+                local oldpos = speedoptoldpos or firstnote.p
+                speedoptoldpos = oldpos
+                local newpos = CalculatePosition(speedoptfirstnote, ms)
+                oldpos = oldpos or newpos
+
+
+                local dif = math.floor(oldpos - newpos + 0.5)
+
+                if dif >= 1 then
+                    --[[
+                    --move canvas left by dif
+                    local newout = Pixel.New()
+
+                    --draw target
+                    Pixel.Circle(newout, math.floor(target), y, noteradius, {color = 'purple'})
+
+
+                    for x, v in pairs(speedoptout.Data) do
+                        newout.Data[x - dif] = v
+                    end
+
+                    for x, v in pairs(speedoptout.Color) do
+                        newout.Color[x - dif] = v
+                    end
+                    out = newout
+                    --]]
+                    outoffsetx = dif
+                    --out = speedoptout
+                    --[[
+                    speedoptout = newout
+                    speedoptoldpos = speedoptoldpos - (oldpos - newpos)
+                    --]]
+                else
+                    --do nothing
+                    
+                end
+                out = speedoptout
+            else
+                speedoptoldpos = nil
+                dorender = true
+            end
+            --]=]
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+            --draw target
+
+            --normal
+            rl.DrawTexture(Textures.Notes.target, Round(target[1]) + toffsetx, Round(target[2]) + toffsety, rl.WHITE)
+
+            --[[
+            rl.DrawRectangle(Round(target[1]) + toffsetx - 10, Round(target[2]) + toffsety - 10, 20, 20, rl.RED)
+            rl.DrawRectangle(Round(target[1]) + offsetx - 10, Round(target[2]) + offsety - 10, 20, 20, rl.BLUE)
+            rl.DrawRectangle(0, Round(target[2]) + offsety - 10, 20, 20, rl.GREEN)
+            --]]
+
+            
+            --[[
+            if dorender and speedoptout ~= false then
+                Pixel.Circle(out, math.floor(target), y, noteradius, {color = 'purple'})
+            end
+            if speedopt then
+                speedoptstatus = Pixel.New()
+                Pixel.Circle(speedoptstatus, math.floor(target) + outoffsetx, y, noteradius, {color = 'purple'})
+            end
+            --]]
+            --big note (1.6x)
+            --Pixel.Circle(out, math.floor(target), y, noteradius * 1.6, {color = 'purple'})
+
+
+
+            --notes
+
+            --nearest (IF THERE IS NOTHING LOADED IT WILL BE NIL)
+            local nearest = {
+                
+            }
+            local nearestnote = {
+
+            }
+            --[[
+            --ugly
+            local nearest1 = nil
+            local nearestnote1 = nil
+            local nearest2 = nil
+            local nearestnote2 = nil
+            --]]
+
+            --for i = loaded.s, loaded.e do
+            local offseti = 0
+            for i = 1, #loaded do
+                local i2 = i + offseti
+                local note = loaded[i2]
+                if note then
+                    --nearest
+                    --if not nearest or (ms - note.ms > 0 and ms - note.ms < nearest) or (note.ms - ms > 0 and note.ms - ms < nearest)
+                    if not (note.hit) and note.data == 'note' then
+                        if (note.type == 1 or note.type == 3) and (not nearest[1] or math.abs(ms - note.ms) < nearest[1]) then
+                            nearest[1] = math.abs(ms - note.ms)
+                            nearestnote[1] = note
+                        elseif (note.type == 2 or note.type == 4) and (not nearest[2] or math.abs(ms - note.ms) < nearest[2]) then
+                            nearest[2] = math.abs(ms - note.ms)
+                            nearestnote[2] = note
+                        end
+                    end
+
+
+                    --[[
+                    if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
+                        stopfreezems = totaldelay + note.stopstart
+                        stopms = note.stopms
+                        totaldelay = totaldelay - note.stopms
+                        stopstart = note.stopstart
+                        stopend = note.stopend
+
+                        --to prevent retriggering
+                        note.stopstart = nil
+                    end
+                    --]]
+
+                    --print(ms, loaded.s, loaded.e, loaded.n)
+                    local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
+                    --Log(tostring(px) .. ', ' .. tostring(py))
+                    note.p[1] = px
+                    note.p[2] = py
+                    --Log(px, py)
+
+
+
+
+                    --after target pass
+                    if ms > note.ms then
+                        --gogo
+                        gogo = note.gogo
+                        if note.type == 7 then
+                            if balloon then
+                                if balloon.n == note.n then
+                                    --Same balloon
+                                    note.p[1] = target
+                                else
+                                    --Previous balloon hasn't ended yet
+                                    --Replace
+                                end
+                            end
+                            balloon = note
+                            balloonstart = note.ms
+                            balloonend = note.ms + note.length
+                        elseif note.type == 5 or note.type == 6 then
+                            --Drumroll
+                            drumroll = note
+                            drumrollstart = note.ms
+                            drumrollend = note.ms + note.length
+                        end
+                    end
+
+
+
+
+
+                    -- [[
+                    --if stopsong and note.stopstart and note.p < target then
+                    --if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
+                    if stopsong and note.stopstart and ms > note.stopstart then
+                        stopfreezems = totaldelay + note.stopstart
+                        stopms = note.stopms
+                        totaldelay = totaldelay - note.stopms
+                        stopstart = note.stopstart
+                        stopend = note.stopend
+
+                        --to prevent retriggering
+                        note.stopstart = nil
+                    end
+                    --]]
+
+
+
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
+
+
+                    --[[
+                        Check if it is ready to be unloaded
+                        If it is, check if endnote is not valid
+                        Warning: note.endnote yields false results
+
+                        if note.endnote then
+                            if loaded[note.endnote.n] == nil then
+                                --delete
+
+                            else
+
+                            end
+                        else
+                            --delete
+                        end
+                    --]]
+                    --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
+
+
+
+
+                    
+
+                    --unload after track
+                    --if (note.p < (trackstart - bufferlength)) then
+
+
+                    --auto
+                    --if (note.p < target) then
+
+
+                    
+                    --do not unload
+                    --if false then
+
+
+
+
+
+
+
+                    --Auto
+                    --I put this here so that even if note is going to be unloaded on this frame, we can hit it
+                    if auto then
+                        if not note.hit and autohitnotes[note.type] and ms >= note.ms then
+                            local status
+                            status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                            combo = combo + 1
+                            if status then
+                                --Calculate Score
+                                score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
+        
+                                --Effects
+                                note.hit = true
+                                laststatus = {
+                                    startms = ms,
+                                    status = status
+                                }
+                            end
+                        end
+                    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    --distance unload (slow)
+                    --formula before delay
+                    --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
+                    --100 is extra buffer so it doesnt unload asap
+                    --[[
+                    if (note.hit or math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer)) --is note ready to be unloaded?
+                    and (not (note.endnote and note.endnote.done ~= true and (not note.hit))) --check if endnote unloaded
+                    then
+                    --]]
+                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                        --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
+                        --Log('remove')
+
+                        note.done = true
+                        table.remove(loaded, i2)
+                        offseti = offseti - 1
+
+                    --just connect with else
+                    else
+                        --Draw note on canvas
+
+                        if not note.hit then
+
+                            --Break combo if too late
+                            local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                            if (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
+                                --bad
+                                --status = 0
+                                combo = 0
+                            end
+
+                            if dorender then
+                                if note.data == 'event' then
+                                    if note.event == 'barline' then
+                                        --RAYLIB: RENDERING BARLNE
+                                        rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
+                                    end
+                                elseif note.data == 'note' then
+                                    --RAYLIB: RENDERING NOTE
+                                    if Textures.Notes[note.type] then
+                                        rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                    elseif note.type == 8 then
+                                        local startnote = note.startnote
+                                        
+                                        if startnote.type == 5 or startnote.type == 6 then
+                                            local r = noteradius * note.radius
+                                            local x1, x2 = math.floor(startnote.p[1]) + toffsetx, math.floor(note.p[1]) + toffsetx
+                                            local y1, y2 = math.floor(y - r) + toffsety, math.floor(y + r) + toffsety
+
+
+
+                                            --x reverse (x only (y is irrelevant right now))
+                                            if x1 > x2 then
+                                                x1, x2 = x2, x1
+                                            end
+
+
+                                            --Clip!
+                                            --Don't use ClipN since function overhead
+                                            if x1 < loadrect[1] then
+                                                x1 = loadrect[1]
+                                            end
+
+                                            if x2 > loadrect[3] then
+                                                x2 = loadrect[3]
+                                            end
+
+
+                                            --[[
+                                            if y1 > y2 then
+                                                y1, y2 = y2, y1
+                                            end
+                                            --]]
+
+                                            if math.floor(x2 - x1) > 0 then
+                                                
+                                            else
+                                                --render note
+                                                rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                            end
+                                        end
+
+
+
+                                    end
+                                else
+                                    error('Invalid note.data')
+                                end
+                            end
+
+                        end
+
+
+
+                    end
+                end
+            end
+
+            rl.EndDrawing()
+            if rl.WindowShouldClose() then rl.CloseWindow() end
+
+
+
+            --[=====[]
+
+
+            --Status
+            if laststatus.status then
+                --Log('STATUS')
+                if ms > laststatus.startms + statuslength then
+                    laststatus = {}
+                else
+                    --[[
+                    if ms > laststatus.startms + statusflicker then
+                        RenderStatus(out, laststatus, ms)
+                    end
+                    --]]
+                    RenderStatus(out, laststatus, ms, 0)
+                    --[[
+                    if speedopt then
+                        RenderStatus(speedoptstatus, laststatus, ms, outoffsetx)
+                        --
+                    else
+                        RenderStatus(out, laststatus, ms, outoffsetx)
+                    end
+                    --]]
+                    --print(outoffsetx)io.read()
+                end
+            end
+
+
+
+
+
+
+            --[[
+            if speedopt then
+                if speedoptstatus then
+                    print(Pixel.ToDotsParallel(out, speedoptstatus, outoffsetx))
+                else
+                    print(Pixel.Convert.ToDots(out, outoffsetx))
+                end
+            else
+                --Frame Limiting
+                if framerate then
+                    local dots = Pixel.Convert.ToDots(out, outoffsetx)
+                    repeat
+
+                    until os.clock() >= nextframes
+                    --nextframes = startt + (framen + 2) * frames
+                    nextframes = nextframes + frames
+                    print(dots)
+                else
+                    --Legacy renderer
+                    print(Pixel.Convert.ToDots(out, outoffsetx))
+                end
+            end
+            --]]
+
+
+
+
+
+            
+            framen = framen + 1
+            local framerenders = os.clock() - raws
+            framerenderstotal = framerenderstotal + framerenders
+            --]]
+
+
+
+
+
+
+
+
+
+            --Now Input
+            local input = curses.getch(window) --Ascii / raw
+            local key = curses.getkeyname(input) --Char
+
+            local v = Controls.Hit[key] --Controls are referenced by keys
+            --Statistic('v', v)
+
+            --Auto
+            if auto then
+                local n1 = nearest[1]
+                local n2 = nearest[2]
+                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                local testv =
+                (n1 and n2)
+                and (
+                    (n1 < n2)
+                    and 1 or 2
+                )
+                or (n1 and 1 or 2)
+                local n = nearest[testv]
+                local note = nearestnote[testv]
+
+                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                    --make sure we can't hit note as bad
+                    if balloonstart and (ms > balloonstart and ms < balloonend) then
+                        v = 1
+                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                        v = 1
+                    end
+                end
+            end
+
+
+
+
+            if v then
+                if nearest[v] and (not nearestnote[v].hit) then
+                    local note = nearestnote[v]
+                    local notetype = note.type
+                   --local notegogo = note.gogo
+
+                    local n = nearest[v]
+                    local status
+                    --No leniency for good
+                    local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                    if n < (timing.good) then
+                        --good
+                        --local a = nearestnote[v].type
+                        --TODO: Easy big notes config
+                        status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                        combo = combo + 1
+                    elseif n < (timing.ok * leniency) then
+                        --ok
+                        status = 1
+                        combo = combo + 1
+                    elseif n < (timing.bad * leniency) then
+                        --bad
+                        status = 0
+                        combo = 0
+                    else
+                        --complete miss
+                        status = nil
+                    end
+                    if status then
+                        --Calculate Score
+                        score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
+
+                        --Effects
+                        nearestnote[v].hit = true
+                        laststatus = {
+                            startms = ms,
+                            status = status
+                        }
+                    end
+                end
+
+
+                --Check again (one at a time)
+                if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) then
+                    --balloon = hit don or ka
+                    score = balloonscoref(score, balloon.type, notegogo)
+                end
+                if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                    --drumroll = hit don or ka
+                    score = drumrollscoref(score, drumroll.type, notegogo)
+                end
+            end
+
+
+
+
+            --Pause menu
+            if Controls.Escape[key] then
+                local before = os.clock()
+
+                Ansi.ClearScreen()
+                curses.nodelay(window, false)
+                --Back, Retry, Song Select
+                local Menu = {'Back', 'Retry', 'Back to Select'}
+                while true do
+                    Ansi.SetCursor(1, 1)
+                    local o = {}
+                    for i = 1, #Menu do
+                        --Can't Use Select :(
+                        o[i] = ((i == Selected) and (SelectedChar .. string.rep(' ', SelectedPadding - #SelectedChar)) or string.rep(' ', SelectedPadding)) .. Menu[i]
+                    end
+                    print(table.concat(o, MenuConcat))
+
+                    --local input = Input()
+                    local input = curses.getch(window)
+                    local key = curses.getkeyname(input)
+                    if Controls.L[key] then
+                        Selected = Selected == 1 and 1 or Selected - 1
+                    elseif Controls.R[key] then
+                        Selected = Selected == 3 and 3 or Selected + 1
+                    elseif Controls.Select[key] then
+                        --Dirty
+                        if Selected == 1 then
+                            --Back
+                        elseif Selected == 2 then
+                            --Retry
+                            return 'Retry'
+                        elseif Selected == 3 then
+                            --Back to Select
+                            return nil
+                        end
+                        break
+                    elseif Controls.Escape[key] then
+                        break
+                    end
+                end
+                curses.nodelay(window, true)
+                startt = startt + (os.clock() - before)
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --Statistics
+
+
+
+
+            if input ~= -1 then
+                lastinput = {input, key}
+            end
+            --input statistics
+            Statistic('Input (ascii)', lastinput[1])
+            Statistic('Input (key)', lastinput[2])
+
+
+
+
+            --statistics
+
+
+
+
+
+
+            --DEBUG
+            Statistic('S', s)
+            Statistic('Ms', ms)
+            Statistic('Loaded', #loaded)
+            Statistic('Frames Rendered', framen)
+            --Statistic('Last Frame Render (s)', framerenders)
+            Statistic('Last Frame Render (ms)', framerenders * 1000)
+            --Statistic('Frame Render Total (s)', framerenderstotal)
+            Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
+            Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
+            Statistic('FPS (Frame)', framen / s)
+
+            --[=[
+            Statistic('nextloadms', nextnote and nextnote.loadms)
+            Statistic('nextms', nextnote and nextnote.ms)
+            Statistic('nextn', nextnote and nextnote.n)
+            --]=]
+
+
+            --[[ --temp 11/12/2022
+
+            Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
+            Statistic('Finished (%)', ms / (endms) * 100)
+
+
+            Statistic('Nearest1 (ms)', nearest[1])
+            --Statistic('NearestHIT', (nearestnote[1] and ((nearestnote[1].ms > ms) and (not nearestnote[1].hit))))
+            Statistic('Nearest2 (ms)', nearest[2])
+            --]]
+            --Delay
+            Statistic('Stop Start', stopstart or '')
+            Statistic('Stop End', stopend or '')
+            Statistic('Total Delay', totaldelay)
+
+            --]]
+
+
+            --Score
+            Statistic('Score', score)
+            Statistic('Combo', combo)
+            Statistic('Gogo', gogo)
+            
+
+
+
+
+
+            --Drumroll
+            Statistic('Drumroll Start', drumrollstart)
+            Statistic('Drumroll End', drumrollend)
+
+
+
+
+            --GAME
+
+            --[[
+            --Song info
+
+            Statistic('Song Name', Parsed.Metadata.TITLE)
+            Statistic('Difficulty (id)', Parsed.Metadata.COURSE)
+            Statistic('Stars', Parsed.Metadata.LEVEL)
+            
+
+
+            --]]
+
+
+            RenderStatistic()
+            RenderLog()
+            
+            --]=====]
+
+
+        end
+
+        --[[
+        profiler.report('profiler.log')
+        --]]
+
+
+
+        --for i = 1, #Parsed.Data do local a = Parsed.Data[i] if not a.hit and a.data == 'note' then print(a.n, a.line) end end error()
+
+
+
+
+
+        --curses.nodelay(window, false)
+        return true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4987,120 +6867,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-        --Calculate Functions
-        local function IsNote(note)
-            return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
-        end
-        local function IsPointInRectangle(x, y, x1, y1, x2, y2)
-            --[[
-                assumptions
-                x1 < x2
-                y1 < y2
-            ]]
-            return x1 <= x and x <= x2 and y1 <= y and y <= y2
-        end
-        local function RayIntersectsRectangle(x, y, sx, sy, x1, y1, x2, y2)
-            --[[
-                assumptions
-                x1 < x2
-                y1 < y2
-            ]]
-            x1, y1, x2, y2 = x1 - x, y1 - y, x2 - x, y2 - y
-            --now we are at origin!
-        
-        
-            --[[
-                just plug in!
-        
-                y=mx
-                x=y/m
-            ]]
-        
-            local m = sy / sx
-        
-        
-            
-            if sy < 0 then
-                --d (y = y1)
-                local x3, y3 = y1 / m, y1
-                if x1 <= x3 and x3 <= x2 then
-                    return x3, y3
-                end
-            else
-                --u (y = y2)
-                local x3, y3 = y2 / m, y2
-                if x1 <= x3 and x3 <= x2 then
-                    return x3, y3
-                end
-            end
-        
-            
-            if sx < 0 then
-                --l (x = x1)
-                local x3, y3 = x1, x1 * m
-                if y1 <= y3 and y3 <= y2 then
-                    return x3, y3
-                end
-            else
-                --r (x = x2)
-                local x3, y3 = x2, x2 * m
-                if y1 <= y3 and y3 <= y2 then
-                    return x3, y3
-                end
-            end
-        
-            return nil
-        end
-
-        local function CalculateLoadMs(note, ms)
-            --return ms - ((tracklength / note.speed) + buffer)
-            --support negative speed
-            --return ms - ((tracklength / math.abs(note.speed)) + buffer)
-            --bufferlength
-            --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
-
-            --x, y
-            local x, y = RayIntersectsRectangle(0, 0, -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-            --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
-            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
-        end
-        --[[
-        local function CalculateLoadPosition(note, lms)
-            return (note.ms - lms) * note.speed + target
-        end
-        --]]
-        local function CalculatePosition(note, ms)
-            --return note.loadp - (note.speed * (ms - note.loadms))
-
-            --x, y + relative
-            -- if notems is 200 and ms is 100
-            --[[
-            if target[1] + (-note.speed[1] * (note.ms - ms - note.delay)) > unloadrect[3] then
-                error(table.concat({note.n, target[1] + (-note.speed[1] * (note.ms - ms - note.delay))}, '\n'))
-            end
-            --]]
-
-            return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
-            --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
-
-            --[[
-            if d then
-                --disable delay
-                return note.loadp - (note.speed * (ms - note.loadms))
-            else
-                return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
-            end
-            --]]
-        end
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5403,406 +7169,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-        --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
-
-
-        local notetable = Taiko.GetAllNotes(Parsed.Data)
-
-
-
-        --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
-
-
-
-
-
-
-
-
-
-
-
-        --METADATA
-        local startms = Parsed.Metadata.OFFSET
-
-        --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
-        --local framems = 1000 / (framerate or 60) --don't use framerate
-        local framems = 1000 / 60
-        local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
-
-
-
-
-
-
-
-
-
-
-
-        --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
-
-
-
-        --Precalculate
-
-
-
-
-
-
-
-
-
-
-
-        --Convert everything to seconds + fill up timet
-        --[[
-        local timet = {}
-        for k, v in pairs(Parsed.Data) do
-            table.insert(timet, v.ms)
-            v.ms = v.ms - startms
-            v.s = MsToS(v.ms)
-            v.loadms = CalculateLoadMs(v, v.ms)
-            v.loads = MsToS(v.loadms)
-            v.loadp = CalculateLoadPosition(v, v.loadms)
-            --v.n = k --MISTAKE: after sorted
-        end
-        --]]
-        local timet = {}
-        for k, v in pairs(notetable) do
-            --v.oms is original ms
-            --oms
-            v.ms = v.oms or v.ms
-            v.oms = v.ms
-
-            v.ms = (v.ms - startms) / songspeedmul
-            v.s = MsToS(v.ms)
-            --odelay
-            v.delay = v.odelay or v.delay
-            v.odelay = v.delay
-            v.p = {}
-
-            v.delay = v.delay / songspeedmul
-            v.speed = Taiko.CalculateSpeed(v, noteradius)
-            v.speed[1] = v.speed[1] * notespeedmul
-            v.speed[2] = v.speed[2] * notespeedmul
-
-            v.loadms = CalculateLoadMs(v, v.ms)
-            v.loads = MsToS(v.loadms)
-            --v.loadp = CalculateLoadPosition(v, v.loadms)
-            --v.pdelay = 0
-            v.hit = nil --Reset hit just in case
-            --v.n = k --MISTAKE: after sorted
-            --table.insert(timet, v.ms)
-            timet[#timet + 1] = v.ms
-            --print(v.speed, v.loadms, v.loadp)
-        end
-
-        if stopsong then
-            --sort with ms
-            for k, v in pairs(Parsed.Data) do
-                if v.branch then
-                    for k2, v2 in pairs(v.branch.paths) do
-                        table.sort(v2, function(a, b)
-                            return a.ms < b.ms
-                        end)
-                    end
-                end
-            end
-        
-        
-            --Path doesn't matter, they should all have same loadms
-            table.sort(Parsed.Data, function(a, b)
-                if a.branch and b.branch then
-                    --both branches
-                    for k, v in pairs(a.branch.paths) do
-                        for k2, v2 in pairs(b.branch.paths) do
-                            return v[1].ms < v2[1].ms
-                        end
-                    end
-                elseif a.branch then
-                    --a is branch
-                    for k, v in pairs(a.branch.paths) do
-                        return v[1].ms < b.ms
-                    end
-                elseif b.branch then
-                    --b is branch
-                    for k, v in pairs(b.branch.paths) do
-                        return a.ms < v[1].ms
-                    end
-                else
-                    --notes
-                    return a.ms < b.ms
-                end
-            end)
-
-
-            local lastnote = nil
-            local lastdelay = 0
-            local stopmst = {}
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                --print(note.ms, note.delay)
-                if note.delay ~= lastdelay then
-                    if lastnote then
-                        lastnote.stopms = note.delay - lastnote.delay
-                        lastnote.stopstart = lastnote.ms
-                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                    end
-                    lastdelay = note.delay
-                end
-
-                if lastnote and lastnote.delay ~= 0 then
-                    --recalculate
-                    -- [[
-                    lastnote.ms = lastnote.ms - lastnote.delay
-                    lastnote.s = MsToS(lastnote.ms)
-
-                    --calculate the stopms between notems and noteloadms
-                    --loadms = loadms - totalstopmsbetweennotes
-                    --nvm just calc on runtime with totaldelay
-
-                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
-                    lastnote.loads = MsToS(lastnote.loadms)
-                    --lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
-                    lastnote.ms = lastnote.ms + lastnote.delay
-                    lastnote.s = MsToS(lastnote.ms)
-                    --]]
-                end
-
-
-                lastnote = note
-            end)
-
-            --error()
-
-            --[=[
-
-            local lastnote
-            local zerodelay = true
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                --print(note.ms, note.delay, i, n)
-                if note.delay ~= 0 then
-                    --recalculate time related
-                    --[[
-                    print(i)
-                    print('ms\tloadms\tloads\tloadp')
-                    print(note.ms, note.loadms, note.loads, note.loadp)
-                    --]]
-
-
-                    note.ms = note.ms - note.delay
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    note.ms = note.ms + note.delay
-                    note.s = MsToS(note.ms)
-
-                    --[[
-                    note.ms = note.ms - (note.delay / songspeedmul)
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    --]]
-
-
-
-
-
-
-                    --[[
-                    print(note.ms, note.loadms, note.loads, note.loadp)
-                    io.read()
-                    --]]
-                    --print(note.delay)
-                    --[[
-                    note.ms = note.ms - (note.delay / songspeedmul)
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    --]]
-                    if zerodelay and lastnote then
-                        lastnote.stopms = note.delay - lastnote.delay
-                        lastnote.stopstart = lastnote.ms
-                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                        
-                        zerodelay = false
-                    end
-
-                    if note.nextnote and note.nextnote.delay ~= note.delay then
-                        note.stopms = note.nextnote.delay - note.delay
-                        note.stopstart = note.ms
-                        note.stopend = note.stopstart + note.stopms
-                    end
-                end
-                lastnote = note
-
-            end)
-
-            --]=]
-
-            --[[
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
-            end)
-
-            io.read()
-
-            stopsong = true --error()
-            --]]
-        end
-
-
-        --error()
-        --print(Parsed.Data[68].ms)error()
-
-        --error()
-        --Sort by loadms
-        --Sort all branches firt
-        for k, v in pairs(Parsed.Data) do
-            if v.branch then
-                for k2, v2 in pairs(v.branch.paths) do
-                    table.sort(v2, function(a, b)
-                        return a.loadms < b.loadms
-                    end)
-                end
-            end
-        end
-
-
-        --Path doesn't matter, they should all have same loadms
-        table.sort(Parsed.Data, function(a, b)
-            if a.branch and b.branch then
-                --both branches
-                for k, v in pairs(a.branch.paths) do
-                    for k2, v2 in pairs(b.branch.paths) do
-                        return v[1].loadms < v2[1].loadms
-                    end
-                end
-            elseif a.branch then
-                --a is branch
-                for k, v in pairs(a.branch.paths) do
-                    return v[1].loadms < b.loadms
-                end
-            elseif b.branch then
-                --b is branch
-                for k, v in pairs(b.branch.paths) do
-                    return a.loadms < v[1].loadms
-                end
-            else
-                --notes
-                return a.loadms < b.loadms
-            end
-        end)
-
-        --Relink and reindex after sorting
-        Taiko.ConnectAll(Parsed.Data)
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
-            --print(note.loadms)
-            note.n = n
-            --delay
-            -- [[
-            --moved
-            --]]
-            --print(note.ms)
-            --print(note.loadms, note.ms)
-        end)
-        --if''then return end
-        --error()
-        --]]
-
-        --[[
-        local nextnote = nil
-        for i = #Parsed.Data, 1, -1 do
-            local v = Parsed.Data[i]
-            if IsNote(v) then
-                v.n = i
-                v.nextnote = nextnote
-                nextnote = v
-            end
-        end
-        --]]
-
-        --[[
-        --ppp
-        for i = 1, #Parsed.Data do
-            print(Parsed.Data[i].loads)
-        end
-        --]]
-
-        --Calculate end time
-        --local endms = math.max(unpack(timet)) + (endms / songspeedmul)
-
-        local temp = endms / songspeedmul
-        local endms = timet[1]
-        for i = 1, #timet do
-            if timet[i] > endms then
-                endms = timet[i]
-            end
-        end
-        endms = endms + temp
-        --print(MsToS(endms))error()
-
-
-
-        --Check for spawns before game starts
-
-        --[[
-        local loaded = {
-            s = 1, --Start
-            e = 0, --End
-            n = 0, --Number of loaded notes
-            --nearestnote = {} --Table of nearest notes
-        }
-        --]]
-        loaded = {}
-
-        --Generate nearestnote
-        --[[
-        local lastms = nil
-        for i = 1, #timet do
-            if i ~= 1 then
-                table.insert(loaded.nearestnote, {})
-            end
-            lastms = timet[i]
-        end
-        loaded.nearestnote = {}
-        --]]
-
-
-
-
-
-        local nextnote = Parsed.Data[1]
-        local nextnotel = nextnote.loads
-
-        --[[
-        --redesign
-        while true do
-            if nextnote then
-                nextnotel = nextnote.loads
-                if nextnotel < 0 then
-                    --nextnote.p = CalculatePosition(nextnote, nextnotel)
-
-                    loaded.n = loaded.n + 1
-                    loaded[loaded.n] = nextnote
-                else
-                    break
-                end
-            else
-                break
-            end
-            nextnote = nextnote.nextnote
-        end
-        --]]
-
-        --loaded.e = loaded.n
-
-
-
 
 
 
@@ -5851,95 +7217,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local lastpixel = math.floor(tracklength * noteradius + noteradius + 1)
         --]]
 
-
-
-        --Branching
-        local branch = 'M'
-
-
-
-
-        --score, combo, init, diff, status, gogo
-
-        --Score
-        --don't use Taiko.Score because it is inefficient
-        local score = 0
-        local scoreinit, scorediff, scoref = Parsed.Metadata.SCOREINIT, Parsed.Metadata.SCOREDIFF, Taiko.Data.ScoreMode.Note[Parsed.Metadata.SCOREMODE]
-        
-        --Combo
-        local combo = 0
-
-        --Gogo
-        local gogo = false
-
-
-
-        --Balloon
-        local balloon = nil
-        local balloonstart = nil
-        local balloonend = nil
-        local balloonscoref = Taiko.Data.ScoreMode.Balloon[Parsed.Metadata.SCOREMODE]
-        local balloonpopscoref = Taiko.Data.ScoreMode.BalloonPop[Parsed.Metadata.SCOREMODE]
-
-        --Drumroll
-        local drumroll = nil
-        local drumrollstart = nil
-        local drumrollend = nil
-        local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
-
-
-
-
-        
-        --For rendering status
-        local laststatus = {
-            startms = nil,
-            status = nil
-        }
-
-
-
-
-
-
-
-
-
-
-        --Gimmicks
-
-
-        --Stop (delay) (DELAY)
-        local stopfreezems = nil
-        local stopstart = nil
-        local stopend = nil
-        --local adddelay = false
-        local totaldelay = 0
-
-
-
-
-
-        --Statistics
-        local lastinput = {-1, nil}
-        local framen = 0
-        local framerenderstotal = 0
-
-        local dorender = true
-        
-        --Optimizations
-        --[[
-        local dospeedopt = false
-
-        local speedopt = false
-        local speedoptspeed = nil
-        local speedoptoldpos = nil
-        local speedoptout = nil
-        local speedoptfirstnote = nil
-        local speedoptstartms = nil
-        local speedoptstatus = nil
-
-        --]]
 
 
         --Main loop
@@ -6440,6 +7717,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                         if not note.hit then
 
+                            --Break combo if too late
+                            local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                            if (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
+                                --bad
+                                --status = 0
+                                combo = 0
+                            end
 
                             if dorender then
                                 if note.data == 'event' then
@@ -6903,9 +8187,10 @@ end
 
 
 
-
-
-
+--FLAG
+a = 'tja/ekiben.tja'
+--a = 'tja/neta/ekiben/neta.tja'
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
 
 
