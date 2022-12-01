@@ -15,6 +15,7 @@ TODO: Add raylib option
     PlaySong
     SongSelect
     Fix note rendering priority
+    Use gettime instead of os.clock()
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -3859,7 +3860,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     --original tracklength: 40 noteradius (160)
     local tracklength
     if useraylib then
-        tracklength = 1600
+        tracklength = 1600 --2400 max
     else
         tracklength = 160
     end
@@ -4680,6 +4681,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --16:9 aspect ratio (1080p)
 
         rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+        --rl.SetTargetFPS(120)
         rl.InitWindow(screenWidth, screenHeight, 'Taiko')
 
 
@@ -4792,8 +4794,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         Textures.Notes = TextureMap.SplitUsingMap(Textures.Notes, Map.Notes, defaultsize, xymul)
-        Textures.Notes.drumrollstart = rl.ImageFlipHorizontal(rl.ImageCopy(Textures.Notes.drumrollend))
-        Textures.Notes.DRUMROLLstart = rl.ImageFlipHorizontal(rl.ImageCopy(Textures.Notes.DRUMROLLend))
+
+        Textures.Notes.drumrollstart = rl.ImageCopy(Textures.Notes.drumrollend)
+        rl.ImageFlipHorizontal(Textures.Notes.drumrollstart)
+
+        Textures.Notes.DRUMROLLstart = rl.ImageCopy(Textures.Notes.DRUMROLLend)
+        rl.ImageFlipHorizontal(Textures.Notes.DRUMROLLstart)
+
         for k, v in pairs(Textures.Notes) do
             rl.ImageResize(v, noteradius * 4, noteradius * 4) --Why is it times 4? We will never know
         end
@@ -4820,7 +4827,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         Textures.Notes = TextureMap.ReplaceWithTexture(Textures.Notes)
-
 
 
 
@@ -5369,36 +5375,89 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                         
                                         if startnote.type == 5 or startnote.type == 6 then
                                             local r = noteradius * note.radius
-                                            local x1, x2 = math.floor(startnote.p[1]) + toffsetx, math.floor(note.p[1]) + toffsetx
-                                            local y1, y2 = math.floor(y - r) + toffsety, math.floor(y + r) + toffsety
-
+                                            --recalc startnote p if it is loaded later
+                                            local x1, x2 = startnote.p[1], note.p[1]
+                                            local y1, y2 = y - r, y + r
 
 
                                             --x reverse (x only (y is irrelevant right now))
+                                            local rx1, rx2 = x1, x2
                                             if x1 > x2 then
-                                                x1, x2 = x2, x1
+                                                rx1, rx2 = x2, x1
                                             end
+
 
 
                                             --Clip!
                                             --Don't use ClipN since function overhead
-                                            if x1 < loadrect[1] then
-                                                x1 = loadrect[1]
+                                            
+                                            --[[
+                                            if rx1 < loadrect[1] then
+                                                rx1 = loadrect[1]
                                             end
 
-                                            if x2 > loadrect[3] then
-                                                x2 = loadrect[3]
+                                            if rx2 > loadrect[3] then
+                                                rx2 = loadrect[3]
                                             end
+                                            --]]
 
 
+                                            
                                             --[[
                                             if y1 > y2 then
                                                 y1, y2 = y2, y1
                                             end
                                             --]]
 
-                                            if math.floor(x2 - x1) > 0 then
+                                            --if math.floor(x2 - x1) > 0 then
+                                            --print(rx1, rx2, rx2 - rx1)
+                                            if rx2 - rx1 > 0 then
+                                                local twidth = Textures.Notes.drumrollrect.width
+                                                local theight = Textures.Notes.drumrollrect.height
+
+
+
+
+                                                --endnote
+                                                rl.DrawTexture(Textures.Notes.drumrollend, Round(note.p[1] + (twidth / 2)) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+
+
+
+
+
+                                                local mod = (rx2 - rx1) % twidth
+                                                local div = ((rx2 - rx1) - mod) / twidth
+                                                --print(twidth, mod, div)error()
+                                                for i = 1, div do
+                                                    rl.DrawTexture(Textures.Notes.drumrollrect, Round(startnote.p[1] - (twidth / 2)) + i * twidth + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
+                                                end
+
+                                                --Avoid repeatedly creating Rectangle and Vector2
+                                                note.drumrollrect = note.drumrollrect or rl.new('Rectangle', 0, 0, 0, 0)
+                                                note.drumrollrect2 = note.drumrollrect2 or rl.new('Vector2', 0, 0)
+
+                                                -- [[
+                                                note.drumrollrect.width = Round(mod)
+                                                note.drumrollrect.height = Round(theight)
+                                                note.drumrollrect2.x = Round(startnote.p[1] + (div + 1) * twidth - (twidth / 2)) + toffsetx
+                                                note.drumrollrect2.y = toffsety
                                                 
+
+                                                rl.DrawTextureRec(Textures.Notes.drumrollrect, note.drumrollrect, note.drumrollrect2, rl.WHITE)
+                                                --]]
+
+                                                --nvm just draw last one on top
+                                                --[[
+                                                --for last one
+                                                rl.DrawTextureRec(Textures.Notes.drumrollrect, rl.WHITE)
+                                                --]]
+
+
+
+
+                                                --startnote
+                                                --rl.DrawTexture(Textures.Notes.drumrollstart, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
+                                                rl.DrawTexture(Textures.Notes.drumrollnote, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
                                             else
                                                 --render note
                                                 rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
