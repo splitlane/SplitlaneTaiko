@@ -16,6 +16,10 @@ TODO: Add raylib option
     SongSelect
     Fix note rendering priority
     Use gettime instead of os.clock()
+    Unload textures + sound later on
+    CleanUp
+    Don't init audio if not playmusic
+    Add Toffset, fix screenrect
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -3875,11 +3879,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local bufferlength = 1/16 * tracklength
     local unloadbuffer = 5/16 * tracklength --NOT added to bufferlength
     local endms = 1000 --Added to last note (ms)
-    local noteradius = 1/40 * tracklength
+    local noteradius = 1/40 * tracklength --Radius of normal (small) notes
     local y = 0 * tracklength
     local tracky = 1/16 * tracklength
     local trackstart = 0 * tracklength
     local target = {3/40 * tracklength, 0} --(src: taiko-web)
+    --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
     local statusanimationmove = 1/40 * tracklength --Status animation move
@@ -3900,7 +3905,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
     local trackend = trackstart + tracklength
-    local screenrect = {trackstart, -tracky * 2, trackend, tracky * 2}
+
+
+    local screenrect
+    if useraylib then
+        --TODO: somehow add toffsetx
+        --local tsizex = 130/2 - 130/2
+        screenrect = {0, -screenHeight / 2, screenWidth, screenHeight / 2}
+    else
+        screenrect = {trackstart, -tracky * 2, trackend, tracky * 2}
+    end
     local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
     local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
 
@@ -4094,7 +4108,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
 
         --x, y
-        local x, y = RayIntersectsRectangle(0, 0, -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+        local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
         --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
         return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
     end
@@ -4680,6 +4694,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         -- Initialization
         --16:9 aspect ratio (1080p)
 
+        --Clean Up function
+        local function CleanUp()
+            rl.CloseWindow()
+            rl.CloseAudioDevice()
+        end
+        
+
+
+
+
         rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
         --rl.SetTargetFPS(120)
         rl.InitWindow(screenWidth, screenHeight, 'Taiko')
@@ -4690,6 +4714,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         local barlinecolor = rl.new('Color', 255, 255, 255, 255)
+        local bignoteratio = 1.6 --Big note is this times bigger than small note
+
+
+
+
+
+
+
+
+        --TEXTURES
 
 
         --Load textures
@@ -4802,15 +4836,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         rl.ImageFlipHorizontal(Textures.Notes.DRUMROLLstart)
 
         for k, v in pairs(Textures.Notes) do
-            rl.ImageResize(v, noteradius * 4, noteradius * 4) --Why is it times 4? We will never know
+            rl.ImageResize(v, noteradius * 2 * bignoteratio, noteradius * 2 * bignoteratio) --Why is it times 4? We will never know
         end
 
 
         local tsizex, tsizey = Textures.Notes.target.width, Textures.Notes.target.height
         local toffsetx, toffsety = offsetx - (tsizex / 2), offsety - (tsizey / 2)
+        local xmul, ymul = 1, -1
         
 
         --Hacky way to align rects
+        --[[
         local function addrect(t, x, y)
             for i = 1, #t do
                 if i % 2 == 0 then
@@ -4824,9 +4860,65 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         addrect(screenrect, tempx, tempy)
         addrect(loadrect, tempx, tempy)
         addrect(unloadrect, tempx, tempy)
+        --]]
+
+        --[[
+        local screenrect = {}
+        local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
+        local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+        --We have to recalculate loadms if we change here, so change before
+        --]]
 
 
         Textures.Notes = TextureMap.ReplaceWithTexture(Textures.Notes)
+
+
+
+
+
+
+
+
+
+
+        --SOUND
+        local playmusic = Parsed.Metadata.WAVE --Is the song valid?
+
+        rl.InitAudioDevice()
+        local song
+        if playmusic then
+            song = rl.LoadMusicStream(Parsed.Metadata.WAVE)
+        end
+
+
+
+
+
+
+
+
+        --Precalculate some more stuff
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            
+        end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4855,6 +4947,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             rl.ClearBackground(rl.RAYWHITE)
 
+            rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
+            rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
+            rl.DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
 
 
 
@@ -5123,7 +5218,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --draw target
 
             --normal
-            rl.DrawTexture(Textures.Notes.target, Round(target[1]) + toffsetx, Round(target[2]) + toffsety, rl.WHITE)
+            rl.DrawTexture(Textures.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
 
             --[[
             rl.DrawRectangle(Round(target[1]) + toffsetx - 10, Round(target[2]) + toffsety - 10, 20, 20, rl.RED)
@@ -5198,8 +5293,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --print(ms, loaded.s, loaded.e, loaded.n)
                     local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
                     --Log(tostring(px) .. ', ' .. tostring(py))
-                    note.p[1] = px
-                    note.p[2] = py
+                    --multiply after computing
+                    note.p[1] = px * xmul
+                    note.p[2] = py * ymul
                     --Log(px, py)
 
 
@@ -8247,8 +8343,10 @@ end
 
 
 --FLAG
-a = 'tja/ekiben.tja'
---a = 'tja/neta/ekiben/neta.tja'
+--a = 'tja/ekiben.tja'
+a = 'tja/neta/ekiben/neta.tja'
+a = 'tja/neta/ekiben/loadingtest2.tja'
+a = 'tja/neta/ekiben/updowntest.tja'
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
 
