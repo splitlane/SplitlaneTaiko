@@ -22,6 +22,7 @@ TODO: Add raylib option
     Add Toffset, fix screenrect
     Use branched barline texture
     Fix drumroll
+    TODO: git rebase HEAD~10 to be consistent on playsong capitalization
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -4994,6 +4995,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if note.startnote then
                 local a = note.startnote
                 if a.type == 5 or a.type == 6 then
+                    note.rotationr = r
                     note.drumrollrect = rl.new('Rectangle', 0, 0, 0, 0)
                     note.drumrollrect2 = rl.new('Rectangle', 0, 0, 0, 0)
 
@@ -5706,6 +5708,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                                             --New code (12/8/22)
                                             if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
+                                                --TODO: implement negativey
+                                                local negativex = startnote.scrollx > 0
+                                                local positivey = startnote.scrolly <= 0
+
                                                 --Draw rect + endnote
                                                 local twidth = Textures.Notes.drumrollrect.width
                                                 local theight = Textures.Notes.drumrollrect.height
@@ -5751,6 +5757,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                                 --Just modify rect in loop
                                                 local x = x1 + offsetx + centeroffx
                                                 local y = y1 + offsety + centeroffy
+                                                --print(div)
                                                 for i = 1, div do
                                                     note.drumrollrect.x = x
                                                     note.drumrollrect.y = y
@@ -5761,10 +5768,44 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                                                 note.drumrollrect.width = mod
 
-                                                --note.drumrollrect.x = x + (twidth - mod)
+
+                                                --[=[
+                                                if negativex then
+                                                    --negative
+                                                    -- [[
+                                                    --note.drumrollrect.x = x + (mulx * (twidth - mod))
+                                                    --mod is a distance
+                                                    --print(mulx, muly)
+                                                    note.drumrollrect.x = x + ((twidth - mod))
+                                                    --]]
+                                                else
+                                                    --normal
+                                                    -- [[
+                                                    note.drumrollrect.x = x
+                                                    --note.drumrollrect.y = y
+                                                    --]]
+                                                end
+                                                --]=]
+
+                                                --[=[
+                                                if not positivey then
+                                                    --negative
+                                                    -- [[
+                                                    note.drumrollrect.y = y - (muly * (twidth - mod))
+                                                    --note.drumrollrect.y = y
+                                                    --note.drumrollrect.y = y
+                                                    --]]
+                                                else
+                                                    --normal
+                                                    -- [[
+                                                    note.drumrollrect.y = y
+                                                    --]]
+                                                end
+                                                --]=]
 
                                                 note.drumrollrect.x = x
                                                 note.drumrollrect.y = y
+
                                                 note.drumrollrect2.x = 0
                                                 note.drumrollrect2.y = 0
                                                 note.drumrollrect2.width = note.drumrollrect.width
@@ -5774,25 +5815,40 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                                 y = y + incrementmody
 
 
-
-
-
-                                                --Draw endnote
                                                 --[[
-                                                note.drumrollrect.x = note.pr.x + note.pr.width
-                                                note.drumrollrect.y = note.pr.y + note.pr.height
-                                                note.drumrollrect.width = -note.pr.width
-                                                note.drumrollrect.height = -note.pr.height
-                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
-                                                --]]
+                                                    rotation:
+                                                    0 -> 0
+
+                                                    270 -> 270
+                                                    360 -> 180
+
+                                                ]]
                                                 rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
 
+                                                --Draw endnote
+                                                --[=[
+                                                if negativex then
+                                                    --negative
+                                                    -- [[
+                                                    note.drumrollrect.x = note.pr.x + note.pr.width
+                                                    note.drumrollrect.y = note.pr.y + note.pr.height
+                                                    note.drumrollrect.width = -note.pr.width
+                                                    note.drumrollrect.height = -note.pr.height
+                                                    rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                    --]]
+                                                else
+                                                    --normal
+                                                    -- [[
+                                                    rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
+                                                    --]]
+                                                end
+                                                --]=]
 
 
                                             end
 
                                             --Draw startnote
-                                            rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, note.rotationr, rl.WHITE)
+                                            rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, startnote.rotationr, rl.WHITE)
 
 
                                             
@@ -8586,7 +8642,7 @@ a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/loadingtest2.tja'
 a = 'tja/neta/ekiben/updowntest.tja'
 a = 'tja/neta/ekiben/directiontest.tja'
-a = 'tja/neta/ekiben/updowntest.tja'
+a = 'tja/neta/ekiben/drumrolltest.tja'
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
 
