@@ -20,6 +20,8 @@ TODO: Add raylib option
     CleanUp
     Don't init audio if not playmusic
     Add Toffset, fix screenrect
+    Use branched barline texture
+    Fix drumroll
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -659,6 +661,7 @@ Taiko.Data = {
             [9] = 9,
         }
     },
+    BigNoteMul = 1.6,
 
 
 
@@ -1191,7 +1194,8 @@ function Taiko.ParseTJA(source)
 
                 --Big note
                 if n == 3 or n == 4 or n == 6 then
-                    note.radius = note.radius * 1.6
+                    --note.radius = note.radius * 1.6
+                    note.radius = note.radius * Taiko.Data.BigNoteMul
                 end
 
                 if n == 5 or n == 6 or n == 7 or n == 9 then
@@ -3884,6 +3888,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local tracky = 1/16 * tracklength
     local trackstart = 0 * tracklength
     local target = {3/40 * tracklength, 0} --(src: taiko-web)
+    target[1] = 1/2 * tracklength --middle target
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
@@ -4032,6 +4037,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local function Round(x)
         --nearest integer
         return math.floor(x + 0.5)
+    end
+    --From Pixelsv20.lua
+    local function NormalizeAngle(deg)
+        return deg - (math.floor(deg / 360) * 360)
     end
 
 
@@ -4712,9 +4721,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --Config Options
         local offsetx, offsety = 0, screenHeight / 2 --Added to rendering
 
-
+        --[[
+        --uses texture
         local barlinecolor = rl.new('Color', 255, 255, 255, 255)
-        local bignoteratio = 1.6 --Big note is this times bigger than small note
+        --]]
+        local bignotemul = Taiko.Data.BigNoteMul --Big note is this times bigger than small note
 
 
 
@@ -4732,7 +4743,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --Main texture storage
         local Textures = {
             Notes = rl.LoadImage('Assets/Textures/Notes.png'),
-
+            Barlines = {
+                bar = rl.LoadImage('Assets/Textures/Bar.png'),
+                bar_branch = rl.LoadImage('Assets/Textures/Bar_Branch.png')
+            }
         }
         local Map = {
             --[[
@@ -4812,6 +4826,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 [7] = {
                     11, 0
                 }
+            },
+            Barlines = {
+                bar = nil,
+                bar_branch = nil
             }
         }
 
@@ -4821,6 +4839,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         --Load!
+
+
+
+        --Notes
 
         local defaultsize = {130, 130}
 
@@ -4835,9 +4857,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         Textures.Notes.DRUMROLLstart = rl.ImageCopy(Textures.Notes.DRUMROLLend)
         rl.ImageFlipHorizontal(Textures.Notes.DRUMROLLstart)
 
+        local resizefactor = Textures.Notes.target.width
         for k, v in pairs(Textures.Notes) do
-            rl.ImageResize(v, noteradius * 2 * bignoteratio, noteradius * 2 * bignoteratio) --Why is it times 4? We will never know
+            rl.ImageResize(v, noteradius * 2 * bignotemul, noteradius * 2 * bignotemul)
         end
+        resizefactor = Textures.Notes.target.width / resizefactor
 
 
         local tsizex, tsizey = Textures.Notes.target.width, Textures.Notes.target.height
@@ -4873,6 +4897,25 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         Textures.Notes = TextureMap.ReplaceWithTexture(Textures.Notes)
 
 
+        --Barlines
+
+        for k, v in pairs(Textures.Barlines) do
+            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+        end
+
+        Textures.Barlines = TextureMap.ReplaceWithTexture(Textures.Barlines)
+        local barlinesizex, barlinesizey = Textures.Barlines.bar.width, Textures.Barlines.bar.height
+        local barlinesourcerect = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
+        local barlinecenter = rl.new('Vector2', barlinesizex / 2, barlinesizey / 2)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4898,8 +4941,74 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         --Precalculate some more stuff
+        local tsourcerect = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+        local tcenter = rl.new('Vector2', tsizex / 2, tsizey / 2)
         Taiko.ForAll(Parsed.Data, function(note, i, n)
-            
+            --[[
+                coming from -> degree
+                r -> 0
+                ru -> 360 - 45 = 315
+                rd -> 180 - 45 = 135
+
+                l -> 0
+                lu -> 45
+                ld -> 315
+
+            ]]
+            --https://en.wikipedia.org/wiki/Atan2
+            local r = NormalizeAngle(math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
+            --print(note.type, r, math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
+            --Just mess around with equals sign lmao to tweak vertical note behavior
+            if r < 90 or r >= 270 then
+                --coming from right or (0, 0)
+                note.rotationr = r
+            else
+                --coming from left
+                note.rotationr = 180 + r
+            end
+
+
+            --[[
+                degree -> facing
+                0 -> up
+                90 -> right
+                180 -> down
+                270 -> left
+            ]]
+
+            if note.data == 'event' and note.event == 'barline' then
+                note.type = 'bar' --FIX: BRANCH BARLINE
+                note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
+            else
+                --note.pr = rl.new('Vector2', 0, 0)
+                note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+            end
+
+
+            --remove bignotemul from parser
+            if note.type == 3 or note.type == 4 or note.type == 6 then
+                note.radius = note.radius / bignotemul
+            end
+
+            --drumroll
+            if note.startnote then
+                local a = note.startnote
+                if a.type == 5 or a.type == 6 then
+                    note.drumrollrect = rl.new('Rectangle', 0, 0, 0, 0)
+                    note.drumrollrect2 = rl.new('Rectangle', 0, 0, 0, 0)
+
+                    --note.drumrollrect2 = rl.new('Vector2', 0, 0)
+                    if a.type == 5 then
+                        a.notetype = 'drumrollnote'
+                        a.recttype = 'drumrollrect'
+                        a.endtype = 'drumrollend'
+                    elseif a.type == 6 then
+                        a.notetype = 'DRUMROLLnote'
+                        a.recttype = 'DRUMROLLrect'
+                        a.endtype = 'DRUMROLLend'
+                    end
+                end
+            end
         end)
 
 
@@ -5219,6 +5328,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --normal
             rl.DrawTexture(Textures.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
+            --[[
+            --rl.DrawTextureEx(Textures.Notes[1], rl.new('Vector2', 100, 100), Round(ms/20) % 360, 1, rl.WHITE)
+            rl.DrawTexturePro(Textures.Notes[1], rl.new('Rectangle', 0, 0, tsizex, tsizey), rl.new('Rectangle', 100, 100, tsizex, tsizey), rl.new('Vector2', tsizex / 2, tsizey / 2), Round(ms/20) % 360, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+            rl.DrawTextureEx(Textures.Notes[1], rl.new('Vector2', 100 - tsizex / 2, 100 - tsizey / 2), 0, 1, rl.WHITE)
+            --]]
 
             --[[
             rl.DrawRectangle(Round(target[1]) + toffsetx - 10, Round(target[2]) + toffsety - 10, 20, 20, rl.RED)
@@ -5296,7 +5410,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --multiply after computing
                     note.p[1] = px * xmul
                     note.p[2] = py * ymul
-                    --Log(px, py)
+                    --pr: rendering
+                    --[[
+                    --rendering using DrawTextureEx
+                    note.pr.x = Round(note.p[1]) + toffsetx
+                    note.pr.y = Round(note.p[2]) + toffsety
+                    --]]
+                    -- [[
+                    --rendering using DrawTexturePro
+                    note.pr.x = Round(note.p[1]) + offsetx
+                    note.pr.y = Round(note.p[2]) + offsety
+                    --]]
 
 
 
@@ -5460,12 +5584,18 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                 if note.data == 'event' then
                                     if note.event == 'barline' then
                                         --RAYLIB: RENDERING BARLNE
-                                        rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
+                                        --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
+                                        rl.DrawTexturePro(Textures.Barlines[note.type], barlinesourcerect, note.pr, barlinecenter, note.rotationr, rl.WHITE)
+
                                     end
                                 elseif note.data == 'note' then
                                     --RAYLIB: RENDERING NOTE
                                     if Textures.Notes[note.type] then
-                                        rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                        --rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                        --rl.DrawTextureEx(Textures.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
+
+                                        rl.DrawTexturePro(Textures.Notes[note.type], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+
                                     elseif note.type == 8 then
                                         local startnote = note.startnote
                                         
@@ -5473,14 +5603,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             local r = noteradius * note.radius
                                             --recalc startnote p if it is loaded later
                                             local x1, x2 = startnote.p[1], note.p[1]
-                                            local y1, y2 = y - r, y + r
+                                            --local y1, y2 = y - r, y + r
+                                            local y1, y2 = startnote.p[2], note.p[2]
 
 
                                             --x reverse (x only (y is irrelevant right now))
+                                            --[[
                                             local rx1, rx2 = x1, x2
                                             if x1 > x2 then
                                                 rx1, rx2 = x2, x1
                                             end
+                                            --]]
 
 
 
@@ -5507,6 +5640,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                                             --if math.floor(x2 - x1) > 0 then
                                             --print(rx1, rx2, rx2 - rx1)
+
+                                            --[=[
                                             if rx2 - rx1 > 0 then
                                                 local twidth = Textures.Notes.drumrollrect.width
                                                 local theight = Textures.Notes.drumrollrect.height
@@ -5529,8 +5664,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                                 end
 
                                                 --Avoid repeatedly creating Rectangle and Vector2
+                                                --[[
                                                 note.drumrollrect = note.drumrollrect or rl.new('Rectangle', 0, 0, 0, 0)
                                                 note.drumrollrect2 = note.drumrollrect2 or rl.new('Vector2', 0, 0)
+                                                --]]
 
                                                 -- [[
                                                 note.drumrollrect.width = Round(mod)
@@ -5558,6 +5695,107 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                                 --render note
                                                 rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
                                             end
+                                            --]=]
+
+
+
+
+
+
+
+
+                                            --New code (12/8/22)
+                                            if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
+                                                --Draw rect + endnote
+                                                local twidth = Textures.Notes.drumrollrect.width
+                                                local theight = Textures.Notes.drumrollrect.height
+
+                                                --[[
+                                                local cond = (Round(x2 - x1) ~= 0)
+                                                local a1, a2 = cond and x1 or y1, cond and x2 or y2
+                                                --]]
+                                                local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+                                                local mulx = (x2 - x1) / d
+                                                local muly = (y2 - y1) / d
+                                                local incrementx = twidth * mulx
+                                                local incrementy = twidth * muly
+
+                                                local centeroffx = tcenter.x * mulx
+                                                local centeroffy = tcenter.y * muly
+
+                                                --modify values
+                                                x2 = x2 - centeroffx
+                                                y2 = y2 - centeroffy
+                                                d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+
+                                                --1
+                                                local div = math.floor(d / twidth)
+                                                local mod = d - (div * twidth)
+
+
+
+
+
+
+                                                local incrementmodx = mod * mulx
+                                                local incrementmody = mod * muly
+
+
+                                                note.drumrollrect.width = twidth
+                                                note.drumrollrect.height = theight
+
+                                                
+
+                                                --Just modify rect in loop
+                                                local x = x1 + offsetx + centeroffx
+                                                local y = y1 + offsety + centeroffy
+                                                for i = 1, div do
+                                                    note.drumrollrect.x = x
+                                                    note.drumrollrect.y = y
+                                                    rl.DrawTexturePro(Textures.Notes[startnote.recttype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                    x = x + incrementx
+                                                    y = y + incrementy
+                                                end
+
+                                                note.drumrollrect.width = mod
+
+                                                --note.drumrollrect.x = x + (twidth - mod)
+
+                                                note.drumrollrect.x = x
+                                                note.drumrollrect.y = y
+                                                note.drumrollrect2.x = 0
+                                                note.drumrollrect2.y = 0
+                                                note.drumrollrect2.width = note.drumrollrect.width
+                                                note.drumrollrect2.height = note.drumrollrect.height
+                                                rl.DrawTexturePro(Textures.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                x = x + incrementmodx
+                                                y = y + incrementmody
+
+
+
+
+
+                                                --Draw endnote
+                                                --[[
+                                                note.drumrollrect.x = note.pr.x + note.pr.width
+                                                note.drumrollrect.y = note.pr.y + note.pr.height
+                                                note.drumrollrect.width = -note.pr.width
+                                                note.drumrollrect.height = -note.pr.height
+                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                --]]
+                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
+
+
+
+                                            end
+
+                                            --Draw startnote
+                                            rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, note.rotationr, rl.WHITE)
+
+
+                                            
                                         end
 
 
@@ -7232,7 +7470,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local t = timingpixel[status.status]
             local o = t.Offset
             local c = t.Color.All --Color for all
-            local ox, oy = 0, -math.floor(noteradius * 1.6) - 8 - math.floor(anim)
+            local ox, oy = 0, -math.floor(noteradius * Taiko.Data.BigNoteMul) - 8 - math.floor(anim)
             local tox, toy = o[1] + ox, o[2] + oy
             --print(tox, toy)
 
@@ -8346,6 +8584,8 @@ end
 --a = 'tja/ekiben.tja'
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/loadingtest2.tja'
+a = 'tja/neta/ekiben/updowntest.tja'
+a = 'tja/neta/ekiben/directiontest.tja'
 a = 'tja/neta/ekiben/updowntest.tja'
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
