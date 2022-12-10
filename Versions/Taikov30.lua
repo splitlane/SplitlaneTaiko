@@ -8641,8 +8641,9 @@ end
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/loadingtest2.tja'
 a = 'tja/neta/ekiben/updowntest.tja'
-a = 'tja/neta/ekiben/directiontest.tja'
-a = 'tja/neta/ekiben/drumrolltest.tja'
+--a = 'tja/neta/ekiben/directiontest.tja'
+--a = 'tja/neta/ekiben/drumrolltest.tja'
+a = 'tja/neta/ekiben/neta.tja'
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
 
