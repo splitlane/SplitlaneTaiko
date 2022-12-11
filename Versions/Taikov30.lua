@@ -2759,6 +2759,36 @@ error()
 --]]
 
 
+--[[
+--DELAY MAKER
+print('DIF!')
+a=Taiko.ParseTJA(io.open('./tja/neta/ekiben/neta.tja','r'):read('*all'))
+b=Taiko.ParseTJA(io.open('./taikobuipm/Ekiben 2000.tja','r'):read('*all'))
+a,b=a[1].Data,b[1].Data
+print(#a,#b)
+for k, v in pairs(a) do
+    if v.data ~= 'note' then
+        a[k] = nil
+    end
+end
+
+for k, v in pairs(b) do
+    if v.data ~= 'note' then
+        b[k] = nil
+    end
+end
+
+
+for k, v in pairs(a) do
+    --if a[k].ms~=b[k].ms then
+    if a[k].type ~=b[k].type then print(k, a[k].ms, b[k].ms, a[k].type, b[k].type, a[k].line, b[k].line)error() end
+    --if math.floor(a[k].ms + 0.5)~=math.floor(b[k].ms+ 0.5) then print(k, a[k].ms, b[k].ms, a[k].type, b[k].type, a[k].line, b[k].line)error()end
+    
+end
+error()
+--]]
+
+
 
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
@@ -4704,12 +4734,28 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         -- Initialization
         --16:9 aspect ratio (1080p)
 
+        --Config:
+
+        local AssetsPath = 'Assets/'
+
+
+
+
+
+
+
+
+
         --Clean Up function
         local function CleanUp()
             rl.CloseWindow()
             rl.CloseAudioDevice()
         end
         
+        --Loading / Accessing assets
+        local function LoadImage(str)
+            return rl.LoadImage(AssetsPath .. str)
+        end
 
 
 
@@ -4743,10 +4789,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --Main texture storage
         local Textures = {
-            Notes = rl.LoadImage('Assets/Textures/Notes.png'),
+            Notes = LoadImage('Graphics/5_Game/Notes.png'),
             Barlines = {
-                bar = rl.LoadImage('Assets/Textures/Bar.png'),
-                bar_branch = rl.LoadImage('Assets/Textures/Bar_Branch.png')
+                bar = LoadImage('Graphics/5_Game/Bar.png'),
+                bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
             }
         }
         local Map = {
@@ -8644,8 +8690,30 @@ a = 'tja/neta/ekiben/updowntest.tja'
 --a = 'tja/neta/ekiben/directiontest.tja'
 --a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/neta/ekiben/neta.tja'
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
+--[[
+--diff
+b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
+a=Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni')
+for i = 1, #b.Data do
+    a.Data[#a.Data + 1] = b.Data[i]
+end
+for i = 1, #a.Data do
+    a.Data[i].delay = 0
+end
+Taiko.PlaySong(a)error()
+--]]
 
+
+--[[
+--scroll
+a=Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni')
+for i = 1, #a.Data do
+    a.Data[i].scrollx = -1
+end
+Taiko.PlaySong(a)error()
+--]]
+
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
 
 
 
