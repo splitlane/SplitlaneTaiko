@@ -5097,19 +5097,32 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 270 -> left
             ]]
 
-            if note.data == 'event' and note.event == 'barline' then
-                note.type = 'bar' --FIX: BRANCH BARLINE
-                note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
-            else
-                --note.pr = rl.new('Vector2', 0, 0)
-                note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
-            end
 
 
             --remove bignotemul from parser
             if note.type == 3 or note.type == 4 or note.type == 6 then
-                note.radius = note.radius / bignotemul
+                note.radiusr = note.radius / bignotemul
+            else
+                --might be barline, so add or 1
+                note.radiusr = note.radius or 1
             end
+
+            if note.data == 'event' and note.event == 'barline' then
+                note.type = 'bar' --FIX: BRANCH BARLINE
+                note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
+                note.tcenter = rl.new('Vector2', barlinecenter.x * note.radiusr, barlinecenter.y * note.radiusr)
+            else
+                --note.pr = rl.new('Vector2', 0, 0)
+                note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+                note.tcenter = rl.new('Vector2', tcenter.x * note.radiusr, tcenter.y * note.radiusr)
+            end
+
+            note.pr.width = note.pr.width * note.radiusr
+            note.pr.height = note.pr.height * note.radiusr
+
+            
+            
+
 
             --drumroll
             if note.startnote then
@@ -5793,7 +5806,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                 if note.event == 'barline' then
                                     --RAYLIB: RENDERING BARLNE
                                     --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
-                                    rl.DrawTexturePro(Textures.Barlines[note.type], barlinesourcerect, note.pr, barlinecenter, note.rotationr, rl.WHITE)
+                                    rl.DrawTexturePro(Textures.Barlines[note.type], barlinesourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
 
                                 end
                             elseif note.data == 'note' then
@@ -5802,7 +5815,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                     --rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
                                     --rl.DrawTextureEx(Textures.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
 
-                                    rl.DrawTexturePro(Textures.Notes[note.type], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                                    rl.DrawTexturePro(Textures.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
 
                                 elseif note.type == 8 then
                                     local startnote = note.startnote
@@ -5933,8 +5946,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             local incrementx = twidth * mulx
                                             local incrementy = twidth * muly
 
-                                            local centeroffx = tcenter.x * mulx
-                                            local centeroffy = tcenter.y * muly
+                                            local centeroffx = note.tcenter.x * mulx
+                                            local centeroffy = note.tcenter.y * muly
 
                                             --modify values
                                             x2 = x2 - centeroffx
@@ -5967,7 +5980,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             for i = 1, div do
                                                 note.drumrollrect.x = x
                                                 note.drumrollrect.y = y
-                                                rl.DrawTexturePro(Textures.Notes[startnote.recttype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                rl.DrawTexturePro(Textures.Notes[startnote.recttype], tsourcerect, note.drumrollrect, note.tcenter, note.rotationr, rl.WHITE)
                                                 x = x + incrementx
                                                 y = y + incrementy
                                             end
@@ -6016,7 +6029,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             note.drumrollrect2.y = 0
                                             note.drumrollrect2.width = note.drumrollrect.width
                                             note.drumrollrect2.height = note.drumrollrect.height
-                                            rl.DrawTexturePro(Textures.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                            rl.DrawTexturePro(Textures.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, note.tcenter, note.rotationr, rl.WHITE)
                                             x = x + incrementmodx
                                             y = y + incrementmody
 
@@ -6029,7 +6042,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                                 360 -> 180
 
                                             ]]
-                                            rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
+                                            rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
 
                                             --Draw endnote
                                             --[=[
@@ -6054,7 +6067,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                         end
 
                                         --Draw startnote
-                                        rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, startnote.rotationr, rl.WHITE)
+                                        rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
 
 
                                         
