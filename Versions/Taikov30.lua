@@ -24,7 +24,7 @@ TODO: Add raylib option
     Fix drumroll
     TODO: git rebase HEAD~10 to be consistent on playsong capitalization
 
-    Sort loaded before rendering:
+    DONE: Sort loaded before rendering:
         Barline first
         Drumroll
         Last -> First notes
@@ -4570,7 +4570,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --nearestnote = {} --Table of nearest notes
     }
     --]]
-    loaded = {}
+    local loaded = {}
+    local loadedr = {
+        barline = {
+
+        },
+        drumroll = {
+
+        },
+        notes = {
+            
+        }
+    }
+    local loadedrfinal = {
+
+    }
 
     --Generate nearestnote
     --[[
@@ -5480,6 +5494,24 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local nearestnote2 = nil
             --]]
 
+            loadedr = {
+                barline = {
+
+                },
+                drumroll = {
+
+                },
+                notes = {
+
+                }
+            }
+
+
+
+
+
+
+            --First pass: Calculate
             --for i = loaded.s, loaded.e do
             local offseti = 0
             for i = 1, #loaded do
@@ -5676,304 +5708,370 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                     --just connect with else
                     else
-                        --Draw note on canvas
-
-                        if not note.hit then
-
-                            --Break combo if too late
-                            local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
-                            if (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
-                                --bad
-                                --status = 0
-                                combo = 0
+                        if note.data == 'event' then
+                            if note.event == 'barline' then
+                                loadedr.barline[#loadedr.barline + 1] = note
                             end
+                        else
+                            if note.type == 8 then
+                                loadedr.drumroll[#loadedr.drumroll + 1] = note
+                            else
+                                loadedr.notes[#loadedr.notes + 1] = note
+                            end
+                        end
 
-                            if dorender then
-                                if note.data == 'event' then
-                                    if note.event == 'barline' then
-                                        --RAYLIB: RENDERING BARLNE
-                                        --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
-                                        rl.DrawTexturePro(Textures.Barlines[note.type], barlinesourcerect, note.pr, barlinecenter, note.rotationr, rl.WHITE)
+                    end
+                end
+            end
 
-                                    end
-                                elseif note.data == 'note' then
-                                    --RAYLIB: RENDERING NOTE
-                                    if Textures.Notes[note.type] then
-                                        --rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
-                                        --rl.DrawTextureEx(Textures.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
 
-                                        rl.DrawTexturePro(Textures.Notes[note.type], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
 
-                                    elseif note.type == 8 then
-                                        local startnote = note.startnote
+
+
+
+
+            loadedrfinal = loadedr.barline
+
+            --[[
+            local function sortbasedonposition(t)
+                table.sort(t, function(a, b)
+                    return a.p[1] > b.p[1]
+                end)
+            end
+
+            sortbasedonposition(loadedr.drumroll)
+            sortbasedonposition(loadedr.notes)
+            --]]
+
+
+            table.sort(loadedr.drumroll, function(a, b)
+                return a.p[1] > b.p[1]
+            end)
+            table.sort(loadedr.notes, function(a, b)
+                return a.p[1] > b.p[1]
+            end)
+
+
+            for i = 1, #loadedr.drumroll do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.drumroll[i]
+            end
+            for i = 1, #loadedr.notes do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.notes[i]
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --Second pass: Rendering
+
+            for i = 1, #loadedrfinal do
+                local note = loadedrfinal[i]
+                if note then
+                    --Draw note on canvas
+
+                    if not note.hit then
+
+                        --Break combo if too late
+                        local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                        if (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
+                            --bad
+                            --status = 0
+                            combo = 0
+                        end
+
+                        if dorender then
+                            if note.data == 'event' then
+                                if note.event == 'barline' then
+                                    --RAYLIB: RENDERING BARLNE
+                                    --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
+                                    rl.DrawTexturePro(Textures.Barlines[note.type], barlinesourcerect, note.pr, barlinecenter, note.rotationr, rl.WHITE)
+
+                                end
+                            elseif note.data == 'note' then
+                                --RAYLIB: RENDERING NOTE
+                                if Textures.Notes[note.type] then
+                                    --rl.DrawTexture(Textures.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                    --rl.DrawTextureEx(Textures.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
+
+                                    rl.DrawTexturePro(Textures.Notes[note.type], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+
+                                elseif note.type == 8 then
+                                    local startnote = note.startnote
+                                    
+                                    if startnote.type == 5 or startnote.type == 6 then
+                                        local r = noteradius * note.radius
+                                        --recalc startnote p if it is loaded later
+                                        local x1, x2 = startnote.p[1], note.p[1]
+                                        --local y1, y2 = y - r, y + r
+                                        local y1, y2 = startnote.p[2], note.p[2]
+
+
+                                        --x reverse (x only (y is irrelevant right now))
+                                        --[[
+                                        local rx1, rx2 = x1, x2
+                                        if x1 > x2 then
+                                            rx1, rx2 = x2, x1
+                                        end
+                                        --]]
+
+
+
+                                        --Clip!
+                                        --Don't use ClipN since function overhead
                                         
-                                        if startnote.type == 5 or startnote.type == 6 then
-                                            local r = noteradius * note.radius
-                                            --recalc startnote p if it is loaded later
-                                            local x1, x2 = startnote.p[1], note.p[1]
-                                            --local y1, y2 = y - r, y + r
-                                            local y1, y2 = startnote.p[2], note.p[2]
+                                        --[[
+                                        if rx1 < loadrect[1] then
+                                            rx1 = loadrect[1]
+                                        end
+
+                                        if rx2 > loadrect[3] then
+                                            rx2 = loadrect[3]
+                                        end
+                                        --]]
 
 
-                                            --x reverse (x only (y is irrelevant right now))
-                                            --[[
-                                            local rx1, rx2 = x1, x2
-                                            if x1 > x2 then
-                                                rx1, rx2 = x2, x1
+                                        
+                                        --[[
+                                        if y1 > y2 then
+                                            y1, y2 = y2, y1
+                                        end
+                                        --]]
+
+                                        --if math.floor(x2 - x1) > 0 then
+                                        --print(rx1, rx2, rx2 - rx1)
+
+                                        --[=[
+                                        if rx2 - rx1 > 0 then
+                                            local twidth = Textures.Notes.drumrollrect.width
+                                            local theight = Textures.Notes.drumrollrect.height
+
+
+
+
+                                            --endnote
+                                            rl.DrawTexture(Textures.Notes.drumrollend, Round(note.p[1] + (twidth / 2)) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+
+
+
+
+
+                                            local mod = (rx2 - rx1) % twidth
+                                            local div = ((rx2 - rx1) - mod) / twidth
+                                            --print(twidth, mod, div)error()
+                                            for i = 1, div do
+                                                rl.DrawTexture(Textures.Notes.drumrollrect, Round(startnote.p[1] - (twidth / 2)) + i * twidth + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
                                             end
+
+                                            --Avoid repeatedly creating Rectangle and Vector2
+                                            --[[
+                                            note.drumrollrect = note.drumrollrect or rl.new('Rectangle', 0, 0, 0, 0)
+                                            note.drumrollrect2 = note.drumrollrect2 or rl.new('Vector2', 0, 0)
                                             --]]
 
-
-
-                                            --Clip!
-                                            --Don't use ClipN since function overhead
+                                            -- [[
+                                            note.drumrollrect.width = Round(mod)
+                                            note.drumrollrect.height = Round(theight)
+                                            note.drumrollrect2.x = Round(startnote.p[1] + (div + 1) * twidth - (twidth / 2)) + toffsetx
+                                            note.drumrollrect2.y = toffsety
                                             
-                                            --[[
-                                            if rx1 < loadrect[1] then
-                                                rx1 = loadrect[1]
-                                            end
 
-                                            if rx2 > loadrect[3] then
-                                                rx2 = loadrect[3]
-                                            end
+                                            rl.DrawTextureRec(Textures.Notes.drumrollrect, note.drumrollrect, note.drumrollrect2, rl.WHITE)
                                             --]]
 
+                                            --nvm just draw last one on top
+                                            --[[
+                                            --for last one
+                                            rl.DrawTextureRec(Textures.Notes.drumrollrect, rl.WHITE)
+                                            --]]
+
+
+
+
+                                            --startnote
+                                            --rl.DrawTexture(Textures.Notes.drumrollstart, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
+                                            rl.DrawTexture(Textures.Notes.drumrollnote, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
+                                        else
+                                            --render note
+                                            rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                        end
+                                        --]=]
+
+
+
+
+
+
+
+
+                                        --New code (12/8/22)
+                                        if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
+                                            --TODO: implement negativey
+                                            local negativex = startnote.scrollx > 0
+                                            local positivey = startnote.scrolly <= 0
+
+                                            --Draw rect + endnote
+                                            local twidth = Textures.Notes.drumrollrect.width
+                                            local theight = Textures.Notes.drumrollrect.height
+
+                                            --[[
+                                            local cond = (Round(x2 - x1) ~= 0)
+                                            local a1, a2 = cond and x1 or y1, cond and x2 or y2
+                                            --]]
+                                            local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+                                            local mulx = (x2 - x1) / d
+                                            local muly = (y2 - y1) / d
+                                            local incrementx = twidth * mulx
+                                            local incrementy = twidth * muly
+
+                                            local centeroffx = tcenter.x * mulx
+                                            local centeroffy = tcenter.y * muly
+
+                                            --modify values
+                                            x2 = x2 - centeroffx
+                                            y2 = y2 - centeroffy
+                                            d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+
+                                            --1
+                                            local div = math.floor(d / twidth)
+                                            local mod = d - (div * twidth)
+
+
+
+
+
+
+                                            local incrementmodx = mod * mulx
+                                            local incrementmody = mod * muly
+
+
+                                            note.drumrollrect.width = twidth
+                                            note.drumrollrect.height = theight
 
                                             
-                                            --[[
-                                            if y1 > y2 then
-                                                y1, y2 = y2, y1
-                                            end
-                                            --]]
 
-                                            --if math.floor(x2 - x1) > 0 then
-                                            --print(rx1, rx2, rx2 - rx1)
+                                            --Just modify rect in loop
+                                            local x = x1 + offsetx + centeroffx
+                                            local y = y1 + offsety + centeroffy
+                                            --print(div)
+                                            for i = 1, div do
+                                                note.drumrollrect.x = x
+                                                note.drumrollrect.y = y
+                                                rl.DrawTexturePro(Textures.Notes[startnote.recttype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                x = x + incrementx
+                                                y = y + incrementy
+                                            end
+
+                                            note.drumrollrect.width = mod
+
 
                                             --[=[
-                                            if rx2 - rx1 > 0 then
-                                                local twidth = Textures.Notes.drumrollrect.width
-                                                local theight = Textures.Notes.drumrollrect.height
-
-
-
-
-                                                --endnote
-                                                rl.DrawTexture(Textures.Notes.drumrollend, Round(note.p[1] + (twidth / 2)) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
-
-
-
-
-
-                                                local mod = (rx2 - rx1) % twidth
-                                                local div = ((rx2 - rx1) - mod) / twidth
-                                                --print(twidth, mod, div)error()
-                                                for i = 1, div do
-                                                    rl.DrawTexture(Textures.Notes.drumrollrect, Round(startnote.p[1] - (twidth / 2)) + i * twidth + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
-                                                end
-
-                                                --Avoid repeatedly creating Rectangle and Vector2
-                                                --[[
-                                                note.drumrollrect = note.drumrollrect or rl.new('Rectangle', 0, 0, 0, 0)
-                                                note.drumrollrect2 = note.drumrollrect2 or rl.new('Vector2', 0, 0)
-                                                --]]
-
+                                            if negativex then
+                                                --negative
                                                 -- [[
-                                                note.drumrollrect.width = Round(mod)
-                                                note.drumrollrect.height = Round(theight)
-                                                note.drumrollrect2.x = Round(startnote.p[1] + (div + 1) * twidth - (twidth / 2)) + toffsetx
-                                                note.drumrollrect2.y = toffsety
-                                                
-
-                                                rl.DrawTextureRec(Textures.Notes.drumrollrect, note.drumrollrect, note.drumrollrect2, rl.WHITE)
+                                                --note.drumrollrect.x = x + (mulx * (twidth - mod))
+                                                --mod is a distance
+                                                --print(mulx, muly)
+                                                note.drumrollrect.x = x + ((twidth - mod))
                                                 --]]
-
-                                                --nvm just draw last one on top
-                                                --[[
-                                                --for last one
-                                                rl.DrawTextureRec(Textures.Notes.drumrollrect, rl.WHITE)
-                                                --]]
-
-
-
-
-                                                --startnote
-                                                --rl.DrawTexture(Textures.Notes.drumrollstart, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
-                                                rl.DrawTexture(Textures.Notes.drumrollnote, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
                                             else
-                                                --render note
-                                                rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                                --normal
+                                                -- [[
+                                                note.drumrollrect.x = x
+                                                --note.drumrollrect.y = y
+                                                --]]
+                                            end
+                                            --]=]
+
+                                            --[=[
+                                            if not positivey then
+                                                --negative
+                                                -- [[
+                                                note.drumrollrect.y = y - (muly * (twidth - mod))
+                                                --note.drumrollrect.y = y
+                                                --note.drumrollrect.y = y
+                                                --]]
+                                            else
+                                                --normal
+                                                -- [[
+                                                note.drumrollrect.y = y
+                                                --]]
+                                            end
+                                            --]=]
+
+                                            note.drumrollrect.x = x
+                                            note.drumrollrect.y = y
+
+                                            note.drumrollrect2.x = 0
+                                            note.drumrollrect2.y = 0
+                                            note.drumrollrect2.width = note.drumrollrect.width
+                                            note.drumrollrect2.height = note.drumrollrect.height
+                                            rl.DrawTexturePro(Textures.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                            x = x + incrementmodx
+                                            y = y + incrementmody
+
+
+                                            --[[
+                                                rotation:
+                                                0 -> 0
+
+                                                270 -> 270
+                                                360 -> 180
+
+                                            ]]
+                                            rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
+
+                                            --Draw endnote
+                                            --[=[
+                                            if negativex then
+                                                --negative
+                                                -- [[
+                                                note.drumrollrect.x = note.pr.x + note.pr.width
+                                                note.drumrollrect.y = note.pr.y + note.pr.height
+                                                note.drumrollrect.width = -note.pr.width
+                                                note.drumrollrect.height = -note.pr.height
+                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
+                                                --]]
+                                            else
+                                                --normal
+                                                -- [[
+                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
+                                                --]]
                                             end
                                             --]=]
 
 
-
-
-
-
-
-
-                                            --New code (12/8/22)
-                                            if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
-                                                --TODO: implement negativey
-                                                local negativex = startnote.scrollx > 0
-                                                local positivey = startnote.scrolly <= 0
-
-                                                --Draw rect + endnote
-                                                local twidth = Textures.Notes.drumrollrect.width
-                                                local theight = Textures.Notes.drumrollrect.height
-
-                                                --[[
-                                                local cond = (Round(x2 - x1) ~= 0)
-                                                local a1, a2 = cond and x1 or y1, cond and x2 or y2
-                                                --]]
-                                                local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-
-                                                local mulx = (x2 - x1) / d
-                                                local muly = (y2 - y1) / d
-                                                local incrementx = twidth * mulx
-                                                local incrementy = twidth * muly
-
-                                                local centeroffx = tcenter.x * mulx
-                                                local centeroffy = tcenter.y * muly
-
-                                                --modify values
-                                                x2 = x2 - centeroffx
-                                                y2 = y2 - centeroffy
-                                                d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-
-
-                                                --1
-                                                local div = math.floor(d / twidth)
-                                                local mod = d - (div * twidth)
-
-
-
-
-
-
-                                                local incrementmodx = mod * mulx
-                                                local incrementmody = mod * muly
-
-
-                                                note.drumrollrect.width = twidth
-                                                note.drumrollrect.height = theight
-
-                                                
-
-                                                --Just modify rect in loop
-                                                local x = x1 + offsetx + centeroffx
-                                                local y = y1 + offsety + centeroffy
-                                                --print(div)
-                                                for i = 1, div do
-                                                    note.drumrollrect.x = x
-                                                    note.drumrollrect.y = y
-                                                    rl.DrawTexturePro(Textures.Notes[startnote.recttype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
-                                                    x = x + incrementx
-                                                    y = y + incrementy
-                                                end
-
-                                                note.drumrollrect.width = mod
-
-
-                                                --[=[
-                                                if negativex then
-                                                    --negative
-                                                    -- [[
-                                                    --note.drumrollrect.x = x + (mulx * (twidth - mod))
-                                                    --mod is a distance
-                                                    --print(mulx, muly)
-                                                    note.drumrollrect.x = x + ((twidth - mod))
-                                                    --]]
-                                                else
-                                                    --normal
-                                                    -- [[
-                                                    note.drumrollrect.x = x
-                                                    --note.drumrollrect.y = y
-                                                    --]]
-                                                end
-                                                --]=]
-
-                                                --[=[
-                                                if not positivey then
-                                                    --negative
-                                                    -- [[
-                                                    note.drumrollrect.y = y - (muly * (twidth - mod))
-                                                    --note.drumrollrect.y = y
-                                                    --note.drumrollrect.y = y
-                                                    --]]
-                                                else
-                                                    --normal
-                                                    -- [[
-                                                    note.drumrollrect.y = y
-                                                    --]]
-                                                end
-                                                --]=]
-
-                                                note.drumrollrect.x = x
-                                                note.drumrollrect.y = y
-
-                                                note.drumrollrect2.x = 0
-                                                note.drumrollrect2.y = 0
-                                                note.drumrollrect2.width = note.drumrollrect.width
-                                                note.drumrollrect2.height = note.drumrollrect.height
-                                                rl.DrawTexturePro(Textures.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
-                                                x = x + incrementmodx
-                                                y = y + incrementmody
-
-
-                                                --[[
-                                                    rotation:
-                                                    0 -> 0
-
-                                                    270 -> 270
-                                                    360 -> 180
-
-                                                ]]
-                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
-
-                                                --Draw endnote
-                                                --[=[
-                                                if negativex then
-                                                    --negative
-                                                    -- [[
-                                                    note.drumrollrect.x = note.pr.x + note.pr.width
-                                                    note.drumrollrect.y = note.pr.y + note.pr.height
-                                                    note.drumrollrect.width = -note.pr.width
-                                                    note.drumrollrect.height = -note.pr.height
-                                                    rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
-                                                    --]]
-                                                else
-                                                    --normal
-                                                    -- [[
-                                                    rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
-                                                    --]]
-                                                end
-                                                --]=]
-
-
-                                            end
-
-                                            --Draw startnote
-                                            rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, startnote.rotationr, rl.WHITE)
-
-
-                                            
                                         end
 
+                                        --Draw startnote
+                                        rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, tcenter, startnote.rotationr, rl.WHITE)
 
 
+                                        
                                     end
-                                else
-                                    error('Invalid note.data')
+
+
+
                                 end
+                            else
+                                error('Invalid note.data')
                             end
-
                         end
-
-
 
                     end
                 end
+                
+                
             end
 
             rl.EndDrawing()
