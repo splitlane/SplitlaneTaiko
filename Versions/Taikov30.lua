@@ -24,6 +24,11 @@ TODO: Add raylib option
     Fix drumroll
     TODO: git rebase HEAD~10 to be consistent on playsong capitalization
 
+    Sort loaded before rendering:
+        Barline first
+        Drumroll
+        Last -> First notes
+
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
 TODO: Focus on Playability
@@ -4726,6 +4731,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Coordinates:
             x is from left side of screen
             y is from top of screen
+
+
+
+
+
+
+
+
+
+            See also:
+                https://github.com/TSnake41/raylib-lua
+                https://github.com/kikito/tween.lua
+
+
+
         ]]
 
 
@@ -4793,8 +4813,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Barlines = {
                 bar = LoadImage('Graphics/5_Game/Bar.png'),
                 bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
-            }
+            },
+            Judges = LoadImage('Graphics/5_Game/Judge.png')
         }
+
+
+
+        --Map for everything
+        --WARNING: If it is not in image, it crashes
         local Map = {
             --[[
             Notes = {
@@ -4877,6 +4903,25 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             Barlines = {
                 bar = nil,
                 bar_branch = nil
+            },
+            Judges = {
+                great = {
+                    0, 0
+                },
+                good = {
+                    0, 1
+                },
+                bad = {
+                    0, 2
+                },
+                adlib = {
+                    0, 3
+                },
+                --[[
+                mine = {
+                    0, 4
+                }
+                --]]
             }
         }
 
@@ -4912,8 +4957,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         local tsizex, tsizey = Textures.Notes.target.width, Textures.Notes.target.height
+        local tsourcerect = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+        local tcenter = rl.new('Vector2', tsizex / 2, tsizey / 2)
         local toffsetx, toffsety = offsetx - (tsizex / 2), offsety - (tsizey / 2)
         local xmul, ymul = 1, -1
+        
         
 
         --Hacky way to align rects
@@ -4958,6 +5006,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --Judges
+
+        local defaultsize = {90, 60}
+
+        local xymul = {90, 60}
+
+
+        Textures.Judges = TextureMap.SplitUsingMap(Textures.Judges, Map.Judges, defaultsize, xymul)
+
+        for k, v in pairs(Textures.Judges) do
+            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+        end
+
+        Textures.Judges = TextureMap.ReplaceWithTexture(Textures.Judges)
 
 
 
@@ -4988,8 +5050,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         --Precalculate some more stuff
-        local tsourcerect = rl.new('Rectangle', 0, 0, tsizex, tsizey)
-        local tcenter = rl.new('Vector2', tsizex / 2, tsizey / 2)
         Taiko.ForAll(Parsed.Data, function(note, i, n)
             --[[
                 coming from -> degree
@@ -5609,7 +5669,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                         --Log('remove')
-
+                        --print('remove')
                         note.done = true
                         table.remove(loaded, i2)
                         offseti = offseti - 1
@@ -8690,6 +8750,7 @@ a = 'tja/neta/ekiben/updowntest.tja'
 --a = 'tja/neta/ekiben/directiontest.tja'
 --a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/neta/ekiben/neta.tja'
+--a = 'tja/neta/kita/kita.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
@@ -8713,7 +8774,7 @@ end
 Taiko.PlaySong(a)error()
 --]]
 
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'))error()
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()
 
 
 
