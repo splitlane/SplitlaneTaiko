@@ -29,6 +29,8 @@ TODO: Add raylib option
         Drumroll
         Last -> First notes
 
+    SENOTES
+
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
 TODO: Focus on Playability
@@ -983,8 +985,9 @@ function Taiko.ParseTJA(source)
     end
     --print(unpack(ParseComplexNumber(source)))error()
     local function ParseArguments(s)
-        --TooManyGimmicks Style
-        return Split(s, ',')
+        --TaikoManyGimmicks Style
+        --return Split(s, ',')
+        return Split(s, ' ')
     end
 
 
@@ -1102,9 +1105,16 @@ function Taiko.ParseTJA(source)
 
 
             --note chain
-            notechain = {}
+            notechain = {},
 
 
+
+
+            jposscroll = {
+                time = nil,
+                p = nil,
+                lanep = nil
+            }
             
         }
 
@@ -2225,8 +2235,8 @@ function Taiko.ParseTJA(source)
                         ]]
                         local t = ParseArguments(match[2])
                         --Both are relative to note ms
-                        Parser.suddenappear = SToMs(tonumber(t[1]))
-                        Parser.suddenmove = SToMs(tonumber(t[2]))
+                        Parser.suddenappear = SToMs(CheckN(t[1]) or (Parser.suddenappear and MsToS(Parser.suddenappear) or 0))
+                        Parser.suddenmove = SToMs(CheckN(t[2]) or (Parser.suddenmove and MsToS(Parser.suddenmove) or 0))
 
                         
                     elseif match[1] == 'JPOSSCROLL' then
@@ -2239,6 +2249,93 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - Ignored in taiko-web.
                         ]]
+
+                        local valid = false
+                        local t = ParseArguments(match[2])
+                        
+
+                        if gimmick then
+--[[
+                            TaikoManyGimmicks
+                            JPOSSCROLL.txt
+
+                            Translated
+This is a file that describes how to specify the movement distance of JPOSSCROLL.
+Please refer to it when creating gimmick scores.
+
+First, there are three ways to specify the movement distance.
+As a first example,
+
+#JPOS SCROLL 1 700 1
+
+It's like this,
+This is a familiar form in TJAP3.
+To explain this example once, it will be like moving 700px to the right over 1 second.
+
+As a second example,
+
+#JPOSSCROLL 1 2/8 1
+
+It's like this,
+In TJAP3, it is specified in px, so if the lane length is different depending on the skin, it will not work as expected.
+This is the designation method for such people,
+To explain this, it's like moving to the right 2/8ths the length of the lane in 1 second.
+px can also be specified, but this is prepared for those who want to keep compatibility with other skins.
+
+As a third example,
+
+#JPOS SCROLL 1 default 0
+
+It's like this,
+In this example the third parameter becomes meaningless,
+If you explain this, it will be like moving to the default position over 1 second.
+This is used when you want to return the judgment frame to its original position.
+]]
+
+
+                            if t[2] and string.find(t[2], '/') then
+                                local a, b = string.match(t[2], '(%d+)/(%d+)')
+                                a = CheckN(match[1], a, 'Invalid jposscroll')
+                                b = CheckN(match[1], b, 'Invalid jposscroll')
+                                Parser.jposscroll.lanep = (a/b) --UNSAFE
+
+                                Parser.jposscroll.lanep = Parser.jposscroll.lanep * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
+
+                                valid = true
+                            elseif t[2] == 'default' then
+                                Parser.jposscroll.p = 'default'
+
+                                valid = true
+                            end
+                        end
+
+                        if valid == false then
+                            --[[
+                                TJAP3 Default
+                                
+                                - Linearly transition cursor's position to a different position on a bar.
+                                - Value is a space-separated array:
+                                    - First value is the amount of seconds it takes for cursor to transition. If it takes too long before another #JPOSSCROLL is passed, it will be cancelled and next transition will happen at the cursor's current position.
+                                    - Second value is the relative distance in pixels to move the cursor.
+                                - Third value is the direction, "0" is left and "1" is right.
+                                - Can be placed in the middle of a measure.
+                                - Ignored in taiko-web.
+                            ]]
+                            if #t ~= 3 then
+                                ParseError(match[1], 'Invalid jposscroll')
+                            else
+                                Parser.jposscroll.p = CheckN(match[1], t[2], 'Invalid jposscroll')
+                                Parser.jposscroll.p = Parser.jposscroll.p * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
+
+                                valid = true
+                            end
+                        end
+
+                        if valid then
+                            Parser.jposscroll.time = SToMs(CheckN(t[1]) or 0)
+                        else
+                            ParseError(match[1], 'Invalid jposscroll')
+                        end
                     elseif gimmick then
 
                         --[[
@@ -2516,8 +2613,11 @@ Everyone who DL
                         elseif match[1] == '' then
                         elseif match[1] == '' then
                         elseif match[1] == '' then
-                        elseif match[1] == '' then
-
+                        elseif match[1] == 'RESETCOMMAND' then
+                            --[[
+                                Returns the effects of all commands to their initial values
+                            ]]
+                            --Just reset parser?
                         end
 
 
