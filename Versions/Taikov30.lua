@@ -5328,58 +5328,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --See if next note is ready to be loaded
             if nextnote then
                 while true do
-                    --Statistic('nextnoteloadms', nextnote.loadms - totaldelay)
                     if nextnote and nextnote.loadms < ms + totaldelay then
-                        --load
-                        --print('load i'..nextnote.n ..' s'.. loaded.s .. ' e' .. loaded.e .. ' n' .. loaded.n)
-
-
-                        --loaded.n = loaded.n + 1
-                        --loaded.e = loaded.n
-                        --loaded.e = nextnote.n
-
-                        --loaded[nextnote.n] = nextnote
                         loaded[#loaded + 1] = nextnote
 
-
-                        --drumroll loading (endnote)
                         if nextnote.endnote then
                             loaded[#loaded + 1] = nextnote.endnote
                         end
 
-
-
-                        --speedopt
-                        --[[
-                        if speedopt and nextnote.speed ~= speedoptspeed then
-                            speedopt = false
-                        end
-                        if speedopt then
-                            --nextnote.p = CalculatePosition(nextnote, ms)
-                            --nextnote.p = nextnote.loadp
-                            nextnote.p = CalculatePosition(nextnote, speedoptstartms)
-                            --Log(nextnote.p)
-                            --print(nextnote.p, io.read())
-                            if nextnote.data == 'event' then
-                                if nextnote.event == 'barline' then
-                                    RenderBarline(speedoptout, nextnote, speedopt)
-                                end
-                            elseif nextnote.data == 'note' then
-                                RenderNote(speedoptout, nextnote, speedopt)
-                            else
-                                error('Invalid note.data')
-                            end
-                        end
-                        --]]
-
-
-
-
-
-
-
-
-                        --nextnote
 
                         nextnote = nextnote.nextnote
                         
@@ -5391,54 +5346,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                             if nextnote and nextnote.branch then
-                                --Log('branch')
-                                --[[
-                                Taiko.ForAll(nextnote.branch.paths[branch], function(note, i, n)
-                                    print(note.ms)
-                                end)
-                                error()
-                                --]]
-
                                 nextnote = nextnote.branch.paths[branch][1]
                             end
 
                             --logically, branch should not start with endnote
                         end
-
-
-                        --Log(tostring(nextnote and nextnote.type or ''))
-                        
-
-
-                        --[[
-                        if loaded.s == 0 then
-                            loaded.s = 1
-                        end
-                        loaded.e = loaded.n
-                        loaded.n = loaded.n + 1
-                        loaded[loaded.n + 1] = nextnote
-                        nextnote = nextnote.nextnote
-                        --]]
-
-
-
-
-
-                        --[[
-                        local breaker = false
-                        if not nextnote then
-                            while true do
-                                local s = os.clock() - startt
-                                if s > ends then
-                                    breaker = true
-                                    break
-                                end
-                            end
-                            if breaker then
-                                break
-                            end
-                        end
-                        --]]
                     else
                         break
                     end
@@ -5449,96 +5361,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 end
             end
 
-            --[[
-            print(loaded.s, loaded.e, loaded.n)
-            io.read()
-            --]]
 
 
 
 
 
 
-
-
-
-            --SPEEDOPT
-            --[=[
-            if dospeedopt and speedopt == false then
-
-                --Check if we can use optimization
-                local s = nil
-                for i = 1, #loaded do
-                    if s then
-                        if loaded[i] and s ~= loaded[i].speed then
-                            s = false
-                            break
-                        end
-                    else
-                        s = loaded[i].speed
-                    end
-                end
-                if s then
-                    speedoptstartms = ms
-                    speedoptspeed = s
-                    speedoptout = false
-                    --speedoptfirstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty way, dirty
-                    speedoptfirstnote = loaded[1]
-                    speedopt = true
-                else
-                    speedopt = false
-                end
-            end
-
-            local outoffsetx = 0
-            if speedopt and speedoptout then
-                dorender = false
-
-                --local firstnote = loaded[loaded.s] or loaded[loaded.s + 1] --shitty fix, --dirty
-                local firstnote = loaded[1]
-                local oldpos = speedoptoldpos or firstnote.p
-                speedoptoldpos = oldpos
-                local newpos = CalculatePosition(speedoptfirstnote, ms)
-                oldpos = oldpos or newpos
-
-
-                local dif = math.floor(oldpos - newpos + 0.5)
-
-                if dif >= 1 then
-                    --[[
-                    --move canvas left by dif
-                    local newout = Pixel.New()
-
-                    --draw target
-                    Pixel.Circle(newout, math.floor(target), y, noteradius, {color = 'purple'})
-
-
-                    for x, v in pairs(speedoptout.Data) do
-                        newout.Data[x - dif] = v
-                    end
-
-                    for x, v in pairs(speedoptout.Color) do
-                        newout.Color[x - dif] = v
-                    end
-                    out = newout
-                    --]]
-                    outoffsetx = dif
-                    --out = speedoptout
-                    --[[
-                    speedoptout = newout
-                    speedoptoldpos = speedoptoldpos - (oldpos - newpos)
-                    --]]
-                else
-                    --do nothing
-                    
-                end
-                out = speedoptout
-            else
-                speedoptoldpos = nil
-                dorender = true
-            end
-            --]=]
-            
 
 
 
@@ -5563,31 +5391,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --normal
             rl.DrawTexture(Textures.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
-            --[[
-            --rl.DrawTextureEx(Textures.Notes[1], rl.new('Vector2', 100, 100), Round(ms/20) % 360, 1, rl.WHITE)
-            rl.DrawTexturePro(Textures.Notes[1], rl.new('Rectangle', 0, 0, tsizex, tsizey), rl.new('Rectangle', 100, 100, tsizex, tsizey), rl.new('Vector2', tsizex / 2, tsizey / 2), Round(ms/20) % 360, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
-            rl.DrawTextureEx(Textures.Notes[1], rl.new('Vector2', 100 - tsizex / 2, 100 - tsizey / 2), 0, 1, rl.WHITE)
-            --]]
-
-            --[[
-            rl.DrawRectangle(Round(target[1]) + toffsetx - 10, Round(target[2]) + toffsety - 10, 20, 20, rl.RED)
-            rl.DrawRectangle(Round(target[1]) + offsetx - 10, Round(target[2]) + offsety - 10, 20, 20, rl.BLUE)
-            rl.DrawRectangle(0, Round(target[2]) + offsety - 10, 20, 20, rl.GREEN)
-            --]]
-
-            
-            --[[
-            if dorender and speedoptout ~= false then
-                Pixel.Circle(out, math.floor(target), y, noteradius, {color = 'purple'})
-            end
-            if speedopt then
-                speedoptstatus = Pixel.New()
-                Pixel.Circle(speedoptstatus, math.floor(target) + outoffsetx, y, noteradius, {color = 'purple'})
-            end
-            --]]
-            --big note (1.6x)
-            --Pixel.Circle(out, math.floor(target), y, noteradius * 1.6, {color = 'purple'})
-
 
 
             --notes
@@ -5599,13 +5402,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local nearestnote = {
 
             }
-            --[[
-            --ugly
-            local nearest1 = nil
-            local nearestnote1 = nil
-            local nearest2 = nil
-            local nearestnote2 = nil
-            --]]
 
             loadedr = {
                 barline = {
@@ -5644,23 +5440,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
 
 
-                    --[[
-                    if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
-                        stopfreezems = totaldelay + note.stopstart
-                        stopms = note.stopms
-                        totaldelay = totaldelay - note.stopms
-                        stopstart = note.stopstart
-                        stopend = note.stopend
-
-                        --to prevent retriggering
-                        note.stopstart = nil
-                    end
-                    --]]
-
-                    --print(ms, loaded.s, loaded.e, loaded.n)
                     local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
-                    --Log(tostring(px) .. ', ' .. tostring(py))
-                    --multiply after computing
                     note.p[1] = px * xmul
                     note.p[2] = py * ymul
                     --pr: rendering
@@ -5707,9 +5487,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-                    -- [[
-                    --if stopsong and note.stopstart and note.p < target then
-                    --if stopsong and (not stopstart) and note.stopstart and ms > note.stopstart then
                     if stopsong and note.stopstart and ms > note.stopstart then
                         stopfreezems = totaldelay + note.stopstart
                         stopms = note.stopms
@@ -5721,46 +5498,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         note.stopstart = nil
                     end
                     --]]
-
-
-
-                    --if (note.p < (trackstart - bufferlength)) and (note.endnote == nil) then
-
-
-                    --[[
-                        Check if it is ready to be unloaded
-                        If it is, check if endnote is not valid
-                        Warning: note.endnote yields false results
-
-                        if note.endnote then
-                            if loaded[note.endnote.n] == nil then
-                                --delete
-
-                            else
-
-                            end
-                        else
-                            --delete
-                        end
-                    --]]
-                    --if (note.p < (trackstart - bufferlength)) and (note.endnote and (loaded[note.endnote.n] == nil)) then
-
-
-
-
-                    
-
-                    --unload after track
-                    --if (note.p < (trackstart - bufferlength)) then
-
-
-                    --auto
-                    --if (note.p < target) then
-
-
-                    
-                    --do not unload
-                    --if false then
 
 
 
@@ -5800,21 +5537,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
-
-                    --distance unload (slow)
-                    --formula before delay
-                    --if math.abs(note.p - target) > (tracklength + unloadbuffer) then
-                    --100 is extra buffer so it doesnt unload asap
-                    --[[
-                    if (note.hit or math.abs(note.p - target) > ((note.delay * math.abs(note.speed)) + tracklength + unloadbuffer)) --is note ready to be unloaded?
-                    and (not (note.endnote and note.endnote.done ~= true and (not note.hit))) --check if endnote unloaded
-                    then
-                    --]]
                     if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
-                        --Log('remove')
-                        --print('remove')
                         note.done = true
                         table.remove(loaded, i2)
                         offseti = offseti - 1
@@ -5845,16 +5569,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             loadedrfinal = loadedr.barline
 
-            --[[
-            local function sortbasedonposition(t)
-                table.sort(t, function(a, b)
-                    return a.p[1] > b.p[1]
-                end)
-            end
-
-            sortbasedonposition(loadedr.drumroll)
-            sortbasedonposition(loadedr.notes)
-            --]]
 
 
             table.sort(loadedr.drumroll, function(a, b)
@@ -5928,100 +5642,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                         local y1, y2 = startnote.p[2], note.p[2]
 
 
-                                        --x reverse (x only (y is irrelevant right now))
-                                        --[[
-                                        local rx1, rx2 = x1, x2
-                                        if x1 > x2 then
-                                            rx1, rx2 = x2, x1
-                                        end
-                                        --]]
-
-
-
-                                        --Clip!
-                                        --Don't use ClipN since function overhead
-                                        
-                                        --[[
-                                        if rx1 < loadrect[1] then
-                                            rx1 = loadrect[1]
-                                        end
-
-                                        if rx2 > loadrect[3] then
-                                            rx2 = loadrect[3]
-                                        end
-                                        --]]
-
-
-                                        
-                                        --[[
-                                        if y1 > y2 then
-                                            y1, y2 = y2, y1
-                                        end
-                                        --]]
-
-                                        --if math.floor(x2 - x1) > 0 then
-                                        --print(rx1, rx2, rx2 - rx1)
-
-                                        --[=[
-                                        if rx2 - rx1 > 0 then
-                                            local twidth = Textures.Notes.drumrollrect.width
-                                            local theight = Textures.Notes.drumrollrect.height
-
-
-
-
-                                            --endnote
-                                            rl.DrawTexture(Textures.Notes.drumrollend, Round(note.p[1] + (twidth / 2)) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
-
-
-
-
-
-                                            local mod = (rx2 - rx1) % twidth
-                                            local div = ((rx2 - rx1) - mod) / twidth
-                                            --print(twidth, mod, div)error()
-                                            for i = 1, div do
-                                                rl.DrawTexture(Textures.Notes.drumrollrect, Round(startnote.p[1] - (twidth / 2)) + i * twidth + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
-                                            end
-
-                                            --Avoid repeatedly creating Rectangle and Vector2
-                                            --[[
-                                            note.drumrollrect = note.drumrollrect or rl.new('Rectangle', 0, 0, 0, 0)
-                                            note.drumrollrect2 = note.drumrollrect2 or rl.new('Vector2', 0, 0)
-                                            --]]
-
-                                            -- [[
-                                            note.drumrollrect.width = Round(mod)
-                                            note.drumrollrect.height = Round(theight)
-                                            note.drumrollrect2.x = Round(startnote.p[1] + (div + 1) * twidth - (twidth / 2)) + toffsetx
-                                            note.drumrollrect2.y = toffsety
-                                            
-
-                                            rl.DrawTextureRec(Textures.Notes.drumrollrect, note.drumrollrect, note.drumrollrect2, rl.WHITE)
-                                            --]]
-
-                                            --nvm just draw last one on top
-                                            --[[
-                                            --for last one
-                                            rl.DrawTextureRec(Textures.Notes.drumrollrect, rl.WHITE)
-                                            --]]
-
-
-
-
-                                            --startnote
-                                            --rl.DrawTexture(Textures.Notes.drumrollstart, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
-                                            rl.DrawTexture(Textures.Notes.drumrollnote, Round(startnote.p[1]) + toffsetx, Round(startnote.p[2]) + toffsety, rl.WHITE)
-                                        else
-                                            --render note
-                                            rl.DrawTexture(Textures.Notes.drumrollnote, Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
-                                        end
-                                        --]=]
-
-
-
-
-
 
 
 
@@ -6035,10 +5655,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             local twidth = Textures.Notes.drumrollrect.width
                                             local theight = Textures.Notes.drumrollrect.height
 
-                                            --[[
-                                            local cond = (Round(x2 - x1) ~= 0)
-                                            local a1, a2 = cond and x1 or y1, cond and x2 or y2
-                                            --]]
                                             local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
                                             local mulx = (x2 - x1) / d
@@ -6088,39 +5704,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                             note.drumrollrect.width = mod
 
 
-                                            --[=[
-                                            if negativex then
-                                                --negative
-                                                -- [[
-                                                --note.drumrollrect.x = x + (mulx * (twidth - mod))
-                                                --mod is a distance
-                                                --print(mulx, muly)
-                                                note.drumrollrect.x = x + ((twidth - mod))
-                                                --]]
-                                            else
-                                                --normal
-                                                -- [[
-                                                note.drumrollrect.x = x
-                                                --note.drumrollrect.y = y
-                                                --]]
-                                            end
-                                            --]=]
-
-                                            --[=[
-                                            if not positivey then
-                                                --negative
-                                                -- [[
-                                                note.drumrollrect.y = y - (muly * (twidth - mod))
-                                                --note.drumrollrect.y = y
-                                                --note.drumrollrect.y = y
-                                                --]]
-                                            else
-                                                --normal
-                                                -- [[
-                                                note.drumrollrect.y = y
-                                                --]]
-                                            end
-                                            --]=]
 
                                             note.drumrollrect.x = x
                                             note.drumrollrect.y = y
@@ -6143,25 +5726,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                                             ]]
                                             rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
-
-                                            --Draw endnote
-                                            --[=[
-                                            if negativex then
-                                                --negative
-                                                -- [[
-                                                note.drumrollrect.x = note.pr.x + note.pr.width
-                                                note.drumrollrect.y = note.pr.y + note.pr.height
-                                                note.drumrollrect.width = -note.pr.width
-                                                note.drumrollrect.height = -note.pr.height
-                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.drumrollrect, tcenter, note.rotationr, rl.WHITE)
-                                                --]]
-                                            else
-                                                --normal
-                                                -- [[
-                                                rl.DrawTexturePro(Textures.Notes[startnote.endtype], tsourcerect, note.pr, tcenter, note.rotationr, rl.WHITE)
-                                                --]]
-                                            end
-                                            --]=]
 
 
                                         end
@@ -6221,42 +5785,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
-
-
-            --[[
-            if speedopt then
-                if speedoptstatus then
-                    print(Pixel.ToDotsParallel(out, speedoptstatus, outoffsetx))
-                else
-                    print(Pixel.Convert.ToDots(out, outoffsetx))
-                end
-            else
-                --Frame Limiting
-                if framerate then
-                    local dots = Pixel.Convert.ToDots(out, outoffsetx)
-                    repeat
-
-                    until os.clock() >= nextframes
-                    --nextframes = startt + (framen + 2) * frames
-                    nextframes = nextframes + frames
-                    print(dots)
-                else
-                    --Legacy renderer
-                    print(Pixel.Convert.ToDots(out, outoffsetx))
-                end
-            end
-            --]]
-
-
-
-
-
-            
-            framen = framen + 1
-            local framerenders = os.clock() - raws
-            framerenderstotal = framerenderstotal + framerenders
-            --]]
 
 
 
@@ -6519,7 +6047,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-        --for i = 1, #Parsed.Data do local a = Parsed.Data[i] if not a.hit and a.data == 'note' then print(a.n, a.line) end end error()
 
 
 
