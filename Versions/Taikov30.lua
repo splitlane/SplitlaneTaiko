@@ -3902,8 +3902,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local autohitnotes = {
         [1] = 1,
         [2] = 2,
-        [3] = 3,
-        [4] = 4,
+        [3] = 1,
+        [4] = 2,
     }
     --[[
         About AutoPlay:
@@ -5321,7 +5321,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local ms
         local nearest, nearestnote = {}, {}
         local function Hit(v)
-            if nearest[v] and (not nearestnote[v].hit) then
+            --if nearest[v] and (not nearestnote[v].hit) then
+            if nearestnote[v] and (not nearestnote[v].hit) then
                 local note = nearestnote[v]
                 local notetype = note.type
                --local notegogo = note.gogo
@@ -5351,7 +5352,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 if status then
                     --Calculate Score
                     score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
-                    print(status)
+                    --print(status, score)
 
                     --Effects
                     nearestnote[v].hit = true
@@ -5699,6 +5700,84 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+            --Moved input here so it can be rendered instantly, no input delay
+
+
+            --Raylib Input
+
+            --Take auto first
+            if auto then
+                local n1 = nearest[1]
+                local n2 = nearest[2]
+                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                local testv =
+                (n1 and n2)
+                and (
+                    (n1 < n2)
+                    and 1 or 2
+                )
+                or (n1 and 1 or 2)
+                local n = nearest[testv]
+                local note = nearestnote[testv]
+
+                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                    --make sure we can't hit note as bad
+                    if balloonstart and (ms > balloonstart and ms < balloonend) then
+                        Hit(1)
+                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                        Hit(1)
+                    end
+                end
+            end
+
+            --[[
+            while true do
+                local key = rl.GetCharPressed() --or rl.GetKeyPressed()
+                if key == 0 then
+                    break
+                else
+                    --Process
+                    --local a = Controls2.Hit[key]
+                end
+            end
+            --]]
+
+            --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
+            for k, v in pairs(Controls2.Hit) do
+                if rl.IsKeyPressed(k) then
+
+                end
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             loadedrfinal = loadedr.barline
 
 
@@ -5888,51 +5967,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-            --Raylib Input
 
-            --Take auto first
-            if auto then
-                local n1 = nearest[1]
-                local n2 = nearest[2]
-                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
-                local testv =
-                (n1 and n2)
-                and (
-                    (n1 < n2)
-                    and 1 or 2
-                )
-                or (n1 and 1 or 2)
-                local n = nearest[testv]
-                local note = nearestnote[testv]
-
-                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
-                    --make sure we can't hit note as bad
-                    if balloonstart and (ms > balloonstart and ms < balloonend) then
-                        Hit(1)
-                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
-                        Hit(1)
-                    end
-                end
-            end
-
-            --[[
-            while true do
-                local key = rl.GetCharPressed() --or rl.GetKeyPressed()
-                if key == 0 then
-                    break
-                else
-                    --Process
-                    --local a = Controls2.Hit[key]
-                end
-            end
-            --]]
-
-            --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
-            for k, v in pairs(Controls2.Hit) do
-                if rl.IsKeyPressed(k) then
-
-                end
-            end
 
 
 
