@@ -30,6 +30,9 @@ TODO: Add raylib option
         Last -> First notes
 
     SENOTES
+    
+    SongSelect Raylib version
+    Add keypad to PlaySong Controls2
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -3897,10 +3900,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     local auto = optionsmap.auto[Settings[2]] or false --Autoplay
     local autohitnotes = {
-        [1] = true,
-        [2] = true,
-        [3] = true,
-        [4] = true,
+        [1] = 1,
+        [2] = 2,
+        [3] = 3,
+        [4] = 4,
     }
     --[[
         About AutoPlay:
@@ -3920,6 +3923,59 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --Controls
     --Hit, Escape, L, R, Select
+    local Controls2 = Controls2 or {}
+    Controls2 = {
+        --1 = don, 2 = ka
+        Hit = Controls2.Hit or {
+            [rl.KEY_FOUR] = 2,
+            [rl.KEY_V] = 1,
+            [rl.KEY_N] = 1,
+            [rl.KEY_EIGHT] = 2,
+        },
+        --Pause
+        Escape = Controls2.Escape or {
+            [rl.KEY_ESCAPE] = true,
+        },
+        --Scroll
+        L = Controls2.L or {
+            --Left
+            [rl.KEY_LEFT] = true,
+
+            --Up
+            [rl.KEY_UP] = true,
+        },
+        R = Controls2.R or {
+            --Right
+            [rl.KEY_RIGHT] = true,
+
+            --Down
+            [rl.KEY_DOWN] = true,
+        },
+        Select = Controls2.Select or {
+            --[[
+            KEY_UP = true,
+            KEY_DOWN = true,
+
+            KEY_A2 = true,
+            KEY_C2 = true,
+            --]]
+
+
+            [rl.KEY_ENTER] = true,
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     local Controls = Controls or {}
     Controls = {
         --1 = don, 2 = ka
@@ -4871,7 +4927,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --Config:
 
         local AssetsPath = 'Assets/'
-
+        
 
 
 
@@ -4898,6 +4954,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --rl.SetTargetFPS(120)
         rl.InitWindow(screenWidth, screenHeight, 'Taiko')
 
+        rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
 
         --Config Options
         local offsetx, offsety = 0, screenHeight / 2 --Added to rendering
@@ -5258,6 +5315,94 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --Game functions
+
+        --Hit: Hit the drum with a 1 (don) or 2 (ka)
+        local ms
+        local nearest, nearestnote = {}, {}
+        local function Hit(v)
+            if nearest[v] and (not nearestnote[v].hit) then
+                local note = nearestnote[v]
+                local notetype = note.type
+               --local notegogo = note.gogo
+
+                local n = nearest[v]
+                local status
+                --No leniency for good
+                local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                if n < (timing.good) then
+                    --good
+                    --local a = nearestnote[v].type
+                    --TODO: Easy big notes config
+                    status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                    combo = combo + 1
+                elseif n < (timing.ok * leniency) then
+                    --ok
+                    status = 1
+                    combo = combo + 1
+                elseif n < (timing.bad * leniency) then
+                    --bad
+                    status = 0
+                    combo = 0
+                else
+                    --complete miss
+                    status = nil
+                end
+                if status then
+                    --Calculate Score
+                    score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
+                    print(status)
+
+                    --Effects
+                    nearestnote[v].hit = true
+                    laststatus = {
+                        startms = ms,
+                        status = status
+                    }
+                end
+            end
+
+
+            --Check again (one at a time)
+            if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) then
+                --balloon = hit don or ka
+                score = balloonscoref(score, balloon.type, notegogo)
+            end
+            if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                --drumroll = hit don or ka
+                score = drumrollscoref(score, drumroll.type, notegogo)
+            end
+        end
+
+
+
+
+        local function HitAuto(note)
+            local v = autohitnotes[note.type] --Assume it is called with a valid note
+
+            --DIRTY
+            local temp1, temp2 = nearest, nearestnote
+            nearest[v] = 0
+            Hit(v)
+            nearest, nearestnote = temp1, temp2
+        end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5307,7 +5452,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local raws = os.clock()
 
             local s = raws - startt
-            local ms = s * 1000
+            ms = s * 1000
 
 
             --Event checking
@@ -5396,10 +5541,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --notes
 
             --nearest (IF THERE IS NOTHING LOADED IT WILL BE NIL)
-            local nearest = {
+            nearest = {
                 
             }
-            local nearestnote = {
+            nearestnote = {
 
             }
 
@@ -5509,20 +5654,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --I put this here so that even if note is going to be unloaded on this frame, we can hit it
                     if auto then
                         if not note.hit and autohitnotes[note.type] and ms >= note.ms then
-                            local status
-                            status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
-                            combo = combo + 1
-                            if status then
-                                --Calculate Score
-                                score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
-        
-                                --Effects
-                                note.hit = true
-                                laststatus = {
-                                    startms = ms,
-                                    status = status
-                                }
-                            end
+                            HitAuto(note)
                         end
                     end
 
@@ -5753,6 +5885,84 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             rl.EndDrawing()
             if rl.WindowShouldClose() then rl.CloseWindow() end
+
+
+
+            --Raylib Input
+
+            --Take auto first
+            if auto then
+                local n1 = nearest[1]
+                local n2 = nearest[2]
+                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                local testv =
+                (n1 and n2)
+                and (
+                    (n1 < n2)
+                    and 1 or 2
+                )
+                or (n1 and 1 or 2)
+                local n = nearest[testv]
+                local note = nearestnote[testv]
+
+                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                    --make sure we can't hit note as bad
+                    if balloonstart and (ms > balloonstart and ms < balloonend) then
+                        Hit(1)
+                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                        Hit(1)
+                    end
+                end
+            end
+
+            --[[
+            while true do
+                local key = rl.GetCharPressed() --or rl.GetKeyPressed()
+                if key == 0 then
+                    break
+                else
+                    --Process
+                    --local a = Controls2.Hit[key]
+                end
+            end
+            --]]
+
+            --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
+            for k, v in pairs(Controls2.Hit) do
+                if rl.IsKeyPressed(k) then
+
+                end
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
