@@ -5382,10 +5382,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             local v = autohitnotes[note.type] --Assume it is called with a valid note
 
             --DIRTY
-            local temp1, temp2 = nearest, nearestnote
+            --local temp1, temp2 = nearest, nearestnote
             nearest[v] = 0
+            nearestnote[v] = note
             Hit(v)
-            nearest, nearestnote = temp1, temp2
+            --nearest, nearestnote = temp1, temp2
         end
 
 
@@ -5454,7 +5455,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             local s = raws - startt
             ms = s * 1000
-
+            target[1] = (1/2 * tracklength) + (tracklength / 3) * math.sin(ms / (tracklength / 3))
 
             --Event checking
             if stopend and ms > stopend then
@@ -5745,7 +5746,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
             for k, v in pairs(Controls2.Hit) do
                 if rl.IsKeyPressed(k) then
-
+                    Hit(v)
+                    --TODO: Drum anim?
                 end
             end
 
@@ -8734,6 +8736,7 @@ a = 'tja/neta/ekiben/updowntest.tja'
 --a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/kita/kita.tja'
+a = 'tja/neta/ekiben/loadingtest2.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
