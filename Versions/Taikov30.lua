@@ -5534,6 +5534,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
             end
             if jposscrollend and ms > jposscrollend then
+                --Add more preciseness and end at endposition!
+                local length = jposscrollend - jposscrollstart
+                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * length)
+                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * length)
+
+
                 jposscrollstart, jposscrollend = nil, nil
                 --[[
                 --Don't bother setting to nil, it won't be used anyways
@@ -5762,6 +5768,22 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                     if (jposscroll and note.jposscroll and (ms >= note.ms or unloadnow)) and (not note.jposscrolldone) then
+
+                        --check for current jposscroll
+                        --so we can get EXACT coordinates
+                        --[[
+                        if jposscrollstart then
+                            local length = jposscrollend - jposscrollstart
+                            jposscrollstartp[1] = jposscrollstartp[1] + (length * jposscrollspeed[1])
+                            jposscrollstartp[2] = jposscrollstartp[2] + (length * jposscrollspeed[2])
+                        else
+                            jposscrollstartp[1] = target[1]
+                            jposscrollstartp[2] = target[2]
+                        end
+                        --]]
+                        --NVM WE CAN'T PAUSE (THIS WILL "WARP" TARGET)
+
+
                         jposscrollstart = note.ms
                         jposscrollend = note.ms + note.jposscroll.lengthms
                         jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
