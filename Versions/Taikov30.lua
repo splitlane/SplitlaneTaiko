@@ -4168,6 +4168,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
     local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
 
+    --High loading mod for jposscroll testing
+    loadrect = {screenrect[1] - 1000, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + 1000}
+    unloadrect = {screenrect[1] - 900, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + 900}
+
 
 
 
@@ -4914,6 +4918,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local jposscrollend = nil
     local jposscrollspeed = {nil, nil}
     local jposscrollstartp = {nil, nil}
+    local jposscrollqueue = {}
 
 
 
@@ -5533,21 +5538,43 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if drumrollend and ms > drumrollend then
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
             end
-            if jposscrollend and ms > jposscrollend then
-                --Add more preciseness and end at endposition!
-                local length = jposscrollend - jposscrollstart
-                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * length)
-                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * length)
 
 
-                jposscrollstart, jposscrollend = nil, nil
-                --[[
-                --Don't bother setting to nil, it won't be used anyways
-                jposscrollspeed[1] = nil
-                jposscrollspeed[2] = nil
-                jposscrollstartp[1] = nil
-                jposscrollstartp[2] = nil
-                --]]
+            --jposscroll
+            if jposscroll then
+                for i = 1, #jposscrollqueue do
+                    --print(1)
+                    local note = jposscrollqueue[i]
+                    if (note.jposscroll and (ms >= note.ms or unloadnow)) then
+                        jposscrollstart = note.ms
+                        jposscrollend = note.ms + note.jposscroll.lengthms
+                        jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
+                        jposscrollspeed[2] = 0
+                        jposscrollstartp[1] = target[1]
+                        jposscrollstartp[2] = target[2]
+
+                        table.remove(jposscrollqueue, i)
+                        break
+                    end
+                end
+
+                --why not nest in loop!
+                if jposscrollend and ms > jposscrollend then
+                    --Add more preciseness and end at endposition!
+                    local length = jposscrollend - jposscrollstart
+                    target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * length)
+                    target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * length)
+
+
+                    jposscrollstart, jposscrollend = nil, nil
+                    --[[
+                    --Don't bother setting to nil, it won't be used anyways
+                    jposscrollspeed[1] = nil
+                    jposscrollspeed[2] = nil
+                    jposscrollstartp[1] = nil
+                    jposscrollstartp[2] = nil
+                    --]]
+                end
             end
 
 
@@ -5762,11 +5789,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-                    --Moved condition outside so it can be used by jposscroll
-                    local unloadnow = (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms))
+                    if (jposscroll) and note.jposscroll and (not note.jposscrolldone) then
+                        jposscrollqueue[#jposscrollqueue + 1] = note
+                        note.jposscrolldone = true
+                    end
 
-
-
+                    
+                    --[=[
                     if (jposscroll and note.jposscroll and (ms >= note.ms or unloadnow)) and (not note.jposscrolldone) then
 
                         --check for current jposscroll
@@ -5792,6 +5821,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         jposscrollstartp[2] = target[2]
                         note.jposscrolldone = true
                     end
+                    --]=]
 
 
 
@@ -5799,8 +5829,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-                    if unloadnow then
+                    --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                    --rewrite condition
+                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false) then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
+                        --print('UNLOAD')
                         note.done = true
                         table.remove(loaded, i2)
                         offseti = offseti - 1
@@ -8859,11 +8892,11 @@ a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/loadingtest2.tja'
 a = 'tja/neta/ekiben/updowntest.tja'
 --a = 'tja/neta/ekiben/directiontest.tja'
---a = 'tja/neta/ekiben/drumrolltest.tja'
-a = 'tja/neta/ekiben/neta.tja'
+a = 'tja/neta/ekiben/drumrolltest.tja'
+--a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/kita/kita.tja'
-a = 'tja/neta/ekiben/loadingtest2.tja'
-a = 'tja/neta/ekiben/jposscrolltest.tja'
+--a = 'tja/neta/ekiben/loadingtest2.tja'
+--a = 'tja/neta/ekiben/jposscrolltest.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
