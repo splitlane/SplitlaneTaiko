@@ -5739,7 +5739,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     --]]
 
-                    if jposscroll and note.jposscroll and ms > note.ms then
+                    if jposscroll and note.jposscroll and ms >= note.ms then
                         jposscrollstart = note.ms
                         jposscrollend = note.ms + note.jposscroll.lengthms
                         jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
