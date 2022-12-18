@@ -5612,7 +5612,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --draw target
 
-            if jposscrollstart then
+            if jposscrollstart and ms >= jposscrollstart then
                 target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
                 target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
             end
@@ -5739,14 +5739,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     --]]
 
-                    if jposscroll and note.jposscroll and ms >= note.ms then
-                        jposscrollstart = note.ms
-                        jposscrollend = note.ms + note.jposscroll.lengthms
-                        jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
-                        jposscrollspeed[2] = 0
-                        jposscrollstartp[1] = target[1]
-                        jposscrollstartp[2] = target[2]
-                    end
+
 
 
 
@@ -5763,6 +5756,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+                    --Moved condition outside so it can be used by jposscroll
+                    local unloadnow = (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms))
+
+
+
+                    if (jposscroll and note.jposscroll and (ms >= note.ms or unloadnow)) and (not note.jposscrolldone) then
+                        jposscrollstart = note.ms
+                        jposscrollend = note.ms + note.jposscroll.lengthms
+                        jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
+                        jposscrollspeed[2] = 0
+                        jposscrollstartp[1] = target[1]
+                        jposscrollstartp[2] = target[2]
+                        note.jposscrolldone = true
+                    end
 
 
 
@@ -5770,8 +5777,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
-                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                    if unloadnow then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                         note.done = true
                         table.remove(loaded, i2)
