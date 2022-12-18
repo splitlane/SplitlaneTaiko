@@ -5028,8 +5028,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local bignotemul = Taiko.Data.BigNoteMul --Big note is this times bigger than small note
 
 
-
-
+        --Default target: to allow for the saving of target before loading calculations, and offset
+        local defaulttarget = {
+            target[1],
+            target[2]
+        }
+        local unloadrectchanged = {}
 
 
 
@@ -5530,7 +5534,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
             end
             if jposscrollend and ms > jposscrollend then
-                jposscrollstart, jposscrollend, jposscrollspeed, jposscrollstartp = nil, nil, nil, nil
+                jposscrollstart, jposscrollend = nil, nil
+                --[[
+                --Don't bother setting to nil, it won't be used anyways
+                jposscrollspeed[1] = nil
+                jposscrollspeed[2] = nil
+                jposscrollstartp[1] = nil
+                jposscrollstartp[2] = nil
+                --]]
             end
 
 
@@ -5605,6 +5616,18 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
                 target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
             end
+
+
+            local targetoffsetx = target[1] - defaulttarget[1]
+            local targetoffsety = target[2] - defaulttarget[2]
+            
+            unloadrectchanged[1] = unloadrect[1] + targetoffsetx
+            unloadrectchanged[2] = unloadrect[2] + targetoffsety
+            unloadrectchanged[3] = unloadrect[3] + targetoffsetx
+            unloadrectchanged[4] = unloadrect[4] + targetoffsety
+
+
+            --print(targetoffsetx, targetoffsety, unloadrect[1])
 
             --normal
             rl.DrawTexture(Textures.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
@@ -5718,7 +5741,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                     if jposscroll and note.jposscroll and ms > note.ms then
                         jposscrollstart = note.ms
-                        for k, v in pairs(note.jposscroll) do print(k,v)end
                         jposscrollend = note.ms + note.jposscroll.lengthms
                         jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
                         jposscrollspeed[2] = 0
@@ -5749,7 +5771,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrect[1], unloadrect[2], unloadrect[3], unloadrect[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                         note.done = true
                         table.remove(loaded, i2)
@@ -5828,8 +5850,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --TODO: Drum anim?
                 end
             end
-
-
 
 
 
