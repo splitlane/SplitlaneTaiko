@@ -673,7 +673,7 @@ Taiko.Data = {
             [9] = 9,
         }
     },
-    BigNoteMul = 1.6,
+    BigNoteMul = 1.5, --1.6 with pixels, 1.5 with raylib
 
 
 
@@ -4169,8 +4169,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
 
     --High loading mod for jposscroll testing
+    --[[
     loadrect = {screenrect[1] - 1000, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + 1000}
     unloadrect = {screenrect[1] - 900, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + 900}
+    --]]
 
 
 
@@ -4970,7 +4972,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             y is from top of screen
 
 
-
+            Textures:
+            normal don should be 72x72 when
+            big don is 108x108
 
 
 
@@ -5031,6 +5035,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local barlinecolor = rl.new('Color', 255, 255, 255, 255)
         --]]
         local bignotemul = Taiko.Data.BigNoteMul --Big note is this times bigger than small note
+        local bignoteradius = 54 --Actual texture radius of big note
 
 
         --Default target: to allow for the saving of target before loading calculations, and offset
@@ -5191,11 +5196,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         Textures.Notes.DRUMROLLstart = rl.ImageCopy(Textures.Notes.DRUMROLLend)
         rl.ImageFlipHorizontal(Textures.Notes.DRUMROLLstart)
 
-        local resizefactor = Textures.Notes.target.width
+        --local resizefactor = (Textures.Notes.target.width) / (noteradius * 2)
+        local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
         for k, v in pairs(Textures.Notes) do
-            rl.ImageResize(v, noteradius * 2 * bignotemul, noteradius * 2 * bignotemul)
+            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
         end
-        resizefactor = Textures.Notes.target.width / resizefactor
+
 
 
         local tsizex, tsizey = Textures.Notes.target.width, Textures.Notes.target.height
@@ -5683,6 +5689,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 drumroll = {
 
                 },
+                balloon  = {
+
+                },
                 notes = {
 
                 }
@@ -5716,18 +5725,6 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
                     note.p[1] = px * xmul
                     note.p[2] = py * ymul
-                    --pr: rendering
-                    --[[
-                    --rendering using DrawTextureEx
-                    note.pr.x = Round(note.p[1]) + toffsetx
-                    note.pr.y = Round(note.p[2]) + toffsety
-                    --]]
-                    -- [[
-                    --rendering using DrawTexturePro
-                    note.pr.x = Round(note.p[1]) + offsetx
-                    note.pr.y = Round(note.p[2]) + offsety
-                    --]]
-
 
 
 
@@ -5739,7 +5736,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             if balloon then
                                 if balloon.n == note.n then
                                     --Same balloon
-                                    note.p[1] = target
+                                    note.p[1] = target[1]
+                                    note.p[2] = target[2]
                                 else
                                     --Previous balloon hasn't ended yet
                                     --Replace
@@ -5755,6 +5753,31 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             drumrollend = note.ms + note.length
                         end
                     end
+
+
+
+
+
+
+
+
+
+                    --pr: rendering
+                    --[[
+                    --rendering using DrawTextureEx
+                    note.pr.x = Round(note.p[1]) + toffsetx
+                    note.pr.y = Round(note.p[2]) + toffsety
+                    --]]
+                    -- [[
+                    --rendering using DrawTexturePro
+                    note.pr.x = Round(note.p[1]) + offsetx
+                    note.pr.y = Round(note.p[2]) + offsety
+                    --]]
+
+
+
+
+
 
 
 
@@ -5847,6 +5870,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         else
                             if note.type == 8 then
                                 loadedr.drumroll[#loadedr.drumroll + 1] = note
+                            elseif note.type == 7 then
+                                loadedr.balloon[#loadedr.balloon + 1] = note
                             else
                                 loadedr.notes[#loadedr.notes + 1] = note
                             end
@@ -5956,6 +5981,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             end
             for i = 1, #loadedr.notes do
                 loadedrfinal[#loadedrfinal + 1] = loadedr.notes[i]
+            end
+            for i = 1, #loadedr.balloon do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.balloon[i]
             end
 
 
@@ -8896,7 +8924,9 @@ a = 'tja/neta/ekiben/drumrolltest.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/kita/kita.tja'
 --a = 'tja/neta/ekiben/loadingtest2.tja'
---a = 'tja/neta/ekiben/jposscrolltest.tja'
+a = 'tja/neta/ekiben/jposscrolltest.tja'
+a = 'tja/neta/ekiben/neta.tja'
+a = 'tja/saitama.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
