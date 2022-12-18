@@ -34,6 +34,8 @@ TODO: Add raylib option
     SongSelect Raylib version
     Add keypad to PlaySong Controls2
     Use tweening for jposscroll + gradation
+    Add balloon, guage, donchan
+    Make Resizeall function to reduce code repetition
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -1116,8 +1118,8 @@ function Taiko.ParseTJA(source)
 
             jposscroll = {
                 lengthms = nil, --Length of transition
-                p = nil, --Position (pixel)
-                lanep = nil --Position (relative to lane)
+                p = nil, --Position (pixel (x, y))
+                lanep = nil --Position (relative to lane (x, y))
             }
             
         }
@@ -2301,9 +2303,10 @@ This is used when you want to return the judgment frame to its original position
                                 local a, b = string.match(t[2], '(%d+)/(%d+)')
                                 a = CheckN(match[1], a, 'Invalid jposscroll')
                                 b = CheckN(match[1], b, 'Invalid jposscroll')
-                                Parser.jposscroll.lanep = (a/b) --UNSAFE
+                                Parser.jposscroll.lanep = {0, 0}
+                                Parser.jposscroll.lanep[1] = (a/b) --UNSAFE
 
-                                Parser.jposscroll.lanep = Parser.jposscroll.lanep * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
+                                Parser.jposscroll.lanep[1] = Parser.jposscroll.lanep[1] * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
 
                                 valid = true
                             elseif t[2] == 'default' then
@@ -2328,8 +2331,9 @@ This is used when you want to return the judgment frame to its original position
                             if #t ~= 3 then
                                 ParseError(match[1], 'Invalid jposscroll')
                             else
-                                Parser.jposscroll.p = CheckN(match[1], t[2], 'Invalid jposscroll')
-                                Parser.jposscroll.p = Parser.jposscroll.p * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
+                                Parser.jposscroll.p = {0, 0}
+                                Parser.jposscroll.p[1] = CheckN(match[1], t[2], 'Invalid jposscroll')
+                                Parser.jposscroll.p[1] = Parser.jposscroll.p[1] * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
 
                                 valid = true
                             end
@@ -4134,6 +4138,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local trackstart = 0 * tracklength
     local target = {3/40 * tracklength, 0} --(src: taiko-web)
     --target[1] = 1/2 * tracklength --middle target
+    target[1] = 1/4 * tracklength --off
+
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
@@ -5061,7 +5067,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 bar = LoadImage('Graphics/5_Game/Bar.png'),
                 bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
             },
-            Judges = LoadImage('Graphics/5_Game/Judge.png')
+            Judges = LoadImage('Graphics/5_Game/Judge.png'),
+            Balloon = {
+                Anim = {
+                    [0] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_0.png'),
+                    [1] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_1.png'),
+                    [2] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_2.png'),
+                    [3] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_3.png'),
+                    [4] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_4.png'),
+                    [5] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_5.png')
+                }
+            }
         }
 
 
@@ -5253,6 +5269,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --Balloons
+
+        for k, v in pairs(Textures.Balloon.Anim) do
+            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+        end
+
+        Textures.Balloon.Anim = TextureMap.ReplaceWithTexture(Textures.Balloon.Anim)
+
+
+
+
 
         --Judges
 
@@ -5269,6 +5296,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         Textures.Judges = TextureMap.ReplaceWithTexture(Textures.Judges)
 
+        
 
 
 
@@ -5376,6 +5404,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                         a.recttype = 'DRUMROLLrect'
                         a.endtype = 'DRUMROLLend'
                     end
+                elseif a.type == 7 then
+                    note.balloonrect = rl.new('Rectangle', 0, 0, 0, 0)
+
                 end
             end
         end)
@@ -5554,8 +5585,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     if (note.jposscroll and (ms >= note.ms or unloadnow)) then
                         jposscrollstart = note.ms
                         jposscrollend = note.ms + note.jposscroll.lengthms
-                        jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
-                        jposscrollspeed[2] = 0
+                        if note.jposscroll and note.jposscroll.p == 'default' then
+                            jposscrollspeed[1] = (target[1] - defaulttarget[1]) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = (target[2] - defaulttarget[2]) / note.jposscroll.lengthms
+                        else
+                            jposscrollspeed[1] = ((note.jposscroll.p) and (note.jposscroll.p[1]) or (note.jposscroll.lanep[1] * tracklength)) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = ((note.jposscroll.p) and (note.jposscroll.p[2]) or (note.jposscroll.lanep[2] * tracklength)) / note.jposscroll.lengthms
+                        end
                         jposscrollstartp[1] = target[1]
                         jposscrollstartp[2] = target[2]
 
@@ -6152,7 +6188,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             end
 
             rl.EndDrawing()
-            if rl.WindowShouldClose() then rl.CloseWindow() end
+            if rl.WindowShouldClose() then
+                rl.CloseWindow()
+                break
+            end
 
 
 
@@ -8924,9 +8963,9 @@ a = 'tja/neta/ekiben/drumrolltest.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/kita/kita.tja'
 --a = 'tja/neta/ekiben/loadingtest2.tja'
-a = 'tja/neta/ekiben/jposscrolltest.tja'
-a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/saitama.tja'
+a = 'tja/neta/ekiben/neta.tja'
+a = 'tja/neta/ekiben/jposscrolltest.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
