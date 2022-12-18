@@ -33,6 +33,7 @@ TODO: Add raylib option
     
     SongSelect Raylib version
     Add keypad to PlaySong Controls2
+    Use tweening for jposscroll + gradation
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -1114,9 +1115,9 @@ function Taiko.ParseTJA(source)
 
 
             jposscroll = {
-                time = nil,
-                p = nil,
-                lanep = nil
+                lengthms = nil, --Length of transition
+                p = nil, --Position (pixel)
+                lanep = nil --Position (relative to lane)
             }
             
         }
@@ -2335,7 +2336,32 @@ This is used when you want to return the judgment frame to its original position
                         end
 
                         if valid then
-                            Parser.jposscroll.time = SToMs(CheckN(t[1]) or 0)
+                            Parser.jposscroll.lengthms = SToMs(CheckN(match[1], t[1], 'Invalid jposscroll') or 0)
+
+                            --[=[
+                            --Attach it to last note
+                            if #Parser.currentmeasure ~= 0 then
+                                Parser.currentmeasure[#Parser.currentmeasure].jposscroll = Parser.jposscroll
+                            else
+                                Parsed.Data[#Parsed.Data].jposscroll = Parser.jposscroll
+                            end
+                            --[[
+                            Parser.jposscroll.time = nil
+                            Parser.jposscroll.p = nil
+                            Parser.jposscroll.lanep = nil
+                            --]]
+                            Parser.jposscroll = {}
+                            --]=]
+
+
+
+                            --NO: Attach it to next note
+                            table.insert(Parser.currentmeasure, {
+                                --match[1],
+                                'JPOSSCROLL',
+                                Parser.jposscroll
+                            }) --Just like delay
+                            Parser.jposscroll = {}
                         else
                             ParseError(match[1], 'Invalid jposscroll')
                         end
@@ -2755,11 +2781,25 @@ Everyone who DL
                         --loop
                         local increment = firstmspermeasure / notes
                         --print(firstmspermeasure, increment, notes)
+                        local nextjposscroll = false
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
                             if c[1] == 'DELAY' then
                                 Parser.ms = Parser.ms + c[2]
+                            elseif c[1] == 'JPOSSCROLL' then
+                                --[[
+                                if i == #Parser.currentmeasure then
+                                    --We'll push it later after initing currentmeasure
+                                    --Last note: move it to next measure
+                                    Parser.currentmeasure[i] = nil
+                                    nextjposscroll = c
+                                else
+                                    --Not last note: add it to next note
+                                    nextjposscroll = c
+                                end
+                                --]]
+                                nextjposscroll = c[2]
                             else
 
                                 --if it is not air
@@ -2794,6 +2834,15 @@ Everyone who DL
                                     increment = c.mspermeasure / notes
                                 end
 
+                                if nextjposscroll then
+                                    --Put jposscroll on!
+                                    c.jposscroll = nextjposscroll
+                                    --c.jposscroll.startms = c.ms --no need, just use note.ms
+                                    nextjposscroll = false
+                                end
+
+
+
                                 if c.data == 'note' then
                                     --not barline
                                     Parser.ms = Parser.ms + increment
@@ -2803,6 +2852,9 @@ Everyone who DL
                     end
                     Parser.measuredone = true
                     Parser.currentmeasure = {}
+                    if nextjposscroll then
+                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
+                    end
                     Parser.insertbarline = true
                 else
                     Parser.measuredone = false
@@ -3918,6 +3970,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
     --local stopsong = true --Stop song enabled?
     local stopsong = Parsed.Metadata.STOPSONG
+    local jposscroll = true
 
 
 
@@ -4080,7 +4133,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local tracky = 1/16 * tracklength
     local trackstart = 0 * tracklength
     local target = {3/40 * tracklength, 0} --(src: taiko-web)
-    target[1] = 1/2 * tracklength --middle target
+    --target[1] = 1/2 * tracklength --middle target
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
@@ -4856,6 +4909,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
     local totaldelay = 0
 
 
+    --Jposscroll
+    local jposscrollstart = nil
+    local jposscrollend = nil
+    local jposscrollspeed = {nil, nil}
+    local jposscrollstartp = {nil, nil}
+
+
+
+
 
 
 
@@ -5455,7 +5517,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             local s = raws - startt
             ms = s * 1000
-            target[1] = (1/2 * tracklength) + (tracklength / 3) * math.sin(ms / (tracklength / 3))
+            --target[1] = (1/2 * tracklength) + (tracklength / 3) * math.sin(ms / (tracklength / 3))
 
             --Event checking
             if stopend and ms > stopend then
@@ -5466,6 +5528,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             end
             if drumrollend and ms > drumrollend then
                 drumroll, drumrollstart, drumrollend = nil, nil, nil
+            end
+            if jposscrollend and ms > jposscrollend then
+                jposscrollstart, jposscrollend, jposscrollspeed, jposscrollstartp = nil, nil, nil, nil
             end
 
 
@@ -5535,6 +5600,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             --draw target
+
+            if jposscrollstart then
+                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
+                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
+            end
 
             --normal
             rl.DrawTexture(Textures.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
@@ -5646,7 +5716,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     end
                     --]]
 
-
+                    if jposscroll and note.jposscroll and ms > note.ms then
+                        jposscrollstart = note.ms
+                        for k, v in pairs(note.jposscroll) do print(k,v)end
+                        jposscrollend = note.ms + note.jposscroll.lengthms
+                        jposscrollspeed[1] = ((note.jposscroll.p) or (note.jposscroll.lanep * tracklength)) / note.jposscroll.lengthms
+                        jposscrollspeed[2] = 0
+                        jposscrollstartp[1] = target[1]
+                        jposscrollstartp[2] = target[2]
+                    end
 
 
 
@@ -8737,6 +8815,7 @@ a = 'tja/neta/ekiben/updowntest.tja'
 a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/kita/kita.tja'
 a = 'tja/neta/ekiben/loadingtest2.tja'
+a = 'tja/neta/ekiben/jposscrolltest.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
