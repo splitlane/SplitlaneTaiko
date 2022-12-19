@@ -731,6 +731,7 @@ function Taiko.ParseTJA(source)
     --Parsing settings
     local zeroopt = true --Don't parse zeros
     local gimmick = true --Are gimmicks enabled?
+    local extragimmick = true --EXTRA gimmick enabled?
 
 
 
@@ -915,6 +916,12 @@ function Taiko.ParseTJA(source)
 
     --Parse Functions
     local DoError = error
+    local function CheckFraction(s)
+        return string.find(s, '/')
+    end
+    local function ParseFraction(s)
+        return string.match(s, '(%d+)/(%d+)')
+    end
     local function ParseNumber(s)
         local sign = nil
         local decimal = false
@@ -982,6 +989,46 @@ function Taiko.ParseTJA(source)
             t[1] = t[1] + ParseAnyNumber(current)
         end
         return t
+    end
+    local function ParseComplexNumberSimple(s)
+        --Can handle fractions
+        --VERY MEMORY INTENSIVE --DIRTY
+        local t = Split(s, '%+')
+        local newt = {}
+        for i = 1, #t do
+            local t2 = Split(t[i], '%-')
+            for i = 1, #t2 do
+                newt[#newt + 1] = t2[i]
+            end
+        end
+        local out = {
+            0, --real
+            0 --imaginary
+        }
+        local fracdata = {
+            false, --real
+            false --imaginary
+        }
+        for i = 1, #t do
+            local imaginary = false
+            if string.find(t[i], 'i') then
+                imaginary = true
+                t[i] = string.gsub(t[i], 'i', '')
+            end
+            if CheckFraction(t[i]) then
+                local a, b = ParseFraction(t[i])
+                t[i] = (a/b) --UNSAFE
+                fracdata[imaginary and 2 or 1] = true
+            else
+                t[i] = tonumber(t[i]) --UNSAFE
+            end
+            if imaginary then
+                out[2] = out[2] + t[i]
+            else
+                out[1] = out[1] + t[i]
+            end
+        end
+        return out, fracdata
     end
     local function CheckPolarNumber(s)
         return string.find(s, ',')
@@ -1918,7 +1965,8 @@ function Taiko.ParseTJA(source)
                             mspb = 60000 / bpm
                         ]]
                         --Parser.measure = tonumber(match[2]) --UNSAFE
-                        local a, b = string.match(match[2], '(%d+)/(%d+)')
+                        --local a, b = string.match(match[2], '(%d+)/(%d+)')
+                        local a, b = ParseFraction(match[2])
                         a = CheckN(match[1], a, 'Invalid measure')
                         b = CheckN(match[1], b, 'Invalid measure')
                         Parser.sign = (a/b) or Parser.sign --UNSAFE
@@ -2259,8 +2307,9 @@ function Taiko.ParseTJA(source)
                         local valid = false
                         local t = ParseArguments(match[2])
                         
-
-                        if gimmick then
+                        local function ParseJposscrollDistance(n, str, direction, lanep)
+                            --lanep can be used to force
+                            if (gimmick and CheckFraction(str)) or (lanep) then
 --[[
                             TaikoManyGimmicks
                             JPOSSCROLL.txt
@@ -2297,26 +2346,21 @@ In this example the third parameter becomes meaningless,
 If you explain this, it will be like moving to the default position over 1 second.
 This is used when you want to return the judgment frame to its original position.
 ]]
-
-
-                            if t[2] and string.find(t[2], '/') then
-                                local a, b = string.match(t[2], '(%d+)/(%d+)')
-                                a = CheckN(match[1], a, 'Invalid jposscroll')
-                                b = CheckN(match[1], b, 'Invalid jposscroll')
-                                Parser.jposscroll.lanep = {0, 0}
-                                Parser.jposscroll.lanep[1] = (a/b) --UNSAFE
-
-                                Parser.jposscroll.lanep[1] = Parser.jposscroll.lanep[1] * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
-
-                                valid = true
-                            elseif t[2] == 'default' then
+                                Parser.jposscroll.lanep = Parser.jposscroll.lanep or {0, 0}
+                                if CheckFraction(str) then
+                                    local a, b = ParseFraction(str)
+                                    a = CheckN(match[1], a, 'Invalid jposscroll')
+                                    b = CheckN(match[1], b, 'Invalid jposscroll')
+                                    Parser.jposscroll.lanep[n] = (a/b) --UNSAFE
+                                else
+                                    Parser.jposscroll.lanep[n] = str
+                                end
+                                if direction then
+                                    Parser.jposscroll.lanep[1] = Parser.jposscroll.lanep[1] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                end
+                            elseif gimmick and str == 'default' then
                                 Parser.jposscroll.p = 'default'
-
-                                valid = true
-                            end
-                        end
-
-                        if valid == false then
+                            else
                             --[[
                                 TJAP3 Default
                                 
@@ -2328,47 +2372,90 @@ This is used when you want to return the judgment frame to its original position
                                 - Can be placed in the middle of a measure.
                                 - Ignored in taiko-web.
                             ]]
-                            if #t ~= 3 then
-                                ParseError(match[1], 'Invalid jposscroll')
-                            else
-                                Parser.jposscroll.p = {0, 0}
-                                Parser.jposscroll.p[1] = CheckN(match[1], t[2], 'Invalid jposscroll')
-                                Parser.jposscroll.p[1] = Parser.jposscroll.p[1] * (Check(match[1], t[3] == '1' and 1 or t[3] == '0' and -1, 'Invalid jposscroll', t[3]) or 1)
+                                Parser.jposscroll.p = Parser.jposscroll.p or {0, 0}
+                                Parser.jposscroll.p[1] = CheckN(match[1], str, 'Invalid jposscroll')
 
-                                valid = true
+                                if direction then
+                                    Parser.jposscroll.p[1] = Parser.jposscroll.p[1] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                end
                             end
                         end
 
-                        if valid then
-                            Parser.jposscroll.lengthms = SToMs(CheckN(match[1], t[1], 'Invalid jposscroll') or 0)
 
-                            --[=[
-                            --Attach it to last note
-                            if #Parser.currentmeasure ~= 0 then
-                                Parser.currentmeasure[#Parser.currentmeasure].jposscroll = Parser.jposscroll
-                            else
-                                Parsed.Data[#Parsed.Data].jposscroll = Parser.jposscroll
-                            end
+
+                        if extragimmick then
                             --[[
-                            Parser.jposscroll.time = nil
-                            Parser.jposscroll.p = nil
-                            Parser.jposscroll.lanep = nil
-                            --]]
-                            Parser.jposscroll = {}
-                            --]=]
-
-
-
-                            --NO: Attach it to next note
-                            table.insert(Parser.currentmeasure, {
-                                --match[1],
-                                'JPOSSCROLL',
-                                Parser.jposscroll
-                            }) --Just like delay
-                            Parser.jposscroll = {}
+                                Extra gimmick that I made
+                                It's just like scroll
+                            ]]
+                            if CheckComplexNumber(t[2]) then
+                                --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+                                --(x) + (y)i
+                                local complex, fracdata = ParseComplexNumberSimple(t[2])
+                                --print(unpack(complex))
+                                ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
+                                ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
+                                print()
+                                valid = true
+                            elseif CheckPolarNumber(t[2]) then
+                                --Polar Scroll (TaikoManyGimmicks)
+                                --(r),(div),(n)
+                                local t2 = CheckCSV(match[1], t[2])
+                                if #t2 == 3 then
+                                    local lanep = false
+                                    if CheckFraction(t2[2]) then
+                                        lanep = true
+                                        local a, b = ParseFraction(t2[2])
+                                        a = CheckN(match[1], a, 'Invalid polar jposscroll')
+                                        b = CheckN(match[1], b, 'Invalid polar jposscroll')
+                                        t2[2] = (a/b) --UNSAFE
+                                    else
+                                        t2[2] = CheckN(match[1], t2[2], 'Invalid polar jposscroll')
+                                    end
+                                    t2[1] = CheckN(match[1], t2[1], 'Invalid polar jposscroll')
+                                    t2[3] = CheckN(match[1], t2[3], 'Invalid polar jposscroll')
+                                    local polar = ParsePolarNumber(t2[1], math.rad(t2[3] / t2[2] * 360))
+                                    ParseJposscrollDistance(1, polar[1], nil, lanep)
+                                    ParseJposscrollDistance(2, polar[2], nil, lanep)
+                                    valid = true
+                                else
+                                    ParseError(match[1], 'Invalid polar jposscroll')
+                                end
+                            end
                         else
-                            ParseError(match[1], 'Invalid jposscroll')
                         end
+
+                        if valid == false then
+                            ParseJposscrollDistance(1, t[2], t[3])
+                        end
+
+                        Parser.jposscroll.lengthms = SToMs(CheckN(match[1], t[1], 'Invalid jposscroll') or 0)
+
+                        --[=[
+                        --Attach it to last note
+                        if #Parser.currentmeasure ~= 0 then
+                            Parser.currentmeasure[#Parser.currentmeasure].jposscroll = Parser.jposscroll
+                        else
+                            Parsed.Data[#Parsed.Data].jposscroll = Parser.jposscroll
+                        end
+                        --[[
+                        Parser.jposscroll.time = nil
+                        Parser.jposscroll.p = nil
+                        Parser.jposscroll.lanep = nil
+                        --]]
+                        Parser.jposscroll = {}
+                        --]=]
+
+
+
+                        --NO: Attach it to next note
+                        table.insert(Parser.currentmeasure, {
+                            --match[1],
+                            'JPOSSCROLL',
+                            Parser.jposscroll
+                        }) --Just like delay
+                        Parser.jposscroll = {}
+                        
                     elseif gimmick then
 
                         --[[
@@ -4394,7 +4481,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
         --]]
 
-        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), -(target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
+        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), (target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
         --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
 
         --[[
