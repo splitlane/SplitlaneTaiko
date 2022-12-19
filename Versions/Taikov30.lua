@@ -4481,7 +4481,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
         --]]
 
-        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), (target[2] + (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
+        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), (target[2] - (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
         --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
 
         --[[
