@@ -998,9 +998,14 @@ function Taiko.ParseTJA(source)
         for i = 1, #t do
             local t2 = Split(t[i], '%-')
             for i = 1, #t2 do
-                newt[#newt + 1] = t2[i]
+                if i == 1 then
+                    newt[#newt + 1] = t2[i]
+                else
+                    newt[#newt + 1] = '-' .. t2[i]
+                end
             end
         end
+        t = newt
         local out = {
             0, --real
             0 --imaginary
@@ -1010,15 +1015,23 @@ function Taiko.ParseTJA(source)
             false --imaginary
         }
         for i = 1, #t do
+            print(t[i])
             local imaginary = false
             if string.find(t[i], 'i') then
                 imaginary = true
                 t[i] = string.gsub(t[i], 'i', '')
             end
             if CheckFraction(t[i]) then
+                local negative = false
+                if string.find(t[i], '%-') then
+                    negative = true
+                end
                 local a, b = ParseFraction(t[i])
                 t[i] = (a/b) --UNSAFE
                 fracdata[imaginary and 2 or 1] = true
+                if negative then
+                    t[i] = -t[i]
+                end
             else
                 t[i] = tonumber(t[i]) --UNSAFE
             end
@@ -5632,6 +5645,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             rl.BeginDrawing()
 
             rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawFPS(10, 10)
+            --rl.ClearBackground(rl.BLACK)
 
             rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
             rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
@@ -5672,9 +5687,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     if (note.jposscroll and (ms >= note.ms or unloadnow)) then
                         jposscrollstart = note.ms
                         jposscrollend = note.ms + note.jposscroll.lengthms
-                        if note.jposscroll and note.jposscroll.p == 'default' then
-                            jposscrollspeed[1] = (target[1] - defaulttarget[1]) / note.jposscroll.lengthms
-                            jposscrollspeed[2] = (target[2] - defaulttarget[2]) / note.jposscroll.lengthms
+                        if note.jposscroll.p == 'default' then
+                            jposscrollspeed[1] = (defaulttarget[1] - target[1]) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = (defaulttarget[2] - target[2]) / note.jposscroll.lengthms
                         else
                             jposscrollspeed[1] = ((note.jposscroll.p) and (note.jposscroll.p[1]) or (note.jposscroll.lanep[1] * tracklength)) / note.jposscroll.lengthms
                             jposscrollspeed[2] = ((note.jposscroll.p) and (note.jposscroll.p[2]) or (note.jposscroll.lanep[2] * tracklength)) / note.jposscroll.lengthms
