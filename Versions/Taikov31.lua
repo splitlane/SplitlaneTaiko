@@ -5148,7 +5148,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         }
         local unloadrectchanged = {}
 
-
+        local textsize = screenHeight / 45
 
 
         --TEXTURES
@@ -5615,11 +5615,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --Generate Text Metadata
+        local TextMetadata = table.concat(
+            {
+                'Title: ', Parsed.Metadata.TITLE,
+                '\nSubtitle: ', Parsed.Metadata.SUBTITLE,
+                '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
+                '\nStars: ', Parsed.Metadata.LEVEL
+            }
+        )
 
 
-
-
-
+        --Wait for start
+        while not rl.WindowShouldClose() do rl.BeginDrawing() rl.ClearBackground(rl.RAYWHITE) rl.DrawText('Press SPACE to start', screenWidth / 2, screenHeight / 2, 50, rl.BLACK) rl.EndDrawing() if rl.IsKeyPressed(32) then break end end
 
 
         --Main loop
@@ -5643,11 +5651,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             rl.ClearBackground(rl.RAYWHITE)
             rl.DrawFPS(10, 10)
+            rl.DrawText(TextMetadata, 10, 30, textsize, rl.BLACK)
             --rl.ClearBackground(rl.BLACK)
 
+            --[[
+            --debug
             rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
             rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
             rl.DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
+            --]]
 
 
 
@@ -9065,6 +9077,8 @@ a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/saitama.tja'
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
+--a = 'tja/donkama.tja'
+--a = 'tja/ekiben.tja'
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
