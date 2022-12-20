@@ -24,5 +24,5 @@ This simulator uses raylib to implement the rendering and input. It parses .tja 
 
 ## Credits
 
-[OpenTaiko](https://github.com/0auBSQ/OpenTaiko)
+[OpenTaiko](https://github.com/0auBSQ/OpenTaiko)  
 [Taiko-Web](https://github.com/bui/taiko-web)
