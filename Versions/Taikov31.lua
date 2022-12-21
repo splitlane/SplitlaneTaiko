@@ -35,6 +35,10 @@ TODO: Add raylib option
     Use tweening for jposscroll + gradation
     Add balloon, guage, donchan
     Make Resizeall function to reduce code repetition
+    TODO: Draw before / after rendering?
+    TODO: Transition away from loadms and into CalculatePosition + InRectangle
+    TODO: Sudden
+    TODO: Fix Loadms
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -475,7 +479,7 @@ Taiko.Data = {
             [2] = function(score, combo, init, diff, status, gogo)
                 --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
                 --INIT + DIFF * {100<=COMBO: 8, 50<=COMBO: 4, 30<=COMBO: 2, 10<=COMBO: 1, 0}
-                return math.floor(score + ((init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1)) / 10) * 10
+                return math.floor((score + ((init + diff * ((combo >= 100) and 8 or (combo >= 50) and 4 or (combo >= 30) and 2 or (combo >= 10) and 1 or 0)) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))) / 10) * 10
             end
         },
         Drumroll = {
@@ -1014,29 +1018,31 @@ function Taiko.ParseTJA(source)
             false --imaginary
         }
         for i = 1, #t do
-            local imaginary = false
-            if string.find(t[i], 'i') then
-                imaginary = true
-                t[i] = string.gsub(t[i], 'i', '')
-            end
-            if CheckFraction(t[i]) then
-                local negative = false
-                if string.find(t[i], '%-') then
-                    negative = true
+            if t[i] ~= '' then
+                local imaginary = false
+                if string.find(t[i], 'i') then
+                    imaginary = true
+                    t[i] = string.gsub(t[i], 'i', '')
                 end
-                local a, b = ParseFraction(t[i])
-                t[i] = (a/b) --UNSAFE
-                fracdata[imaginary and 2 or 1] = true
-                if negative then
-                    t[i] = -t[i]
+                if CheckFraction(t[i]) then
+                    local negative = false
+                    if string.find(t[i], '%-') then
+                        negative = true
+                    end
+                    local a, b = ParseFraction(t[i])
+                    t[i] = (a/b) --UNSAFE
+                    fracdata[imaginary and 2 or 1] = true
+                    if negative then
+                        t[i] = -t[i]
+                    end
+                else
+                    t[i] = tonumber(t[i]) --UNSAFE
                 end
-            else
-                t[i] = tonumber(t[i]) --UNSAFE
-            end
-            if imaginary then
-                out[2] = out[2] + t[i]
-            else
-                out[1] = out[1] + t[i]
+                if imaginary then
+                    out[2] = out[2] + t[i]
+                else
+                    out[1] = out[1] + t[i]
+                end
             end
         end
         return out, fracdata
@@ -2019,8 +2025,9 @@ function Taiko.ParseTJA(source)
                         })
                         --]]
                         --]=]
-
-                        Parser.delay = Parser.delay + a
+                        if Parsed.Metadata.STOPSONG then
+                            Parser.delay = Parser.delay + a
+                        end
                         table.insert(Parser.currentmeasure, {
                             --match[1],
                             'DELAY',
@@ -2300,8 +2307,8 @@ function Taiko.ParseTJA(source)
                         ]]
                         local t = ParseArguments(match[2])
                         --Both are relative to note ms
-                        Parser.suddenappear = SToMs(CheckN(t[1]) or (Parser.suddenappear and MsToS(Parser.suddenappear) or 0))
-                        Parser.suddenmove = SToMs(CheckN(t[2]) or (Parser.suddenmove and MsToS(Parser.suddenmove) or 0))
+                        Parser.suddenappear = SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and MsToS(Parser.suddenappear) or 0))
+                        Parser.suddenmove = SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and MsToS(Parser.suddenmove) or 0))
 
                         
                     elseif match[1] == 'JPOSSCROLL' then
@@ -4491,7 +4498,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
         --]]
 
-        return target[1] + (-note.speed[1] * (note.ms - ms - note.delay)), (target[2] - (note.speed[2] * (note.ms - ms - note.delay))) --FlipY
+        return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
         --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
 
         --[[
@@ -5118,7 +5125,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         
         --Loading / Accessing assets
         local function LoadImage(str)
+            --Loads from payload
+            --[[
             return rl.LoadImage(AssetsPath .. str)
+            --]]
+
+            --Loads from external file / outside payload
+            -- [[
+            local file = io.open(AssetsPath .. str, 'rb')
+            if file then
+                local data = file:read('*all')
+                return rl.LoadImageFromMemory('.png', data, #data)
+            else
+                error('Unable to find file' .. str)
+            end
+            --]]
         end
 
 
@@ -5619,11 +5640,15 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local TextMetadata = table.concat(
             {
                 'Title: ', Parsed.Metadata.TITLE,
-                '\nSubtitle: ', Parsed.Metadata.SUBTITLE,
+                '\nSubtitle: ', '',
                 '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
                 '\nStars: ', Parsed.Metadata.LEVEL
             }
         )
+        local TextStatistic = {
+            'Combo: ', '',
+            '\nScore: ', ''
+        } --Dynamic
 
 
         --Wait for start
@@ -5650,8 +5675,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             rl.BeginDrawing()
 
             rl.ClearBackground(rl.RAYWHITE)
+
+            --TODO: Draw before / after rendering?
             rl.DrawFPS(10, 10)
-            rl.DrawText(TextMetadata, 10, 30, textsize, rl.BLACK)
+            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
+            rl.DrawText(table.concat(TextStatistic), 10, screenHeight - (textsize * 5), textsize, rl.BLACK)
             --rl.ClearBackground(rl.BLACK)
 
             --[[
@@ -5759,6 +5787,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             end
 
                             --logically, branch should not start with endnote
+
+                            --Recalc Loadms?
+                            --[[
+                            if not (target[1] == defaulttarget[1] and target[2] == defaulttarget[2]) then
+                                nextnote.loadms = CalculateLoadMs(nextnote, nextnote.ms)
+                                nextnote.loads = MsToS(nextnote.loadms)
+                            end
+                            --]]
                         end
                     else
                         break
@@ -5801,6 +5837,18 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             if jposscrollstart and ms >= jposscrollstart then
                 target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
                 target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
+                
+                --Recalc?
+                --[[
+                for k, v in pairs(notetable) do
+                    v.loadms = CalculateLoadMs(v, v.ms)
+                end
+                --]]
+                --Just recalc for nextnote
+                --[[
+                nextnote.loadms = CalculateLoadMs(nextnote, nextnote.ms)
+                nextnote.loads = MsToS(nextnote.loadms)
+                --]]
             end
 
 
@@ -6095,7 +6143,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
-
+            --Generate score / statistics
+            -- [[
+            TextStatistic[2] = tostring(combo) --Combo
+            TextStatistic[4] = tostring(score) --Score
+            --]]
 
 
 
@@ -6114,13 +6166,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             loadedrfinal = loadedr.barline
 
 
+            local function priority(a, b)
+                --TODO: possibly render from closest to target
+                --Rendering from left to right, down to up
+                return
+                (a.p[1] == b.p[1]) --is x equal?
+                and (a.p[2] < b.p[2]) --if x equal then use y
+                or (a.p[1] > b.p[1]) --if x not equal then just use x
+            end
 
-            table.sort(loadedr.drumroll, function(a, b)
-                return a.p[1] > b.p[1]
-            end)
-            table.sort(loadedr.notes, function(a, b)
-                return a.p[1] > b.p[1]
-            end)
+
+            table.sort(loadedr.drumroll, priority)
+            table.sort(loadedr.notes, priority)
+            table.sort(loadedr.balloon, priority)
 
 
             for i = 1, #loadedr.drumroll do
@@ -9077,6 +9135,7 @@ a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/saitama.tja'
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
+a = 'tja/neta/overdead.tja'
 --a = 'tja/donkama.tja'
 --a = 'tja/ekiben.tja'
 --[[
@@ -9102,7 +9161,7 @@ end
 Taiko.PlaySong(a)error()
 --]]
 
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Edit'), nil, {[2] = 2})error()
 
 
 
