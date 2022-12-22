@@ -5229,6 +5229,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         local textsize = screenHeight / 45
 
+        local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
+
 
         --TEXTURES
 
@@ -5806,6 +5808,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --TODO: Draw before / after rendering?
             rl.DrawFPS(10, 10)
             rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
+            --rl.DrawText(tostring(rl.GetMusicTimePlayed(song)), 800, 40, textsize, rl.BLACK)
             rl.DrawText(table.concat(TextStatistic), 10, screenHeight - (textsize * 5), textsize, rl.BLACK)
             --rl.ClearBackground(rl.BLACK)
 
@@ -5829,6 +5832,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             local s = raws - startt
             ms = s * 1000
+
+
+
+            --Prevent music desync
+            local desync = s - rl.GetMusicTimePlayed(song)
+            --print(desync)
+            if desync > desynctime or desync < -desynctime then --basically abs function
+                --Resync music to notes
+                print('RESYNC')
+                rl.SeekMusicStream(song, s)
+            end
+
+
+
+
             --target[1] = (1/2 * tracklength) + (tracklength / 3) * math.sin(ms / (tracklength / 3))
 
             --Event checking
