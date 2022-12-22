@@ -5190,6 +5190,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --return rl.LoadImageFromMemory('.png', data, #data)
             return rl.LoadImageFromMemory(GetFileType(str), data, #data)
         end
+        local function LoadWave(str)
+            local data = LoadAsset(str)
+            return rl.LoadWaveFromMemory(GetFileType(str), data, #data)
+        end
+        local function LoadSound(str)
+            local wave = LoadWave(str)
+            local sound = rl.LoadSoundFromWave(wave)
+            rl.UnloadWave(wave)
+            return sound
+        end
 
 
 
@@ -5482,7 +5492,57 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local song
         if playmusic then
             song = LoadSong(Parsed.Metadata.SONG)
+            rl.SetMusicVolume(song, Parsed.Metadata.SONGVOL)
         end
+
+
+
+        local Sounds = {
+            Combo = {
+
+            },
+            Notes = {
+                [1] = LoadSound('Sounds/Taiko/dong.ogg'),
+                [2] = LoadSound('Sounds/Taiko/ka.ogg'),
+                adlib = LoadSound('Sounds/Taiko/Adlib.ogg')
+            }
+        }
+
+        for k, v in pairs(Sounds.Combo) do
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+        end
+        for k, v in pairs(Sounds.Notes) do
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+        end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5595,6 +5655,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local ms
         local nearest, nearestnote = {}, {}
         local function Hit(v)
+            --Play Sound
+            rl.PlaySoundMulti(Sounds.Notes[v])
+
+
+
+
             --if nearest[v] and (not nearestnote[v].hit) then
             if nearestnote[v] and (not nearestnote[v].hit) then
                 local note = nearestnote[v]
@@ -6226,7 +6292,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             loadedrfinal = loadedr.barline
 
-
+            --[[
+            --OLD VERSION: Based on position
             local function priority(a, b)
                 --TODO: possibly render from closest to target
                 --Rendering from left to right, down to up
@@ -6235,6 +6302,16 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 and (a.p[2] < b.p[2]) --if x equal then use y
                 or (a.p[1] > b.p[1]) --if x not equal then just use x
             end
+            --]]
+
+            -- [[
+            --NEW VERSION: Based on ms
+            local function priority(a, b)
+                --when ms is bigger, it is further away
+                --render from far to in
+                return a.ms > b.ms
+            end
+            --]]
 
 
             table.sort(loadedr.drumroll, priority)
