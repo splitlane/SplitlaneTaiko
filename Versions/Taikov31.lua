@@ -39,6 +39,7 @@ TODO: Add raylib option
     TODO: Transition away from loadms and into CalculatePosition + InRectangle
     TODO: Sudden
     TODO: Fix Loadms
+    TODO: Fix status for good big
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5146,11 +5147,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             return string.reverse(string.match(string.reverse(str), '(.-%.)'))
         end
 
-
+        local function CheckFile(str)
+            local file = io.open(str, 'rb')
+            if file then
+                return true
+            else
+                return false
+            end
+        end
         local function LoadFile(str)
             local file = io.open(str, 'rb')
             if file then
                 local data = file:read('*all')
+                file:close()
                 return data
             else
                 error('Unable to find file' .. str)
@@ -5246,7 +5255,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
             },
             Judges = LoadImage('Graphics/5_Game/Judge.png'),
-            Balloon = {
+            Balloons = {
                 Anim = {
                     [0] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_0.png'),
                     [1] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_1.png'),
@@ -5254,6 +5263,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     [3] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_3.png'),
                     [4] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_4.png'),
                     [5] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_5.png')
+                }
+            },
+            Effects = {
+                Hit = {
+                    Good = {
+                        Anim = {
+
+                        }
+                    },
+                    Great = {
+                        Anim = {
+
+                        }
+                    }
                 }
             }
         }
@@ -5449,11 +5472,11 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --Balloons
 
-        for k, v in pairs(Textures.Balloon.Anim) do
+        for k, v in pairs(Textures.Balloons.Anim) do
             rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
         end
 
-        Textures.Balloon.Anim = TextureMap.ReplaceWithTexture(Textures.Balloon.Anim)
+        Textures.Balloons.Anim = TextureMap.ReplaceWithTexture(Textures.Balloons.Anim)
 
 
 
@@ -5493,8 +5516,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         rl.InitAudioDevice()
         local song
         if playmusic then
-            song = LoadSong(Parsed.Metadata.SONG)
-            rl.SetMusicVolume(song, Parsed.Metadata.SONGVOL)
+            if CheckFile(Parsed.Metadata.SONG) then
+                song = LoadSong(Parsed.Metadata.SONG)
+                rl.SetMusicVolume(song, Parsed.Metadata.SONGVOL)
+            else
+                playmusic = false
+            end
         end
 
 
@@ -5658,7 +5685,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local nearest, nearestnote = {}, {}
         local function Hit(v)
             --Play Sound
-            rl.PlaySoundMulti(Sounds.Notes[v])
+            rl.PlaySound(Sounds.Notes[v]) --PlaySound vs PlaySoundMulti?
 
 
 
@@ -5836,12 +5863,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
             --Prevent music desync
-            local desync = s - rl.GetMusicTimePlayed(song)
-            --print(desync)
-            if desync > desynctime or desync < -desynctime then --basically abs function
-                --Resync music to notes
-                print('RESYNC')
-                rl.SeekMusicStream(song, s)
+            if playmusic then
+                local desync = s - rl.GetMusicTimePlayed(song)
+                --print(desync)
+                if desync > desynctime or desync < -desynctime then --basically abs function
+                    --Resync music to notes
+                    print('RESYNC')
+                    rl.SeekMusicStream(song, s)
+                end
             end
 
 
@@ -9293,6 +9322,7 @@ a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
 a = 'taikobuipm/Ekiben 2000.tja'
 a = 'taikobuipm/Donkama 2000.tja'
+a = 'tja/neta/ekiben/notedrumtest.tja'
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/donkama.tja'
 --a = 'tja/ekiben.tja'
