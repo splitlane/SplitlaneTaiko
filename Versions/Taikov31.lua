@@ -39,7 +39,8 @@ TODO: Add raylib option
     TODO: Transition away from loadms and into CalculatePosition + InRectangle
     TODO: Sudden
     TODO: Fix Loadms
-    TODO: Fix status for good big
+    TODO: Fix status for good big --FIXED
+    TODO: Fix status calculating for every rendering
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5106,7 +5107,8 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             big don is 108x108
 
 
-
+            Skin:
+            Every OpenTaiko skin should be compatible
 
 
 
@@ -5209,6 +5211,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             rl.UnloadWave(wave)
             return sound
         end
+        local function LoadAnim(str, strappend, nstart, nend)
+            Anim = {}
+            for i = nstart, nend do
+                Anim[i] = LoadImage(str .. tostring(i) .. strappend)
+            end
+            return Anim
+        end
 
 
 
@@ -5240,6 +5249,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
 
+        local skinfps = 60 --Fps for opentaiko skin
+        local skinframems = 1000 / skinfps --Ms per frame for opentaiko skin
+
 
         --TEXTURES
 
@@ -5256,6 +5268,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             },
             Judges = LoadImage('Graphics/5_Game/Judge.png'),
             Balloons = {
+                --[[
                 Anim = {
                     [0] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_0.png'),
                     [1] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_1.png'),
@@ -5264,20 +5277,30 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     [4] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_4.png'),
                     [5] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_5.png')
                 }
+                --]]
+                Anim = LoadAnim('Graphics/5_Game/11_Balloon/Breaking_', '.png', 0, 5)
             },
             Effects = {
                 Hit = {
-                    Good = {
-                        Anim = {
-
-                        }
+                    --Small Good
+                    [1] = {
+                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
                     },
-                    Great = {
-                        Anim = {
-
-                        }
+                    --Small Great
+                    [2] = {
+                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
+                    },
+                    --Big Good
+                    [3] = {
+                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
+                    },
+                    --Big Great
+                    [4] = {
+                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
                     }
-                }
+                },
+                Explosion = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion.png'),
+                ExplosionBig = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion_Big.png')
             }
         }
 
@@ -5386,6 +5409,58 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     0, 4
                 }
                 --]]
+            },
+            Effects = {
+                Explosion = {
+                    --Small Good
+                    [1] = {
+                        Anim = {
+                            [0] = {0, 1},
+                            [1] = {1, 1},
+                            [2] = {2, 1},
+                            [3] = {3, 1},
+                            [4] = {4, 1},
+                            [5] = {5, 1},
+                            [6] = {6, 1}
+                        }
+                    },
+                    --Small Great
+                    [2] = {
+                        Anim = {
+                            [0] = {0, 0},
+                            [1] = {1, 0},
+                            [2] = {2, 0},
+                            [3] = {3, 0},
+                            [4] = {4, 0},
+                            [5] = {5, 0},
+                            [6] = {6, 0}
+                        }
+                    },
+                    --Big Good
+                    [3] = {
+                        Anim = {
+                            [0] = {0, 3},
+                            [1] = {1, 3},
+                            [2] = {2, 3},
+                            [3] = {3, 3},
+                            [4] = {4, 3},
+                            [5] = {5, 3},
+                            [6] = {6, 3}
+                        }
+                    },
+                    --Big Great
+                    [4] = {
+                        Anim = {
+                            [0] = {0, 2},
+                            [1] = {1, 2},
+                            [2] = {2, 2},
+                            [3] = {3, 2},
+                            [4] = {4, 2},
+                            [5] = {5, 2},
+                            [6] = {6, 2}
+                        }
+                    }
+                }
             }
         }
 
@@ -5415,9 +5490,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --local resizefactor = (Textures.Notes.target.width) / (noteradius * 2)
         local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
-        for k, v in pairs(Textures.Notes) do
-            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+        local function Resize(t)
+            for k, v in pairs(t) do
+                if type(v) == 'table' then
+                    v = Resize(v)
+                else
+                    rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+                end
+            end
+            return t
         end
+        Textures.Notes = Resize(Textures.Notes)
 
 
 
@@ -5459,9 +5542,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --Barlines
 
-        for k, v in pairs(Textures.Barlines) do
-            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
-        end
+        Textures.Barlines = Resize(Textures.Barlines)
 
         Textures.Barlines = TextureMap.ReplaceWithTexture(Textures.Barlines)
         local barlinesizex, barlinesizey = Textures.Barlines.bar.width, Textures.Barlines.bar.height
@@ -5472,9 +5553,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --Balloons
 
-        for k, v in pairs(Textures.Balloons.Anim) do
-            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
-        end
+        Textures.Balloons = Resize(Textures.Balloons)
 
         Textures.Balloons.Anim = TextureMap.ReplaceWithTexture(Textures.Balloons.Anim)
 
@@ -5491,16 +5570,58 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         Textures.Judges = TextureMap.SplitUsingMap(Textures.Judges, Map.Judges, defaultsize, xymul)
 
-        for k, v in pairs(Textures.Judges) do
-            rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
-        end
+        Textures.Judges = Resize(Textures.Judges)
 
         Textures.Judges = TextureMap.ReplaceWithTexture(Textures.Judges)
 
-        
 
 
 
+        --Effects
+
+        local effectcolor = rl.new('Color', 255, 255, 255, 255 / 2)
+
+        --Hit
+
+        Textures.Effects.Hit = Resize(Textures.Effects.Hit)
+
+        local base = Textures.Effects.Hit[1].Anim[0]
+        local statusoffsetx = offsetx - (base.width / 2)
+        local statusoffsety = offsety - (base.height / 2)
+
+        Textures.Effects.Hit = TextureMap.ReplaceWithTexture(Textures.Effects.Hit)
+
+
+
+
+        --Explosion
+
+        local defaultsize = {260, 260}
+
+        local xymul = {260, 260}
+
+
+        Textures.Effects.Explosion = TextureMap.SplitUsingMap(Textures.Effects.Explosion, Map.Effects.Explosion, defaultsize, xymul)
+
+        Textures.Effects.Explosion = Resize(Textures.Effects.Explosion)
+
+        Textures.Effects.Explosion = TextureMap.ReplaceWithTexture(Textures.Effects.Explosion)
+
+
+
+
+        --Explosion Big
+        --Textures.Effects.ExplosionBig = Resize(Textures.Effects.ExplosionBig)
+        local temp = {Textures.Effects.ExplosionBig}
+        Textures.Effects.ExplosionBig = Resize(temp)
+
+        --Textures.Effects.ExplosionBig = TextureMap.ReplaceWithTexture(Textures.Effects.ExplosionBig)
+
+        Textures.Effects.ExplosionBig = {
+            Anim = {
+                [0] = TextureMap.ReplaceWithTexture(temp)[1]
+            }
+        }
 
 
 
@@ -5700,20 +5821,34 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 local status
                 --No leniency for good
                 local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                local hiteffect = nil --Different than status
+                --[[
+                    hiteffect:
+                    0 -> bad
+                    1 -> smallgood
+                    2 -> smallgreat
+                    3 -> biggood
+                    4 -> biggreat
+                ]]
+                local isbignote = (notetype == 3 or notetype == 4)
                 if n < (timing.good) then
                     --good
                     --local a = nearestnote[v].type
                     --TODO: Easy big notes config
-                    status = ((notetype == 3 or notetype == 4) and 3) or 2 --2 or 3?
+                    status = (isbignote and 3) or 2 --2 or 3?
                     combo = combo + 1
+                    hiteffect = (isbignote and 4) or 2
                 elseif n < (timing.ok * leniency) then
                     --ok
-                    status = 1
+                    --status = 1
+                    status = (isbignote and 2) or 1
                     combo = combo + 1
+                    hiteffect = (isbignote and 3) or 1
                 elseif n < (timing.bad * leniency) then
                     --bad
                     status = 0
                     combo = 0
+                    hiteffect = 0
                 else
                     --complete miss
                     status = nil
@@ -5727,7 +5862,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     nearestnote[v].hit = true
                     laststatus = {
                         startms = ms,
-                        status = status
+                        status = hiteffect,
+                        statusanim = Textures.Effects.Hit[hiteffect].Anim,
+                        explosionanim = Textures.Effects.Explosion[hiteffect].Anim,
+                        explosionbiganim = (isbignote and Textures.Effects.ExplosionBig.Anim) or nil
                     }
                 end
             end
@@ -6382,6 +6520,24 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+            --Render status on bottom of notes
+            if laststatus.statusanim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.statusanim[animn]
+                if frame then
+                    --Draw on target
+                    rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.statusanim = nil
+                end
+            end
+
+
+
+
 
 
 
@@ -6540,6 +6696,61 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 
                 
             end
+
+
+
+
+
+
+            --Render flash above notes
+            if laststatus.explosionanim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.explosionanim[animn]
+                if frame then
+                    --Draw on target
+                    rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.explosionanim = nil
+                end
+            end
+
+            if laststatus.explosionbiganim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.explosionbiganim[animn]
+                if frame then
+                    --Draw on target
+                    rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.explosionbiganim = nil
+                end
+            end
+
+            --Render explosion (big) above flash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             rl.EndDrawing()
             if rl.WindowShouldClose() then
@@ -9322,7 +9533,8 @@ a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
 a = 'taikobuipm/Ekiben 2000.tja'
 a = 'taikobuipm/Donkama 2000.tja'
-a = 'tja/neta/ekiben/notedrumtest.tja'
+--a = 'tja/neta/ekiben/notedrumtest.tja'
+a = 'tja/neta/ekiben/jposscrolltest.tja'
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/donkama.tja'
 --a = 'tja/ekiben.tja'
