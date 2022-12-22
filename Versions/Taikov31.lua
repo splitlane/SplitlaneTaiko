@@ -2984,6 +2984,24 @@ end
 
 
 
+--Helper Function For Reading TJA and Setting Song Name
+function Taiko.ParseTJAFile(path)
+    local file = io.open(path, 'r')
+    local data = file:read('*all')
+    local Parsed = Taiko.ParseTJA(data)
+    local slashp = string.find(path, '[/\\]')
+    for k, v in pairs(Parsed) do
+        v.Metadata.SONG = (
+            slashp
+            and string.sub(path, 1, slashp) --Path is in a directory, get directory
+            or '' --Path is not in a directory
+        ) .. v.Metadata.WAVE
+    end
+    return Parsed
+end
+
+
+
 
 
 
@@ -5124,6 +5142,31 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         end
         
         --Loading / Accessing assets
+        local function GetFileType(str)
+            return string.reverse(string.match(string.reverse(str), '(.-%.)'))
+        end
+
+
+        local function LoadFile(str)
+            local file = io.open(str, 'rb')
+            if file then
+                local data = file:read('*all')
+                return data
+            else
+                error('Unable to find file' .. str)
+            end
+        end
+        local function LoadAsset(str)
+            return LoadFile(AssetsPath .. str)
+        end
+        local function LoadSong(str)
+            return rl.LoadMusicStream(str)
+            --[[
+            local data = LoadFile(str)
+            return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
+            --]]
+        end
+        --[=[
         local function LoadImage(str)
             --Loads from payload
             --[[
@@ -5141,7 +5184,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             end
             --]]
         end
-
+        --]=]
+        local function LoadImage(str)
+            local data = LoadAsset(str)
+            --return rl.LoadImageFromMemory('.png', data, #data)
+            return rl.LoadImageFromMemory(GetFileType(str), data, #data)
+        end
 
 
 
@@ -5428,12 +5476,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         --SOUND
-        local playmusic = Parsed.Metadata.WAVE --Is the song valid?
+        local playmusic = Parsed.Metadata.SONG --Is the song valid?
 
         rl.InitAudioDevice()
         local song
         if playmusic then
-            song = rl.LoadMusicStream(Parsed.Metadata.WAVE)
+            song = LoadSong(Parsed.Metadata.SONG)
         end
 
 
@@ -5655,6 +5703,13 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         while not rl.WindowShouldClose() do rl.BeginDrawing() rl.ClearBackground(rl.RAYWHITE) rl.DrawText('Press SPACE to start', screenWidth / 2, screenHeight / 2, 50, rl.BLACK) rl.EndDrawing() if rl.IsKeyPressed(32) then break end end
 
 
+
+
+        --Play music (before or after?)
+        if playmusic then
+            rl.PlayMusicStream(song)
+        end
+
         --Main loop
         local startt = os.clock()
 
@@ -5671,6 +5726,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         while true do
+            --Update Music
+            if playmusic then
+                rl.UpdateMusicStream(song)
+            end
+
+
             --Make canvas
             rl.BeginDrawing()
 
@@ -9135,7 +9196,9 @@ a = 'tja/neta/ekiben/drumrolltest.tja'
 a = 'tja/saitama.tja'
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
-a = 'tja/neta/overdead.tja'
+a = 'taikobuipm/Ekiben 2000.tja'
+a = 'taikobuipm/Donkama 2000.tja'
+--a = 'tja/neta/overdead.tja'
 --a = 'tja/donkama.tja'
 --a = 'tja/ekiben.tja'
 --[[
@@ -9161,6 +9224,13 @@ end
 Taiko.PlaySong(a)error()
 --]]
 
+--File
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJAFile(a), 'Oni'), nil, {[2] = 2})error()
+
+--Normal (Ono)
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()
+
+--Overdead (Ura)
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Edit'), nil, {[2] = 2})error()
 
 
