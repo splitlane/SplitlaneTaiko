@@ -5262,6 +5262,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --Main texture storage
         local Textures = {
             Notes = LoadImage('Graphics/5_Game/Notes.png'),
+            ChipEffect = LoadImage('Graphics/5_Game/ChipEffect.png'),
             Barlines = {
                 bar = LoadImage('Graphics/5_Game/Bar.png'),
                 bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
@@ -5481,12 +5482,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
         Textures.Notes = TextureMap.SplitUsingMap(Textures.Notes, Map.Notes, defaultsize, xymul)
+        --Textures.ChipEffect = TextureMap.SplitUsingMap(Textures.ChipEffect, Map.Notes, defaultsize, xymul)
 
         Textures.Notes.drumrollstart = rl.ImageCopy(Textures.Notes.drumrollend)
         rl.ImageFlipHorizontal(Textures.Notes.drumrollstart)
+        --[[
+        Textures.ChipEffect.drumrollstart = rl.ImageCopy(Textures.ChipEffect.drumrollend)
+        rl.ImageFlipHorizontal(Textures.ChipEffect.drumrollstart)
+        --]]
 
         Textures.Notes.DRUMROLLstart = rl.ImageCopy(Textures.Notes.DRUMROLLend)
         rl.ImageFlipHorizontal(Textures.Notes.DRUMROLLstart)
+        --[[
+        Textures.ChipEffect.DRUMROLLstart = rl.ImageCopy(Textures.ChipEffect.DRUMROLLend)
+        rl.ImageFlipHorizontal(Textures.ChipEffect.DRUMROLLstart)
+        --]]
 
         --local resizefactor = (Textures.Notes.target.width) / (noteradius * 2)
         local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
@@ -5501,6 +5511,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             return t
         end
         Textures.Notes = Resize(Textures.Notes)
+        --Textures.ChipEffect = Resize(Textures.ChipEffect)
 
 
 
@@ -5509,32 +5520,18 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local tcenter = rl.new('Vector2', tsizex / 2, tsizey / 2)
         local toffsetx, toffsety = offsetx - (tsizex / 2), offsety - (tsizey / 2)
         local xmul, ymul = 1, -1
-        
-        
 
-        --Hacky way to align rects
+
+        --Apply ChipEffect
         --[[
-        local function addrect(t, x, y)
-            for i = 1, #t do
-                if i % 2 == 0 then
-                    t[i] = t[i] + y
-                else
-                    t[i] = t[i] + x
-                end
-            end
+        for k, v in pairs(Textures.Notes) do
+            rl.ImageAlphaMask(v, Textures.ChipEffect[k])
         end
-        local tempx, tempy = - (tsizex / 2), - (tsizey / 2)
-        addrect(screenrect, tempx, tempy)
-        addrect(loadrect, tempx, tempy)
-        addrect(unloadrect, tempx, tempy)
         --]]
 
-        --[[
-        local screenrect = {}
-        local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
-        local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
-        --We have to recalculate loadms if we change here, so change before
-        --]]
+        --Textures.Notes = Textures.ChipEffect
+
+
 
 
         Textures.Notes = TextureMap.ReplaceWithTexture(Textures.Notes)
@@ -5659,7 +5656,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         }
 
         for k, v in pairs(Sounds.Combo) do
-            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL * 0.5)
         end
         for k, v in pairs(Sounds.Notes) do
             rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
@@ -5859,12 +5856,17 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     --print(status, score)
 
                     --Effects
+                    --[[
+                        Effects:
+
+                        Judge: https://github.com/0auBSQ/OpenTaiko/blob/c25c744cf11bc8ca997c1318eef4893269fd74d2/TJAPlayer3/Stages/07.Game/Taiko/CAct%E6%BC%94%E5%A5%8FDrums%E5%88%A4%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%97.cs
+                    ]]
                     nearestnote[v].hit = true
                     laststatus = {
                         startms = ms,
                         status = hiteffect,
-                        statusanim = Textures.Effects.Hit[hiteffect].Anim,
-                        explosionanim = Textures.Effects.Explosion[hiteffect].Anim,
+                        statusanim = hiteffect ~= 0 and Textures.Effects.Hit[hiteffect].Anim,
+                        explosionanim = hiteffect ~= 0 and Textures.Effects.Explosion[hiteffect].Anim,
                         explosionbiganim = (isbignote and Textures.Effects.ExplosionBig.Anim) or nil
                     }
                 end
@@ -5896,7 +5898,26 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --nearest, nearestnote = temp1, temp2
         end
 
+        --[[
+        --OLD VERSION: Based on position
+        local function priority(a, b)
+            --TODO: possibly render from closest to target
+            --Rendering from left to right, down to up
+            return
+            (a.p[1] == b.p[1]) --is x equal?
+            and (a.p[2] < b.p[2]) --if x equal then use y
+            or (a.p[1] > b.p[1]) --if x not equal then just use x
+        end
+        --]]
 
+        -- [[
+        --NEW VERSION: Based on ms
+        local function priority(a, b)
+            --when ms is bigger, it is further away
+            --render from far to in
+            return a.ms > b.ms
+        end
+        --]]
 
 
 
@@ -6477,26 +6498,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             loadedrfinal = loadedr.barline
 
-            --[[
-            --OLD VERSION: Based on position
-            local function priority(a, b)
-                --TODO: possibly render from closest to target
-                --Rendering from left to right, down to up
-                return
-                (a.p[1] == b.p[1]) --is x equal?
-                and (a.p[2] < b.p[2]) --if x equal then use y
-                or (a.p[1] > b.p[1]) --if x not equal then just use x
-            end
-            --]]
 
-            -- [[
-            --NEW VERSION: Based on ms
-            local function priority(a, b)
-                --when ms is bigger, it is further away
-                --render from far to in
-                return a.ms > b.ms
-            end
-            --]]
 
 
             table.sort(loadedr.drumroll, priority)
@@ -9535,9 +9537,13 @@ a = 'taikobuipm/Ekiben 2000.tja'
 a = 'taikobuipm/Donkama 2000.tja'
 --a = 'tja/neta/ekiben/notedrumtest.tja'
 a = 'tja/neta/ekiben/jposscrolltest.tja'
+a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/overdead.tja'
---a = 'tja/donkama.tja'
---a = 'tja/ekiben.tja'
+--a = 'tja/neta/ekiben/notedrumtest.tja'
+--a = 'taikobuipm/Donkama 2000.tja'
+
+
+
 --[[
 --diff
 b = Taiko.GetDifficulty(Taiko.ParseTJA(io.open('taikobuipm/Ekiben 2000.tja','r'):read('*all')), 'Oni')
@@ -9562,7 +9568,13 @@ Taiko.PlaySong(a)error()
 --]]
 
 --File
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJAFile(a), 'Oni'), nil, {[2] = 2})error()
+for i = 1, 100 do
+local p = Taiko.ParseTJAFile(a) end error()
+local song = 'taikobuipm/EkiBEN 2000.ogg'
+-- [[
+for k, v in pairs(p) do v.Metadata.SONG = song end
+--]]
+Taiko.PlaySong(Taiko.GetDifficulty(p, 'Oni'), nil, {[2] = 2})error()
 
 --Normal (Ono)
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()
