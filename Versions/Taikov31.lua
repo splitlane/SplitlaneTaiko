@@ -9519,6 +9519,50 @@ end
 
 
 
+--ParseTJA test
+--[[
+local file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
+
+local t, header = Compact.Decompress(Compact.Read(file))
+
+local errorn = 0
+local successn = 0
+local times = {}
+local t1 = os.clock()
+for i = 1, #t do
+    print(i)
+    local status, out = pcall(Taiko.ParseTJA, t[i]) --out will be ms for our test
+    if status then
+        times[#times + 1] = out
+        successn = successn + 1
+    else
+        errorn = errorn + 1
+    end
+end
+
+print('Total Time (s): ', os.clock() - t1)
+
+table.sort(times)
+print('Shortest Time (ms): ', times[1])
+print('Longest Time (ms): ', times[#times])
+local total = 0
+for i = 1, #times do
+    total = total + times[i]
+end
+print('Total Time Parsing (ms): ', total)
+print('Average Time (ms): ', total / #times)
+
+
+print('Total Successes (n): ', successn)
+print('Total Errors (n): ', errorn)
+
+
+error()
+--]]
+
+
+
+
 
 --FLAG
 --a = 'tja/ekiben.tja'
