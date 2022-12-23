@@ -4,13 +4,34 @@ Popular taiko game simulator.
 
 
 - [Taiko](#taiko)
+  - [Before using (Credit: OpenTaiko)](#before-using-credit-opentaiko)
+  - [License](#license)
+  - [Posting Vidoes (Credit: OpenTaiko)](#posting-vidoes-credit-opentaiko)
   - [How to start](#how-to-start)
   - [How does this work](#how-does-this-work)
+  - [WARNING: Code Quality](#warning-code-quality)
   - [Using this](#using-this)
   - [Efficiency](#efficiency)
   - [Benchmarks (ParseTJA)](#benchmarks-parsetja)
   - [TODO](#todo)
   - [Credits](#credits)
+
+## Before using (Credit: OpenTaiko)
+
+- It is **YOUR RESPONSIBILITY** to use this software. I will not take responsibilities for any problems you got from using this software.
+- Currently this software does not have an "Official" skin. if there is any bugs with non-official skin, contact the skin creator first and then contact the author of this software. There will be no support for AC-like skins and forks of this software.
+- Please research before asking people.
+
+## License
+
+All parts of this software written by me are licensed under the [MIT license](./LICENSE). The parts not written by me are licensed under their respective authors.
+
+## Posting Vidoes (Credit: OpenTaiko)
+
+- If you are using OpenTaiko on video sharing sites, live streaming services, websites, or blogs, please make sure you explicitly mention it is not Bandai Namco Entertainment official's software, and make sure it is not confused with other Taiko simulators.
+- Also, if there is an tag feature on the website you are using, tagging it as "OpenTaiko", "TJAPlayer3-Develop-BSQ", or "TJAP3-BSQ" will avoid confusion with other simulators, and might raise video as similar content, so it is highly recommended.
+
+The author of this software does not support breaking copyright laws, so please follow as per your country's copyright laws.
 
 ## How to start
 
@@ -21,6 +42,11 @@ and enjoy!
 ## How does this work
 
 This simulator uses raylib to implement the rendering and input. It parses .tja files, which are files that can store various / complicated charts.
+
+## WARNING: Code Quality
+
+The code for `Taiko.ParseTJA` is pretty clean and well documented, and it has descriptions of every tja command from taiko-web tja-format wiki.  
+On the other hand, the code for `Taiko.PlaySong` is optimized and not documented at all. It is filled with commented out code and uses some dirty optimizations.
 
 ## Using this
 
@@ -121,8 +147,8 @@ print('Total Errors (n): ', errorn)
 ## Credits
 
 [raylib-lua](https://github.com/TSnake41/raylib-lua)
-    For their raylib binding
+    For their raylib binding  
 [OpenTaiko](https://github.com/0auBSQ/OpenTaiko)
-    For their skin and code
+    For their skin and code  
 [Taiko-Web](https://github.com/bui/taiko-web)
     For documentation and code, and getting me started
