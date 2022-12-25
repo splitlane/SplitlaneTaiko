@@ -4650,6 +4650,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --v.loadp = CalculateLoadPosition(v, v.loadms)
         --v.pdelay = 0
         v.hit = nil --Reset hit just in case
+        v.brokecombo = false
         --v.n = k --MISTAKE: after sorted
         --table.insert(timet, v.ms)
         timet[#timet + 1] = v.ms
@@ -5656,7 +5657,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         }
 
         for k, v in pairs(Sounds.Combo) do
-            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL * 0.5)
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
         end
         for k, v in pairs(Sounds.Notes) do
             rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
@@ -6557,10 +6558,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
                         --Break combo if too late
                         local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
-                        if (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
+                        if (not note.brokecombo) and (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
                             --bad
                             --status = 0
                             combo = 0
+                            --prevent retriggering
+                            note.brokecombo = true
                         end
 
                         if dorender then
@@ -9612,13 +9615,13 @@ Taiko.PlaySong(a)error()
 --]]
 
 --File
-for i = 1, 100 do
-local p = Taiko.ParseTJAFile(a) end error()
+local p = Taiko.ParseTJAFile(a)
 local song = 'taikobuipm/EkiBEN 2000.ogg'
+local auto = false
 -- [[
 for k, v in pairs(p) do v.Metadata.SONG = song end
 --]]
-Taiko.PlaySong(Taiko.GetDifficulty(p, 'Oni'), nil, {[2] = 2})error()
+Taiko.PlaySong(Taiko.GetDifficulty(p, 'Oni'), nil, {[2] = auto and 2 or 1})error()
 
 --Normal (Ono)
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()

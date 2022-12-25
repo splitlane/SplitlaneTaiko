@@ -35,6 +35,7 @@ The author of this software does not support breaking copyright laws, so please 
 
 ## How to start
 
+TODO: Make Batch file so easy
 Head over to the [latest version](Versions/Taikov31.lua) and set it as current directory (`cd PATH_TO_Versions`). Now, type  
 `raylua_s.exe Taikov31.lua`  
 and enjoy!
