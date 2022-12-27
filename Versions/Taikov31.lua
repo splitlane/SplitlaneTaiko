@@ -41,6 +41,9 @@ TODO: Add raylib option
     TODO: Fix Loadms
     TODO: Fix status for good big --FIXED
     TODO: Fix status calculating for every rendering
+    TODO: SongSelect
+    TODO: Move Setting mapping to songselect
+    Animation system rework: use rect
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2366,7 +2369,7 @@ In this example the third parameter becomes meaningless,
 If you explain this, it will be like moving to the default position over 1 second.
 This is used when you want to return the judgment frame to its original position.
 ]]
-                                Parser.jposscroll.lanep = Parser.jposscroll.lanep or {0, 0}
+                                Parser.jposscroll.lanep = Parser.jposscroll.lanep or {nil, nil}
                                 if CheckFraction(str) then
                                     local a, b = ParseFraction(str)
                                     a = CheckN(match[1], a, 'Invalid jposscroll')
@@ -2392,7 +2395,7 @@ This is used when you want to return the judgment frame to its original position
                                 - Can be placed in the middle of a measure.
                                 - Ignored in taiko-web.
                             ]]
-                                Parser.jposscroll.p = Parser.jposscroll.p or {0, 0}
+                                Parser.jposscroll.p = Parser.jposscroll.p or {nil, nil}
                                 Parser.jposscroll.p[1] = CheckN(match[1], str, 'Invalid jposscroll')
 
                                 if direction then
@@ -2412,7 +2415,7 @@ This is used when you want to return the judgment frame to its original position
                                 --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
-                                --print(unpack(complex))
+                                --print(unpack(complex))print(unpack(fracdata))
                                 ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
                                 ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
                                 valid = true
@@ -4645,6 +4648,14 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         v.speed[1] = v.speed[1] * notespeedmul
         v.speed[2] = v.speed[2] * notespeedmul
 
+        --ojposscroll
+        if v.jposscroll then
+            v.jposscroll.lengthms = v.jposscroll.olengthms or v.jposscroll.lengthms
+            v.jposscroll.olengthms = v.jposscroll.lengthms
+            v.jposscroll.lengthms = v.jposscroll.lengthms / songspeedmul
+        end
+
+
         v.loadms = CalculateLoadMs(v, v.ms)
         v.loads = MsToS(v.loadms)
         --v.loadp = CalculateLoadPosition(v, v.loadms)
@@ -5153,6 +5164,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local function CheckFile(str)
             local file = io.open(str, 'rb')
             if file then
+                file:close()
                 return true
             else
                 return false
@@ -5212,11 +5224,20 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             rl.UnloadWave(wave)
             return sound
         end
-        local function LoadAnim(str, strappend, nstart, nend)
-            Anim = {}
+        -- [[
+        local function LoadAnimSeperate(str, strappend, nstart, nend)
+            local Anim = {}
             for i = nstart, nend do
                 Anim[i] = LoadImage(str .. tostring(i) .. strappend)
             end
+            return Anim
+        end
+        --]]
+        local function LoadAnim(image, map)
+            local Anim = {
+                image, map
+            }
+            --Get rectangle of anim (just access map with framen)
             return Anim
         end
 
@@ -5280,25 +5301,25 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     [5] = LoadImage('Graphics/5_Game/11_Balloon/Breaking_5.png')
                 }
                 --]]
-                Anim = LoadAnim('Graphics/5_Game/11_Balloon/Breaking_', '.png', 0, 5)
+                Anim = LoadAnimSeperate('Graphics/5_Game/11_Balloon/Breaking_', '.png', 0, 5)
             },
             Effects = {
                 Hit = {
                     --Small Good
                     [1] = {
-                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
+                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
                     },
                     --Small Great
                     [2] = {
-                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
+                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
                     },
                     --Big Good
                     [3] = {
-                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
+                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
                     },
                     --Big Great
                     [4] = {
-                        Anim = LoadAnim('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
+                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
                     }
                 },
                 Explosion = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion.png'),
@@ -5385,7 +5406,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 DRUMROLLend = {
                     10, 0
                 },
+                --[[
                 [7] = {
+                    11, 0
+                }
+                --]]
+                balloon = {
                     11, 0
                 }
             },
@@ -5962,6 +5988,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
         --Play music (before or after?)
         if playmusic then
+            rl.SetMusicPitch(song, songspeedmul)
             rl.PlayMusicStream(song)
         end
 
@@ -6024,12 +6051,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
             --Prevent music desync
             if playmusic then
-                local desync = s - rl.GetMusicTimePlayed(song)
+                local desync = s - (rl.GetMusicTimePlayed(song) / songspeedmul)
                 --print(desync)
                 if desync > desynctime or desync < -desynctime then --basically abs function
                     --Resync music to notes
-                    print('RESYNC')
-                    rl.SeekMusicStream(song, s)
+                    print('RESYNC', desync)
+                    rl.SeekMusicStream(song, s * songspeedmul)
                 end
             end
 
@@ -6055,15 +6082,19 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 for i = 1, #jposscrollqueue do
                     --print(1)
                     local note = jposscrollqueue[i]
-                    if (note.jposscroll and (ms >= note.ms or unloadnow)) then
+                    if (note.jposscroll and (ms >= note.ms)) then
                         jposscrollstart = note.ms
                         jposscrollend = note.ms + note.jposscroll.lengthms
                         if note.jposscroll.p == 'default' then
                             jposscrollspeed[1] = (defaulttarget[1] - target[1]) / note.jposscroll.lengthms
                             jposscrollspeed[2] = (defaulttarget[2] - target[2]) / note.jposscroll.lengthms
                         else
+                            --[[
                             jposscrollspeed[1] = ((note.jposscroll.p) and (note.jposscroll.p[1]) or (note.jposscroll.lanep[1] * tracklength)) / note.jposscroll.lengthms
                             jposscrollspeed[2] = ((note.jposscroll.p) and (note.jposscroll.p[2]) or (note.jposscroll.lanep[2] * tracklength)) / note.jposscroll.lengthms
+                            --]]
+                            jposscrollspeed[1] = ((note.jposscroll.p and note.jposscroll.p[1]) and note.jposscroll.p[1] or (note.jposscroll.lanep and note.jposscroll.lanep[1]) and (note.jposscroll.lanep[1] * tracklength) or 0) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = ((note.jposscroll.p and note.jposscroll.p[2]) and note.jposscroll.p[2] or (note.jposscroll.lanep and note.jposscroll.lanep[2]) and (note.jposscroll.lanep[2] * tracklength) or 0) / note.jposscroll.lengthms
                         end
                         jposscrollstartp[1] = target[1]
                         jposscrollstartp[2] = target[2]
@@ -6342,6 +6373,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
                     if (jposscroll) and note.jposscroll and (not note.jposscrolldone) then
+                        --print(note.ms, note.jposscroll.lengthms, note.ms + note.jposscroll.lengthms)
                         jposscrollqueue[#jposscrollqueue + 1] = note
                         note.jposscrolldone = true
                     end
@@ -6684,6 +6716,29 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                         --Draw startnote
                                         rl.DrawTexturePro(Textures.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
 
+
+
+
+
+
+
+
+
+
+
+
+                                        --[[
+                                            BALLOON RENDERING
+
+                                            source: https://youtu.be/scZs6yBcIEw?t=17
+                                        --]]
+                                    elseif startnote.type == 7 then
+
+                                        if not startnote.hit then
+                                            --Not hit yet
+                                        else
+                                            --
+                                        end
 
                                         
                                     end
@@ -9587,9 +9642,11 @@ a = 'tja/neta/ekiben/jposscrolltest.tja'
 a = 'tja/neta/ekiben/neta.tja'
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/notedrumtest.tja'
---a = 'taikobuipm/Donkama 2000.tja'
-
-
+a = 'taikobuipm/Donkama 2000.tja'
+--a = 'tja/ekiben.tja'
+a = 'tja/neta/ekiben/neta.tja'
+a = 'tja/neta/donkama/neta.tja'
+a = 'taikobuipm/Saitama 2000.tja'
 
 --[[
 --diff
@@ -9615,19 +9672,66 @@ Taiko.PlaySong(a)error()
 --]]
 
 --File
+local function CheckFile(str)
+    local file = io.open(str, 'rb')
+    if file then
+        file:close()
+        return true
+    else
+        return false
+    end
+end
+
 local p = Taiko.ParseTJAFile(a)
 local song = 'taikobuipm/EkiBEN 2000.ogg'
-local auto = false
+song = 'taikobuipm/Donkama 2000.ogg'
+--[[
+        local optionsmap = {
+        auto = {
+            [1] = false,
+            [2] = true,
+        },
+        notespeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        },
+        songspeedmul = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 3,
+            [4] = 4,
+            [5] = 0.25,
+            [6] = 0.5,
+            [7] = 0.75,
+        }
+    }
+
+]]
+local s = {
+    [2] = 2,
+    [3] = 1,
+    [4] = 1
+}
 -- [[
-for k, v in pairs(p) do v.Metadata.SONG = song end
+if not CheckFile(p[1].Metadata.SONG) then
+    for k, v in pairs(p) do
+        v.Metadata.SONG = song
+        v.Metadata.SEVOL = 0.5
+    end
+end
 --]]
-Taiko.PlaySong(Taiko.GetDifficulty(p, 'Oni'), nil, {[2] = auto and 2 or 1})error()
+Taiko.PlaySong(Taiko.GetDifficulty(p, 'Oni'), nil, s)error()
 
 --Normal (Ono)
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, {[2] = 2})error()
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Oni'), nil, s)error()
 
 --Overdead (Ura)
-Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Edit'), nil, {[2] = 2})error()
+Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Edit'), nil, s)error()
 
 
 
