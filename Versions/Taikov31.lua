@@ -44,6 +44,8 @@ TODO: Add raylib option
     TODO: SongSelect
     TODO: Move Setting mapping to songselect
     Animation system rework: use rect
+    TODO: Recording and Replaying
+    Remove requires and integrate libraries
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -1256,7 +1258,7 @@ function Taiko.ParseTJA(source)
                     nextnote = nil,
                     radius = 1, --multiplier
                     requiredhits = nil,
-                    length = nil,
+                    lengthms = nil,
                     endnote = nil,
                     section = nil,
                     text = nil,
@@ -1317,7 +1319,7 @@ function Taiko.ParseTJA(source)
                     note.startnote = lastlong
                     if lastlong then
                         note.onnotepush = function()
-                            lastlong.length = note.ms - lastlong.ms
+                            lastlong.lengthms = note.ms - lastlong.ms
                             lastlong.endnote = note
                             --Parser.lastlong = nil
                             --note.type = 0 --to delete note
@@ -1680,7 +1682,7 @@ function Taiko.ParseTJA(source)
                                 - Default is 100.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.SEVOL = CheckN(match[1], Parsed.Metadata.SEVOL, 'Invalid sevol') / 100
+                            Parsed.Metadata.SEVOL = CheckN(match[1], Parsed.Metadata.SEVOL, 'Invalid sevol') / 100 / 2
                             --[[
                             SIDE: (?)
                                 - Value can be either:
@@ -4661,7 +4663,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         --v.loadp = CalculateLoadPosition(v, v.loadms)
         --v.pdelay = 0
         v.hit = nil --Reset hit just in case
+        v.timeshit = nil
         v.brokecombo = false
+        v.setdelay = false
         --v.n = k --MISTAKE: after sorted
         --table.insert(timet, v.ms)
         timet[#timet + 1] = v.ms
@@ -5413,6 +5417,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 --]]
                 balloon = {
                     11, 0
+                },
+                balloonend = {
+                    12, 0
                 }
             },
             Barlines = {
@@ -5903,10 +5910,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Check again (one at a time)
             if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) then
                 --balloon = hit don or ka
+                balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
                 score = balloonscoref(score, balloon.type, notegogo)
             end
             if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                 --drumroll = hit don or ka
+                drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
                 score = drumrollscoref(score, drumroll.type, notegogo)
             end
         end
@@ -6298,6 +6307,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                     --Same balloon
                                     note.p[1] = target[1]
                                     note.p[2] = target[2]
+
+                                    if not balloon.setdelay then
+                                        --make it go from target after ending, smooth
+                                        balloon.delay = balloon.delay - balloon.lengthms
+                                        balloon.setdelay = true
+                                    end
                                 else
                                     --Previous balloon hasn't ended yet
                                     --Replace
@@ -6305,12 +6320,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             end
                             balloon = note
                             balloonstart = note.ms
-                            balloonend = note.ms + note.length
+                            balloonend = note.ms + note.lengthms
                         elseif note.type == 5 or note.type == 6 then
                             --Drumroll
                             drumroll = note
                             drumrollstart = note.ms
-                            drumrollend = note.ms + note.length
+                            drumrollend = note.ms + note.lengthms
                         end
                     end
 
@@ -6730,12 +6745,58 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                                         --[[
                                             BALLOON RENDERING
 
+                                            OpenTaiko:
+
+                                            Saitama 2000 (50)
+                                            49-41 -> 0
+                                            40-31 -> 1
+                                            30-21 -> 2
+                                            20-11 -> 3
+                                            10-1 -> 4
+                                            0 -> 5
+
+                                            (60)
+                                            59-49 -> 0
+                                            48-37 -> 1
+                                            36-25 -> 2
+                                            24-13 -> 3
+                                            12-1 -> 4
+                                            0 -> 5
+
+                                            (57)
+                                            56-45 -> 0
+                                            44-34 -> 1
+                                            33-23 -> 2
+                                            22-12 -> 3
+                                            11-1 -> 4
+                                            0 -> 5
+
+                                            (58)
+                                            57-45 -> 0
+                                            44-34 -> 1
+                                            33-23 -> 2
+                                            22-12 -> 3
+                                            11-1 -> 4
+                                            0 -> 5
+
+
+                                            Consensus:
+                                            (Hits/5) Round down
+                                            Extra gets put in front
+
                                             source: https://youtu.be/scZs6yBcIEw?t=17
                                         --]]
                                     elseif startnote.type == 7 then
-
-                                        if not startnote.hit then
+                                        
+                                        if startnote.timeshit == nil or startnote.timeshit == 0 then
                                             --Not hit yet
+
+                                            --draw note
+                                            rl.DrawTexturePro(Textures.Notes.balloon, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                            
+                                            --draw balloon
+                                            startnote.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                            rl.DrawTexturePro(Textures.Notes.balloonend, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
                                         else
                                             --
                                         end
@@ -8976,12 +9037,12 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                             end
                             balloon = note
                             balloonstart = note.ms
-                            balloonend = note.ms + note.length
+                            balloonend = note.ms + note.lengthms
                         elseif note.type == 5 or note.type == 6 then
                             --Drumroll
                             drumroll = note
                             drumrollstart = note.ms
-                            drumrollend = note.ms + note.length
+                            drumrollend = note.ms + note.lengthms
                         end
                     end
 
@@ -9646,7 +9707,7 @@ a = 'taikobuipm/Donkama 2000.tja'
 --a = 'tja/ekiben.tja'
 a = 'tja/neta/ekiben/neta.tja'
 a = 'tja/neta/donkama/neta.tja'
-a = 'taikobuipm/Saitama 2000.tja'
+--a = 'taikobuipm/Saitama 2000.tja'
 
 --[[
 --diff
@@ -9721,7 +9782,7 @@ local s = {
 if not CheckFile(p[1].Metadata.SONG) then
     for k, v in pairs(p) do
         v.Metadata.SONG = song
-        v.Metadata.SEVOL = 0.5
+        --v.Metadata.SEVOL = 0.5
     end
 end
 --]]
