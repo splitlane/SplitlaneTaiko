@@ -158,6 +158,7 @@ local Compact = require('./CompactTJA/compact')
 --raylib
 -- [[
 local Compact = require('CompactTJA/compact')
+local Replay = require('ReplayTaiko/replay')
 --]]
 
 
@@ -5710,9 +5711,34 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+        --REPLAY
+        local recording = false
+        local record
+        local recordfile = 'test.trp'
 
+        local replaying = true
+        local replay
+        local replayfile = 'test.trp'
+        local replaymst
+        local replaynextms
+        local replayi
 
-
+        if recording then
+            record = {
+                [1] = {},
+                [2] = {}
+            }
+        end
+        if replaying then
+            replay = Replay.Load(Replay.Read(replayfile))
+            replaymst = {}
+            for k, v in pairs(replay) do
+                replaymst[#replaymst + 1] = k
+            end
+            table.sort(replaymst)
+            replayi = 1
+            replaynextms = replaymst[replayi]
+        end
 
 
 
@@ -5839,7 +5865,9 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             --Play Sound
             rl.PlaySound(Sounds.Notes[v]) --PlaySound vs PlaySoundMulti?
 
-
+            if recording then
+                record[v][#record[v] + 1] = ms
+            end
 
 
             --if nearest[v] and (not nearestnote[v].hit) then
@@ -5980,7 +6008,10 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                 'Title: ', Parsed.Metadata.TITLE,
                 '\nSubtitle: ', '',
                 '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
-                '\nStars: ', Parsed.Metadata.LEVEL
+                '\nStars: ', tostring(Parsed.Metadata.LEVEL),
+                '\n\nAuto: ', tostring(auto),
+                '\nRecording: ', tostring(recording),
+                '\nReplaying: ', tostring(replaying)
             }
         )
         local TextStatistic = {
@@ -6068,6 +6099,21 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
                     rl.SeekMusicStream(song, s * songspeedmul)
                 end
             end
+
+
+            --REPLAY
+            if replaying and replaynextms and ms >= replaynextms then
+                local t = replay[replaynextms]
+                for i = 1, #t do
+                    Hit(tonumber(t[i]))
+                end
+                
+
+                replayi = replayi + 1
+                replaynextms = replaymst[replayi]
+            end
+
+
 
 
 
@@ -7207,6 +7253,26 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
 
 
 
+
+
+
+
+
+
+
+        --REPLAY
+        if recording then
+            record = Replay.Save(Replay.TranscodeRawKey(record), {
+                '\ntitle ', Parsed.Metadata.TITLE,
+                '\nsubtitle ', '',
+                '\ndifficulty ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
+                '\nstars ', tostring(Parsed.Metadata.LEVEL),
+                '\ntime ', tostring(os.time()),
+            })
+
+
+            Replay.Write(recordfile, record)
+        end
 
 
 
@@ -9774,7 +9840,7 @@ song = 'taikobuipm/Donkama 2000.ogg'
 
 ]]
 local s = {
-    [2] = 2,
+    [2] = 1,
     [3] = 1,
     [4] = 1
 }
