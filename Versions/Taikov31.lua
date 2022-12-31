@@ -5719,6 +5719,7 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
         local replaying = true
         local replay
         local replayfile = 'test.trp'
+        local replaymetadata
         local replaymst
         local replaynextms
         local replayi
@@ -5730,7 +5731,23 @@ function Taiko.PlaySong(Parsed, Window, Settings, Controls)
             }
         end
         if replaying then
-            replay = Replay.Load(Replay.Read(replayfile))
+            replay, replaymetadata = Replay.Load(Replay.Read(replayfile))
+
+            --Safety checks / Verify
+            local function check(b, err)
+                if b then
+
+                else
+                    error(err .. ' does not match')
+                end
+            end
+            check(Replay.Version == replaymetadata.version, 'Version')
+            check(Parsed.Metadata.TITLE == replaymetadata.title, 'Title')
+
+
+
+
+            --Precalculate mst
             replaymst = {}
             for k, v in pairs(replay) do
                 replaymst[#replaymst + 1] = k

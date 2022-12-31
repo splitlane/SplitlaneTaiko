@@ -316,6 +316,11 @@ function Replay.Load(str)
     --Extract metadata
     local finddata, finddata2 = string.find(str, 'data ')
     local metadata = string.sub(str, 1, finddata - 1)
+    local mt = {}
+    string.gsub(metadata, '(.-) (.-)\n', function(k, v)
+        mt[k] = v
+    end)
+
 
     local data = string.sub(str, finddata2 + 1, -1)
     local d = decompress(data)
@@ -340,7 +345,7 @@ function Replay.Load(str)
         end
         out[tonumber(ms)] = t
     end
-    return out --metadata?
+    return out, mt --metadata?
 end
 
 return Replay
