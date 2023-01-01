@@ -51,7 +51,8 @@ end
 
 
 
-
+--https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
 
 function Persistent.Save(t, out, indent)
     --[[
@@ -64,7 +65,9 @@ function Persistent.Save(t, out, indent)
     indent = indent and indent + 1 or 1
 
     out[#out + 1] = '{\n'
-    for k, v in pairs(t) do
+    for k, v in spairs(t, function(t, a, b)
+        return tostring(a) < tostring(b)
+    end) do
         out[#out + 1] = string.rep('\t', indent)
         if type(k) == 'string' then
             out[#out + 1] = '\''
@@ -136,7 +139,12 @@ function Persistent.Load(str)
             if escapetable >= 2 then
                 acceptingkey = true
                 acceptingvalue = false
-                path[#path + 1] = table.concat(lastkey)
+
+                local k = table.concat(lastkey)
+                --Parse Key
+                k = string.sub(k, 1, 1) == '\'' and string.sub(k, 2, -2) or tonumber(k) and tonumber(k) or k == 'true' and true or k == 'false' and false
+
+                path[#path + 1] = k
                 lastkey = {}
 
                 local t = out
@@ -163,9 +171,11 @@ function Persistent.Load(str)
         elseif s == '\\' then
             consecutivebackslash = consecutivebackslash + 1
         --elseif acceptingkey and string.find(s, '%a') then
-        elseif acceptingkey and s ~= ',' and s ~= '\t' and s ~= '\n' then
+        end
+        if acceptingkey and s ~= '{' and s ~= '}' and s ~= ',' and s ~= '\t' and s ~= '\n' and s ~= ' ' then
             lastkey[#lastkey + 1] = s
         end
+        --print(table.concat(lastkey))
             
         if acceptingvalue then
             if escapestring == 0 and s == ',' then

@@ -4428,14 +4428,14 @@ int MeasureText(const char *text, int fontSize)
                 local warn = GuiWarn('Are you sure you want to overwrite ' .. ConfigPath .. '?')
                 if warn then
                     --Generate config
-
+                    ConfigData = Persistent.Read('defaultconfig.tpd')
                 else
                     --Loop again
                 end
             elseif v == false then
                 while true do
                     local v = GuiInput('What is the file path?\n(Relative or Absolute)')
-                    if v == true then
+                    if v then
                         if CheckFile(v) then
                             local warn = GuiWarn('Are you sure you want to use ' .. v .. '?')
                             if warn then
@@ -4448,9 +4448,11 @@ int MeasureText(const char *text, int fontSize)
                         else
                             GuiMessage('Invalid file')
                         end
+                    --[[
                     elseif v == false then
                         --Loop again
                         GuiMessage('Unable to read input')
+                    --]]
                     else
                         --Escape
                         break
