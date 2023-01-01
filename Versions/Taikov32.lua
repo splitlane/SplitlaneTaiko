@@ -4036,13 +4036,14 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
     --Config:
 
     local AssetsPath = 'Assets/'
+    local ConfigPath = 'config.tpd'
     
+    local Config
 
-
-
-    local UpdateProgress
     local Progress = 0
     local ProgressTotal = 77
+    local UpdateProgress
+
 
 
 
@@ -4052,6 +4053,231 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
         rl.CloseWindow()
         rl.CloseAudioDevice()
     end
+
+
+
+    --Gui
+
+    --Requires OpenGL Context
+    --[[
+int MeasureText(const char *text, int fontSize)
+{
+    Vector2 textSize = { 0.0f, 0.0f };
+
+    // Check if default font has been loaded
+    if (GetFontDefault().texture.id != 0)
+    {
+        int defaultFontSize = 10;   // Default Font chars height in pixel
+        if (fontSize < defaultFontSize) fontSize = defaultFontSize;
+        int spacing = fontSize/defaultFontSize;
+
+        textSize = MeasureTextEx(GetFontDefault(), text, (float)fontSize, (float)spacing);
+    }
+
+    return (int)textSize.x;
+}
+    ]]
+
+    --Unicode Manipulation
+    --[[
+        https://github.com/cyisfor/lua_utf8/blob/master/utf8.lua
+        Modified
+        + optimized to avoid string concat
+    ]]
+
+    local function longEncode(codepoint)
+        local chars = ""
+        local trailers = 0
+        local ocodepoint = codepoint
+    
+        -- feckin backwards compatability
+        if codepoint < 0x80 then return string.char(codepoint) end
+    
+        topspace = 0x20 -- we lose a bit of space left on the top every time
+    
+        -- even if the codepoint is <0x40 and will fit inside 10xxxxxx, 
+        -- we add a 11100000  byte in front, because it won't fit inside
+        -- 0x20 xxxxx so we need a blank top and an extra continuation.
+        -- example: 0x90b
+        -- bit.rshift(0x90b,6) => 0x24
+        -- 0x24 = 00100100
+        -- top =  11100000
+        --          ^ oh noes info lost
+        -- thus we do:
+        --        11100000 - 10100100 - ...
+        --
+        while codepoint > topspace do -- as long as there's too much for the top
+            local derp = bit.bor(bit.band(codepoint,0x3F),0x80)
+            chars = string.char(derp) .. chars
+            codepoint = bit.rshift(codepoint,6)
+            trailers = trailers + 1
+            topspace = bit.rshift(topspace,1)
+        end
+    
+        -- is there a better way to make 0xFFFF0000 from 4 than lshift/rshift?
+        local mask = bit.lshift(bit.rshift(0xFF,7-trailers),7-trailers)
+    
+        local last = bit.bor(mask,codepoint)
+        return string.char(last) .. chars
+    end
+    
+    local function UnicodeEncode(t,derp,...)
+        if derp ~= nil then
+            t = {t,derp,...}
+        end
+        local s = {}
+        for i, codepoint in ipairs(t) do
+            -- manually doing the common codepoints to avoid calling logarithm
+            if codepoint < 0x80 then
+                s[#s + 1] = string.char(codepoint)
+            elseif codepoint < 0x800 then
+                s[#s + 1] = string.char(bit.bor(bit.rshift(codepoint,6),0xc0))
+                s[#s + 1] = string.char(bit.bor(bit.band(codepoint,0x3F),0x80))   
+            elseif codepoint < 0x10000 then
+                s[#s + 1] = string.char(bit.bor(bit.rshift(codepoint,12),0xe0))
+                s[#s + 1] = string.char(bit.bor(bit.band(bit.rshift(codepoint,6),0x3F),0x80))
+                s[#s + 1] = string.char(bit.bor(bit.band(codepoint,0x3F),0x80))
+            elseif codepoint < 0x200000 then
+                s[#s + 1] = string.char(bit.bor(bit.rshift(codepoint,18),0xf0))
+                s[#s + 1] = string.char(bit.bor(bit.band(bit.rshift(codepoint,12),0x3F),0x80))
+                s[#s + 1] = string.char(bit.bor(bit.band(bit.rshift(codepoint,6),0x3F),0x80))
+                s[#s + 1] = string.char(bit.bor(bit.band(codepoint,0x3F),0x80))
+            else
+                -- alpha centauri?!
+                s[#s + 1] = longEncode(codepoint)
+            end
+        end
+        return table.concat(s)
+    end
+
+
+
+
+
+
+
+
+
+    local function GetTextSize(str, fontsize)
+        --[[
+        return rl.MeasureText(str, fontsize) --only x
+        --]]
+
+        -- [[
+        local defaultfontsize = 10
+        if fontsize < defaultfontsize then
+            fontsize = defaultfontsize
+        end
+        local spacing = fontsize / defaultfontsize
+
+        local v = rl.MeasureTextEx(rl.GetFontDefault(), str, fontsize, spacing)
+        return math.floor(v.x), math.floor(v.y)
+        --]]
+    end
+
+    local GuiConfirmKey = {
+        [rl.KEY_Y] = true,
+        [rl.KEY_N] = false,
+    }
+    local fontsize = 50
+    local function GuiConfirm(str)
+        local sx, sy = GetTextSize(str, fontsize)
+        local out = nil
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawText(str, Config.ScreenWidth / 2 - sx / 2, Config.ScreenHeight / 2 - sy / 2, fontsize, rl.BLACK)
+            rl.EndDrawing()
+            
+            for k, v in pairs(GuiConfirmKey) do
+                if rl.IsKeyPressed(k) then
+                    out = v
+                    break
+                end
+            end
+
+            if out ~= nil then
+                break
+            end
+        end
+        return out
+    end
+    local warnenabled = true
+    local function GuiWarn(str)
+        if warnenabled then
+            return GuiConfirm(str .. '\nPress y to confirm\nPress n to reject')
+        else
+            return true
+        end
+    end
+    local function GuiInput(str)
+        local sx, sy = GetTextSize(str, fontsize)
+        local out = {}
+        str = str .. '\n'
+        local displaytext = str
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawText(displaytext, Config.ScreenWidth / 2 - sx / 2, Config.ScreenHeight / 2 - sy / 2, fontsize, rl.BLACK)
+            rl.EndDrawing()
+
+            while true do
+                local c = rl.GetCharPressed()
+                if c == 0 then
+                    break
+                else
+                    out[#out + 1] = c
+                    --Update display
+                    displaytext = str .. UnicodeEncode(out)
+                end
+            end
+
+            --Remember, GetCharPressed doesn't detect special keys
+            if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                out[#out] = nil
+                --Update display
+                displaytext = str .. UnicodeEncode(out)
+            end
+            if rl.IsKeyPressed(rl.KEY_ENTER) then
+                break
+            end
+        end
+        out = UnicodeEncode(out)
+        return out ~= '' and out or nil
+    end
+    local function GuiMessage(str)
+        local sx, sy = GetTextSize(str, fontsize)
+        local out = nil
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawText(str, Config.ScreenWidth / 2 - sx / 2, Config.ScreenHeight / 2 - sy / 2, fontsize, rl.BLACK)
+            rl.EndDrawing()
+            
+            while true do
+                local c = rl.GetCharPressed()
+                if c == 0 then
+                    break
+                else
+                    out = true
+                    break
+                end
+            end
+
+            if out then
+                break
+            end
+        end
+        return out
+    end
+
+
+
+
+
+
+
+
     
     --Loading / Accessing assets
     local function GetFileType(str)
@@ -4148,8 +4374,153 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
 
 
-    local screenWidth = 1600 --800
-    local screenHeight = screenWidth / 16 * 9 --450
+    --Load Config
+    local generateconfig = false
+    if CheckFile(ConfigPath) then
+        Config = Persistent.Load(Persistent.Read(ConfigPath))
+    else
+        --Generate New Config
+        Config = {}
+        generateconfig = true
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Config.ScreenWidth = Config and Config.ScreenWidth or 1600 --1600
+    Config.ScreenHeight = Config and Config.ScreenHeight or Config.ScreenWidth / 16 * 9 --900
+
+
+
+
+    --INIT RAYLIB
+    rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+    --rl.SetTargetFPS(120)
+    rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
+
+    rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
+
+
+
+
+    --Regenerate Config if Needed
+    if generateconfig then
+        local ConfigData = nil
+        while true do
+            local v = GuiConfirm('Config file not found\nPress y to generate new config\nPress n to use a different config')
+            if v == true then
+                local warn = GuiWarn('Are you sure you want to overwrite ' .. ConfigPath .. '?')
+                if warn then
+                    --Generate config
+
+                else
+                    --Loop again
+                end
+            elseif v == false then
+                while true do
+                    local v = GuiInput('What is the file path?\n(Relative or Absolute)')
+                    if v == true then
+                        if CheckFile(v) then
+                            local warn = GuiWarn('Are you sure you want to use ' .. v .. '?')
+                            if warn then
+                                --Use config
+                                ConfigData = Persistent.Read(v)
+                                break
+                            else
+                                --Loop again
+                            end
+                        else
+                            GuiMessage('Invalid file')
+                        end
+                    elseif v == false then
+                        --Loop again
+                        GuiMessage('Unable to read input')
+                    else
+                        --Escape
+                        break
+                    end
+                end
+            else
+                local warn = GuiWarn('Are you sure you want to continue without config?')
+                if warn then
+                    break
+                else
+                    --Loop again
+                end
+            end
+
+            if ConfigData then
+                break
+            end
+        end
+
+        --Load
+        if ConfigData then
+            Config = Persistent.Load(ConfigData)
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+    UpdateProgress = function(str)
+        rl.BeginDrawing()
+        rl.ClearBackground(rl.RAYWHITE)
+
+        Progress = Progress + 1
+        rl.DrawText(
+        '\nPercent: ' .. Progress / ProgressTotal * 100 .. '%' ..
+        '\nProgress: ' .. Progress .. '/' .. ProgressTotal ..
+        '\nLoading: ' .. str
+        , 0, Config.ScreenHeight / 2, 50, rl.BLACK)
+
+        rl.EndDrawing()
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     --[[
     local framerate = nil --Set frame rate, if nil then it is as fast as it can run
@@ -4216,6 +4587,8 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
     --Controls
     --Hit, Escape, L, R, Select
+    local Controls = Config.Controls
+    --[=[
     local Controls = Controls or {}
     Controls = {
         --1 = don, 2 = ka
@@ -4257,13 +4630,13 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
             [rl.KEY_ENTER] = true,
         }
     }
-
+    --]=]
 
 
 
     --Everything will be in terms of screenx and screeny
     --original tracklength: 40 noteradius (160)
-    local tracklength = screenWidth --2400 max
+    local tracklength = Config.ScreenWidth --2400 max
     --raylib use only
 
 
@@ -4303,7 +4676,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
     local trackend = trackstart + tracklength
 
 
-    local screenrect = {0, -screenHeight / 2, screenWidth, screenHeight / 2}
+    local screenrect = {0, -Config.ScreenHeight / 2, Config.ScreenWidth, Config.ScreenHeight / 2}
     local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
     local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
 
@@ -4340,20 +4713,6 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
 
 
-    --PROGRESS BAR
-    UpdateProgress = function(str)
-        rl.BeginDrawing()
-        rl.ClearBackground(rl.RAYWHITE)
-
-        Progress = Progress + 1
-        rl.DrawText(
-        '\nPercent: ' .. Progress / ProgressTotal * 100 .. '%' ..
-        '\nProgress: ' .. Progress .. '/' .. ProgressTotal ..
-        '\nLoading: ' .. str
-        , 0, screenHeight / 2, 50, rl.BLACK)
-
-        rl.EndDrawing()
-    end
 
 
 
@@ -4363,17 +4722,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
 
 
-
-
-
-
-
-    --INIT RAYLIB
-    rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
-    --rl.SetTargetFPS(120)
-    rl.InitWindow(screenWidth, screenHeight, 'Taiko')
-
-    rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
+    --RAYLIB CONFIG
 
 
 
@@ -4381,7 +4730,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
 
     --Config Options
-    local offsetx, offsety = 0, screenHeight / 2 --Added to rendering
+    local offsetx, offsety = 0, Config.ScreenHeight / 2 --Added to rendering
 
     --[[
     --uses texture
@@ -4398,7 +4747,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
     }
     local unloadrectchanged = {}
 
-    local textsize = screenHeight / 45
+    local textsize = Config.ScreenHeight / 45
 
     local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
 
@@ -5961,7 +6310,15 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
 
             --Wait for start
-            while not rl.WindowShouldClose() do rl.BeginDrawing() rl.ClearBackground(rl.RAYWHITE) rl.DrawText('Press SPACE to start', screenWidth / 2, screenHeight / 2, 50, rl.BLACK) rl.EndDrawing() if rl.IsKeyPressed(32) then break end end
+            while not rl.WindowShouldClose() do
+                rl.BeginDrawing()
+                rl.ClearBackground(rl.RAYWHITE)
+                rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, 50, rl.BLACK)
+                rl.EndDrawing()
+                if rl.IsKeyPressed(32) then
+                    break
+                end
+            end
 
 
 
@@ -6003,7 +6360,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
                 rl.DrawFPS(10, 10)
                 rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
                 --rl.DrawText(tostring(rl.GetMusicTimePlayed(song)), 800, 40, textsize, rl.BLACK)
-                rl.DrawText(table.concat(TextStatistic), 10, screenHeight - (textsize * 5), textsize, rl.BLACK)
+                rl.DrawText(table.concat(TextStatistic), 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
                 --rl.ClearBackground(rl.BLACK)
 
                 --[[
