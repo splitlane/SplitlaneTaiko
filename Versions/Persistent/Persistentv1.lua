@@ -132,7 +132,7 @@ function Persistent.Load(str)
 
         local s = string.sub(str, i, i)
         --print(s, acceptingkey, acceptingvalue)
-
+        --print(table.concat(lastkey), table.concat(lastvalue))
 
         if s == '{' then
             escapetable = escapetable + 1
@@ -172,7 +172,7 @@ function Persistent.Load(str)
             consecutivebackslash = consecutivebackslash + 1
         --elseif acceptingkey and string.find(s, '%a') then
         end
-        if acceptingkey and s ~= '{' and s ~= '}' and s ~= ',' and s ~= '\t' and s ~= '\n' and s ~= ' ' then
+        if acceptingkey and s ~= '{' and s ~= '}' and s ~= ',' and s ~= '\t' and s ~= '\n' and s~= '\r' and s ~= ' ' then
             lastkey[#lastkey + 1] = s
         end
         --print(table.concat(lastkey))
@@ -187,7 +187,6 @@ function Persistent.Load(str)
                 local v = table.concat(lastvalue)
                 --Parse Value
                 v = string.sub(v, 1, 1) == '\'' and string.sub(v, 2, -2) or tonumber(v) and tonumber(v) or v == 'true' and true or v == 'false' and false
-
 
                 currentt[k] = v
                 acceptingkey = true

@@ -1199,7 +1199,18 @@ function Taiko.ParseTJA(source)
                 lengthms = nil, --Length of transition
                 p = nil, --Position (pixel (x, y))
                 lanep = nil --Position (relative to lane (x, y))
-            }
+            },
+
+
+
+            zeroopt = zeroopt
+            --[[
+                if zeroopt is on
+                    if stopsong and there is delay in measure, it is turned off for measure
+                    if there is jposscroll in measure, it is turned off for measure
+                if it is off
+                    just parse all zeros
+            ]]
             
         }
 
@@ -2042,6 +2053,7 @@ function Taiko.ParseTJA(source)
                         --]=]
                         if Parsed.Metadata.STOPSONG then
                             Parser.delay = Parser.delay + a
+                            Parser.zeroopt = false
                         end
                         table.insert(Parser.currentmeasure, {
                             --match[1],
@@ -2337,6 +2349,7 @@ function Taiko.ParseTJA(source)
                             - Ignored in taiko-web.
                         ]]
 
+                        Parser.zeroopt = false
                         local valid = false
                         local t = ParseArguments(match[2])
                         
@@ -2903,6 +2916,7 @@ Everyone who DL
                         firstmspermeasure = firstmspermeasure or Parser.mspermeasure
                         --loop
                         local increment = firstmspermeasure / notes
+                        print(increment)
                         --print(firstmspermeasure, increment, notes)
                         local nextjposscroll = false
                         for i = 1, #Parser.currentmeasure do
@@ -2926,7 +2940,7 @@ Everyone who DL
                             else
 
                                 --if it is not air
-                                if not zeroopt or c.type ~= 0 then --zeroopt
+                                if not Parser.zeroopt or c.type ~= 0 then --zeroopt
                                     c.ms = Parser.ms
 
                                     --sudden?
@@ -2979,6 +2993,7 @@ Everyone who DL
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
                     end
                     Parser.insertbarline = true
+                    Parser.zeroopt = zeroopt
                 else
                     Parser.measuredone = false
                 end
@@ -4378,6 +4393,7 @@ int MeasureText(const char *text, int fontSize)
     local generateconfig = false
     if CheckFile(ConfigPath) then
         Config = Persistent.Load(Persistent.Read(ConfigPath))
+        --print(Persistent.Save(Config))error()
     else
         --Generate New Config
         Config = {}
@@ -7510,7 +7526,7 @@ end
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/delay.tja'
 --a = 'tja/neta/overdead.tja'
-a = 'tja/neta/ekiben/neta.tja'
+--a = 'tja/neta/ekiben/neta.tja'
 
 --File
 local function CheckFile(str)
@@ -7524,8 +7540,8 @@ local function CheckFile(str)
 end
 
 local p = Taiko.ParseTJAFile(a)
-local song = 'taikobuipm/EkiBEN 2000.ogg'
---song = 'taikobuipm/Donkama 2000.ogg'
+--local song = 'taikobuipm/EkiBEN 2000.ogg'
+song = 'taikobuipm/Donkama 2000.ogg'
 --[[
         local optionsmap = {
         auto = {
