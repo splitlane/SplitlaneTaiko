@@ -165,6 +165,7 @@ local Compact = require('./CompactTJA/compact')
 -- [[
 local Compact = require('CompactTJA/compact')
 local Replay = require('ReplayTaiko/replay')
+local Persistent = require('Persistent/persistent')
 --]]
 
 
@@ -4041,7 +4042,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
     local UpdateProgress
     local Progress = 0
-    local ProgressTotal = 75
+    local ProgressTotal = 77
 
 
 
@@ -7148,7 +7149,9 @@ end
 
 
 a = 'tja/neta/donkama/neta.tja'
-a = 'tja/neta/ekiben/delay.tja'
+--a = 'tja/neta/ekiben/delay.tja'
+--a = 'tja/neta/overdead.tja'
+a = 'tja/neta/ekiben/neta.tja'
 
 --File
 local function CheckFile(str)
