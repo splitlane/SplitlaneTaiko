@@ -164,8 +164,8 @@ local Compact = require('./CompactTJA/compact')
 --raylib
 -- [[
 local Compact = require('CompactTJA/compact')
-local Replay = require('ReplayTaiko/replay')
-local Persistent = require('Persistent/persistent')
+local Replay = require('ReplayTaiko/replayv1')
+local Persistent = require('Persistent/persistentv1')
 --]]
 
 
