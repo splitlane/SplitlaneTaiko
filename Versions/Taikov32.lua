@@ -54,6 +54,7 @@ TODO: Add raylib option
     DONE: Make a queue for stopms (delay) just like jposscroll
     TODO: Transition size, sourcerect, center to Textures table
     TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
+    TODO: Fix replay side taiko anim
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -3917,9 +3918,13 @@ end
 
 function Taiko.CalculateSpeedInterval(note, displayratio)
     --display ratio = screenx / 1280
+    --[[
+        https://github.com/0auBSQ/OpenTaiko/commit/65922a29abd978aca7d3353a08ce3a45ba8e6cfa
+        https://github.com/0auBSQ/OpenTaiko/blob/c25c744cf11bc8ca997c1318eef4893269fd74d2/Test/System/SimpleStyle/GameConfig.ini
+    ]]
     local interval = 960
-    local speedx = (note.bpm / 240000 * note.scrollx * interval)
-    local speedy = (note.bpm / 240000 * note.scrolly * interval)
+    local speedx = (note.bpm / 240000 * note.scrollx * interval * displayratio)
+    local speedy = (note.bpm / 240000 * note.scrolly * interval * displayratio)
     return {speedx, speedy}
 end
 
@@ -4528,7 +4533,7 @@ int MeasureText(const char *text, int fontSize)
         '\nPercent: ' .. Progress / ProgressTotal * 100 .. '%' ..
         '\nProgress: ' .. Progress .. '/' .. ProgressTotal ..
         '\nLoading: ' .. str
-        , 0, Config.ScreenHeight / 2, 50, rl.BLACK)
+        , 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         rl.EndDrawing()
     end
@@ -4678,7 +4683,7 @@ int MeasureText(const char *text, int fontSize)
     local endms = 1000 --Added to last note (ms)
     local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
     local y = 0 * Config.ScreenWidth
-    local target = {412/1280 * Config.ScreenWidth, -(256/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
+    local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
     local tracky = target[2]
     local trackstart = 333/1280 * Config.ScreenWidth
 
@@ -4778,6 +4783,7 @@ int MeasureText(const char *text, int fontSize)
     local unloadrectchanged = {}
 
     local textsize = Config.ScreenHeight / 45
+    print(textsize)
 
     local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
 
@@ -4857,7 +4863,15 @@ int MeasureText(const char *text, int fontSize)
                 },
                 Frame = {
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/1P_Frame.png')
+                },
+                Taiko = {
+                    Base = LoadImage('Graphics/5_Game/6_Taiko/Base.png'),
+                    [1] = LoadImage('Graphics/5_Game/6_Taiko/Don.png'),
+                    [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png')
                 }
+            },
+            Fonts = {
+
             }
         }
     }
@@ -5231,7 +5245,12 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Backgrounds.Frame.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Backgrounds.Frame.pr = rl.new('Rectangle', 332/1280 * Config.ScreenWidth, 136/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
 
-
+    --Taiko
+    Textures.PlaySong.Backgrounds.Taiko.sizex = Textures.PlaySong.Backgrounds.Taiko.Base.width
+    Textures.PlaySong.Backgrounds.Taiko.sizey = Textures.PlaySong.Backgrounds.Taiko.Base.height
+    Textures.PlaySong.Backgrounds.Taiko.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
+    Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 208/1280 * Config.ScreenWidth, 207/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     
 
 
@@ -5668,7 +5687,7 @@ int MeasureText(const char *text, int fontSize)
             v.delay = v.delay / songspeedmul
             --v.speed = Taiko.CalculateSpeed(v, noteradius)
             
-            v.speed = Taiko.CalculateSpeedInterval(v, Config.ScreenWidth)
+            v.speed = Taiko.CalculateSpeedInterval(v, Config.ScreenWidth / 1280)
 
 
             v.speed[1] = v.speed[1] * notespeedmul
@@ -6302,7 +6321,7 @@ int MeasureText(const char *text, int fontSize)
                     elseif a.type == 7 then
                         note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                         --[[
-f	transparancy
+f	transparency
 0	12.5*8
 1	12.5*7
 2	12.5*6
@@ -6315,7 +6334,18 @@ f	transparancy
                         ]]
                         a.popanim = {
                             startms = nil,
-                            framen = 8,
+                            --framen = 8,
+                            anim = {
+                                [0] = 0.125*8,
+                                [1] = 0.125*7,
+                                [2] = 0.125*6,
+                                [3] = 0.125*5,
+                                [4] = 0.125*4,
+                                [5] = 0.125*3,
+                                [6] = 0.125*2,
+                                [7] = 0.125*1,
+                                [8] = 0.125*0,
+                            },
                             color = rl.new('Color', 255, 255, 255, 255)
                         }
                     end
@@ -6339,14 +6369,86 @@ f	transparancy
             --Hit: Hit the drum with a 1 (don) or 2 (ka)
             local ms
             local nearest, nearestnote = {}, {}
-            local function Hit(v)
+            local autoside = false --false -> left, true = right
+--[[
+f	transparency
+0	100
+1	100
+2	100
+3	100
+4	100
+5	75
+6	50
+7	25
+8	0
+
+sides
+left 0-60 (0-Textures.PlaySong.Backgrounds.Taiko.sizex/2)
+right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
+]]
+
+            local taikoanim = {
+                anim = {
+                    [0] = 0.125*8,
+                    [1] = 0.125*8,
+                    [2] = 0.125*8,
+                    [3] = 0.125*8,
+                    [4] = 0.125*8,
+                    [5] = 0.125*6,
+                    [6] = 0.125*4,
+                    [7] = 0.125*2,
+                    [8] = 0.125*0,
+                },
+                --left
+                [1] = {
+                    --don
+                    [1] = {
+                        startms = nil,
+                        color = rl.new('Color', 255, 255, 255, 255),
+                    },
+                    --ka
+                    [2] = {
+                        startms = nil,
+                        color = rl.new('Color', 255, 255, 255, 255)
+                    },
+                    sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    pr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    center = rl.new('Vector2', 0, 0)
+                },
+                --right
+                [2] = {
+                    --don
+                    [1] = {
+                        startms = nil,
+                        color = rl.new('Color', 255, 255, 255, 255),
+                    },
+                    --ka
+                    [2] = {
+                        startms = nil,
+                        color = rl.new('Color', 255, 255, 255, 255)
+                    },
+                    sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    pr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    center = rl.new('Vector2', 0, 0)
+                }
+            }
+            local function Hit(v, side)
                 --Play Sound
                 rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
+                
+                --Play Anim
+                local taikoanim = taikoanim[side == false and 1 or side == true and 2]
+                taikoanim[v].startms = ms
+                taikoanim[v].color.a = 255
 
+
+
+                --Record
                 if recording then
                     record[v][#record[v] + 1] = ms
                 end
 
+                --Process hit
 
                 --if nearest[v] and (not nearestnote[v].hit) then
                 if nearestnote[v] and (not nearestnote[v].hit) then
@@ -6434,6 +6536,7 @@ f	transparancy
                     if balloon.timeshit >= balloon.requiredhits then
                         balloon.pop = true
                         balloon.popanim.startms = ms
+                        balloon.popanim.color.a = 255
                         rl.PlaySound(Sounds.PlaySong.Notes.balloonpop)
                     end
                 end
@@ -6454,8 +6557,13 @@ f	transparancy
                 --local temp1, temp2 = nearest, nearestnote
                 nearest[v] = 0
                 nearestnote[v] = note
-                Hit(v)
+                Hit(v, autoside)
+                autoside = not autoside
                 --nearest, nearestnote = temp1, temp2
+            end
+            local function HitAutoNow(v)
+                Hit(v, autoside)
+                autoside = not autoside
             end
 
             --[[
@@ -6520,7 +6628,7 @@ f	transparancy
             while not rl.WindowShouldClose() do
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.RAYWHITE)
-                rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, 50, rl.BLACK)
+                rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 rl.EndDrawing()
                 if rl.IsKeyPressed(32) then
                     break
@@ -6609,7 +6717,8 @@ f	transparancy
                 if replaying and replaynextms and ms >= replaynextms then
                     local t = replay[replaynextms]
                     for i = 1, #t do
-                        Hit(tonumber(t[i]))
+                        --TODO: Fix replay side taiko
+                        Hit(tonumber(t[i]), false)
                     end
                     
 
@@ -6793,8 +6902,37 @@ f	transparancy
 
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
 
+                --draw taiko
+                
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko.Base, Textures.PlaySong.Backgrounds.Taiko.sourcerect, Textures.PlaySong.Backgrounds.Taiko.pr, Textures.PlaySong.Backgrounds.Taiko.center, 0, rl.WHITE)
 
+                for i = 1, 2 do
+                    local sideanim = taikoanim[i]
+                    for i2 = 1, 2 do
+                        local taikoanim2 = sideanim[i2]
+                        if taikoanim2.startms then
+                            --draw taiko side hit indicator
 
+                            local difms = ms - taikoanim2.startms
+                            local animn = math.floor(difms / skinframems)
+                            --local transparency = 255 - (animn / framen * 255)
+                            local transparency = taikoanim.anim[animn]
+
+                            if transparency then
+                                taikoanim2.color.a = 255 * transparency
+
+                                if transparency > 0 then
+                                    --if visible
+
+                                    --taikoanim.side
+                                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko[i2], sideanim.sourcerect, sideanim.pr, sideanim.center, 0, rl.WHITE)
+                                end
+                            else
+                                taikoanim.startms = nil
+                            end
+                        end
+                    end
+                end
 
 
 
@@ -7073,9 +7211,9 @@ f	transparancy
                     if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
                         --make sure we can't hit note as bad
                         if balloonstart and (ms > balloonstart and ms < balloonend) and not balloon.pop then
-                            Hit(1)
+                            HitAutoNow(1)
                         elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
-                            Hit(1)
+                            HitAutoNow(1)
                         end
                     end
                 end
@@ -7095,7 +7233,7 @@ f	transparancy
                 --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
                 for k, v in pairs(Controls.Hit) do
                     if rl.IsKeyPressed(k) then
-                        Hit(v)
+                        Hit(v[1], v[2])
                         --TODO: Drum anim?
                     end
                 end
@@ -7407,12 +7545,18 @@ f	transparancy
                                                     local popanim = startnote.popanim
                                                     local difms = ms - popanim.startms
                                                     local animn = math.floor(difms / skinframems)
-                                                    local transparency = 255 - (animn / framen * 255)
-                                                    popanim.color.a = transparency
+                                                    --local transparency = 255 - (animn / framen * 255)
+                                                    local transparency = popanim.anim[animn]
 
-                                                    if transparency > 0 then
-                                                        --if visible
-                                                        rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, startnote.popanim.color)
+                                                    if transparency then
+                                                        popanim.color.a = 255 * transparency
+
+                                                        if transparency > 0 then
+                                                            --if visible
+                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, startnote.popanim.color)
+                                                        end
+                                                    else
+                                                        startnote.hit = true
                                                     end
                                                 else
                                                     --Trying to blow
