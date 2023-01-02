@@ -51,7 +51,8 @@ TODO: Add raylib option
     Animation system rework: use rect
     TODO: Recording and Replaying
     Remove requires and integrate libraries
-    Make a queue for stopms (delay) just like jposscroll
+    DONE: Make a queue for stopms (delay) just like jposscroll
+    TODO: Transition size, sourcerect, center to Textures table
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2916,7 +2917,7 @@ Everyone who DL
                         firstmspermeasure = firstmspermeasure or Parser.mspermeasure
                         --loop
                         local increment = firstmspermeasure / notes
-                        print(increment)
+                        --print(increment)
                         --print(firstmspermeasure, increment, notes)
                         local nextjposscroll = false
                         for i = 1, #Parser.currentmeasure do
@@ -4700,8 +4701,9 @@ int MeasureText(const char *text, int fontSize)
 
     --High loading mod for jposscroll testing
     --[[
-    loadrect = {screenrect[1] - 1000, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + 1000}
-    unloadrect = {screenrect[1] - 900, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + 900}
+    local n = 5000
+    loadrect = {screenrect[1] - n, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + n}
+    unloadrect = {screenrect[1] - n + 100, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + n - 100}
     --]]
 
 
@@ -5081,6 +5083,11 @@ int MeasureText(const char *text, int fontSize)
     --Balloons
 
     Textures.PlaySong.Balloons = Resize(Textures.PlaySong.Balloons)
+
+    Textures.PlaySong.Balloons.sizex = Textures.PlaySong.Balloons.Anim[0].width
+    Textures.PlaySong.Balloons.sizey = Textures.PlaySong.Balloons.Anim[0].height
+    Textures.PlaySong.Balloons.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
+    Textures.PlaySong.Balloons.center = rl.new('Vector2', Textures.PlaySong.Balloons.sizex / 2, Textures.PlaySong.Balloons.sizey / 2)
 
     Textures.PlaySong.Balloons.Anim = TextureMap.ReplaceWithTexture(Textures.PlaySong.Balloons.Anim)
 
@@ -5527,6 +5534,7 @@ int MeasureText(const char *text, int fontSize)
                 v.jposscroll.lengthms = v.jposscroll.olengthms or v.jposscroll.lengthms
                 v.jposscroll.olengthms = v.jposscroll.lengthms
                 v.jposscroll.lengthms = v.jposscroll.lengthms / songspeedmul
+                v.jposscrolldone = false
             end
 
 
@@ -5537,8 +5545,10 @@ int MeasureText(const char *text, int fontSize)
             v.hit = nil --Reset hit just in case
             v.timeshit = nil
             v.brokecombo = false
+
             v.setdelay = false
-            v.jposscrolldone = false
+            v.pop = false
+
             v.stopdone = false
             --v.n = k --MISTAKE: after sorted
             --table.insert(timet, v.ms)
@@ -6145,8 +6155,24 @@ int MeasureText(const char *text, int fontSize)
                             a.endtype = 'DRUMROLLend'
                         end
                     elseif a.type == 7 then
-                        note.balloonrect = rl.new('Rectangle', 0, 0, 0, 0)
-
+                        note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
+                        --[[
+f	transparancy
+0	12.5*8
+1	12.5*7
+2	12.5*6
+3	12.5*5
+4	12.5*4
+5	12.5*3
+6	12.5*2
+7	12.5*1
+8	12.5*0
+                        ]]
+                        a.popanim = {
+                            startms = nil,
+                            framen = 8,
+                            color = rl.new('Color', 255, 255, 255, 255)
+                        }
                     end
                 end
             end)
@@ -6231,6 +6257,7 @@ int MeasureText(const char *text, int fontSize)
                             Judge: https://github.com/0auBSQ/OpenTaiko/blob/c25c744cf11bc8ca997c1318eef4893269fd74d2/TJAPlayer3/Stages/07.Game/Taiko/CAct%E6%BC%94%E5%A5%8FDrums%E5%88%A4%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%97.cs
                         ]]
                         nearestnote[v].hit = true
+                        --[[
                         laststatus = {
                             startms = ms,
                             status = hiteffect,
@@ -6238,15 +6265,27 @@ int MeasureText(const char *text, int fontSize)
                             explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim,
                             explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
                         }
+                        --]]
+                        --avoid table creation
+                        laststatus.startms = ms
+                        laststatus.status = hiteffect
+                        laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Hit[hiteffect].Anim
+                        laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim
+                        laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
                     end
                 end
 
 
                 --Check again (one at a time)
-                if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) then
+                if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) and (not balloon.pop) then
                     --balloon = hit don or ka
                     balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
                     score = balloonscoref(score, balloon.type, notegogo)
+                    if balloon.timeshit >= balloon.requiredhits then
+                        balloon.pop = true
+                        balloon.popanim.startms = ms
+                        rl.PlaySound(Sounds.)
+                    end
                 end
                 if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                     --drumroll = hit don or ka
@@ -6686,10 +6725,11 @@ int MeasureText(const char *text, int fontSize)
                             gogo = note.gogo
                             if note.type == 7 then
                                 if balloon then
+                                    note.hit = false
                                     if balloon.n == note.n then
                                         --Same balloon
-                                        note.p[1] = target[1]
-                                        note.p[2] = target[2]
+                                        note.p[1] = target[1] * xmul
+                                        note.p[2] = target[2] * ymul
 
                                         if not balloon.setdelay then
                                             --make it go from target after ending, smooth
@@ -6845,7 +6885,7 @@ int MeasureText(const char *text, int fontSize)
 
                     if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
                         --make sure we can't hit note as bad
-                        if balloonstart and (ms > balloonstart and ms < balloonend) then
+                        if balloonstart and (ms > balloonstart and ms < balloonend) and not balloon.pop then
                             Hit(1)
                         elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                             Hit(1)
@@ -7148,7 +7188,8 @@ int MeasureText(const char *text, int fontSize)
                                             --]]
                                         elseif startnote.type == 7 then
                                             
-                                            if startnote.timeshit == nil or startnote.timeshit == 0 then
+                                            --if startnote.timeshit == nil or startnote.timeshit == 0 then
+                                            if startnote.timeshit == nil then
                                                 --Not hit yet
 
                                                 --draw note
@@ -7158,7 +7199,42 @@ int MeasureText(const char *text, int fontSize)
                                                 startnote.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
                                                 rl.DrawTexturePro(Textures.PlaySong.Notes.balloonend, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
                                             else
-                                                --
+                                                --Hit at least 1 time
+
+                                                --draw donchan
+
+
+
+                                                --how much more hits
+                                                local morehits = startnote.requiredhits - startnote.timeshit
+
+                                                --formula for framen
+                                                local framen = 5 - math.ceil(morehits / math.floor(startnote.requiredhits / 5))
+                                                framen = framen < 0 and 0 or framen
+
+                                                --DISABLED TEMPORARY
+                                                if framen == 5 then
+                                                    --Pop
+
+                                                    --assume popanim exists
+                                                    local popanim = startnote.popanim
+                                                    local difms = ms - popanim.startms
+                                                    local animn = math.floor(difms / skinframems)
+                                                    local transparency = 255 - (animn / framen * 255)
+                                                    popanim.color.a = transparency
+
+                                                    if transparency > 0 then
+                                                        --if visible
+                                                        rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, startnote.popanim.color)
+                                                    end
+                                                else
+                                                    --Trying to blow
+
+                                                    --draw balloon at same position as non-hit above donchan
+                                                    note.balloonrect.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                                    note.balloonrect.y = startnote.pr.y
+                                                    rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, rl.WHITE)
+                                                end
                                             end
 
                                             
@@ -7523,10 +7599,12 @@ end
 
 
 
-a = 'tja/neta/donkama/neta.tja'
+--a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/delay.tja'
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/neta.tja'
+a = 'taikobuipm/Saitama 2000.tja'
+
 
 --File
 local function CheckFile(str)
