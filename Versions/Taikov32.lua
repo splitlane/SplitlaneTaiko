@@ -3915,6 +3915,16 @@ function Taiko.CalculateSpeed(note, noteradius)
     return {speedx, speedy}
 end
 
+function Taiko.CalculateSpeedInterval(note, displayratio)
+    --display ratio = screenx / 1280
+    local interval = 960
+    local speedx = (note.bpm / 240000 * note.scrollx * interval)
+    local speedy = (note.bpm / 240000 * note.scrolly * interval)
+    return {speedx, speedy}
+end
+
+--[[
+--Deprecated
 function Taiko.CalculateSpeedAll(ParsedData, noteradius)
     --local t = {}
     for i = 1, #ParsedData do
@@ -3924,6 +3934,7 @@ function Taiko.CalculateSpeedAll(ParsedData, noteradius)
     end
     return ParsedData
 end
+--]]
 
 
 
@@ -4669,7 +4680,7 @@ int MeasureText(const char *text, int fontSize)
     local y = 0 * Config.ScreenWidth
     local target = {412/1280 * Config.ScreenWidth, -(256/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
     local tracky = target[2]
-    local trackstart = 332/1280 * Config.ScreenWidth
+    local trackstart = 333/1280 * Config.ScreenWidth
 
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
@@ -4838,6 +4849,14 @@ int MeasureText(const char *text, int fontSize)
                     N = LoadImage('Graphics/5_Game/12_Lane/Text_Normal.png'),
                     E = LoadImage('Graphics/5_Game/12_Lane/Text_Expert.png'),
                     M = LoadImage('Graphics/5_Game/12_Lane/Text_Master.png')
+                }
+            },
+            Backgrounds = {
+                Background = {
+
+                },
+                Frame = {
+                    [1] = LoadImage('Graphics/5_Game/6_Taiko/1P_Frame.png')
                 }
             }
         }
@@ -5194,7 +5213,24 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Lanes.ssizey = Textures.PlaySong.Lanes.Lane.sub.height
     Textures.PlaySong.Lanes.ssourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
     Textures.PlaySong.Lanes.scenter = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, (tracky - Textures.PlaySong.Lanes.sizey / 2) * ymul + offsety, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+    --Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, (tracky - Textures.PlaySong.Lanes.sizey / 2) * ymul + offsety, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+    Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, 325/720 * Config.ScreenHeight, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+
+
+
+    --BACKGROUND
+
+    Textures.PlaySong.Backgrounds = Resize(Textures.PlaySong.Backgrounds)
+
+    Textures.PlaySong.Backgrounds = TextureMap.ReplaceWithTexture(Textures.PlaySong.Backgrounds)
+
+    --Frame
+    Textures.PlaySong.Backgrounds.Frame.sizex = Textures.PlaySong.Backgrounds.Frame[1].width
+    Textures.PlaySong.Backgrounds.Frame.sizey = Textures.PlaySong.Backgrounds.Frame[1].height
+    Textures.PlaySong.Backgrounds.Frame.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
+    Textures.PlaySong.Backgrounds.Frame.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Frame.pr = rl.new('Rectangle', 332/1280 * Config.ScreenWidth, 136/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
+
 
     
 
@@ -5630,7 +5666,11 @@ int MeasureText(const char *text, int fontSize)
             v.p = {}
 
             v.delay = v.delay / songspeedmul
-            v.speed = Taiko.CalculateSpeed(v, noteradius)
+            --v.speed = Taiko.CalculateSpeed(v, noteradius)
+            
+            v.speed = Taiko.CalculateSpeedInterval(v, Config.ScreenWidth)
+
+
             v.speed[1] = v.speed[1] * notespeedmul
             v.speed[2] = v.speed[2] * notespeedmul
 
@@ -6749,7 +6789,9 @@ f	transparancy
 
                 rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.sub, Textures.PlaySong.Lanes.ssourcerect, Textures.PlaySong.Lanes.spr, Textures.PlaySong.Lanes.scenter, 0, rl.WHITE)
 
+                --draw frame
 
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
 
 
 

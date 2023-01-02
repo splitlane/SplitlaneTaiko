@@ -24,6 +24,6 @@ DO NOT EDIT
 			257 = true,
 		},
 	},
-	'ScreenHeight' = 900,
-	'ScreenWidth' = 1600,
+	'ScreenHeight' = 720,
+	'ScreenWidth' = 1280,
 }
