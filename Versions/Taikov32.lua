@@ -53,6 +53,7 @@ TODO: Add raylib option
     Remove requires and integrate libraries
     DONE: Make a queue for stopms (delay) just like jposscroll
     TODO: Transition size, sourcerect, center to Textures table
+    TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5182,20 +5183,73 @@ int MeasureText(const char *text, int fontSize)
 
 
     local Sounds = {
-        Combo = {
-
-        },
-        Notes = {
-            [1] = LoadSound('Sounds/Taiko/dong.ogg'),
-            [2] = LoadSound('Sounds/Taiko/ka.ogg'),
-            adlib = LoadSound('Sounds/Taiko/Adlib.ogg')
+        PlaySong = {
+            Combo = {
+                [50] = LoadSound('Sounds/Combo_1P/50.wav'),
+                [100] = LoadSound('Sounds/Combo_1P/100.wav'),
+                [200] = LoadSound('Sounds/Combo_1P/200.wav'),
+                [300] = LoadSound('Sounds/Combo_1P/300.wav'),
+                [400] = LoadSound('Sounds/Combo_1P/400.wav'),
+                [500] = LoadSound('Sounds/Combo_1P/500.wav'),
+                [600] = LoadSound('Sounds/Combo_1P/600.wav'),
+                [700] = LoadSound('Sounds/Combo_1P/700.wav'),
+                [800] = LoadSound('Sounds/Combo_1P/800.wav'),
+                [900] = LoadSound('Sounds/Combo_1P/900.wav'),
+                [1000] = LoadSound('Sounds/Combo_1P/1000.wav'),
+                [1100] = LoadSound('Sounds/Combo_1P/1100.wav'),
+                [1200] = LoadSound('Sounds/Combo_1P/1200.wav'),
+                [1300] = LoadSound('Sounds/Combo_1P/1300.wav'),
+                [1400] = LoadSound('Sounds/Combo_1P/1400.wav'),
+                [1500] = LoadSound('Sounds/Combo_1P/1500.wav'),
+                [1600] = LoadSound('Sounds/Combo_1P/1600.wav'),
+                [1700] = LoadSound('Sounds/Combo_1P/1700.wav'),
+                [1800] = LoadSound('Sounds/Combo_1P/1800.wav'),
+                [1900] = LoadSound('Sounds/Combo_1P/1900.wav'),
+                [2000] = LoadSound('Sounds/Combo_1P/2000.wav'),
+                [2100] = LoadSound('Sounds/Combo_1P/2100.wav'),
+                [2200] = LoadSound('Sounds/Combo_1P/2200.wav'),
+                [2300] = LoadSound('Sounds/Combo_1P/2300.wav'),
+                [2400] = LoadSound('Sounds/Combo_1P/2400.wav'),
+                [2500] = LoadSound('Sounds/Combo_1P/2500.wav'),
+                [2600] = LoadSound('Sounds/Combo_1P/2600.wav'),
+                [2700] = LoadSound('Sounds/Combo_1P/2700.wav'),
+                [2800] = LoadSound('Sounds/Combo_1P/2800.wav'),
+                [2900] = LoadSound('Sounds/Combo_1P/2900.wav'),
+                [3000] = LoadSound('Sounds/Combo_1P/3000.wav'),
+                [3100] = LoadSound('Sounds/Combo_1P/3100.wav'),
+                [3200] = LoadSound('Sounds/Combo_1P/3200.wav'),
+                [3300] = LoadSound('Sounds/Combo_1P/3300.wav'),
+                [3400] = LoadSound('Sounds/Combo_1P/3400.wav'),
+                [3500] = LoadSound('Sounds/Combo_1P/3500.wav'),
+                [3600] = LoadSound('Sounds/Combo_1P/3600.wav'),
+                [3700] = LoadSound('Sounds/Combo_1P/3700.wav'),
+                [3800] = LoadSound('Sounds/Combo_1P/3800.wav'),
+                [3900] = LoadSound('Sounds/Combo_1P/3900.wav'),
+                [4000] = LoadSound('Sounds/Combo_1P/4000.wav'),
+                [4100] = LoadSound('Sounds/Combo_1P/4100.wav'),
+                [4200] = LoadSound('Sounds/Combo_1P/4200.wav'),
+                [4300] = LoadSound('Sounds/Combo_1P/4300.wav'),
+                [4400] = LoadSound('Sounds/Combo_1P/4400.wav'),
+                [4500] = LoadSound('Sounds/Combo_1P/4500.wav'),
+                [4600] = LoadSound('Sounds/Combo_1P/4600.wav'),
+                [4700] = LoadSound('Sounds/Combo_1P/4700.wav'),
+                [4800] = LoadSound('Sounds/Combo_1P/4800.wav'),
+                [4900] = LoadSound('Sounds/Combo_1P/4900.wav'),
+                [5000] = LoadSound('Sounds/Combo_1P/5000.wav')
+            },
+            Notes = {
+                [1] = LoadSound('Sounds/Taiko/dong.ogg'),
+                [2] = LoadSound('Sounds/Taiko/ka.ogg'),
+                adlib = LoadSound('Sounds/Taiko/Adlib.ogg'),
+                balloonpop = LoadSound('Sounds/balloon.ogg')
+            }
         }
     }
 
-    for k, v in pairs(Sounds.Combo) do
+    for k, v in pairs(Sounds.PlaySong.Combo) do
         rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
     end
-    for k, v in pairs(Sounds.Notes) do
+    for k, v in pairs(Sounds.PlaySong.Notes) do
         rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
     end
 
@@ -6196,7 +6250,7 @@ f	transparancy
             local nearest, nearestnote = {}, {}
             local function Hit(v)
                 --Play Sound
-                rl.PlaySound(Sounds.Notes[v]) --PlaySound vs PlaySoundMulti?
+                rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
 
                 if recording then
                     record[v][#record[v] + 1] = ms
@@ -6272,6 +6326,11 @@ f	transparancy
                         laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Hit[hiteffect].Anim
                         laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim
                         laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
+
+                        --combo sound
+                        if Sounds.PlaySong.Combo[combo] then
+                            rl.PlaySound(Sounds.PlaySong.Combo[combo])
+                        end
                     end
                 end
 
@@ -6284,7 +6343,7 @@ f	transparancy
                     if balloon.timeshit >= balloon.requiredhits then
                         balloon.pop = true
                         balloon.popanim.startms = ms
-                        rl.PlaySound(Sounds.)
+                        rl.PlaySound(Sounds.PlaySong.Notes.balloonpop)
                     end
                 end
                 if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
