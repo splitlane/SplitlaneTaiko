@@ -4058,7 +4058,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
     local Config
 
     local Progress = 0
-    local ProgressTotal = 77
+    local ProgressTotal = 138
     local UpdateProgress
 
 
@@ -4662,21 +4662,19 @@ int MeasureText(const char *text, int fontSize)
 
 
 
-    local bufferlength = 1/16 * tracklength
-    local unloadbuffer = 5/16 * tracklength --NOT added to bufferlength
+    local bufferlength = 1/16 * Config.ScreenWidth
+    local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
     local endms = 1000 --Added to last note (ms)
-    local noteradius = 1/40 * tracklength --Radius of normal (small) notes
-    local y = 0 * tracklength
-    local tracky = 1/16 * tracklength
-    local trackstart = 0 * tracklength
-    local target = {3/40 * tracklength, 0} --(src: taiko-web)
-    --target[1] = 1/2 * tracklength --middle target
-    target[1] = 1/4 * tracklength --off
+    local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
+    local y = 0 * Config.ScreenWidth
+    local target = {412/1280 * Config.ScreenWidth, -(256/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
+    local tracky = target[2]
+    local trackstart = 332/1280 * Config.ScreenWidth
 
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
-    local statusanimationmove = 1/40 * tracklength --Status animation move
+    local statusanimationmove = 1/40 * Config.ScreenWidth --Status animation move
     local flashlength = 20 --Flash length (normal/big) (good/ok/bad) (ms)
 
 
@@ -4826,6 +4824,21 @@ int MeasureText(const char *text, int fontSize)
                 },
                 Explosion = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion.png'),
                 ExplosionBig = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion_Big.png')
+            },
+            Lanes = {
+                Lane = {
+                    default = LoadImage('Graphics/5_Game/12_Lane/Background_Main.png'),
+                    gogo = LoadImage('Graphics/5_Game/12_Lane/Background_GoGo.png'),
+                    sub = LoadImage('Graphics/5_Game/12_Lane/Background_Sub.png'),
+                    N = LoadImage('Graphics/5_Game/12_Lane/Base_Normal.png'),
+                    E = LoadImage('Graphics/5_Game/12_Lane/Base_Expert.png'),
+                    M = LoadImage('Graphics/5_Game/12_Lane/Base_Master.png')
+                },
+                Text = {
+                    N = LoadImage('Graphics/5_Game/12_Lane/Text_Normal.png'),
+                    E = LoadImage('Graphics/5_Game/12_Lane/Text_Expert.png'),
+                    M = LoadImage('Graphics/5_Game/12_Lane/Text_Master.png')
+                }
             }
         }
     }
@@ -5031,8 +5044,11 @@ int MeasureText(const char *text, int fontSize)
     rl.ImageFlipHorizontal(Textures.PlaySong.ChipEffect.DRUMROLLstart)
     --]]
 
-    --local resizefactor = (Textures.PlaySong.Notes.target.width) / (noteradius * 2)
-    local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
+    --Old noteradius resizer
+    --local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
+
+    --Assume skin is 720p
+    local resizefactor = Config.ScreenWidth / 1280
     local function Resize(t)
         for k, v in pairs(t) do
             if type(v) == 'table' then
@@ -5085,12 +5101,14 @@ int MeasureText(const char *text, int fontSize)
 
     Textures.PlaySong.Balloons = Resize(Textures.PlaySong.Balloons)
 
+    Textures.PlaySong.Balloons = TextureMap.ReplaceWithTexture(Textures.PlaySong.Balloons)
+
     Textures.PlaySong.Balloons.sizex = Textures.PlaySong.Balloons.Anim[0].width
     Textures.PlaySong.Balloons.sizey = Textures.PlaySong.Balloons.Anim[0].height
     Textures.PlaySong.Balloons.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
     Textures.PlaySong.Balloons.center = rl.new('Vector2', Textures.PlaySong.Balloons.sizex / 2, Textures.PlaySong.Balloons.sizey / 2)
 
-    Textures.PlaySong.Balloons.Anim = TextureMap.ReplaceWithTexture(Textures.PlaySong.Balloons.Anim)
+
 
 
 
@@ -5157,6 +5175,39 @@ int MeasureText(const char *text, int fontSize)
             [0] = TextureMap.ReplaceWithTexture(temp)[1]
         }
     }
+
+
+    --LANE
+    Textures.PlaySong.Lanes = Resize(Textures.PlaySong.Lanes)
+
+    Textures.PlaySong.Lanes = TextureMap.ReplaceWithTexture(Textures.PlaySong.Lanes)
+
+    --Lane
+    Textures.PlaySong.Lanes.sizex = Textures.PlaySong.Lanes.Lane.default.width
+    Textures.PlaySong.Lanes.sizey = Textures.PlaySong.Lanes.Lane.default.height
+    Textures.PlaySong.Lanes.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Lanes.sizex, Textures.PlaySong.Lanes.sizey)
+    Textures.PlaySong.Lanes.center = rl.new('Vector2', 0, Textures.PlaySong.Lanes.sizey / 2)
+    Textures.PlaySong.Lanes.pr = rl.new('Rectangle', trackstart * xmul + offsetx, tracky * ymul + offsety, Textures.PlaySong.Lanes.sizex, Textures.PlaySong.Lanes.sizey)
+
+    --Sub
+    Textures.PlaySong.Lanes.ssizex = Textures.PlaySong.Lanes.Lane.sub.width
+    Textures.PlaySong.Lanes.ssizey = Textures.PlaySong.Lanes.Lane.sub.height
+    Textures.PlaySong.Lanes.ssourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+    Textures.PlaySong.Lanes.scenter = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, (tracky - Textures.PlaySong.Lanes.sizey / 2) * ymul + offsety, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+
+    
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6687,6 +6738,40 @@ f	transparancy
 
 
 
+
+
+
+                --draw lane
+
+                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.default, Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
+
+                --draw lane sub
+
+                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.sub, Textures.PlaySong.Lanes.ssourcerect, Textures.PlaySong.Lanes.spr, Textures.PlaySong.Lanes.scenter, 0, rl.WHITE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 --draw target
 
                 if jposscrollstart and ms >= jposscrollstart then
@@ -6717,6 +6802,7 @@ f	transparancy
 
 
                 --print(targetoffsetx, targetoffsety, unloadrect[1])
+
 
                 --normal
                 rl.DrawTexture(Textures.PlaySong.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
