@@ -5102,6 +5102,13 @@ int MeasureText(const char *text, int fontSize)
             Fonts = {
                 Combo = {
                     [0] = LoadImage('Graphics/5_Game/6_Taiko/Combo.png')
+                },
+                Score = {
+                    [0] = LoadImage('Graphics/5_Game/6_Taiko/Score.png'),
+                    --[[
+                    [1] = LoadImage('Graphics/5_Game/6_Taiko/Score_1P.png'),
+                    [2] = LoadImage('Graphics/5_Game/6_Taiko/Score_2P.png')
+                    --]]
                 }
             }
         }
@@ -5312,13 +5319,27 @@ int MeasureText(const char *text, int fontSize)
 
     --Assume skin is 720p
     local resizefactor = Config.ScreenWidth / 1280
-    local function Resize(t)
+    --[[
+    local function Resize(t, times)
+        times = times or 1
         for k, v in pairs(t) do
             if type(v) == 'table' then
-                v = Resize(v)
+                v = Resize(v, times)
             else
-                rl.ImageResize(v, resizefactor * v.width, resizefactor * v.height)
+                rl.ImageResize(v, resizefactor * v.width * times, resizefactor * v.height * times)
             end
+        end
+        return t
+    end
+    --]]
+    local function Resize(t, times)
+        times = times or 1
+        if type(t) == 'table' then
+            for k, v in pairs(t) do
+                Resize(v, times)
+            end
+        else
+            rl.ImageResize(t, resizefactor * t.width * times, resizefactor * t.height * times)
         end
         return t
     end
@@ -5533,7 +5554,9 @@ int MeasureText(const char *text, int fontSize)
 
 
 
-    --FONTS
+    --FONTS (individual)
+
+    --Combo
     Textures.PlaySong.Fonts = Resize(Textures.PlaySong.Fonts)
 
     Textures.PlaySong.Fonts = TextureMap.ReplaceWithTexture(Textures.PlaySong.Fonts)
@@ -7232,11 +7255,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
 
                 --draw score
+                local sx, sy = 26/1280 * Config.ScreenWidth, 34/720 * Config.ScreenHeight
+                local str = tostring(score)
+                local measurex = MeasureTextTexture(str, sx, sy)
+                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 190/720 * Config.ScreenHeight, sx, sy)
+
+
+                --[[
+                --draw combo
 
                 local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
                 local str = tostring(score)
                 local measurex = MeasureTextTexture(str, sx, sy)
-                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], str, 100/1280 * Config.ScreenWidth - measurex, Textures.PlaySong.Backgrounds.Background.InfoBar.pr.y, sx, sy)
+                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], str, 160/1280 * Config.ScreenWidth - measurex, Textures.PlaySong.Backgrounds.Background.InfoBar.pr.y, sx, sy)
+                --]]
 
 
 
