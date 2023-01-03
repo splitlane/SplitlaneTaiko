@@ -55,6 +55,8 @@ TODO: Add raylib option
     TODO: Transition size, sourcerect, center to Textures table
     TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
     TODO: Fix replay side taiko anim
+    TODO: SENOTES + GAUGE
+    TODO: Find 1p sign
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -4737,7 +4739,11 @@ int MeasureText(const char *text, int fontSize)
 
 
 
-
+--[[
+    WARNING:
+    Progress Bar SIGNIFICANTLY slows down loading time
+    (probably caused by FLAG_VSYNC_HINT)
+]]
     UpdateProgress = function(str)
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
@@ -4751,6 +4757,7 @@ int MeasureText(const char *text, int fontSize)
 
         rl.EndDrawing()
     end
+    --UpdateProgress = function() end
 
 
 
@@ -5073,13 +5080,21 @@ int MeasureText(const char *text, int fontSize)
             },
             Backgrounds = {
                 Background = {
+                    Bottom = {
+                        --[0] = LoadImage('')
+                    },
                     InfoBar = {
                         [0] = LoadImage('Graphics/5_Game/6_Taiko/1P_Background.png')
                     },
-                    Bottom = {
-
+                    CourseSymbol = {
+                        [0] = LoadImage('Graphics/5_Game/4_CourseSymbol/Easy.png'),
+                        [1] = LoadImage('Graphics/5_Game/4_CourseSymbol/Normal.png'),
+                        [2] = LoadImage('Graphics/5_Game/4_CourseSymbol/Hard.png'),
+                        [3] = LoadImage('Graphics/5_Game/4_CourseSymbol/Oni.png'),
+                        [4] = LoadImage('Graphics/5_Game/4_CourseSymbol/Edit.png'),
+                        [5] = LoadImage('Graphics/5_Game/4_CourseSymbol/Tower.png'),
+                        [6] = LoadImage('Graphics/5_Game/4_CourseSymbol/Dan.png')
                     }
-                    --bottom = LoadImage('Graphics/5_Game/')
                 },
                 Frame = {
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/1P_Frame.png')
@@ -5088,7 +5103,7 @@ int MeasureText(const char *text, int fontSize)
                     base = LoadImage('Graphics/5_Game/6_Taiko/Base.png'),
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/Don.png'),
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png')
-                }
+                },
             },
             Gauges = {
                 Meter = {
@@ -5520,6 +5535,12 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Backgrounds.Background.InfoBar.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Backgrounds.Background.InfoBar.pr = rl.new('Rectangle', 0/1280 * Config.ScreenWidth, 184/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
 
+    --CourseSymbol
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex = Textures.PlaySong.Backgrounds.Background.CourseSymbol[0].width
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey = Textures.PlaySong.Backgrounds.Background.CourseSymbol[0].height
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 58/1280 * Config.ScreenWidth, 230/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
 
 
 
@@ -6978,6 +6999,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --draw infobar
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
+
+                --draw coursesymbol
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
                 
 
 
