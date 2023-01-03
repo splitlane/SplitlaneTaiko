@@ -625,7 +625,7 @@ Taiko.Data = {
         GetFunction = function(course)
             return function(framems)
                 --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
-                if course == 1 then
+                if course == 0 or course == 1 then
                     return {
                         good = 5 / 2 * framems,
                         ok = 13 / 2 * framems,
@@ -670,7 +670,64 @@ Taiko.Data = {
         [4] = true
     },
     BigLeniency = 2, --How much times easier to hit (x Timing)
-
+    Gauge = {
+        --https://github.com/bui/taiko-web/blob/c01f30b34a846a37680cb1a45a4501ed5ee071d3/public/src/js/gamerules.js#L44
+        Soul = {
+            [0] = function(combo)
+                local good = 10000 / combo * 1.575
+                local ok = good * 0.75
+                local bad = good / -2
+                return {
+                    good = good,
+                    ok = ok,
+                    bad = bad
+                }
+            end,
+            [1] = function(combo)
+                local good = 10000 / combo / 0.7
+                local ok = good * 0.75
+                local bad = good / -0.75
+                return {
+                    good = good,
+                    ok = ok,
+                    bad = bad
+                }
+            end,
+            [2] = function(combo)
+                local good = 10000 / combo * 1.5
+                local ok = good * 0.75
+                local bad = good / -0.8
+                return {
+                    good = good,
+                    ok = ok,
+                    bad = bad
+                }
+            end,
+            [3] = function(combo)
+                local good = 10000 / combo / 0.7
+                local ok = good * 0.5
+                local bad = good * -1.6
+                return {
+                    good = good,
+                    ok = ok,
+                    bad = bad
+                }
+            end,
+            [4] = function(combo)
+                local good = 10000 / combo / 0.7
+                local ok = good * 0.5
+                local bad = good * -1.6
+                return {
+                    good = good,
+                    ok = ok,
+                    bad = bad
+                }
+            end
+        },
+        Percent = function(soul)
+            return (soul / 200) / 50
+        end
+    },
 
 
 
@@ -4397,7 +4454,145 @@ int MeasureText(const char *text, int fontSize)
         --Get rectangle of anim (just access map with framen)
         return Anim
     end
+    --[=[
+    local XNAcolor = rl.MAGENTA
+    local function GridImage(image, nx, ny)
+        --[[
+            nx, ny = number of chars in x,y
+        ]]
+        local spacing = 20
 
+        local sx, sy = image.width / nx, image.height / ny
+        local rect = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        local rect2 = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        --local out = rl.new('Image')
+        local out = rl.ImageCopy(image)
+        --rl.ImageResize(out, image.width + nx + 1, image.height + ny + 1)
+        local newx, newy = image.width + nx + (nx + 1) * spacing, image.height + ny + (ny + 1) * spacing
+        rl.ImageResizeCanvas(out, newx, newy, 0, 0, XNAcolor)
+        rl.ImageDrawRectangle(out, 0, 0, newx, newy, XNAcolor)
+        for ix = 0, nx - 1 do
+            local x = ix * sx
+            for iy = 0, ny - 1 do
+                local y = iy * sy
+                rect.x = x
+                rect.y = y
+                rect2.x = x + ix * spacing + spacing
+                rect2.y = y + iy * spacing + spacing
+                --void ImageDraw(Image *dst, Image src, Rectangle srcRec, Rectangle dstRec, Color tint)
+                --print(x, y, out.width, out.height)
+                rl.ImageDrawRectangleRec(out, rect2, rl.BLANK)
+                rl.ImageDraw(out, image, rect, rect2, rl.WHITE)
+            end
+        end
+        return out
+    end
+    local function LoadFontFromImage(image, nx, ny)
+        local grid = GridImage(image, nx, ny)
+        a=rl.LoadTextureFromImage(grid)b=os.clock()repeat rl.BeginDrawing() rl.DrawTexture(a, 10, 700, rl.WHITE) rl.EndDrawing() until os.clock()-b>4
+        local firstchar = 48 --(0)
+        local font = rl.LoadFontFromImage(grid, XNAcolor, firstchar)
+        print(font.glyphs[49])error()
+        return font
+    end
+    local function LoadFontFromImage(image, nx, ny, t)
+        --[[
+            nx, ny = number of chars in x,y
+        ]]
+        local font = rl.GetFontDefault()
+        t = {
+            48,49,50,51,52,53,54,55,56,57
+        }
+
+        local sx, sy = image.width / nx, image.height / ny
+        local rect = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        local i = 1
+
+        font.texture = rl.LoadTextureFromImage(image)
+        font.glyphCount = font.glyphCount + #t
+        font.glyphPadding = 0
+        b = nil
+        for ix = 0, nx - 1 do
+            local x = ix * sx
+            for iy = 0, ny - 1 do
+                local y = iy * sy
+                rect.x = x
+                rect.y = y
+                local a = font.glyphs[t[i]]
+                a.value = t[i]
+                font.recs[t[i]] = rl.new('Rectangle', rect.x, rect.y, rect.width, rect.height)
+                a.offsetX = 0
+                a.offsetY = 0
+                a.advanceX = 0
+                a.image = rl.ImageFromImage(image, rect)
+                b = not b and rl.LoadTextureFromImage(a.image) or b
+                i = i + 1
+            end
+        end
+        c=b
+        font.baseSize = font.recs[t[1]].height
+        print(font.glyphCount)
+
+        b=os.clock()repeat
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawTexture(c, 10, 300, rl.WHITE)
+            rl.DrawTextEx(font, '01234', rl.new('Vector2', 100, 700), 50, 1, rl.WHITE)
+            rl.EndDrawing()until os.clock()-b>4
+            error()
+        return font
+    end
+    local function LoadNumberFontFromImage(image)
+    
+    end
+    --]=]
+    local function DrawTextTexture(texture, str, x, y, sx, sy, t)
+        --[[
+            nx, ny = number of chars in x, y
+            t = {
+                c = {x, y}
+            }
+        ]]
+        t = t or {
+            ['0'] = {0, 0},
+            ['1'] = {1, 0},
+            ['2'] = {2, 0},
+            ['3'] = {3, 0},
+            ['4'] = {4, 0},
+            ['5'] = {5, 0},
+            ['6'] = {6, 0},
+            ['7'] = {7, 0},
+            ['8'] = {8, 0},
+            ['9'] = {9, 0},
+        }
+
+        local spacing = 0
+
+        --local sx, sy = image.width / nx, image.height / ny
+        local line = 0
+        local ix = 0
+        local rect = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        local rect2 = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        local origin = rl.new('Vector2', 0, 0)
+
+        for i = 1, #str do
+            local c = string.sub(str, i, i)
+            if c == '\n' then
+                line = line + 1
+                ix = 0
+            else
+                local p = t[c]
+                rect.x = p[1] * sx
+                rect.y = p[2] * sy
+                rect2.x = x + (sx + spacing) * ix
+                rect2.y = y + (sy + spacing) * line
+                rl.DrawTexturePro(texture, rect, rect2, origin, 0, rl.WHITE)
+                ix = ix + 1
+            end
+        end
+
+
+    end
 
 
 
@@ -4783,7 +4978,7 @@ int MeasureText(const char *text, int fontSize)
     local unloadrectchanged = {}
 
     local textsize = Config.ScreenHeight / 45
-    print(textsize)
+    --print(textsize)
 
     local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
 
@@ -4859,23 +5054,31 @@ int MeasureText(const char *text, int fontSize)
             },
             Backgrounds = {
                 Background = {
-
+                    --bottom = LoadImage('Graphics/5_Game/')
                 },
                 Frame = {
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/1P_Frame.png')
                 },
                 Taiko = {
-                    Base = LoadImage('Graphics/5_Game/6_Taiko/Base.png'),
+                    base = LoadImage('Graphics/5_Game/6_Taiko/Base.png'),
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/Don.png'),
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png')
                 }
             },
+            Gauge = {
+                base = LoadImage('Graphics/5_Game/7_Gauge/1P_Base.png'),
+                full = LoadImage('Graphics/5_Game/7_Gauge/1P.png'),
+                rainbow = {
+                    Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/Rainbow/', '.png', 0, 11)
+                }
+            },
             Fonts = {
-
+                Combo = {
+                    [0] = LoadImage('Graphics/5_Game/6_Taiko/Combo.png')
+                }
             }
         }
     }
-
 
 
     --Map for everything
@@ -5246,17 +5449,31 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Backgrounds.Frame.pr = rl.new('Rectangle', 332/1280 * Config.ScreenWidth, 136/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
 
     --Taiko
-    Textures.PlaySong.Backgrounds.Taiko.sizex = Textures.PlaySong.Backgrounds.Taiko.Base.width
-    Textures.PlaySong.Backgrounds.Taiko.sizey = Textures.PlaySong.Backgrounds.Taiko.Base.height
+    Textures.PlaySong.Backgrounds.Taiko.sizex = Textures.PlaySong.Backgrounds.Taiko.base.width
+    Textures.PlaySong.Backgrounds.Taiko.sizey = Textures.PlaySong.Backgrounds.Taiko.base.height
     Textures.PlaySong.Backgrounds.Taiko.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 208/1280 * Config.ScreenWidth, 207/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     
+    --Background
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+    --FONTS
+    Textures.PlaySong.Fonts = TextureMap.ReplaceWithTexture(Textures.PlaySong.Fonts)
 
 
 
@@ -6671,6 +6888,16 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 rl.ClearBackground(rl.RAYWHITE)
 
+                --draw bottom
+
+
+
+
+
+
+
+
+
                 --TODO: Draw before / after rendering?
                 rl.DrawFPS(10, 10)
                 rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
@@ -6904,7 +7131,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --draw taiko
                 
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko.Base, Textures.PlaySong.Backgrounds.Taiko.sourcerect, Textures.PlaySong.Backgrounds.Taiko.pr, Textures.PlaySong.Backgrounds.Taiko.center, 0, rl.WHITE)
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko.base, Textures.PlaySong.Backgrounds.Taiko.sourcerect, Textures.PlaySong.Backgrounds.Taiko.pr, Textures.PlaySong.Backgrounds.Taiko.center, 0, rl.WHITE)
 
                 for i = 1, 2 do
                     local sideanim = taikoanim[i]
@@ -6940,6 +7167,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], '012345', 700, 700, 40, 48)
 
 
 
