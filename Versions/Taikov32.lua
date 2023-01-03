@@ -5054,6 +5054,12 @@ int MeasureText(const char *text, int fontSize)
             },
             Backgrounds = {
                 Background = {
+                    InfoBar = {
+                        [0] = LoadImage('Graphics/5_Game/6_Taiko/1P_Background.png')
+                    },
+                    Bottom = {
+
+                    }
                     --bottom = LoadImage('Graphics/5_Game/')
                 },
                 Frame = {
@@ -5065,11 +5071,13 @@ int MeasureText(const char *text, int fontSize)
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png')
                 }
             },
-            Gauge = {
-                base = LoadImage('Graphics/5_Game/7_Gauge/1P_Base.png'),
-                full = LoadImage('Graphics/5_Game/7_Gauge/1P.png'),
-                rainbow = {
-                    Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/Rainbow/', '.png', 0, 11)
+            Gauges = {
+                Meter = {
+                    base = LoadImage('Graphics/5_Game/7_Gauge/1P_Base.png'),
+                    full = LoadImage('Graphics/5_Game/7_Gauge/1P.png'),
+                    rainbow = {
+                        Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/Rainbow/', '.png', 0, 11)
+                    }
                 }
             },
             Fonts = {
@@ -5453,10 +5461,24 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Backgrounds.Taiko.sizey = Textures.PlaySong.Backgrounds.Taiko.base.height
     Textures.PlaySong.Backgrounds.Taiko.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 208/1280 * Config.ScreenWidth, 207/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
+    Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 210/1280 * Config.ScreenWidth, 206/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     
     --Background
 
+    --Bottom
+
+
+
+
+
+    
+
+    --InfoBar
+    Textures.PlaySong.Backgrounds.Background.InfoBar.sizex = Textures.PlaySong.Backgrounds.Background.InfoBar[0].width
+    Textures.PlaySong.Backgrounds.Background.InfoBar.sizey = Textures.PlaySong.Backgrounds.Background.InfoBar[0].height
+    Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
+    Textures.PlaySong.Backgrounds.Background.InfoBar.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.InfoBar.pr = rl.new('Rectangle', 0/1280 * Config.ScreenWidth, 184/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
 
 
 
@@ -5467,12 +5489,34 @@ int MeasureText(const char *text, int fontSize)
 
 
 
+
+
+
+
+
+
+
+
+    --GAUGES
+    Textures.PlaySong.Gauges = Resize(Textures.PlaySong.Gauges)
+
+    Textures.PlaySong.Gauges = TextureMap.ReplaceWithTexture(Textures.PlaySong.Gauges)
+
+    --Meter
+    Textures.PlaySong.Gauges.Meter.sizex = Textures.PlaySong.Gauges.Meter.base.width
+    Textures.PlaySong.Gauges.Meter.sizey = Textures.PlaySong.Gauges.Meter.base.height
+    Textures.PlaySong.Gauges.Meter.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
+    Textures.PlaySong.Gauges.Meter.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Gauges.Meter.pr = rl.new('Rectangle', 332/1280 * Config.ScreenWidth, 136/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
+    
 
 
 
 
 
     --FONTS
+    Textures.PlaySong.Fonts = Resize(Textures.PlaySong.Fonts)
+
     Textures.PlaySong.Fonts = TextureMap.ReplaceWithTexture(Textures.PlaySong.Fonts)
 
 
@@ -6890,6 +6934,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --draw bottom
 
+                --draw infobar
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
+                
 
 
 
@@ -7161,13 +7208,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
+                --draw gauge
+
+                --rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
 
 
 
-
-
-
-                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], '012345', 700, 700, 40, 48)
+                --DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], '01234567890', 700, 700, 40, 48)
 
 
 
