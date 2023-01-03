@@ -4546,6 +4546,25 @@ int MeasureText(const char *text, int fontSize)
     
     end
     --]=]
+
+    local texttexturespacing = 0
+    local function MeasureTextTexture(str, sx, sy)
+        local outx, outy = 0, 0
+        local currentx = 0
+        for i = 1, #str do
+            local c = string.sub(str, i, i)
+            if c == '\n' then
+                currentx = currentx - (sx + texttexturespacing)
+                outx = currentx > outx and currentx or outx
+                outy = outy + (sy + texttexturespacing)
+            else
+                currentx = currentx + (sx + texttexturespacing)
+            end
+        end
+        currentx = currentx - (sx + texttexturespacing)
+        outx = currentx > outx and currentx or outx
+        return outx, outy
+    end
     local function DrawTextTexture(texture, str, x, y, sx, sy, t)
         --[[
             nx, ny = number of chars in x, y
@@ -4566,7 +4585,7 @@ int MeasureText(const char *text, int fontSize)
             ['9'] = {9, 0},
         }
 
-        local spacing = 0
+        
 
         --local sx, sy = image.width / nx, image.height / ny
         local line = 0
@@ -4584,8 +4603,8 @@ int MeasureText(const char *text, int fontSize)
                 local p = t[c]
                 rect.x = p[1] * sx
                 rect.y = p[2] * sy
-                rect2.x = x + (sx + spacing) * ix
-                rect2.y = y + (sy + spacing) * line
+                rect2.x = x + (sx + texttexturespacing) * ix
+                rect2.y = y + (sy + texttexturespacing) * line
                 rl.DrawTexturePro(texture, rect, rect2, origin, 0, rl.WHITE)
                 ix = ix + 1
             end
@@ -5471,7 +5490,7 @@ int MeasureText(const char *text, int fontSize)
 
 
 
-    
+
 
     --InfoBar
     Textures.PlaySong.Backgrounds.Background.InfoBar.sizex = Textures.PlaySong.Backgrounds.Background.InfoBar[0].width
@@ -7212,9 +7231,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
 
+                --draw score
 
-
-                --DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], '01234567890', 700, 700, 40, 48)
+                local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
+                local str = tostring(score)
+                local measurex = MeasureTextTexture(str, sx, sy)
+                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], str, 100/1280 * Config.ScreenWidth - measurex, Textures.PlaySong.Backgrounds.Background.InfoBar.pr.y, sx, sy)
 
 
 
