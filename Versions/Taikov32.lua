@@ -735,7 +735,8 @@ Taiko.Data = {
         ]]
         Percent = function(soul)
             return (soul / 200) / 50
-        end
+        end,
+        ClearPercent = 0.8
     },
 
 
@@ -5167,6 +5168,9 @@ int MeasureText(const char *text, int fontSize)
                     rainbow = {
                         Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/Rainbow/', '.png', 0, 11)
                     }
+                },
+                Clear = {
+
                 }
             },
             Fonts = {
@@ -5619,6 +5623,20 @@ int MeasureText(const char *text, int fontSize)
 
 
     --GAUGES
+
+    --[[
+        Extract clear from base
+        x = 0
+        y = 44
+        w = 58
+        h = 24
+    ]]
+
+    Textures.PlaySong.Gauges.Clear[1] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 0, 44, 58, 24))
+    Textures.PlaySong.Gauges.Clear[0] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 58, 44, 58, 24))
+
+    --Convert to textures
+
     Textures.PlaySong.Gauges = Resize(Textures.PlaySong.Gauges)
 
     Textures.PlaySong.Gauges = TextureMap.ReplaceWithTexture(Textures.PlaySong.Gauges)
@@ -5634,7 +5652,12 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Gauges.Meter.sourcerect2 = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
     Textures.PlaySong.Gauges.Meter.pr2 = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
 
-
+    --Clear
+    Textures.PlaySong.Gauges.Clear.sizex = Textures.PlaySong.Gauges.Clear[0].width
+    Textures.PlaySong.Gauges.Clear.sizey = Textures.PlaySong.Gauges.Clear[0].height
+    Textures.PlaySong.Gauges.Clear.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
+    Textures.PlaySong.Gauges.Clear.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Gauges.Clear.pr = rl.new('Rectangle', 1038/1280 * Config.ScreenWidth, 143/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
 
 
 
@@ -7346,7 +7369,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
 
-                
+
 
                 --draw gauge (meter)
 
@@ -7378,6 +7401,15 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     Textures.PlaySong.Gauges.Meter.pr2.width = x
                     rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
                 end
+
+                --draw clear
+                
+                local clear = gaugep >= Taiko.Data.Gauge.ClearPercent and 1 or 0
+                rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[clear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
+
+
+
+
 
                 
 
