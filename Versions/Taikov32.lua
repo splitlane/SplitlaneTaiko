@@ -831,6 +831,7 @@ function Taiko.ParseTJA(source)
     local Parsed = {
         Flag = {
             PARSER_FORCE_OLD_SPEED_CALCULATION = false,
+            PARSER_FORCE_OLD_NOTERADIUS = false,
         },
         Metadata = {
             SUBTITLE = '', --not required --taiko-web
@@ -907,11 +908,16 @@ function Taiko.ParseTJA(source)
     if string.find(source, '$PARSER_FORCE_OLD_SPEED_CALCULATION') then
         Parsed.Flag.PARSER_FORCE_OLD_SPEED_CALCULATION = true
     elseif string.find(source, '$PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION') then
-        --defualt
+        --default
     else
         --default
     end
 
+    if string.find(source, '$PARSER_FORCE_OLD_NOTERADIUS') then
+        Parsed.Flag.PARSER_FORCE_OLD_NOTERADIUS = true
+    else
+
+    end
 
 
 
@@ -6062,6 +6068,17 @@ int MeasureText(const char *text, int fontSize)
 
         local timet = {}
         local branch = 'M' --Branch to look for when counting notes for max combo
+        local speedcalcf, speedcalcarg = nil, nil
+        if Parsed.Flag.PARSER_FORCE_OLD_SPEED_CALCULATION then
+            speedcalcf = Taiko.CalculateSpeed
+            if Parsed.Flag.PARSER_FORCE_OLD_NOTERADIUS then
+                noteradius = 1/40 * Config.ScreenWidth
+            end
+            speedcalcarg = noteradius
+        else
+            speedcalcf = Taiko.CalculateSpeedAll
+            speedcalcarg = Config.ScreenWidth / 1280
+        end
         for k, v in pairs(notetable) do
             --v.oms is original ms
             --oms
@@ -6076,9 +6093,13 @@ int MeasureText(const char *text, int fontSize)
             v.p = {}
 
             v.delay = v.delay / songspeedmul
+
+
             --v.speed = Taiko.CalculateSpeed(v, noteradius)
             
-            v.speed = Taiko.CalculateSpeedInterval(v, Config.ScreenWidth / 1280)
+            --v.speed = Taiko.CalculateSpeedInterval(v, Config.ScreenWidth / 1280)
+
+            v.speed = speedcalcf(v, speedcalcarg)
 
 
             v.speed[1] = v.speed[1] * notespeedmul
