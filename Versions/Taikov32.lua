@@ -5129,8 +5129,8 @@ int MeasureText(const char *text, int fontSize)
                 },
                 Score = {
                     [0] = LoadImage('Graphics/5_Game/6_Taiko/Score.png'),
-                    --[[
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/Score_1P.png'),
+                    --[[
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Score_2P.png')
                     --]]
                 }
@@ -7339,7 +7339,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     49 -> all read 1 yellow
                     50 -> all
                 ]]
-                local fill = 50
+                local fill = math.floor(50 * gaugep)
+                fill = ClipN(fill, 0, 50)
                 local x = 14 * fill - 1
                 if x > 0 then
                     Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
