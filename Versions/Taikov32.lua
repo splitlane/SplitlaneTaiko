@@ -1361,7 +1361,7 @@ function Taiko.ParseTJA(source)
 
 
                     onnotepush = nil,
-                    branch = Parser.currentbranch, --nil if no branch
+                    currentbranch = Parser.currentbranch, --nil if no branch
 
 
 
@@ -1448,7 +1448,7 @@ function Taiko.ParseTJA(source)
                     movems = Parser.suddenmove,
 
                     --OUTDATED: TODO
-                    branch = Parser.currentbranch, --nil if no branch
+                    currentbranch = Parser.currentbranch, --nil if no branch
 
                     --debug
                     line = LineN,
@@ -6019,6 +6019,7 @@ int MeasureText(const char *text, int fontSize)
         }
 
         local timet = {}
+        local branch = 'M' --Branch to look for when counting notes for max combo
         for k, v in pairs(notetable) do
             --v.oms is original ms
             --oms
@@ -6068,7 +6069,7 @@ int MeasureText(const char *text, int fontSize)
             --print(v.speed, v.loadms, v.loadp)
 
 
-            if combonote[v.type] then
+            if (v.currentbranch == nil or v.currentbranch == branch) and combonote[v.type] then
                 maxcombo = maxcombo + 1
             end
         end
