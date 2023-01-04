@@ -4798,7 +4798,11 @@ int MeasureText(const char *text, int fontSize)
     WARNING:
     Progress Bar SIGNIFICANTLY slows down loading time
     (probably caused by FLAG_VSYNC_HINT)
+
+    POSSIBLE SOLUTION:
+    No progress, but loading screen
 ]]
+    --[[
     UpdateProgress = function(str)
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
@@ -4813,9 +4817,20 @@ int MeasureText(const char *text, int fontSize)
         rl.EndDrawing()
     end
     --UpdateProgress = function() end
+    --]]
 
 
+    -- [[
+    --Loading screen (no progress fast)
+    rl.BeginDrawing()
+    rl.ClearBackground(rl.RAYWHITE)
 
+    rl.DrawText([[
+Taiko v32
+Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
+
+    rl.EndDrawing()
+    --]]
 
 
 
@@ -5061,7 +5076,7 @@ int MeasureText(const char *text, int fontSize)
     local textsize = Config.ScreenHeight / 45
     --print(textsize)
 
-    local desynctime = 0.5 --Acceptable time for desync until correction (seconds)
+    local desynctime = 0.1 --Acceptable time for desync until correction (seconds)
 
     local skinfps = 60 --Fps for opentaiko skin
     local skinframems = 1000 / skinfps --Ms per frame for opentaiko skin
@@ -8175,9 +8190,22 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                 rl.EndDrawing()
+
+
+
+
+
+
+
+                --Handle other special input
                 if rl.WindowShouldClose() then
                     rl.CloseWindow()
                     break
+                end
+
+
+                if rl.IsKeyPressed(rl.KEY_F) then
+                    rl.ToggleFullscreen()
                 end
 
 
