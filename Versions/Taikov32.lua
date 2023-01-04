@@ -829,6 +829,9 @@ function Taiko.ParseTJA(source)
 
     local Out = {}
     local Parsed = {
+        Flag = {
+            PARSER_FORCE_OLD_SPEED_CALCULATION = false,
+        },
         Metadata = {
             SUBTITLE = '', --not required --taiko-web
 
@@ -889,6 +892,42 @@ function Taiko.ParseTJA(source)
             }
         ]]
     }
+
+
+
+    --Parser flags
+    --[[
+        List of parser flags:
+        $PARSER_FORCE_OLD_SPEED_CALCULATION (old (Taiko.CalculateSpeed))
+        $PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION (default opentaiko (Taiko.CalculateSpeedInterval))
+
+        Make sure to comment them out so other simulators can still play the file. Also, if a flag is found anywhere in the file, it will apply to all difficulties.
+    ]]
+
+    if string.find(source, '$PARSER_FORCE_OLD_SPEED_CALCULATION') then
+        Parsed.Flag.PARSER_FORCE_OLD_SPEED_CALCULATION = true
+    elseif string.find(source, '$PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION') then
+        --defualt
+    else
+        --default
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5111,7 +5150,8 @@ int MeasureText(const char *text, int fontSize)
                 Taiko = {
                     base = LoadImage('Graphics/5_Game/6_Taiko/Base.png'),
                     [1] = LoadImage('Graphics/5_Game/6_Taiko/Don.png'),
-                    [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png')
+                    [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png'),
+                    combo = LoadImage('Graphics/5_Game/6_Taiko/Combo_Text.png')
                 },
             },
             Gauges = {
@@ -5125,7 +5165,9 @@ int MeasureText(const char *text, int fontSize)
             },
             Fonts = {
                 Combo = {
-                    [0] = LoadImage('Graphics/5_Game/6_Taiko/Combo.png')
+                    [0] = LoadImage('Graphics/5_Game/6_Taiko/Combo.png'),
+                    [1] = LoadImage('Graphics/5_Game/6_Taiko/Combo_Midium.png'),
+                    [2] = LoadImage('Graphics/5_Game/6_Taiko/Combo_Big.png')
                 },
                 Score = {
                     [0] = LoadImage('Graphics/5_Game/6_Taiko/Score.png'),
@@ -8362,6 +8404,7 @@ end
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 a = 'taikobuipm/Saitama 2000.tja'
+a = 'tja/neta/donkama/neta.tja'
 
 
 --File
