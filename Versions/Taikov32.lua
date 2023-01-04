@@ -7336,6 +7336,51 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+
+
+
+
+
+
+                --draw frame
+
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
+
+                
+
+                --draw gauge (meter)
+
+                --draw base
+                rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
+
+                --draw filled
+                --[[
+                    width 14 for 1
+
+                    1 -> 0 - 13
+                    2 -> 14 - 27
+                    3 -> 28 - 41
+                    formula
+                    x = 14 * x - 1
+
+
+                    fill
+                    0 -> nothing
+                    39 -> all red
+                    49 -> all read 1 yellow
+                    50 -> all
+                ]]
+                local fill = math.floor(50 * gaugep)
+                fill = ClipN(fill, 0, 50)
+                local x = 14 * fill - 1
+                if x > 0 then
+                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
+                    Textures.PlaySong.Gauges.Meter.pr2.width = x
+                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
+                end
+
+                
+
                 --draw lane
 
                 rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.default, Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
@@ -7343,10 +7388,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --draw lane sub
 
                 rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.sub, Textures.PlaySong.Lanes.ssourcerect, Textures.PlaySong.Lanes.spr, Textures.PlaySong.Lanes.scenter, 0, rl.WHITE)
-
-                --draw frame
-
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
 
                 --draw taiko
                 
@@ -7380,36 +7421,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
-                --draw gauge (meter)
 
-                --draw base
-                rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
-
-                --draw filled
-                --[[
-                    width 14 for 1
-
-                    1 -> 0 - 13
-                    2 -> 14 - 27
-                    3 -> 28 - 41
-                    formula
-                    x = 14 * x - 1
-
-
-                    fill
-                    0 -> nothing
-                    39 -> all red
-                    49 -> all read 1 yellow
-                    50 -> all
-                ]]
-                local fill = math.floor(50 * gaugep)
-                fill = ClipN(fill, 0, 50)
-                local x = 14 * fill - 1
-                if x > 0 then
-                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
-                    Textures.PlaySong.Gauges.Meter.pr2.width = x
-                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
-                end
 
 
 
