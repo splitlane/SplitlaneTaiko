@@ -6076,7 +6076,7 @@ int MeasureText(const char *text, int fontSize)
             end
             speedcalcarg = noteradius
         else
-            speedcalcf = Taiko.CalculateSpeedAll
+            speedcalcf = Taiko.CalculateSpeedInterval
             speedcalcarg = Config.ScreenWidth / 1280
         end
         for k, v in pairs(notetable) do
@@ -8425,7 +8425,7 @@ end
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 a = 'taikobuipm/Saitama 2000.tja'
-a = 'tja/neta/donkama/neta.tja'
+--a = 'tja/neta/donkama/neta.tja'
 
 
 --File
