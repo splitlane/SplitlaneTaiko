@@ -56,7 +56,8 @@ TODO: Add raylib option
     TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
     TODO: Fix replay side taiko anim
     TODO: SENOTES + GAUGE
-    TODO: Find 1p sign
+    TODO: Find 1p sign --DOESN'T EXIST
+    TODO: Score add effect
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -674,15 +675,18 @@ Taiko.Data = {
     BigLeniency = 2, --How much times easier to hit (x Timing)
     Gauge = {
         --https://github.com/bui/taiko-web/blob/c01f30b34a846a37680cb1a45a4501ed5ee071d3/public/src/js/gamerules.js#L44
+        --[[
+
+        ]]
         Soul = {
             [0] = function(combo)
                 local good = 10000 / combo * 1.575
                 local ok = good * 0.75
                 local bad = good / -2
                 return {
-                    good = good,
-                    ok = ok,
-                    bad = bad
+                    [2] = good,
+                    [1] = ok,
+                    [0] = bad
                 }
             end,
             [1] = function(combo)
@@ -690,9 +694,9 @@ Taiko.Data = {
                 local ok = good * 0.75
                 local bad = good / -0.75
                 return {
-                    good = good,
-                    ok = ok,
-                    bad = bad
+                    [2] = good,
+                    [1] = ok,
+                    [0] = bad
                 }
             end,
             [2] = function(combo)
@@ -700,9 +704,9 @@ Taiko.Data = {
                 local ok = good * 0.75
                 local bad = good / -0.8
                 return {
-                    good = good,
-                    ok = ok,
-                    bad = bad
+                    [2] = good,
+                    [1] = ok,
+                    [0] = bad
                 }
             end,
             [3] = function(combo)
@@ -710,9 +714,9 @@ Taiko.Data = {
                 local ok = good * 0.5
                 local bad = good * -1.6
                 return {
-                    good = good,
-                    ok = ok,
-                    bad = bad
+                    [2] = good,
+                    [1] = ok,
+                    [0] = bad
                 }
             end,
             [4] = function(combo)
@@ -720,12 +724,15 @@ Taiko.Data = {
                 local ok = good * 0.5
                 local bad = good * -1.6
                 return {
-                    good = good,
-                    ok = ok,
-                    bad = bad
+                    [2] = good,
+                    [1] = ok,
+                    [0] = bad
                 }
             end
         },
+        --[[
+            not percent, but in normal number form
+        ]]
         Percent = function(soul)
             return (soul / 200) / 50
         end
@@ -1354,7 +1361,7 @@ function Taiko.ParseTJA(source)
 
 
                     onnotepush = nil,
-
+                    branch = Parser.currentbranch, --nil if no branch
 
 
 
@@ -1441,6 +1448,7 @@ function Taiko.ParseTJA(source)
                     movems = Parser.suddenmove,
 
                     --OUTDATED: TODO
+                    branch = Parser.currentbranch, --nil if no branch
 
                     --debug
                     line = LineN,
@@ -1475,6 +1483,7 @@ function Taiko.ParseTJA(source)
                 paths = Parser.branch.paths
             }
             Parser.branch.on = false
+            Parser.currentbranch = nil
             Parser.branch.requirements = {}
             Parser.branch.paths = {}
             table.insert(Parsed.Data, n)
@@ -4549,7 +4558,7 @@ int MeasureText(const char *text, int fontSize)
     end
     --]=]
 
-    local texttexturespacing = 0
+    local texttexturespacing = -4
     local function MeasureTextTexture(str, sx, sy)
         local outx, outy = 0, 0
         local currentx = 0
@@ -5540,7 +5549,10 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey = Textures.PlaySong.Backgrounds.Background.CourseSymbol[0].height
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.center = rl.new('Vector2', 0, 0)
+    --(arcade)
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 58/1280 * Config.ScreenWidth, 230/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
+    --(opentaiko)
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 18/1280 * Config.ScreenWidth, 230/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
 
 
 
@@ -5570,6 +5582,9 @@ int MeasureText(const char *text, int fontSize)
     Textures.PlaySong.Gauges.Meter.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Gauges.Meter.pr = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
     
+    --Meter (fill)
+    Textures.PlaySong.Gauges.Meter.sourcerect2 = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
+    Textures.PlaySong.Gauges.Meter.pr2 = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
 
 
 
@@ -5994,6 +6009,15 @@ int MeasureText(const char *text, int fontSize)
             --v.n = k --MISTAKE: after sorted
         end
         --]]
+        local maxcombo = 0 --needed for gauge calculation
+        --notes that affect combo
+        local combonote = {
+            [1] = true,
+            [2] = true,
+            [3] = true,
+            [4] = true,
+        }
+
         local timet = {}
         for k, v in pairs(notetable) do
             --v.oms is original ms
@@ -6042,6 +6066,11 @@ int MeasureText(const char *text, int fontSize)
             --table.insert(timet, v.ms)
             timet[#timet + 1] = v.ms
             --print(v.speed, v.loadms, v.loadp)
+
+
+            if combonote[v.type] then
+                maxcombo = maxcombo + 1
+            end
         end
 
         if stopsong then
@@ -6387,6 +6416,12 @@ int MeasureText(const char *text, int fontSize)
 
         --Gogo
         local gogo = false
+
+        --Soul
+        local gauge = 0
+        local gaugep = 0
+        local gauget = Taiko.Data.Gauge.Soul[Parsed.Metadata.COURSE](maxcombo)
+        local gaugepercentf = Taiko.Data.Gauge.Percent
 
 
 
@@ -6782,6 +6817,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                     local n = nearest[v]
                     local status
+                    local gaugestatus
                     --No leniency for good
                     local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
                     local hiteffect = nil --Different than status
@@ -6801,17 +6837,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         status = (isbignote and 3) or 2 --2 or 3?
                         combo = combo + 1
                         hiteffect = (isbignote and 4) or 2
+                        gaugestatus = 2
                     elseif n < (timing.ok * leniency) then
                         --ok
                         --status = 1
                         status = (isbignote and 2) or 1
                         combo = combo + 1
                         hiteffect = (isbignote and 3) or 1
+                        gaugestatus = 1
                     elseif n < (timing.bad * leniency) then
                         --bad
                         status = 0
                         combo = 0
                         hiteffect = 0
+                        gaugestatus = 0
                     else
                         --complete miss
                         status = nil
@@ -6819,7 +6858,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     if status then
                         --Calculate Score
                         score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
-                        --print(status, score)
+
+                        --Calculate Gauge
+                        gauge = gauge + gauget[gaugestatus]
+                        gaugep = gaugepercentf(gauge)
 
                         --Effects
                         --[[
@@ -7015,7 +7057,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 rl.DrawFPS(10, 10)
                 rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
                 --rl.DrawText(tostring(rl.GetMusicTimePlayed(song)), 800, 40, textsize, rl.BLACK)
-                rl.DrawText(table.concat(TextStatistic), 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
+                rl.DrawText(table.concat(TextStatistic) .. '\n' .. gaugep, 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
                 --rl.ClearBackground(rl.BLACK)
 
                 --[[
@@ -7274,15 +7316,45 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
-                --draw gauge
+                --draw gauge (meter)
 
+                --draw base
                 rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
+
+                --draw filled
+                --[[
+                    width 14 for 1
+
+                    1 -> 0 - 13
+                    2 -> 14 - 27
+                    3 -> 28 - 41
+                    formula
+                    x = 14 * x - 1
+
+
+                    fill
+                    0 -> nothing
+                    39 -> all red
+                    49 -> all read 1 yellow
+                    50 -> all
+                ]]
+                local fill = 50
+                local x = 14 * fill - 1
+                if x > 0 then
+                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
+                    Textures.PlaySong.Gauges.Meter.pr2.width = x
+                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
+                end
+
+
+
+
 
                 --draw score
                 local sx, sy = 26/1280 * Config.ScreenWidth, 34/720 * Config.ScreenHeight
                 local str = tostring(score)
                 local measurex = MeasureTextTexture(str, sx, sy)
-                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 190/720 * Config.ScreenHeight, sx, sy)
+                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, sx, sy)
 
 
                 --[[
