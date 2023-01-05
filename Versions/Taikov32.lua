@@ -58,6 +58,9 @@ TODO: Add raylib option
     TODO: SENOTES + GAUGE
     TODO: Find 1p sign --DOESN'T EXIST
     TODO: Score add effect
+    TODO: Gauge meter animation (full / overflow
+    TODO: Combo Count on taiko
+    TODO: Make anim frames start at any number (modify LoadAnim)
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -736,7 +739,8 @@ Taiko.Data = {
         Percent = function(soul)
             return (soul / 200) / 50
         end,
-        ClearPercent = 0.8
+        ClearPercent = 0.8,
+        OverflowPercent = 1
     },
 
 
@@ -4184,6 +4188,7 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
     local AssetsPath = 'Assets/'
     local ConfigPath = 'config.tpd'
+    local ScreenshotPath = 'tscreenshot.png'
     
     local Config
 
@@ -4819,7 +4824,7 @@ int MeasureText(const char *text, int fontSize)
     --]]
     -- [[
     UpdateProgress = function() end
-    ]]
+    --]]
 
 
     -- [[
@@ -5177,6 +5182,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Ka.png'),
                     combo = LoadImage('Graphics/5_Game/6_Taiko/Combo_Text.png')
                 },
+                ComboText = {
+                    [0] = LoadImage('Graphics/5_Game/6_Taiko/Combo_Text.png')
+                }
             },
             Gauges = {
                 Meter = {
@@ -5596,6 +5604,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 210/1280 * Config.ScreenWidth, 206/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     
+    --ComboText (goes with Fonts.Combo)
+    Textures.PlaySong.Backgrounds.ComboText.sizex = Textures.PlaySong.Backgrounds.ComboText[0].width
+    Textures.PlaySong.Backgrounds.ComboText.sizey = Textures.PlaySong.Backgrounds.ComboText[0].height
+    Textures.PlaySong.Backgrounds.ComboText.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.ComboText.sizex, Textures.PlaySong.Backgrounds.ComboText.sizey)
+    Textures.PlaySong.Backgrounds.ComboText.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.ComboText.pr = rl.new('Rectangle', 220/1280 * Config.ScreenWidth, 198/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.ComboText.sizex, Textures.PlaySong.Backgrounds.ComboText.sizey)
+
     --Background
 
     --Bottom
@@ -5649,8 +5664,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         h = 24
     ]]
 
-    Textures.PlaySong.Gauges.Clear[1] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 0, 44, 58, 24))
-    Textures.PlaySong.Gauges.Clear[0] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 58, 44, 58, 24))
+    Textures.PlaySong.Gauges.Clear[true] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 0, 44, 58, 24))
+    Textures.PlaySong.Gauges.Clear[false] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 58, 44, 58, 24))
 
     --Convert to textures
 
@@ -5670,8 +5685,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Gauges.Meter.pr2 = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
 
     --Clear
-    Textures.PlaySong.Gauges.Clear.sizex = Textures.PlaySong.Gauges.Clear[0].width
-    Textures.PlaySong.Gauges.Clear.sizey = Textures.PlaySong.Gauges.Clear[0].height
+    Textures.PlaySong.Gauges.Clear.sizex = Textures.PlaySong.Gauges.Clear[true].width
+    Textures.PlaySong.Gauges.Clear.sizey = Textures.PlaySong.Gauges.Clear[true].height
     Textures.PlaySong.Gauges.Clear.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
     Textures.PlaySong.Gauges.Clear.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Gauges.Clear.pr = rl.new('Rectangle', 1038/1280 * Config.ScreenWidth, 143/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
@@ -6524,6 +6539,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Soul
         local gauge = 0
         local gaugep = 0
+        local gaugeclear = false
+        local gaugeoverflow = false
         local gauget = Taiko.Data.Gauge.Soul[Parsed.Metadata.COURSE](maxcombo)
         local gaugepercentf = Taiko.Data.Gauge.Percent
 
@@ -6966,6 +6983,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         --Calculate Gauge
                         gauge = gauge + gauget[gaugestatus]
                         gaugep = gaugepercentf(gauge)
+                        gaugeclear = gaugep >= Taiko.Data.Gauge.ClearPercent
+                        gaugeoverflow = gaugep >= Taiko.Data.Gauge.OverflowPercent
 
                         --Effects
                         --[[
@@ -7421,8 +7440,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --draw clear
                 
-                local clear = gaugep >= Taiko.Data.Gauge.ClearPercent and 1 or 0
-                rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[clear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
+                rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[gaugeclear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
 
 
 
@@ -7470,13 +7488,32 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
+                --draw combotext
+
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.ComboText[0], Textures.PlaySong.Backgrounds.ComboText.sourcerect, Textures.PlaySong.Backgrounds.ComboText.pr, Textures.PlaySong.Backgrounds.ComboText.center, 0, rl.WHITE)
+
+                --draw combo (center align)
+
+                --[[
+                    combo
+                    0-49    0
+                    50-99   1
+                    100-inf 2
+                ]]
+                local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
+                local str = tostring(combo)
+                local a = combo < 50 and 0 or combo < 100 and 1 or 2
+                local measurex = MeasureTextTexture(str, sx, sy)
+                DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, sx, sy)
 
 
 
 
 
 
-                --draw score
+
+
+                --draw score (right align)
                 local sx, sy = 26/1280 * Config.ScreenWidth, 34/720 * Config.ScreenHeight
                 local str = tostring(score)
                 local measurex = MeasureTextTexture(str, sx, sy)
@@ -8208,6 +8245,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 if rl.IsKeyPressed(rl.KEY_F) then
                     rl.ToggleFullscreen()
+                end
+                if rl.IsKeyPressed(rl.KEY_S) then
+                    --[[
+                    --might produce a screenshot with black waste parts due to gpu
+                    rl.TakeScreenshot(ScreenshotPath)
+                    --]]
+
+                    -- [[
+                    local image = rl.LoadImageFromScreen()
+                    rl.ExportImage(image, ScreenshotPath)
+                    rl.UnloadImage(image)
+                    --]]
                 end
 
 
