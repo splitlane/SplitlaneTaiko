@@ -4816,8 +4816,10 @@ int MeasureText(const char *text, int fontSize)
 
         rl.EndDrawing()
     end
-    --UpdateProgress = function() end
     --]]
+    -- [[
+    UpdateProgress = function() end
+    ]]
 
 
     -- [[
