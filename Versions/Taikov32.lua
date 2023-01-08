@@ -58,9 +58,11 @@ TODO: Add raylib option
     TODO: SENOTES + GAUGE
     TODO: Find 1p sign --DOESN'T EXIST
     TODO: Score add effect
-    TODO: Gauge meter animation (full / overflow
+    TODO: Gauge meter animation (full / overflow)
     TODO: Combo Count on taiko
     TODO: Make anim frames start at any number (modify LoadAnim)
+    TODO: Text animation (combo, score)
+    TODO: Metadata (title, subtitle)
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -7496,15 +7498,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --[[
                     combo
-                    0-49    0
+                    0-9     invis
+                    10-49    0
                     50-99   1
                     100-inf 2
                 ]]
-                local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
-                local str = tostring(combo)
-                local a = combo < 50 and 0 or combo < 100 and 1 or 2
-                local measurex = MeasureTextTexture(str, sx, sy)
-                DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, sx, sy)
+                if combo >= 10 then
+                    local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
+                    local str = tostring(combo)
+                    local a = combo < 50 and 0 or combo < 100 and 1 or 2
+                    local measurex = MeasureTextTexture(str, sx, sy)
+                    DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, sx, sy)
+                end
 
 
 
@@ -8253,10 +8258,27 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     --]]
 
                     -- [[
+                    --reliable
                     local image = rl.LoadImageFromScreen()
                     rl.ExportImage(image, ScreenshotPath)
                     rl.UnloadImage(image)
                     --]]
+                end
+                if rl.IsKeyPressed(rl.KEY_ESCAPE) then
+                    local before = os.clock()
+
+                    --loop for input
+                    while true do
+                        if rl.IsKeyPressed(rl.KEY_ESCAPE) then
+                            break
+                        end
+                        if rl.WindowShouldClose() then
+                            --rl.CloseWindow()
+                            break
+                        end
+                    end
+
+                    startt = startt + (os.clock() - before)
                 end
 
 
