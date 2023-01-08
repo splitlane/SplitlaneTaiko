@@ -4503,10 +4503,17 @@ int MeasureText(const char *text, int fontSize)
         return sound
     end
     -- [[
-    local function LoadAnimSeperate(str, strappend, nstart, nend)
+    local function LoadAnimSeperate(str, strappend, nstart)
         local Anim = {}
-        for i = nstart, nend do
-            Anim[i] = LoadImage(str .. tostring(i) .. strappend)
+        local i = nstart
+        while true do
+            local a = str .. tostring(i) .. strappend
+            if CheckFile(AssetsPath .. a) then
+                Anim[i] = LoadImage(a)
+                i = i + 1
+            else
+                break
+            end
         end
         return Anim
     end
@@ -4517,6 +4524,13 @@ int MeasureText(const char *text, int fontSize)
         }
         --Get rectangle of anim (just access map with framen)
         return Anim
+    end
+    local function CountAnimFrames(Anim)
+        local i = 0
+        for k, v in pairs(Anim) do
+            i = i + 1
+        end
+        return i
     end
     --[=[
     local XNAcolor = rl.MAGENTA
@@ -6802,7 +6816,18 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         end
                     elseif a.type == 7 then
                         note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
-                        --[[
+                    end
+                end
+            end)
+
+
+
+
+
+
+
+            --popanim
+--[[
 f	transparency
 0	12.5*8
 1	12.5*7
@@ -6813,26 +6838,29 @@ f	transparency
 6	12.5*2
 7	12.5*1
 8	12.5*0
-                        ]]
-                        a.popanim = {
-                            startms = nil,
-                            --framen = 8,
-                            anim = {
-                                [0] = 0.125*8,
-                                [1] = 0.125*7,
-                                [2] = 0.125*6,
-                                [3] = 0.125*5,
-                                [4] = 0.125*4,
-                                [5] = 0.125*3,
-                                [6] = 0.125*2,
-                                [7] = 0.125*1,
-                                [8] = 0.125*0,
-                            },
-                            color = rl.new('Color', 255, 255, 255, 255)
-                        }
-                    end
-                end
-            end)
+            ]]
+            local popanim = {
+                startms = nil,
+                framen = CountAnimFrames(Textures.PlaySong.Balloons.Anim),
+                anim = {
+                    [0] = 0.125*8,
+                    [1] = 0.125*7,
+                    [2] = 0.125*6,
+                    [3] = 0.125*5,
+                    [4] = 0.125*4,
+                    [5] = 0.125*3,
+                    [6] = 0.125*2,
+                    [7] = 0.125*1,
+                    [8] = 0.125*0,
+                },
+                color = rl.new('Color', 255, 255, 255, 255)
+            }
+
+
+
+
+
+
 
 
 
@@ -7026,8 +7054,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     score = balloonscoref(score, balloon.type, notegogo)
                     if balloon.timeshit >= balloon.requiredhits then
                         balloon.pop = true
-                        balloon.popanim.startms = ms
-                        balloon.popanim.color.a = 255
+                        popanim.startms = ms
+                        popanim.color.a = 255
                         rl.PlaySound(Sounds.PlaySong.Notes.balloonpop)
                     end
                 end
@@ -8127,15 +8155,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 local morehits = startnote.requiredhits - startnote.timeshit
 
                                                 --formula for framen
-                                                local framen = 5 - math.ceil(morehits / math.floor(startnote.requiredhits / 5))
+                                                local framen = (popanim.framen - 1) - math.ceil(morehits / math.floor(startnote.requiredhits / (popanim.framen - 1)))
                                                 framen = framen < 0 and 0 or framen
 
-                                                --DISABLED TEMPORARY
                                                 if framen == 5 then
                                                     --Pop
 
                                                     --assume popanim exists
-                                                    local popanim = startnote.popanim
+                                                    --local popanim = startnote.popanim
                                                     local difms = ms - popanim.startms
                                                     local animn = math.floor(difms / skinframems)
                                                     --local transparency = 255 - (animn / framen * 255)
@@ -8146,7 +8173,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                                         if transparency > 0 then
                                                             --if visible
-                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, startnote.popanim.color)
+                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
                                                         end
                                                     else
                                                         startnote.hit = true
