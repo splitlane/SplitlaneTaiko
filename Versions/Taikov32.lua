@@ -59,10 +59,9 @@ TODO: Add raylib option
     TODO: Find 1p sign --DOESN'T EXIST
     TODO: Score add effect
     TODO: Gauge meter animation (full / overflow)
-    TODO: Combo Count on taiko
-    TODO: Make anim frames start at any number (modify LoadAnim)
     TODO: Text animation (combo, score)
     TODO: Metadata (title, subtitle)
+    TODO: SENOTES (Parser + PlaySong)
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
