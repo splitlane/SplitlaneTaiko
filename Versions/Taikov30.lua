@@ -1015,30 +1015,31 @@ function Taiko.ParseTJA(source)
             false --imaginary
         }
         for i = 1, #t do
-            print(t[i])
-            local imaginary = false
-            if string.find(t[i], 'i') then
-                imaginary = true
-                t[i] = string.gsub(t[i], 'i', '')
-            end
-            if CheckFraction(t[i]) then
-                local negative = false
-                if string.find(t[i], '%-') then
-                    negative = true
+            if t[i] ~= '' then
+                local imaginary = false
+                if string.find(t[i], 'i') then
+                    imaginary = true
+                    t[i] = string.gsub(t[i], 'i', '')
                 end
-                local a, b = ParseFraction(t[i])
-                t[i] = (a/b) --UNSAFE
-                fracdata[imaginary and 2 or 1] = true
-                if negative then
-                    t[i] = -t[i]
+                if CheckFraction(t[i]) then
+                    local negative = false
+                    if string.find(t[i], '%-') then
+                        negative = true
+                    end
+                    local a, b = ParseFraction(t[i])
+                    t[i] = (a/b) --UNSAFE
+                    fracdata[imaginary and 2 or 1] = true
+                    if negative then
+                        t[i] = -t[i]
+                    end
+                else
+                    t[i] = tonumber(t[i]) --UNSAFE
                 end
-            else
-                t[i] = tonumber(t[i]) --UNSAFE
-            end
-            if imaginary then
-                out[2] = out[2] + t[i]
-            else
-                out[1] = out[1] + t[i]
+                if imaginary then
+                    out[2] = out[2] + t[i]
+                else
+                    out[1] = out[1] + t[i]
+                end
             end
         end
         return out, fracdata
@@ -2408,7 +2409,6 @@ This is used when you want to return the judgment frame to its original position
                                 --print(unpack(complex))
                                 ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
                                 ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
-                                print()
                                 valid = true
                             elseif CheckPolarNumber(t[2]) then
                                 --Polar Scroll (TaikoManyGimmicks)
