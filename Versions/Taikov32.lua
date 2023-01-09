@@ -838,6 +838,7 @@ function Taiko.ParseTJA(source)
         Flag = {
             PARSER_FORCE_OLD_SPEED_CALCULATION = false,
             PARSER_FORCE_OLD_NOTERADIUS = false,
+            PARSER_FORCE_OLD_TARGET = false,
         },
         Metadata = {
             SUBTITLE = '', --not required --taiko-web
@@ -907,6 +908,7 @@ function Taiko.ParseTJA(source)
         List of parser flags:
         $PARSER_FORCE_OLD_SPEED_CALCULATION (old (Taiko.CalculateSpeed))
         $PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION (default opentaiko (Taiko.CalculateSpeedInterval))
+        $PARSER_FORCE_OLD_TARGET (old target pos)
 
         Make sure to comment them out so other simulators can still play the file. Also, if a flag is found anywhere in the file, it will apply to all difficulties.
     ]]
@@ -923,6 +925,10 @@ function Taiko.ParseTJA(source)
         Parsed.Flag.PARSER_FORCE_OLD_NOTERADIUS = true
     else
 
+    end
+
+    if string.find(source, '$PARSER_FORCE_OLD_TARGET') then
+        Parsed.Flag.PARSER_FORCE_OLD_TARGET = true
     end
 
 
@@ -2105,6 +2111,7 @@ function Taiko.ParseTJA(source)
 
                             table.insert(Out, Parsed)
                             Parsed = {
+                                Flag = Parsed.Flag,
                                 Metadata = Table.Clone(Parsed.OriginalMetadata),
                                 Data = {}
                             }
@@ -4997,6 +5004,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
     local y = 0 * Config.ScreenWidth
     local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
+    if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
+        target = {3/40 * tracklength, 0} --(src: taiko-web)
+    end
     local tracky = target[2]
     local trackstart = 333/1280 * Config.ScreenWidth
 
@@ -8596,7 +8606,8 @@ end
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 a = 'taikobuipm/Saitama 2000.tja'
---a = 'tja/neta/donkama/neta.tja'
+a = 'tja/neta/donkama/neta.tja'
+--a = 'tja/neta/ekiben/spiraltest.tja'
 
 
 --File
