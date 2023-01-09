@@ -5004,11 +5004,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
     local y = 0 * Config.ScreenWidth
     local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
-    if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
-        target = {3/40 * tracklength, 0} --(src: taiko-web)
-    end
     local tracky = target[2]
     local trackstart = 333/1280 * Config.ScreenWidth
+
+    if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
+        --target = {3/40 * Config.ScreenWidth, 0} --(src: taiko-web)
+        target = {1/4 * Config.ScreenWidth, 0}
+    end
 
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
     local statuslength = 200 --Status length (good/ok/bad) (ms)

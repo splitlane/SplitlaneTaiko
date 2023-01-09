@@ -158,7 +158,7 @@ local Compact = require('./CompactTJA/compact')
 --raylib
 -- [[
 local Compact = require('CompactTJA/compact')
-local Replay = require('ReplayTaiko/replay')
+local Replay = require('ReplayTaiko/replayv1')
 --]]
 
 
