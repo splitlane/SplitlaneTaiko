@@ -6891,6 +6891,82 @@ f	transparency
             local ms
             local nearest, nearestnote = {}, {}
             local autoside = false --false -> left, true = right
+
+
+
+
+
+--[[
+taiko notehitgauge animation
+]]
+
+local notehitgauge = {
+    notes = {
+        --Notes are inserted into here
+    },
+    startms = {
+        --Startms of notes are inserted into here, with same index
+    },
+    anim = {
+        --[[
+            these are all out of 1280 and 720
+        ]]
+        [0] = {-500, -500}, --INVIS
+        [1] = {374, 206},
+        [2] = {398, 174},
+        [3] = {422, 144},
+        [4] = {448, 118},
+        [5] = {484, 86},
+        [6] = {514, 64},
+        [7] = {544, 44},
+        [8] = {578, 28},
+        [9] = {610, 14},
+        [10] = {644, 0},
+        [11] = {678, -8},
+        [12] = {724, -16},
+        [13] = {758, -20},
+        [14] = {794, -20},
+        [15] = {828, -18},
+        [16] = {862, -14},
+        [17] = {900, -4},
+        [18] = {934, 2},
+        [19] = {966, 14},
+        [20] = {998, 34},
+        [21] = {1028, 46},
+        [22] = {1056, 72},
+        [23] = {1088, 102},
+        [24] = {1114, 126},
+        [25] = {1138, 154},
+        [26] = {1150, 162},
+        [27] = {1150, 162},
+        [28] = {1150, 162}
+    }
+}
+for k, v in pairs(notehitgauge.anim) do
+    v[1] = Round(v[1] / 1280 * Config.ScreenWidth)
+    v[2] = Round(v[2] / 720 * Config.ScreenHeight)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --[[
 f	transparency
 0	100
@@ -7049,6 +7125,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Hit[hiteffect].Anim
                         laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim
                         laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
+
+                        --notehitgauge animation
+                        notehitgauge.notes[#notehitgauge.notes + 1] = nearestnote[v]
+                        notehitgauge.startms[#notehitgauge.startms + 1] = ms
 
                         --combo sound
                         if Sounds.PlaySong.Combo[combo] then
@@ -7618,6 +7698,57 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --normal
                 rl.DrawTexture(Textures.PlaySong.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
+
+
+
+
+
+
+
+
+
+                --draw notehitgauge (below title, status, explosion, (notes?)) (above background, gauge, lane)
+                local offseti = 0
+                for i = 1, #notehitgauge.notes do
+                    local i2 = i + offseti
+                    local note = notehitgauge.notes[i2]
+                    local startms = notehitgauge.startms[i2]
+                    local difms = ms - startms
+                    local animn = math.floor(difms / skinframems)
+                    --Anim ended?
+                    local frame = notehitgauge.anim[animn]
+                    if frame then
+                        --draw note
+                        note.pr.x = frame[1]
+                        note.pr.y = frame[2]
+                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                    else
+                        --Anim ended, remove status
+                        table.remove(notehitgauge.notes, i2)
+                        table.remove(notehitgauge.startms, i2)
+                        offseti = offseti - 1
+                    end
+                end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                 --notes
