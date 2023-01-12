@@ -6971,7 +6971,7 @@ end
     Faithful translation to lua from js
 ]]
 local function CalculateNoteHitGauge(rawtarget)
-    print(unpack(rawtarget))
+    --print(unpack(rawtarget))
     local function calcBezierPoint(t, data, dest)
         local at = 1 - t
         --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
@@ -7014,7 +7014,15 @@ local function CalculateNoteHitGauge(rawtarget)
         y2 = frameTop + 165
     }
     animPos.w = animPos.x2 - animPos.x1
+    --[[
+    --variable height
     animPos.h = animPos.y1 - animPos.y2
+    --]]
+
+    --don't let height change
+    --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
+    animPos.h = 63
+
     local animateBezier = {{
         -- 427, 228
         animPos.x1,
