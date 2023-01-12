@@ -2548,10 +2548,10 @@ This is used when you want to return the judgment frame to its original position
                                 - Ignored in taiko-web.
                             ]]
                                 Parser.jposscroll.p = Parser.jposscroll.p or {nil, nil}
-                                Parser.jposscroll.p[1] = CheckN(match[1], str, 'Invalid jposscroll')
+                                Parser.jposscroll.p[n] = CheckN(match[1], str, 'Invalid jposscroll')
 
                                 if direction then
-                                    Parser.jposscroll.p[1] = Parser.jposscroll.p[1] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                    Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
                                 end
                             end
                         end
@@ -2567,7 +2567,7 @@ This is used when you want to return the judgment frame to its original position
                                 --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
-                                --print(unpack(complex))print(unpack(fracdata))
+                                --print(unpack(complex))print(unpack(fracdata))error()
                                 ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
                                 ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
                                 valid = true
@@ -6907,11 +6907,20 @@ local notehitgauge = {
     startms = {
         --Startms of notes are inserted into here, with same index
     },
+    currenttarget = {
+        --Current target of notes are inserted into here, with same index
+        --Avoid table creation
+        [1] = {},
+        [2] = {}
+    },
     anim = {
         --[[
             these are all out of 1280 and 720
         ]]
-        [0] = {-500, -500}, --INVIS
+        --TODO: Anim for every target
+        --[0] = {Round(-500 / 1280 * Config.ScreenWidth), Round(-500 / 720 * Config.ScreenHeight)}, --INVIS
+        --[0] = {nil, nil} --INVIS
+        --[[
         [1] = {374, 206},
         [2] = {398, 174},
         [3] = {422, 144},
@@ -6940,13 +6949,116 @@ local notehitgauge = {
         [26] = {1150, 162},
         [27] = {1150, 162},
         [28] = {1150, 162}
+        --]]
     }
 }
+--[[
 for k, v in pairs(notehitgauge.anim) do
     v[1] = Round(v[1] / 1280 * Config.ScreenWidth)
     v[2] = Round(v[2] / 720 * Config.ScreenHeight)
 end
+--]]
+--[[
+    TODO:
+    Reduce table creation
+]]
 
+
+
+
+--[[
+    Credit to KatieFrogs
+    Faithful translation to lua from js
+]]
+local function CalculateNoteHitGauge(rawtarget)
+    print(unpack(rawtarget))
+    local function calcBezierPoint(t, data, dest)
+        local at = 1 - t
+        --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
+        for k, v in pairs(data) do dest[k][1] = v[1] dest[k][2] = v[2] end--opt
+        
+        for i = 2, #dest do --for(var i = 1; i < data.length; i++){
+            for k = 1, #dest - i + 1 do --for(var k = 0; k < data.length - i; k++){
+                --dest[k] = dest[k] or {}
+                dest[k][1] = dest[k][1] * at + dest[k + 1][1] * t
+                dest[k][2] = dest[k][2] * at + dest[k + 1][2] * t
+                
+            end
+        end
+        return {dest[1][1], dest[1][2]} --copy opt
+    end
+    local function easeOut(pos)
+        return math.sin(math.pi / 2 * pos)
+    end
+
+    --local Config = {ScreenWidth = 1280,
+    --ScreenHeight = 720}
+
+    local frameTop = Config.ScreenHeight / 2 - 720 / 2
+    
+    local target = {
+        target[1] * xmul + offsetx, target[2] * ymul + offsety
+    }
+    --[[
+    local target = {
+        [1] = 413,
+        [2] = frameTop + 257
+    }
+    print(unpack(target))error()
+    --]]
+    --slotPos.x = target[1]+offsetx slotPos.y = target[2]+offsety
+    local animPos = {
+        x1 = target[1] + 14,
+        y1 = target[2] - 29,
+        x2 = Config.ScreenWidth - 55,
+        y2 = frameTop + 165
+    }
+    animPos.w = animPos.x2 - animPos.x1
+    animPos.h = animPos.y1 - animPos.y2
+    local animateBezier = {{
+        -- 427, 228
+        animPos.x1,
+        animPos.y1
+    }, {
+        -- 560, 10
+        animPos.x1 + animPos.w / 6,
+        animPos.y1 - animPos.h * 3.5
+    }, {
+        -- 940, -150
+        animPos.x2 - animPos.w / 3,
+        animPos.y2 - animPos.h * 5
+    }, {
+        -- 1225, 165
+        animPos.x2,
+        animPos.y2
+    }}
+
+
+
+
+    local animFrames = 25
+    local dest = {
+        {},
+        {},
+        {},
+        {},
+    }
+    notehitgauge.anim[rawtarget[1]] = notehitgauge.anim[rawtarget[1]] or {}
+    notehitgauge.anim[rawtarget[1]][rawtarget[2]] = {}
+    local anim = notehitgauge.anim[rawtarget[1]][rawtarget[2]]
+    anim[0] = {nil, nil}
+    for i = 1, animFrames do
+        local animPoint = (i - 1) / (animFrames - 1)
+        local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
+        --print(bezierPoint[1] .. ',' .. bezierPoint[2])
+        bezierPoint[1] = Round(bezierPoint[1] / 1280 * Config.ScreenWidth)
+        bezierPoint[2] = Round(bezierPoint[2] / 720 * Config.ScreenHeight)
+        --notehitgauge.anim[i] = bezierPoint
+        anim[i] = bezierPoint
+    end
+end
+
+CalculateNoteHitGauge(defaulttarget)
 
 
 
@@ -7127,8 +7239,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
 
                         --notehitgauge animation
-                        notehitgauge.notes[#notehitgauge.notes + 1] = nearestnote[v]
-                        notehitgauge.startms[#notehitgauge.startms + 1] = ms
+                        local i = #notehitgauge.notes + 1
+                        notehitgauge.notes[i] = nearestnote[v]
+                        notehitgauge.startms[i] = ms
+                        notehitgauge.currenttarget[1][i] = target[1]
+                        notehitgauge.currenttarget[2][i] = target[2]
+                        if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
+                            --target already calced
+                        else
+                            --target needs to be calced
+                            CalculateNoteHitGauge(target)
+                        end
 
                         --combo sound
                         if Sounds.PlaySong.Combo[combo] then
@@ -7716,16 +7837,32 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local difms = ms - startms
                     local animn = math.floor(difms / skinframems)
                     --Anim ended?
-                    local frame = notehitgauge.anim[animn]
+                    --local frame = notehitgauge.anim[animn]
+                    local currenttarget = notehitgauge.currenttarget
+                    --[[
+                    for x, v in pairs(notehitgauge.anim) do
+                        for y, v2 in pairs(v) do
+                            print(currenttarget[1][i2], currenttarget[2][i2])
+                            print(x, y)
+                        end
+                    end
+                    --]]
+                    local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
                     if frame then
-                        --draw note
-                        note.pr.x = frame[1]
-                        note.pr.y = frame[2]
-                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                        if frame[1] then
+                            --draw note
+                            note.pr.x = frame[1]
+                            note.pr.y = frame[2]
+                            rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                        else
+                            --invis
+                        end
                     else
                         --Anim ended, remove status
                         table.remove(notehitgauge.notes, i2)
                         table.remove(notehitgauge.startms, i2)
+                        table.remove(notehitgauge.currenttarget[1], i2)
+                        table.remove(notehitgauge.currenttarget[2], i2)
                         offseti = offseti - 1
                     end
                 end
@@ -8740,6 +8877,7 @@ end
 --a = 'tja/neta/ekiben/neta.tja'
 a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
+a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 
 
