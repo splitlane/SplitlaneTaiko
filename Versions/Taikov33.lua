@@ -6025,7 +6025,8 @@ int MeasureText(const char *text, int fontSize)
             file:close()
             return data
         else
-            error('Unable to find file' .. str)
+            --error('Unable to find file: ' .. str)
+            print('Unable to find file: ' .. str)
         end
     end
     local function LoadAsset(str)
@@ -6060,11 +6061,16 @@ int MeasureText(const char *text, int fontSize)
     --]=]
     local function LoadImage(str)
         local data = LoadAsset(str)
+        if not data then
+            return rl.new('Image')
+        end
         --return rl.LoadImageFromMemory('.png', data, #data)
         return rl.LoadImageFromMemory(GetFileType(str), data, #data)
     end
     local function LoadWave(str)
-        local data = LoadAsset(str)
+        if not data then
+            return rl.new('Wave')
+        end
         return rl.LoadWaveFromMemory(GetFileType(str), data, #data)
     end
     local function LoadSound(str)
@@ -6083,6 +6089,9 @@ int MeasureText(const char *text, int fontSize)
                 Anim[i] = LoadImage(a)
                 i = i + 1
             else
+                if i == 0 then
+                    Anim[0] = rl.new('Image')
+                end
                 break
             end
         end
@@ -11943,7 +11952,7 @@ end
 
 
 
-
+--[======[
 
 --Parse Testing
 
@@ -12246,3 +12255,4 @@ SCOREDIFF:120
 #END
 ]])))
 --]=]
+--]======]
