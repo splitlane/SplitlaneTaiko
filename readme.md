@@ -2,6 +2,7 @@
 
 Popular taiko game simulator.
 
+WARNING: I can't push my local repo since it contains many copyrighted assets and is just too big.
 
 - [Taiko](#taiko)
   - [Before using (Credit: OpenTaiko)](#before-using-credit-opentaiko)
