@@ -1787,6 +1787,146 @@ end
 
 
 
+do
+    --[[
+        texturemap.lua
+
+        Simple raylib library to extract textures from a texturemap
+
+
+        --update: supports nested
+
+
+        WARNING: You have to init before loading any textures
+    ]]
+
+
+    TextureMap = {}
+
+
+    function TextureMap.SplitUsingMap(image, map, defaultsize, xymul, origin)
+        --[[
+            assumes image is loaded
+
+            map = {
+                test = {
+                    x, y, (xsize), (ysize)
+                },
+                ...
+            }
+
+            defaultsize = {xsize, ysize}
+            defaultsize is optional, and map is taken priority 
+            defaultsize is -1
+
+            xymul = {x, y}
+            xymul is optional, and is multiplied with the x, y of map
+
+            origin = {0, 0}
+            added to everything
+        ]]
+
+
+        xymul = xymul or {1, 1}
+        origin = origin or {0, 0}
+
+        local function scan(t)
+            local out = {}
+            for k, v in pairs(t) do
+                local nested = false
+                for k2, v2 in pairs(v) do
+                    if type(v2) == 'table' then
+                        --out[k] = scan(v2)
+                        nested = true
+                    end
+                end
+                if nested then
+                    out[k] = scan(v)
+                else
+                    out[k] = rl.ImageFromImage(image, rl.new('Rectangle', v[1] * xymul[1] + origin[1], v[2] * xymul[2] + origin[2], (v[3] or defaultsize[1]) - 1 + origin[1], (v[4] or defaultsize[2]) - 1 + origin[2]))
+                end
+            end
+            return out
+        end
+
+        return scan(map)
+    end
+
+
+
+    --For loading singular textures from image
+    function TextureMap.LoadTextureFromImage(image)
+        local texture = rl.LoadTextureFromImage(image)
+        rl.UnloadImage(image)
+        return texture
+    end
+
+
+
+    --Replacing an entire texture map that has been generated with TextureMap.SplitUsingMap with textures and unloading the images
+    function TextureMap.ReplaceWithTexture(texturemap)
+        
+        --for k, v in pairs(texturemap) do print(k, v) end error()
+
+        local function scan(map)
+            local out = {}
+            for k, v in pairs(map) do
+                if type(v) == 'table' then
+                    out[k] = scan(v)
+                else
+                    out[k] = TextureMap.LoadTextureFromImage(v)
+                end
+            end
+            return out
+        end
+
+        return scan(texturemap)
+    end
+
+
+
+    --All-in one, runs TextureMap.SplitUsingMap and TextureMap.ReplaceWithTexture, and same args as TextureMap.SplitUsingMap
+    function TextureMap.SplitAndReplaceWithTexture(...)
+        return TextureMap.ReplaceWithTexture(TextureMap.SplitUsingMap(...))
+    end
+
+    --return TextureMap
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6694,7 +6834,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     --Load textures
-    local TextureMap = require('texturemap')
+    --local TextureMap = require('texturemap')
 
     --Main texture storage
     local Textures = {
@@ -7127,6 +7267,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local base = Textures.PlaySong.Effects.Hit[1].Anim[0]
     local statusoffsetx = offsetx - (base.width / 2)
     local statusoffsety = offsety - (base.height / 2)
+    --in case base didn't load
+    statusoffsetx = statusoffsetx == offsetx and offsetx - (130/1280 * Config.ScreenWidth) or statusoffsetx
+    statusoffsety = statusoffsety == offsety and offsety - (130/720 * Config.ScreenHeight) or statusoffsety
 
     Textures.PlaySong.Effects.Hit = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Hit)
 
@@ -10458,71 +10601,13 @@ end
 
 
 
-
---a = 'tja/neta/donkama/neta.tja'
---a = 'tja/neta/ekiben/delay.tja'
---a = 'tja/neta/overdead.tja'
---a = 'tja/neta/ekiben/neta.tja'
-a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
---a = 'tja/neta/ekiben/notehitgauge.tja'
---a = 'tja/neta/ekiben/spiraltest.tja'
-
-
---File
-local function CheckFile(str)
-    local file = io.open(str, 'rb')
-    if file then
-        file:close()
-        return true
-    else
-        return false
-    end
-end
-
 local p = Taiko.ParseTJAFile(a)
---local song = 'taikobuipm/EkiBEN 2000.ogg'
-song = 'taikobuipm/Donkama 2000.ogg'
---[[
-        local optionsmap = {
-        auto = {
-            [1] = false,
-            [2] = true,
-        },
-        notespeedmul = {
-            [1] = 1,
-            [2] = 2,
-            [3] = 3,
-            [4] = 4,
-            [5] = 0.25,
-            [6] = 0.5,
-            [7] = 0.75,
-        },
-        songspeedmul = {
-            [1] = 1,
-            [2] = 2,
-            [3] = 3,
-            [4] = 4,
-            [5] = 0.25,
-            [6] = 0.5,
-            [7] = 0.75,
-        }
-    }
-
-]]
 local s = {
     [2] = 2,
     [3] = 1,
     [4] = 1
 }
--- [[
-if not CheckFile(p[1].Metadata.SONG) then
-    for k, v in pairs(p) do
-        v.Metadata.SONG = song
-        --v.Metadata.SEVOL = 0.5
-    end
-end
---]]
 Taiko.Game(Taiko.GetDifficulty(p, 'Oni'), nil, s)error()
 
 
