@@ -62,6 +62,7 @@ TODO: Add raylib option
     TODO: Text animation (combo, score)
     TODO: Metadata (title, subtitle)
     TODO: SENOTES (Parser + PlaySong)
+    TODO: Localize locals so we don't run out
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -6970,99 +6971,105 @@ end
     Credit to KatieFrogs
     Faithful translation to lua from js
 ]]
-local function CalculateNoteHitGauge(rawtarget)
-    --print(unpack(rawtarget))
-    local function calcBezierPoint(t, data, dest)
-        local at = 1 - t
-        --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
-        for k, v in pairs(data) do dest[k][1] = v[1] dest[k][2] = v[2] end--opt
-        
-        for i = 2, #dest do --for(var i = 1; i < data.length; i++){
-            for k = 1, #dest - i + 1 do --for(var k = 0; k < data.length - i; k++){
-                --dest[k] = dest[k] or {}
-                dest[k][1] = dest[k][1] * at + dest[k + 1][1] * t
-                dest[k][2] = dest[k][2] * at + dest[k + 1][2] * t
-                
-            end
-        end
-        return {dest[1][1], dest[1][2]} --copy opt
-    end
-    local function easeOut(pos)
-        return math.sin(math.pi / 2 * pos)
-    end
-
-    --local Config = {ScreenWidth = 1280,
-    --ScreenHeight = 720}
-
-    local frameTop = Config.ScreenHeight / 2 - 720 / 2
-    
-    local target = {
-        target[1] * xmul + offsetx, target[2] * ymul + offsety
-    }
-    --[[
-    local target = {
-        [1] = 413,
-        [2] = frameTop + 257
-    }
-    print(unpack(target))error()
-    --]]
-    --slotPos.x = target[1]+offsetx slotPos.y = target[2]+offsety
-    local animPos = {
-        x1 = target[1] + 14,
-        y1 = target[2] - 29,
-        x2 = Config.ScreenWidth - 55,
-        y2 = frameTop + 165
-    }
-    animPos.w = animPos.x2 - animPos.x1
-    --[[
-    --variable height
-    animPos.h = animPos.y1 - animPos.y2
-    --]]
-
-    --don't let height change
-    --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
-    animPos.h = 63
-
-    local animateBezier = {{
-        -- 427, 228
-        animPos.x1,
-        animPos.y1
-    }, {
-        -- 560, 10
-        animPos.x1 + animPos.w / 6,
-        animPos.y1 - animPos.h * 3.5
-    }, {
-        -- 940, -150
-        animPos.x2 - animPos.w / 3,
-        animPos.y2 - animPos.h * 5
-    }, {
-        -- 1225, 165
-        animPos.x2,
-        animPos.y2
-    }}
-
-
-
-
-    local animFrames = 25
+local CalculateNoteHitGauge
+do
     local dest = {
         {},
         {},
         {},
         {},
     }
-    notehitgauge.anim[rawtarget[1]] = notehitgauge.anim[rawtarget[1]] or {}
-    notehitgauge.anim[rawtarget[1]][rawtarget[2]] = {}
-    local anim = notehitgauge.anim[rawtarget[1]][rawtarget[2]]
-    anim[0] = {nil, nil}
-    for i = 1, animFrames do
-        local animPoint = (i - 1) / (animFrames - 1)
-        local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
-        --print(bezierPoint[1] .. ',' .. bezierPoint[2])
-        bezierPoint[1] = Round(bezierPoint[1] / 1280 * Config.ScreenWidth)
-        bezierPoint[2] = Round(bezierPoint[2] / 720 * Config.ScreenHeight)
-        --notehitgauge.anim[i] = bezierPoint
-        anim[i] = bezierPoint
+    local animFrames = 25
+
+
+    CalculateNoteHitGauge = function(rawtarget)
+        --print(unpack(rawtarget))
+        local function calcBezierPoint(t, data, dest)
+            local at = 1 - t
+            --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
+            for k, v in pairs(data) do dest[k][1] = v[1] dest[k][2] = v[2] end--opt
+            
+            for i = 2, #dest do --for(var i = 1; i < data.length; i++){
+                for k = 1, #dest - i + 1 do --for(var k = 0; k < data.length - i; k++){
+                    --dest[k] = dest[k] or {}
+                    dest[k][1] = dest[k][1] * at + dest[k + 1][1] * t
+                    dest[k][2] = dest[k][2] * at + dest[k + 1][2] * t
+                    
+                end
+            end
+            return {dest[1][1], dest[1][2]} --copy opt
+        end
+        local function easeOut(pos)
+            return math.sin(math.pi / 2 * pos)
+        end
+
+        --local Config = {ScreenWidth = 1280,
+        --ScreenHeight = 720}
+
+        local frameTop = Config.ScreenHeight / 2 - 720 / 2
+        
+        local target = {
+            target[1] * xmul + offsetx, target[2] * ymul + offsety
+        }
+        --[[
+        local target = {
+            [1] = 413,
+            [2] = frameTop + 257
+        }
+        print(unpack(target))error()
+        --]]
+        --slotPos.x = target[1]+offsetx slotPos.y = target[2]+offsety
+        local animPos = {
+            x1 = target[1] + 14,
+            y1 = target[2] - 29,
+            x2 = Config.ScreenWidth - 55,
+            y2 = frameTop + 165
+        }
+        animPos.w = animPos.x2 - animPos.x1
+        --[[
+        --variable height
+        animPos.h = animPos.y1 - animPos.y2
+        --]]
+
+        --don't let height change
+        --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
+        animPos.h = 63
+
+        local animateBezier = {{
+            -- 427, 228
+            animPos.x1,
+            animPos.y1
+        }, {
+            -- 560, 10
+            animPos.x1 + animPos.w / 6,
+            animPos.y1 - animPos.h * 3.5
+        }, {
+            -- 940, -150
+            animPos.x2 - animPos.w / 3,
+            animPos.y2 - animPos.h * 5
+        }, {
+            -- 1225, 165
+            animPos.x2,
+            animPos.y2
+        }}
+
+
+
+
+        
+        notehitgauge.anim[rawtarget[1]] = notehitgauge.anim[rawtarget[1]] or {}
+        notehitgauge.anim[rawtarget[1]][rawtarget[2]] = {}
+        local anim = notehitgauge.anim[rawtarget[1]][rawtarget[2]]
+        anim[0] = {nil, nil}
+        for i = 1, animFrames do
+            local animPoint = (i - 1) / (animFrames - 1)
+            local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
+            --print(bezierPoint[1] .. ',' .. bezierPoint[2])
+            bezierPoint[1] = Round(bezierPoint[1] / 1280 * Config.ScreenWidth)
+            bezierPoint[2] = Round(bezierPoint[2] / 720 * Config.ScreenHeight)
+            --notehitgauge.anim[i] = bezierPoint
+            anim[i] = bezierPoint
+        end
     end
 end
 
@@ -8885,7 +8892,7 @@ end
 --a = 'tja/neta/ekiben/neta.tja'
 a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
-a = 'tja/neta/ekiben/notehitgauge.tja'
+--a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 
 

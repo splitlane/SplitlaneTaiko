@@ -42,7 +42,7 @@ and enjoy!
 
 ## How does this work
 
-This simulator uses raylib to implement the rendering and input. It parses .tja files, which are files that can store various / complicated charts.
+Simply put: This simulator uses raylib to implement the rendering and input. It parses .tja files, which are files that can store various / complicated charts.
 
 ## WARNING: Code Quality
 
