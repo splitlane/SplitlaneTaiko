@@ -7902,7 +7902,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             v.oms = v.ms
 
             v.ms = (v.ms - startms) / songspeedmul
-            v.s = MsToS(v.ms)
+            --v.s = MsToS(v.ms)
             --odelay
             v.delay = v.odelay or v.delay
             v.odelay = v.delay
@@ -7934,8 +7934,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             --[[
             v.newloadms = v.loadms
             v.loadmscalc = v.ms
-            --]]
             v.loads = MsToS(v.loadms)
+            --]]
             --v.loadp = CalculateLoadPosition(v, v.loadms)
             --v.pdelay = 0
             v.hit = nil --Reset hit just in case
@@ -8033,8 +8033,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     --[[
                     lastnote.newloadms = lastnote.loadms
                     lastnote.loadmscalc = lastnote.ms - lastnote.delay
-                    --]]
                     lastnote.loads = MsToS(lastnote.loadms)
+                    --]]
                 end
 
 
@@ -8256,11 +8256,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-
+        --[[
         local nextnote = Parsed.Data[1]
         local nextnotel = nextnote.loads
 
-        --[[
+
         --redesign
         while true do
             if nextnote then
@@ -8282,7 +8282,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         --loaded.e = loaded.n
 
-
+        local nextnote = Parsed.Data[1]
 
 
 
