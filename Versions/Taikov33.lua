@@ -63,6 +63,7 @@ TODO: Add raylib option
     TODO: Metadata (title, subtitle)
     TODO: SENOTES (Parser + PlaySong)
     TODO: Localize locals so we don't run out
+    TODO: Calculate SENOTES when pushing
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -6223,6 +6224,7 @@ int MeasureText(const char *text, int fontSize)
         return rl.LoadImageFromMemory(GetFileType(str), data, #data)
     end
     local function LoadWave(str)
+        local data = LoadAsset(str)
         if not data then
             return rl.new('Wave')
         end
