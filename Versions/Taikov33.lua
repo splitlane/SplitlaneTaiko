@@ -7282,6 +7282,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local base = Textures.PlaySong.Effects.Hit[1].Anim[0]
     local statusoffsetx = offsetx - (base.width / 2)
     local statusoffsety = offsety - (base.height / 2)
+    --in case base didn't load
+    statusoffsetx = statusoffsetx == offsetx and offsetx - (130/1280 * Config.ScreenWidth) or statusoffsetx
+    statusoffsety = statusoffsety == offsety and offsety - (130/720 * Config.ScreenHeight) or statusoffsety
 
     Textures.PlaySong.Effects.Hit = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Hit)
 
