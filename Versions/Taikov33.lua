@@ -4869,11 +4869,11 @@ function Taiko.ParseTJAFile(path)
     local file = io.open(path, 'r')
     local data = file:read('*all')
     local Parsed = Taiko.ParseTJA(data)
-    local slashp = string.find(path, '[/\\]')
+    local slashp = string.find(string.reverse(path), '[/\\]') --LAST SLASH REVERSED
     for k, v in pairs(Parsed) do
         v.Metadata.SONG = (
             slashp
-            and string.sub(path, 1, slashp) --Path is in a directory, get directory
+            and string.sub(path, 1, #path + 1 - slashp) --Path is in a directory, get directory
             or '' --Path is not in a directory
         ) .. v.Metadata.WAVE
     end
@@ -10651,6 +10651,7 @@ a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
+a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 
 
 --File
@@ -10700,6 +10701,7 @@ local s = {
     [4] = 1
 }
 -- [[
+    print(p[1].Metadata.SONG)
 if not CheckFile(p[1].Metadata.SONG) then
     for k, v in pairs(p) do
         v.Metadata.SONG = song
