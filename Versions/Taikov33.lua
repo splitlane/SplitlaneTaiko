@@ -7931,6 +7931,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
             v.loadms = CalculateLoadMs(v, v.ms)
+            --[[
+            v.newloadms = v.loadms
+            v.loadmscalc = v.ms
+            --]]
             v.loads = MsToS(v.loadms)
             --v.loadp = CalculateLoadPosition(v, v.loadms)
             --v.pdelay = 0
@@ -8007,6 +8011,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 end
 
                 if lastnote and lastnote.delay ~= 0 then
+                    --[==[
                     --recalculate
                     -- [[
                     lastnote.ms = lastnote.ms - lastnote.delay
@@ -8022,6 +8027,14 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     lastnote.ms = lastnote.ms + lastnote.delay
                     lastnote.s = MsToS(lastnote.ms)
                     --]]
+                    --]==]
+
+                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
+                    --[[
+                    lastnote.newloadms = lastnote.loadms
+                    lastnote.loadmscalc = lastnote.ms - lastnote.delay
+                    --]]
+                    lastnote.loads = MsToS(lastnote.loadms)
                 end
 
 
@@ -8357,6 +8370,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local jposscrollspeed = {nil, nil}
         local jposscrollstartp = {nil, nil}
         local jposscrollqueue = {}
+        --local recalculateloadms = false --opt
 
 
 
@@ -9315,6 +9329,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --See if next note is ready to be loaded
                 if nextnote then
                     while true do
+                        --[[
+                        if (nextnote and recalculateloadms) then
+                            --Recalculate loadms
+                            nextnote.newloadms = CalculateLoadMs(nextnote, nextnote.loadmscalc)
+                            recalculateloadms = false
+                        end
+                        --]]
+                        --if nextnote and (nextnote.loadms < ms + totaldelay or nextnote.newloadms < ms + totaldelay) then
                         if nextnote and nextnote.loadms < ms + totaldelay then
                             loaded[#loaded + 1] = nextnote
 
@@ -9346,6 +9368,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 end
                                 --]]
                             end
+                            --recalculateloadms = true
                         else
                             break
                         end
@@ -9539,6 +9562,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
                     target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
                     
+                    --recalculateloadms = true
                     --Recalc?
                     --[[
                     for k, v in pairs(notetable) do
