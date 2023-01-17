@@ -2464,7 +2464,23 @@ Taiko.Data = {
         ClearPercent = 0.8,
         OverflowPercent = 1
     },
+    --SENotes.png
+    --1 is topmost
+    SENotes = {
 
+        --Note = {note1, ex_note1, ex_note2}
+        [1] = {1, 2, 3},
+        [2] = {4, 5},
+        [3] = {6, 6, 6},
+        [4] = {7, 7},
+
+        --Drumroll = {start, middle, end}
+        [5] = {8, 9, 10},
+        [6] = {11, 9, 10},
+
+        --Balloon = {balloon}
+        [7] = {12}
+    },
 
 
 
@@ -2496,7 +2512,7 @@ Taiko.Data = {
 
 
 
-
+    --[[
     --Strings
     --https://github.com/bui/taiko-web/blob/master/public/src/js/strings.js
     Strings = {
@@ -2504,6 +2520,7 @@ Taiko.Data = {
             --TODO
         }
     }
+    --]]
 }
 
 
@@ -3037,7 +3054,12 @@ function Taiko.ParseTJA(source)
 
 
             --note chain
-            notechain = {},
+            --notechain = {},
+            senotems = nil,
+            senotei = false,
+            lastsenote = nil,
+            lastlastsenote = nil,
+            senotechange = nil,
 
 
 
@@ -3067,6 +3089,42 @@ function Taiko.ParseTJA(source)
 
 
         --Parser functions
+        --[[
+            SENOTES
+            https://github.com/EricLiver/cjdg/blob/master/public/src/js/parsetja.js#L178-L203
+        ]]
+        --[[
+        local function isalldon(notechain, startpos)
+            for i = startpos, #notechain do
+                local note = notechain[i]
+                if note and note.type ~= 1 and note.type ~= 3 then
+                    return false
+                end
+            end
+            return true
+        end
+        function Parser.checknotechain(notechain, measurelength, islast)
+            local alldonpos = nil
+            for i = 1, #notechain - (islast and 1 or 0) do
+                local note = notechain[i]
+                if alldonpos == nil and is_last and isalldon(notechain, i) then
+                    alldonpos = i
+                end
+                --note.senote = note.senote or Taiko.Data.SENotes[note.type][(alldonpos ~= nil and i - alldonpos % 2 or 0) + 1]
+                note.senote = Taiko.Data.SENotes[note.type][(alldonpos ~= nil and i - alldonpos % 2 or 0) + 1]
+            end
+        end
+        --]]
+
+
+
+
+
+
+
+
+
+
         function Parser.createnote(n)
             if n then
                 --[[
@@ -3129,6 +3187,7 @@ function Taiko.ParseTJA(source)
                     section = nil,
                     text = nil,
                     delay = Parser.delay,
+                    senote = nil,
                     --Sudden: absolute ms
                     appearancems = Parser.suddenappear,
                     movems = Parser.suddenmove,
@@ -3199,6 +3258,16 @@ function Taiko.ParseTJA(source)
                 if Parser.section then
                     note.section = true
                     Parser.section = false
+                end
+
+                --SENotes
+                if Parser.senotechange then
+                    note.senote = Parser.senotechange
+                    Parser.senotechange = nil
+                --[[
+                elseif note.type and Taiko.Data.SENotes[note.type] then
+                    note.senote = Taiko.Data.SENotes[note.type][1]
+                --]]
                 end
 
                 return note
@@ -4126,6 +4195,7 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - Ignored in taiko-web.
                         ]]
+                        Parser.senotechange = CheckN(match[1], match[2], 'Invalid senotechange')
                     elseif match[1] == 'NEXTSONG' then
                         --[[
                             - Changes song when COURSE: is set to "Dan" or "6".
@@ -4828,6 +4898,125 @@ Everyone who DL
                                     nextjposscroll = false
                                 end
 
+                                --[[
+                                    SENOTES v2
+                                    just check if increment was same as before
+                                ]]
+                                if c.type == 1 or c.type == 2 or c.type == 3 or c.type == 4 then
+                                    if not Parser.senotems then
+                                        --notechain new start
+                                        if Parser.senotems == nil then
+                                            Parser.senotems = false
+                                        else
+                                            --START
+                                            local a = (c.ms or Parser.ms) - Parser.lastsenote.ms
+                                            --break notechain if too far ms (ADJUST SENOTE)
+                                            if a < 200 then
+                                                Parser.senotems = a
+                                                if Parser.lastlastsenote and (Parser.lastsenote.ms - Parser.lastlastsenote.ms == Parser.senotems) then
+                                                    --Amend
+                                                    Parser.lastlastsenote.senote = Taiko.Data.SENotes[Parser.lastlastsenote.type][2]
+                                                end
+                                            end
+                                        end
+                                    end
+
+                                    if Parser.senotems then
+                                        if c.ms - (Parser.lastsenote and Parser.lastsenote.ms or 0) == Parser.senotems then
+                                            --notechain continues
+                                            --[[
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][Parser.senotei == false and 3 or 2]
+                                            Parser.senotei = not Parser.senotei
+                                            --]]
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][2]
+                                        elseif Parser.lastsenote and Taiko.Data.SENotes[Parser.lastsenote.type] then
+                                            --notechain ends (last note)
+                                            --print(Parser.senotems, c.ms - (Parser.lastsenote and Parser.lastsenote.ms or 0))
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][1]
+                                            --Parser.senotei = false
+                                            Parser.senotems = false
+                                        end
+                                    elseif Parser.lastsenote then
+                                        Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][1]
+                                    end
+
+                                    --print(c.ms - (Parser.lastsenote and Parser.lastsenote.ms or 0))
+
+
+
+
+                                    --[=[
+                                    if Parser.senotems then
+                                        if ((c.ms or Parser.ms) - (Parser.lastsenote and Parser.lastsenote.ms or 0)) == Parser.senotems then
+                                            --notechain continues
+                                            --[[
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][Parser.senotei == false and 3 or 2]
+                                            Parser.senotei = not Parser.senotei
+                                            --]]
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][2]
+                                        elseif Parser.lastsenote and Taiko.Data.SENotes[Parser.lastsenote.type] then
+                                            --notechain ends (last note)
+                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][1]
+                                            Parser.senotei = false
+                                            Parser.senotems = false
+                                            c.senote = Taiko.Data.SENotes[c.type][2]
+                                        end
+                                    else
+                                        --notechain new start
+                                        if Parser.senotems == nil then
+                                            Parser.senotems = false
+                                        else
+                                            --START
+                                            Parser.senotems = (c.ms or Parser.ms) - Parser.lastsenote.ms
+                                        end
+                                    end
+                                    --]=]
+
+                                    
+
+                                    Parser.lastlastsenote = Parser.lastsenote
+                                    Parser.lastsenote = c
+                                end
+
+
+
+
+
+
+
+
+                                --[[
+                                    SENOTES
+                                    https://github.com/EricLiver/cjdg/blob/master/public/src/js/parsetja.js#L258-L289
+
+                                    in js, and is evalued before or
+                                --]]
+                                --[[
+                                if c.type then
+                                    if c.type == 1 or c.type == 2 or c.type == 3 or c.type == 4 then
+                                        Parser.notechain[#Parser.notechain + 1] = c
+                                    else
+                                        if #Parser.notechain > 1 and #Parser.currentmeasure >= 8 then
+                                            Parser.checknotechain(Parser.notechain, #Parser.currentmeasure, false)
+                                        end
+                                        Parser.notechain = {}
+                                    end
+                                elseif
+                                    (#Parser.currentmeasure < 24 or (
+                                        Parser.currentmeasure[i + 1]
+                                        and (not Parser.currentmeasure[i + 1].type)
+                                    ) and (#Parser.currentmeasure < 48 or (
+                                        Parser.currentmeasure[i + 2]
+                                        and (not Parser.currentmeasure[i + 2].type)
+                                        and Parser.currentmeasure[i + 3]
+                                        and (not Parser.currentmeasure[i + 3].type)
+                                    ))) then
+                                    if #Parser.notechain > 1 and #Parser.currentmeasure >= 8 then
+                                        Parser.checknotechain(Parser.notechain, #Parser.currentmeasure, true)
+                                    end
+                                    Parser.notechain = {}
+                                end
+                                --]]
 
 
                                 if c.data == 'note' then
@@ -4844,6 +5033,7 @@ Everyone who DL
                     end
                     Parser.insertbarline = true
                     Parser.zeroopt = zeroopt
+                    --io.read()
                 else
                     Parser.measuredone = false
                 end
@@ -6586,7 +6776,7 @@ int MeasureText(const char *text, int fontSize)
     rl.ClearBackground(rl.RAYWHITE)
 
     rl.DrawText([[
-Taiko v32
+Taiko v33
 Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     rl.EndDrawing()
@@ -6857,6 +7047,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local Textures = {
         PlaySong = {
             Notes = LoadImage('Graphics/5_Game/Notes.png'),
+            SENotes = LoadImage('Graphics/5_Game/SENotes.png'),
             ChipEffect = LoadImage('Graphics/5_Game/ChipEffect.png'),
             Barlines = {
                 bar = LoadImage('Graphics/5_Game/Bar.png'),
@@ -6977,163 +7168,205 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     --Map for everything
     --WARNING: If it is not in image, it crashes
     local Map = {
-        --[[
-        Notes = {
-            target = {
-                0, 0
-            },
-            don = {
-                1, 0
-            },
-            ka = {
-                2, 0
-            },
-            DON = {
-                3, 0
-            },
-            KA = {
-                4, 0
-            },
-            drumrollnote = {
-                5, 0
-            },
-            drumrollrect = {
-                6, 0
-            },
-            drumrollend = {
-                7, 0
-            },
-            DRUMROLLnote = {
-                8, 0
-            },
-            DRUMROLLrect = {
-                9, 0
-            },
-            DRUMROLLend = {
-                10, 0
-            },
-            balloon = {
-                11, 0
-            }
-        }
-        --]]
-        Notes = {
-            target = {
-                0, 0
-            },
-            [1] = {
-                1, 0
-            },
-            [2] = {
-                2, 0
-            },
-            [3] = {
-                3, 0
-            },
-            [4] = {
-                4, 0
-            },
-            drumrollnote = {
-                5, 0
-            },
-            drumrollrect = {
-                6, 0
-            },
-            drumrollend = {
-                7, 0
-            },
-            DRUMROLLnote = {
-                8, 0
-            },
-            DRUMROLLrect = {
-                9, 0
-            },
-            DRUMROLLend = {
-                10, 0
-            },
+        PlaySong = {
             --[[
-            [7] = {
-                11, 0
+            Notes = {
+                target = {
+                    0, 0
+                },
+                don = {
+                    1, 0
+                },
+                ka = {
+                    2, 0
+                },
+                DON = {
+                    3, 0
+                },
+                KA = {
+                    4, 0
+                },
+                drumrollnote = {
+                    5, 0
+                },
+                drumrollrect = {
+                    6, 0
+                },
+                drumrollend = {
+                    7, 0
+                },
+                DRUMROLLnote = {
+                    8, 0
+                },
+                DRUMROLLrect = {
+                    9, 0
+                },
+                DRUMROLLend = {
+                    10, 0
+                },
+                balloon = {
+                    11, 0
+                }
             }
             --]]
-            balloon = {
-                11, 0
-            },
-            balloonend = {
-                12, 0
-            }
-        },
-        Barlines = {
-            bar = nil,
-            bar_branch = nil
-        },
-        Judges = {
-            great = {
-                0, 0
-            },
-            good = {
-                0, 1
-            },
-            bad = {
-                0, 2
-            },
-            adlib = {
-                0, 3
-            },
-            --[[
-            mine = {
-                0, 4
-            }
-            --]]
-        },
-        Effects = {
-            Explosion = {
-                --Small Good
+            Notes = {
+                target = {
+                    0, 0
+                },
                 [1] = {
-                    Anim = {
-                        [0] = {0, 1},
-                        [1] = {1, 1},
-                        [2] = {2, 1},
-                        [3] = {3, 1},
-                        [4] = {4, 1},
-                        [5] = {5, 1},
-                        [6] = {6, 1}
-                    }
+                    1, 0
                 },
-                --Small Great
                 [2] = {
-                    Anim = {
-                        [0] = {0, 0},
-                        [1] = {1, 0},
-                        [2] = {2, 0},
-                        [3] = {3, 0},
-                        [4] = {4, 0},
-                        [5] = {5, 0},
-                        [6] = {6, 0}
-                    }
+                    2, 0
                 },
-                --Big Good
                 [3] = {
-                    Anim = {
-                        [0] = {0, 3},
-                        [1] = {1, 3},
-                        [2] = {2, 3},
-                        [3] = {3, 3},
-                        [4] = {4, 3},
-                        [5] = {5, 3},
-                        [6] = {6, 3}
-                    }
+                    3, 0
                 },
-                --Big Great
                 [4] = {
-                    Anim = {
-                        [0] = {0, 2},
-                        [1] = {1, 2},
-                        [2] = {2, 2},
-                        [3] = {3, 2},
-                        [4] = {4, 2},
-                        [5] = {5, 2},
-                        [6] = {6, 2}
+                    4, 0
+                },
+                drumrollnote = {
+                    5, 0
+                },
+                drumrollrect = {
+                    6, 0
+                },
+                drumrollend = {
+                    7, 0
+                },
+                DRUMROLLnote = {
+                    8, 0
+                },
+                DRUMROLLrect = {
+                    9, 0
+                },
+                DRUMROLLend = {
+                    10, 0
+                },
+                --[[
+                [7] = {
+                    11, 0
+                }
+                --]]
+                balloon = {
+                    11, 0
+                },
+                balloonend = {
+                    12, 0
+                }
+            },
+            SENotes = {
+                [1] = {
+                    0, 0
+                },
+                [2] = {
+                    0, 1
+                },
+                [3] = {
+                    0, 2
+                },
+                [4] = {
+                    0, 3
+                },
+                [5] = {
+                    0, 4
+                },
+                [6] = {
+                    0, 5
+                },
+                [7] = {
+                    0, 6
+                },
+                [8] = {
+                    0, 7
+                },
+                [9] = {
+                    0, 8
+                },
+                [10] = {
+                    0, 9
+                },
+                [11] = {
+                    0, 10
+                },
+                [12] = {
+                    0, 11
+                }
+            },
+            --[[
+            Barlines = {
+                bar = nil,
+                bar_branch = nil
+            },
+            --]]
+            Judges = {
+                great = {
+                    0, 0
+                },
+                good = {
+                    0, 1
+                },
+                bad = {
+                    0, 2
+                },
+                adlib = {
+                    0, 3
+                },
+                --[[
+                mine = {
+                    0, 4
+                }
+                --]]
+            },
+            Effects = {
+                Explosion = {
+                    --Small Good
+                    [1] = {
+                        Anim = {
+                            [0] = {0, 1},
+                            [1] = {1, 1},
+                            [2] = {2, 1},
+                            [3] = {3, 1},
+                            [4] = {4, 1},
+                            [5] = {5, 1},
+                            [6] = {6, 1}
+                        }
+                    },
+                    --Small Great
+                    [2] = {
+                        Anim = {
+                            [0] = {0, 0},
+                            [1] = {1, 0},
+                            [2] = {2, 0},
+                            [3] = {3, 0},
+                            [4] = {4, 0},
+                            [5] = {5, 0},
+                            [6] = {6, 0}
+                        }
+                    },
+                    --Big Good
+                    [3] = {
+                        Anim = {
+                            [0] = {0, 3},
+                            [1] = {1, 3},
+                            [2] = {2, 3},
+                            [3] = {3, 3},
+                            [4] = {4, 3},
+                            [5] = {5, 3},
+                            [6] = {6, 3}
+                        }
+                    },
+                    --Big Great
+                    [4] = {
+                        Anim = {
+                            [0] = {0, 2},
+                            [1] = {1, 2},
+                            [2] = {2, 2},
+                            [3] = {3, 2},
+                            [4] = {4, 2},
+                            [5] = {5, 2},
+                            [6] = {6, 2}
+                        }
                     }
                 }
             }
@@ -7156,7 +7389,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local xymul = {130, 130}
 
 
-    Textures.PlaySong.Notes = TextureMap.SplitUsingMap(Textures.PlaySong.Notes, Map.Notes, defaultsize, xymul)
+    Textures.PlaySong.Notes = TextureMap.SplitUsingMap(Textures.PlaySong.Notes, Map.PlaySong.Notes, defaultsize, xymul)
     --Textures.PlaySong.ChipEffect = TextureMap.SplitUsingMap(Textures.PlaySong.ChipEffect, Map.Notes, defaultsize, xymul)
 
     Textures.PlaySong.Notes.drumrollstart = rl.ImageCopy(Textures.PlaySong.Notes.drumrollend)
@@ -7229,6 +7462,27 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Notes = TextureMap.ReplaceWithTexture(Textures.PlaySong.Notes)
 
 
+
+    --SENotes
+
+    local defaultsize = {136, 30}
+
+    local xymul = {136, 30}
+
+    Textures.PlaySong.SENotes = TextureMap.SplitUsingMap(Textures.PlaySong.SENotes, Map.PlaySong.SENotes, defaultsize, xymul)
+    
+    Textures.PlaySong.SENotes = Resize(Textures.PlaySong.SENotes)
+
+    Textures.PlaySong.SENotes = TextureMap.ReplaceWithTexture(Textures.PlaySong.SENotes)
+
+    Textures.PlaySong.SENotes.sizex = Textures.PlaySong.SENotes[1].width
+    Textures.PlaySong.SENotes.sizey = Textures.PlaySong.SENotes[1].height
+    Textures.PlaySong.SENotes.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
+    Textures.PlaySong.SENotes.center = rl.new('Vector2', Textures.PlaySong.SENotes.sizex / 2, Textures.PlaySong.SENotes.sizey / 2)
+
+    Textures.PlaySong.SENotes.offsety = 80/720 * Config.ScreenHeight
+
+
     --Barlines
 
     Textures.PlaySong.Barlines = Resize(Textures.PlaySong.Barlines)
@@ -7264,7 +7518,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local xymul = {90, 60}
 
 
-    Textures.PlaySong.Judges = TextureMap.SplitUsingMap(Textures.PlaySong.Judges, Map.Judges, defaultsize, xymul)
+    Textures.PlaySong.Judges = TextureMap.SplitUsingMap(Textures.PlaySong.Judges, Map.PlaySong.Judges, defaultsize, xymul)
 
     Textures.PlaySong.Judges = Resize(Textures.PlaySong.Judges)
 
@@ -7300,7 +7554,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local xymul = {260, 260}
 
 
-    Textures.PlaySong.Effects.Explosion = TextureMap.SplitUsingMap(Textures.PlaySong.Effects.Explosion, Map.Effects.Explosion, defaultsize, xymul)
+    Textures.PlaySong.Effects.Explosion = TextureMap.SplitUsingMap(Textures.PlaySong.Effects.Explosion, Map.PlaySong.Effects.Explosion, defaultsize, xymul)
 
     Textures.PlaySong.Effects.Explosion = Resize(Textures.PlaySong.Effects.Explosion)
 
@@ -7950,7 +8204,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             --table.insert(timet, v.ms)
             timet[#timet + 1] = v.ms
             --print(v.speed, v.loadms, v.loadp)
-
+            v.senotet = v.senote and v.senote - 1 --corresponds to texture
 
             if (v.currentbranch == nil or v.currentbranch == branch) and combonote[v.type] then
                 maxcombo = maxcombo + 1
@@ -8552,7 +8806,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 note.pr.height = note.pr.height * note.radiusr
 
                 
-                
+                if note.senote then
+                    note.senotepr = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
+                end
 
 
                 --drumroll
@@ -10016,9 +10272,16 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                         --RAYLIB: RENDERING BARLNE
                                         --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
                                         rl.DrawTexturePro(Textures.PlaySong.Barlines[note.type], barlinesourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
-
                                     end
                                 elseif note.data == 'note' then
+                                    --SENotes
+                                    if note.senote then
+                                        note.senotepr.x = note.pr.x
+                                        note.senotepr.y = note.pr.y + Textures.PlaySong.SENotes.offsety
+                                        rl.DrawTexturePro(Textures.PlaySong.SENotes[note.senote], Textures.PlaySong.SENotes.sourcerect, note.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                    end
+
+
                                     --RAYLIB: RENDERING NOTE
                                     if Textures.PlaySong.Notes[note.type] then
                                         --rl.DrawTexture(Textures.PlaySong.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
@@ -10652,6 +10915,7 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+--a = 'taikobuipm/Ekiben 2000.tja'
 
 
 --File
