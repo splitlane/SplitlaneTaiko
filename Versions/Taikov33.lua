@@ -10317,9 +10317,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                                 --DIRTY LMAO
                                                 -- -90 < x < 90
+                                                --[[
                                                 if ((note.rotationr < 90 or note.rotationr > 270) and (x2 - x1 <= 0)) or ((note.rotationr > 90 and note.rotationr < 270) and (x2 - x1 > 0)) or ((y2 - y1 < 0) and (note.rotationr < 180)) or ((note.rotationr > 180) and (y2 - y1 > 0)) then
                                                     note.rotationr = NormalizeAngle(note.rotationr + 180)
                                                 end
+                                                --]]
+
+
+
+
+
+                                                --FINAL: Use atan2!
+                                                note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90)
 
 
                                                 
@@ -10627,8 +10636,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 if rl.IsKeyPressed(rl.KEY_ESCAPE) then
                     local before = os.clock()
 
+                    rl.EndDrawing()
+
                     --loop for input
                     while true do
+                        rl.BeginDrawing()
                         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
                             break
                         end
@@ -10636,7 +10648,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             --rl.CloseWindow()
                             break
                         end
+                        rl.EndDrawing()
                     end
+
+                    rl.EndDrawing()
 
                     startt = startt + (os.clock() - before)
                 end
