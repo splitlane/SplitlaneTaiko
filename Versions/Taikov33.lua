@@ -10378,11 +10378,23 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 --Just modify rect in loop
                                                 local x = x1 + offsetx + centeroffx
                                                 local y = y1 + offsety + centeroffy
+                                                local subdiv = 4
+                                                local subdivoff = -0.5
                                                 --print(div)
                                                 for i = 1, div do
                                                     note.drumrollrect.x = x
                                                     note.drumrollrect.y = y
                                                     rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], tsourcerect, note.drumrollrect, note.tcenter, note.rotationr, rl.WHITE)
+
+                                                    --draw drumroll line senote
+                                                    for i = 0, subdiv - 1 do
+                                                        if startnote.senote then
+                                                            startnote.senotepr.x = x + (incrementx * (i / subdiv + subdivoff))
+                                                            startnote.senotepr.y = y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety
+                                                            rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                                        end
+                                                    end
+
                                                     x = x + incrementx
                                                     y = y + incrementy
                                                 end
@@ -10399,6 +10411,22 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 note.drumrollrect2.width = note.drumrollrect.width
                                                 note.drumrollrect2.height = note.drumrollrect.height
                                                 rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], note.drumrollrect2, note.drumrollrect, note.tcenter, note.rotationr, rl.WHITE)
+
+                                                --draw drumroll line senote
+                                                local a = math.floor(note.drumrollrect.width / twidth)
+                                                subdivoff = subdivoff + 17/136
+                                                for i = 0, a - 1 do
+                                                    if startnote.senote then
+                                                        startnote.senotepr.x = x + (incrementx * (i / subdiv + subdivoff))
+                                                        startnote.senotepr.y = y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety
+                                                        rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                                    end
+                                                end
+
+                                                startnote.senotepr.x = x + (incrementx * (a / subdiv + subdivoff))
+                                                startnote.senotepr.y = y + (incrementy * (a / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety
+                                                rl.DrawTexturePro(Textures.PlaySong.SENotes[10], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+
                                                 x = x + incrementmodx
                                                 y = y + incrementmody
 
