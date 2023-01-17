@@ -4902,12 +4902,12 @@ Everyone who DL
                                     SENOTES v2
                                     just check if increment was same as before
                                 ]]
-                                if c.type == 1 or c.type == 2 or c.type == 3 or c.type == 4 then
+                                if c.type == 1 or c.type == 2 then
                                     if not Parser.senotems then
                                         --notechain new start
                                         if Parser.senotems == nil then
                                             Parser.senotems = false
-                                        else
+                                        elseif Parser.lastsenote then
                                             --START
                                             local a = (c.ms or Parser.ms) - Parser.lastsenote.ms
                                             --break notechain if too far ms (ADJUST SENOTE)
@@ -4943,39 +4943,20 @@ Everyone who DL
                                     --print(c.ms - (Parser.lastsenote and Parser.lastsenote.ms or 0))
 
 
-
-
-                                    --[=[
-                                    if Parser.senotems then
-                                        if ((c.ms or Parser.ms) - (Parser.lastsenote and Parser.lastsenote.ms or 0)) == Parser.senotems then
-                                            --notechain continues
-                                            --[[
-                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][Parser.senotei == false and 3 or 2]
-                                            Parser.senotei = not Parser.senotei
-                                            --]]
-                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][2]
-                                        elseif Parser.lastsenote and Taiko.Data.SENotes[Parser.lastsenote.type] then
-                                            --notechain ends (last note)
-                                            Parser.lastsenote.senote = Taiko.Data.SENotes[Parser.lastsenote.type][1]
-                                            Parser.senotei = false
-                                            Parser.senotems = false
-                                            c.senote = Taiko.Data.SENotes[c.type][2]
-                                        end
-                                    else
-                                        --notechain new start
-                                        if Parser.senotems == nil then
-                                            Parser.senotems = false
-                                        else
-                                            --START
-                                            Parser.senotems = (c.ms or Parser.ms) - Parser.lastsenote.ms
-                                        end
-                                    end
-                                    --]=]
-
                                     
 
                                     Parser.lastlastsenote = Parser.lastsenote
                                     Parser.lastsenote = c
+
+                                elseif c.type == 3 or c.type == 4 or c.type == 7 or c.type == 5 or c.type == 6 then
+                                    --[[
+                                        big notes, balloon: just use senotes cause theres only 1
+                                        drumroll: just use start senote, let playsong handle rest
+                                    ]]
+                                    c.senote = Taiko.Data.SENotes[c.type][1]
+                                    --break notechain
+                                    Parser.senotems = false
+                                
                                 end
 
 
@@ -10306,8 +10287,46 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             --New code (12/8/22)
                                             if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
                                                 --TODO: implement negativey
+                                                --[[
                                                 local negativex = startnote.scrollx > 0
                                                 local positivey = startnote.scrolly <= 0
+                                                --]]
+
+
+                                                --Flip if endnote goes past startnote
+                                                --[[
+                                                -- -90 < x < 90
+                                                if (note.rotationr < 90 or note.rotationr > 270) and (x2 - x1 <= 0) then
+                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
+                                                elseif (note.rotationr > 90 and note.rotationr < 270) and (x2 - x1 > 0) then
+                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
+                                                end
+
+
+                                                -- 0 < x < 180
+                                                if (y2 - y1 < 0) and (note.rotationr < 180) then
+                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
+                                                elseif (note.rotationr > 180) and (y2 - y1 > 0) then
+                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
+                                                end
+                                                --]]
+
+
+
+
+
+                                                --DIRTY LMAO
+                                                -- -90 < x < 90
+                                                if ((note.rotationr < 90 or note.rotationr > 270) and (x2 - x1 <= 0)) or ((note.rotationr > 90 and note.rotationr < 270) and (x2 - x1 > 0)) or ((y2 - y1 < 0) and (note.rotationr < 180)) or ((note.rotationr > 180) and (y2 - y1 > 0)) then
+                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
+                                                end
+
+
+                                                
+
+
+
+
 
                                                 --Draw rect + endnote
                                                 local twidth = Textures.PlaySong.Notes.drumrollrect.width
@@ -10915,6 +10934,9 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+a = 'tja/neta/ekiben/scrolldrumroll.tja'
+
+--https://www.youtube.com/watch?v=7cCTaJtSIew
 --a = 'taikobuipm/Ekiben 2000.tja'
 
 
