@@ -6902,7 +6902,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local bufferlength = 1/16 * Config.ScreenWidth
     local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
-    local endms = 1000 --Added to last note (ms)
+    local endms = 10000 --Added to last note (ms)
     local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
     local y = 0 * Config.ScreenWidth
     local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
@@ -7970,6 +7970,78 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
         
             return nil
+        end
+        local function IsLineOutsideRectangle(x1, y1, x2, y2, rx1, ry1, rx2, ry2)
+            --[[
+                assumptions
+                x1 < x2
+                y1 < y2
+                rx1 < rx2
+                ry1 < ry2
+            ]]
+
+
+            --If all points are in rect
+            --IsPointInRectangle()
+            if (rx1 <= x1 and x1 <= rx2 and ry1 <= y1 and y1 <= ry2) and (rx1 <= x2 and x2 <= rx2 and ry1 <= y2 and y2 <= ry2) then
+                return false
+            end
+
+
+
+            --Find equation for line
+            --y = mx + b
+
+            --m = dy / dx
+            local m = (y2 - y1) / (x2 - x1)
+
+            --b = y - mx
+            local b = y1 - m * x1
+
+            
+
+            if (x2 - x1) == 0 then
+                --Cases: 1 outside 1 in x2, both outside
+                if (not (rx1 <= x1 and x1 <= rx2 and ry1 <= y1 and y1 <= ry2)) and (not (rx1 <= x2 and x2 <= rx2 and ry1 <= y2 and y2 <= ry2)) then
+                    --both outside
+                    return true
+                else
+                    return false
+                end
+            else
+                --Find intersection y for x
+                --y = mx + b
+                local iy1, iy2 = m * rx1 + b, m * rx2 + b
+                if (x1 <= rx1 and rx1 <= x2) and (y1 <= iy1 and iy1 <= y2) then
+                    return false
+                end
+                if (x1 <= rx2 and rx2 <= x2) and (y1 <= iy2 and iy2 <= y2) then
+                    return false
+                end
+            end
+
+
+            if (y2 - y1) == 0 then
+                --Cases: 1 outside 1 in x2, both outside
+                if (not (rx1 <= x1 and x1 <= rx2 and ry1 <= y1 and y1 <= ry2)) and (not (rx1 <= x2 and x2 <= rx2 and ry1 <= y2 and y2 <= ry2)) then
+                    --both outside
+                    return true
+                else
+                    return false
+                end
+            else
+                --Find intersection x for y
+                --x = (y - b) / m
+                local ix1, ix2 = (ry1 - b) / m, (ry2 - b) / m
+                if (y1 <= ry1 and ry1 <= y2) and (x1 <= ix1 and ix1 <= x2) then
+                    return false
+                end
+                if (y1 <= ry2 and ry2 <= y2) and (x1 <= ix2 and ix2 <= x2) then
+                    return false
+                end
+            end
+
+            return true
         end
 
         local function CalculateLoadMs(note, ms)
@@ -10064,7 +10136,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                         --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                         --rewrite condition
-                        if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false) then
+                        if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)
+                        --drumroll code
+                        --startnote
+                        and ((not note.endnote) or (note.endnote.done))
+                        --endnote
+                        --TODO: https://gist.github.com/ChickenProp/3194723
+                        --and ((not note.startnote) or (IsPointInRectangle(note.startnote.p[1], note.startnote.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)) then
+                        and ((not note.startnote) or (IsLineOutsideRectangle(
+                            note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
+                            note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
+                            note.p[1] < note.startnote.p[1] and note.startnote.p[1] or note.p[2],
+                            note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
+                            unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]
+                        ))) then
                             --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                             --print('UNLOAD')
                             note.done = true
