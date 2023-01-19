@@ -6903,7 +6903,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local bufferlength = 1/16 * Config.ScreenWidth
     local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
-    local endms = 10000 --Added to last note (ms)
+    local endms = 1000 --Added to last note (ms)
     local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
     local y = 0 * Config.ScreenWidth
     local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
@@ -7729,7 +7729,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local Sounds = {
         PlaySong = {
-            Combo = {
+            Combo = (not Config.ComboSoundEnabled) and {} or {
                 [50] = LoadSound('Sounds/Combo_1P/50.wav'),
                 [100] = LoadSound('Sounds/Combo_1P/100.wav'),
                 [200] = LoadSound('Sounds/Combo_1P/200.wav'),
@@ -8379,9 +8379,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     --]==]
 
                     lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
+                    --[[
                     if lastnote.type == 5 or lastnote.type == 6 then
                         lastnote.loadms = CalculateLoadMsDrumroll(lastnote.endnote, lastnote.loadms)
                     end
+                    --]]
+
                     --[[
                     lastnote.newloadms = lastnote.loadms
                     lastnote.loadmscalc = lastnote.ms - lastnote.delay
@@ -11107,7 +11110,7 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
-a = 'tja/neta/ekiben/scrolldrumroll.tja'
+--a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
 --https://www.youtube.com/watch?v=7cCTaJtSIew
 --a = 'taikobuipm/Ekiben 2000.tja'
