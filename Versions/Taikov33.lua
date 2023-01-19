@@ -63,7 +63,8 @@ TODO: Add raylib option
     TODO: Metadata (title, subtitle)
     TODO: SENOTES (Parser + PlaySong)
     TODO: Localize locals so we don't run out
-    TODO: Calculate SENOTES when pushing
+    TODO: Calculate SENOTES when pushing --DONE
+    TODO: Add CalculateLoadMsDrumroll
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -8012,10 +8013,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --Find intersection y for x
                 --y = mx + b
                 local iy1, iy2 = m * rx1 + b, m * rx2 + b
-                if (x1 <= rx1 and rx1 <= x2) and (y1 <= iy1 and iy1 <= y2) then
+                if (x1 <= rx1 and rx1 <= x2) and (ry1 <= iy1 and iy1 <= ry2) then
                     return false
                 end
-                if (x1 <= rx2 and rx2 <= x2) and (y1 <= iy2 and iy2 <= y2) then
+                if (x1 <= rx2 and rx2 <= x2) and (ry1 <= iy2 and iy2 <= ry2) then
                     return false
                 end
             end
@@ -8033,10 +8034,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --Find intersection x for y
                 --x = (y - b) / m
                 local ix1, ix2 = (ry1 - b) / m, (ry2 - b) / m
-                if (y1 <= ry1 and ry1 <= y2) and (x1 <= ix1 and ix1 <= x2) then
+                if (y1 <= ry1 and ry1 <= y2) and (rx1 <= ix1 and ix1 <= rx2) then
                     return false
                 end
-                if (y1 <= ry2 and ry2 <= y2) and (x1 <= ix2 and ix2 <= x2) then
+                if (y1 <= ry2 and ry2 <= y2) and (rx1 <= ix2 and ix2 <= rx2) then
                     return false
                 end
             end
@@ -8044,23 +8045,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             return true
         end
 
-        local function CalculateLoadMs(note, ms)
-            --return ms - ((tracklength / note.speed) + buffer)
-            --support negative speed
-            --return ms - ((tracklength / math.abs(note.speed)) + buffer)
-            --bufferlength
-            --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
 
-            --x, y
-            local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-            --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
-            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
-        end
-        --[[
-        local function CalculateLoadPosition(note, lms)
-            return (note.ms - lms) * note.speed + target
-        end
-        --]]
+
         local function CalculatePosition(note, ms)
             --return note.loadp - (note.speed * (ms - note.loadms))
 
@@ -8084,6 +8070,58 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
             --]]
         end
+
+        local function CalculateLoadMs(note, ms)
+            --return ms - ((tracklength / note.speed) + buffer)
+            --support negative speed
+            --return ms - ((tracklength / math.abs(note.speed)) + buffer)
+            --bufferlength
+            --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
+
+            --x, y
+            local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+            --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
+            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+        end
+
+        --WARNING: CPU Heavy, estimating
+        local function CalculateLoadMsDrumroll(note, loadms)
+            local increment = -10
+            local ms = loadms
+            while true do
+                note.p[1], note.p[2] = CalculatePosition(note, ms)
+                note.p[1], note.p[2] = note.p[1] * xmul, note.p[2] * ymul
+                note.startnote.p[1], note.startnote.p[2] = CalculatePosition(note.startnote, ms)
+                note.startnote.p[1], note.startnote.p[2] = note.startnote.p[1] * xmul, note.startnote.p[2] * ymul
+                if IsLineOutsideRectangle(
+                    note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
+                    note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
+                    note.p[1] < note.startnote.p[1] and note.startnote.p[1] or note.p[2],
+                    note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
+                    loadrect[1], loadrect[2], loadrect[3], loadrect[4]
+                ) then
+                    return ms
+                else
+                    ms = ms + increment
+                end
+                --[[
+                print(note.p[1], note.p[2])
+                print(note.startnote.p[1], note.startnote.p[2])
+                print(loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+                --]]
+
+                --last case break
+                if loadms - ms > 1000 then
+                    return loadms
+                end
+            end
+        end
+        --[[
+        local function CalculateLoadPosition(note, lms)
+            return (note.ms - lms) * note.speed + target
+        end
+        --]]
+
 
 
 
@@ -8238,6 +8276,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
             v.loadms = CalculateLoadMs(v, v.ms)
+            --Assume start is before end
+            if v.type == 8 and (v.startnote.type == 5 or v.startnote.type == 6) then
+                v.loadms = CalculateLoadMsDrumroll(v, v.startnote.loadms < v.loadms and v.startnote.loadms or v.loadms)
+            end
             --[[
             v.newloadms = v.loadms
             v.loadmscalc = v.ms
@@ -8337,6 +8379,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     --]==]
 
                     lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
+                    if lastnote.type == 5 or lastnote.type == 6 then
+                        lastnote.loadms = CalculateLoadMsDrumroll(lastnote.endnote, lastnote.loadms)
+                    end
                     --[[
                     lastnote.newloadms = lastnote.loadms
                     lastnote.loadmscalc = lastnote.ms - lastnote.delay
