@@ -18,14 +18,14 @@ TODO: Add raylib option
     Rendering
     PlaySong
     SongSelect
-    Fix note rendering priority
-    Use gettime instead of os.clock()
+    Fix note rendering priority --DONE
+    Use gettime instead of os.clock() --ABORT
     Unload Textures.PlaySong + sound later on
     CleanUp
     Don't init audio if not playmusic
-    Add Toffset, fix screenrect
+    Add Toffset, fix screenrect --DONE
     Use branched barline texture
-    Fix drumroll
+    Fix drumroll --DONE
     TODO: git rebase HEAD~10 to be consistent on playsong capitalization
 
     DONE: Sort loaded before rendering:
@@ -39,8 +39,8 @@ TODO: Add raylib option
     Add keypad to PlaySong Controls
     Use tweening for jposscroll + gradation
     Add balloon, guage, donchan
-    Make Resizeall function to reduce code repetition
-    TODO: Draw before / after rendering?
+    Make Resizeall function to reduce code repetition --DONE
+    TODO: Draw before / after rendering? --DONE
     TODO: Transition away from loadms and into CalculatePosition + InRectangle
     TODO: Sudden
     TODO: Fix Loadms
@@ -49,22 +49,23 @@ TODO: Add raylib option
     TODO: SongSelect
     TODO: Move Setting mapping to songselect
     Animation system rework: use rect
-    TODO: Recording and Replaying
-    Remove requires and integrate libraries
-    DONE: Make a queue for stopms (delay) just like jposscroll
-    TODO: Transition size, sourcerect, center to Textures table
+    TODO: Recording and Replaying --DONE
+    Remove requires and integrate libraries --DONE
+    TODO: Make a queue for stopms (delay) just like jposscroll --DONE
+    TODO: Transition size, sourcerect, center to Textures table --DONE
     TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
     TODO: Fix replay side taiko anim
-    TODO: SENOTES + GAUGE
+    TODO: SENOTES + GAUGE --DONE
     TODO: Find 1p sign --DOESN'T EXIST
     TODO: Score add effect
-    TODO: Gauge meter animation (full / overflow)
+    TODO: Gauge meter animation (full / overflow) --DONE
     TODO: Text animation (combo, score)
     TODO: Metadata (title, subtitle)
-    TODO: SENOTES (Parser + PlaySong)
+    TODO: SENOTES (Parser + PlaySong) --DONE
     TODO: Localize locals so we don't run out
     TODO: Calculate SENOTES when pushing --DONE
-    TODO: Add CalculateLoadMsDrumroll
+    TODO: Add CalculateLoadMsDrumroll --DONE
+    TODO: notehitgauge anim 2
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
