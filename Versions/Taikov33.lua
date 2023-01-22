@@ -9174,10 +9174,11 @@ do
         --local Config = {ScreenWidth = 1280,
         --ScreenHeight = 720}
 
-        local frameTop = Config.ScreenHeight / 2 - 720 / 2
+        --local frameTop = Config.ScreenHeight / 2 - 720 / 2
+        local frameTop = 0
         
         local target = {
-            target[1] * xmul + offsetx, target[2] * ymul + offsety
+            rawtarget[1] * xmul + offsetx, rawtarget[2] * ymul + offsety
         }
         --[[
         local target = {
@@ -9187,12 +9188,23 @@ do
         print(unpack(target))error()
         --]]
         --slotPos.x = target[1]+offsetx slotPos.y = target[2]+offsety
+
+        --[[
         local animPos = {
             x1 = target[1] + 14,
             y1 = target[2] - 29,
             x2 = Config.ScreenWidth - 55,
             y2 = frameTop + 165
         }
+        --]]
+        local animPos = {
+            x1 = target[1] + (14 / 1280 * Config.ScreenWidth),
+            y1 = target[2] - (29 / 720 * Config.ScreenHeight),
+            x2 = Config.ScreenWidth - (55 / 1280 * Config.ScreenWidth),
+            y2 = frameTop + (165 / 720 * Config.ScreenHeight)
+        }
+
+
         animPos.w = animPos.x2 - animPos.x1
         --[[
         --variable height
@@ -9201,7 +9213,7 @@ do
 
         --don't let height change
         --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
-        animPos.h = 63
+        animPos.h = (63 / 720 * Config.ScreenHeight)
 
         local animateBezier = {{
             -- 427, 228
@@ -9233,8 +9245,10 @@ do
             local animPoint = (i - 1) / (animFrames - 1)
             local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
             --print(bezierPoint[1] .. ',' .. bezierPoint[2])
+            --[[
             bezierPoint[1] = Round(bezierPoint[1] / 1280 * Config.ScreenWidth)
             bezierPoint[2] = Round(bezierPoint[2] / 720 * Config.ScreenHeight)
+            --]]
             --notehitgauge.anim[i] = bezierPoint
             anim[i] = bezierPoint
         end
@@ -11213,7 +11227,7 @@ a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
-a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+--a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
 --https://www.youtube.com/watch?v=7cCTaJtSIew
