@@ -7122,7 +7122,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     base = LoadImage('Graphics/5_Game/7_Gauge/1P_Base.png'),
                     full = LoadImage('Graphics/5_Game/7_Gauge/1P.png'),
                     rainbow = {
-                        Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/Rainbow/', '.png', 0, 11)
+                        Anim = LoadAnimSeperate('Graphics/5_Game/7_Gauge/rainbow/', '.png', 0, 11)
                     }
                 },
                 Clear = {
@@ -7664,6 +7664,17 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Gauges.Clear[true] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 0, 44, 58, 24))
     Textures.PlaySong.Gauges.Clear[false] = rl.ImageFromImage(Textures.PlaySong.Gauges.Meter.base, rl.new('Rectangle', 58, 44, 58, 24))
 
+    --Meter (gaugeclear)
+    Textures.PlaySong.Gauges.Meter.clear = rl.ImageCopy(Textures.PlaySong.Gauges.Meter.full)
+    --Tint yellow
+    for x = 0, Textures.PlaySong.Gauges.Meter.clear.width - 1 do
+        for y = 0, Textures.PlaySong.Gauges.Meter.clear.height - 1 do
+            local color = rl.GetImageColor(Textures.PlaySong.Gauges.Meter.clear, x, y)
+            color.g = color.r
+            rl.ImageDrawPixel(Textures.PlaySong.Gauges.Meter.clear, x, y, color)
+        end
+    end
+
     --Convert to textures
 
     Textures.PlaySong.Gauges = Resize(Textures.PlaySong.Gauges)
@@ -7688,6 +7699,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Gauges.Clear.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Gauges.Clear.pr = rl.new('Rectangle', 1038/1280 * Config.ScreenWidth, 143/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
 
+    --Meter (gaugeoverflow)
+    Textures.PlaySong.Gauges.Meter.rainbow.sizex = Textures.PlaySong.Gauges.Meter.rainbow.Anim[0].width
+    Textures.PlaySong.Gauges.Meter.rainbow.sizey = Textures.PlaySong.Gauges.Meter.rainbow.Anim[0].height
+    Textures.PlaySong.Gauges.Meter.rainbow.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.rainbow.sizex, Textures.PlaySong.Gauges.Meter.rainbow.sizey)
+    Textures.PlaySong.Gauges.Meter.rainbow.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Gauges.Meter.rainbow.pr = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.rainbow.sizex, Textures.PlaySong.Gauges.Meter.rainbow.sizey)
 
 
     --FONTS (individual)
@@ -8975,10 +8992,56 @@ f	transparency
 
 
 
+            --gaugeclearanim
+--[[
+(white -> yellow -> white)
+r, g = 1, 1
+            ]]
+            local gaugeclearanim = {
+                startms = nil,
+                framen = 31,
+                anim = {
+                    [0] = 0,
+                    [1] = 0,
+                    [2] = 0,
+                    [3] = 0,
+                    [4] = 0,
+                    [5] = 0,
+                    [6] = 0,
+                    [7] = 0,
+                    [8] = 0,
+                    [9] = 0,
+                    [10] = 0,
+                    [11] = 0,
+                    [12] = 0,
+                    [13] = 0,
+                    [14] = 0,
+                    [15] = 0,
+                    [16] = 0,
+                    [17] = 0,
+                    [18] = 0,
+                    [19] = 0,
+                    [20] = 0,
+                    [21] = 0,
+                    [22] = 0,
+                    [23] = 0.2,
+                    [24] = 0.4,
+                    [25] = 0.6,
+                    [26] = 0.8,
+                    [27] = 1,
+                    [28] = 0.8,
+                    [29] = 0.6,
+                    [30] = 0.4,
+                    [31] = 0.2,
+                },
+                color = rl.new('Color', 255, 255, 255, 255)
+            }
 
-
-
-
+            local gaugeoverflowanim = {
+                startms = nil,
+                framen = 12,
+                anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
+            }
 
 
 
@@ -9002,7 +9065,7 @@ f	transparency
 
 
 --[[
-taiko notehitgauge animation
+taiko notehitgauge animation (note flying towards soul)
 ]]
 
 local notehitgauge = {
@@ -9083,7 +9146,7 @@ do
         {},
         {},
     }
-    local animFrames = 25
+    local animFrames = 25 * (skinfps / 60)
 
 
     CalculateNoteHitGauge = function(rawtarget)
@@ -9332,7 +9395,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         gauge = gauge + gauget[gaugestatus]
                         gaugep = gaugepercentf(gauge)
                         gaugeclear = gaugep >= Taiko.Data.Gauge.ClearPercent
+                        local oldgaugeoverflow = gaugeoverflow
                         gaugeoverflow = gaugep >= Taiko.Data.Gauge.OverflowPercent
+                        if gaugeoverflow and (not oldgaugeoverflow) then
+                            --just turned on
+                            gaugeoverflowanim.startms = ms
+                        end
 
                         --Effects
                         --[[
@@ -9808,7 +9876,42 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
                 end
 
-                --draw clear
+
+
+                --draw gauge modifiers
+
+                if gaugeoverflow then
+                    --draw gaugeoverflow
+                    local difms = ms - gaugeoverflowanim.startms
+                    local animn = math.floor(difms / skinframems) % (gaugeoverflowanim.framen - 1)
+                    --Anim ended?
+                    local frame = gaugeoverflowanim.anim[animn]
+                    rl.DrawTexturePro(frame, Textures.PlaySong.Gauges.Meter.rainbow.sourcerect, Textures.PlaySong.Gauges.Meter.rainbow.pr, Textures.PlaySong.Gauges.Meter.rainbow.center, 0, rl.WHITE)
+                elseif gaugeclear then
+                    --draw gaugeclear
+                    gaugeclearanim.startms = gaugeclearanim.startms or ms
+                    local difms = ms - gaugeclearanim.startms
+                    local animn = math.floor(difms / skinframems)
+                    --Anim ended?
+                    local frame = gaugeclearanim.anim[animn]
+                    if frame then
+                        gaugeclearanim.color.a = 255 * frame
+                    else
+                        --Anim ended, repeat
+                        gaugeclearanim.startms = gaugeclearanim.startms + gaugeclearanim.framen * (1000 / skinfps)
+                    end
+
+                    --draw over
+                    local fill = 39
+                    local x = 14 * fill - 1
+                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
+                    Textures.PlaySong.Gauges.Meter.pr2.width = x
+                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.clear, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, gaugeclearanim.color)
+                end
+
+
+
+                --draw clear symbol
                 
                 rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[gaugeclear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
 
