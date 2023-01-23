@@ -9846,12 +9846,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --jposscroll
+                --local offseti = 0
                 if jposscroll then
                     for i = 1, #jposscrollqueue do
-                        --print(1)
+                        --local i2 = i + offseti
                         local note = jposscrollqueue[i]
                         --if (note.jposscroll and (ms >= note.ms)) then
                         if ms >= note.ms then
+                            --Previous jposscroll hasn't ended yet, so make sure it didn't skip over
+                            if jposscrollstart then
+                                local d = note.ms - jposscrollstart
+                                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * d)
+                                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * d)
+                            end
+                            
                             jposscrollstart = note.ms
                             jposscrollend = note.ms + note.jposscroll.lengthms
                             if note.jposscroll.p == 'default' then
@@ -9869,7 +9877,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             jposscrollstartp[2] = target[2]
 
                             table.remove(jposscrollqueue, i)
+
+
                             break
+                            --offseti = offseti - 1
                         end
                     end
 
