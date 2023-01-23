@@ -6651,6 +6651,7 @@ int MeasureText(const char *text, int fontSize)
     --INIT RAYLIB
     rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
     --rl.SetTargetFPS(120)
+    rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
     rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
 
     rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
@@ -11066,13 +11067,23 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     break
                 end
 
+                --Resizable window
+                local sizex, sizey = rl.GetScreenWidth(), rl.GetScreenHeight()
+                if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
+                    print(sizex, sizey, Config.ScreenWidth, Config.ScreenHeight)
+                    ResizeAll(Textures, sizex / Config.ScreenWidth, sizey / Config.ScreenHeight)
+                    Config.ScreenWidth, Config.ScreenHeight = sizex, sizey
+                end
 
+                --Fullscreen
                 if rl.IsKeyPressed(rl.KEY_F) then
                     local rx, ry = ToggleFullscreen()
 
                     --RESCALE EVERYTHING
                     ResizeAll(Textures, rx, ry)
                 end
+
+                --Screenshot
                 if rl.IsKeyPressed(rl.KEY_S) then
                     --[[
                     --might produce a screenshot with black waste parts due to gpu
