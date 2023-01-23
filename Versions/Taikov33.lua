@@ -6735,6 +6735,7 @@ int MeasureText(const char *text, int fontSize)
         if Config.Fullscreen then
             rl.ToggleFullscreen()
             Config.ScreenWidth, Config.ScreenHeight = OriginalConfig.ScreenWidth, OriginalConfig.ScreenHeight
+            rl.RestoreWindow()
             rl.SetWindowSize(Config.ScreenWidth, Config.ScreenHeight)
         else
             local monitor = rl.GetCurrentMonitor()
@@ -11068,11 +11069,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Resizable window
-                local sizex, sizey = rl.GetScreenWidth(), rl.GetScreenHeight()
-                if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
-                    print(sizex, sizey, Config.ScreenWidth, Config.ScreenHeight)
-                    ResizeAll(Textures, sizex / Config.ScreenWidth, sizey / Config.ScreenHeight)
-                    Config.ScreenWidth, Config.ScreenHeight = sizex, sizey
+                --if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
+                if rl.IsWindowResized() and (not Config.Fullscreen) then
+                    local sizex, sizey = rl.GetScreenWidth(), rl.GetScreenHeight()
+                    if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
+                        --print(Config.ScreenWidth, Config.ScreenHeight, sizex, sizey)
+                        ResizeAll(Textures, sizex / Config.ScreenWidth, sizey / Config.ScreenHeight)
+                        Config.ScreenWidth, Config.ScreenHeight = sizex, sizey
+                    end
                 end
 
                 --Fullscreen
