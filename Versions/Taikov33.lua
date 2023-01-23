@@ -66,6 +66,7 @@ TODO: Add raylib option
     TODO: Calculate SENOTES when pushing --DONE
     TODO: Add CalculateLoadMsDrumroll --DONE
     TODO: notehitgauge anim 2
+    TODO: skinresolution
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -6536,7 +6537,8 @@ int MeasureText(const char *text, int fontSize)
     --]=]
 
     local texttexturespacing = -4
-    local function MeasureTextTexture(str, sx, sy)
+    local function MeasureTextTexture(str, osx, osy, sx, sy, scale)
+        local texttexturespacing = texttexturespacing * scale[1]
         local outx, outy = 0, 0
         local currentx = 0
         for i = 1, #str do
@@ -6553,7 +6555,7 @@ int MeasureText(const char *text, int fontSize)
         outx = currentx > outx and currentx or outx
         return outx, outy
     end
-    local function DrawTextTexture(texture, str, x, y, sx, sy, t)
+    local function DrawTextTexture(texture, str, x, y, osx, osy, sx, sy, scale, t)
         --[[
             nx, ny = number of chars in x, y
             t = {
@@ -6578,9 +6580,10 @@ int MeasureText(const char *text, int fontSize)
         --local sx, sy = image.width / nx, image.height / ny
         local line = 0
         local ix = 0
-        local rect = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
+        local rect = rl.new('Rectangle', 0, 0, osx - 1, osy - 1)
         local rect2 = rl.new('Rectangle', 0, 0, sx - 1, sy - 1)
         local origin = rl.new('Vector2', 0, 0)
+        local texttexturespacing = texttexturespacing * scale[1]
 
         for i = 1, #str do
             local c = string.sub(str, i, i)
@@ -6589,8 +6592,8 @@ int MeasureText(const char *text, int fontSize)
                 ix = 0
             else
                 local p = t[c]
-                rect.x = p[1] * sx
-                rect.y = p[2] * sy
+                rect.x = p[1] * osx
+                rect.y = p[2] * osy
                 rect2.x = x + (sx + texttexturespacing) * ix
                 rect2.y = y + (sy + texttexturespacing) * line
                 rl.DrawTexturePro(texture, rect, rect2, origin, 0, rl.WHITE)
@@ -6713,6 +6716,46 @@ int MeasureText(const char *text, int fontSize)
             Config = Persistent.Load(ConfigData)
         end
     end
+
+
+
+
+
+    --Config
+
+    --OriginalConfig
+    OriginalConfig = Table.Clone(Config)
+
+
+    --Config.Fullscreen
+    --Ignores Config.ScreenWidth, Config.ScreenHeight, and turns on fullscreen
+    local function ToggleFullscreen()
+        local OldScreenWidth, OldScreenHeight = Config.ScreenWidth, Config.ScreenHeight
+        if Config.Fullscreen then
+            rl.ToggleFullscreen()
+            Config.ScreenWidth, Config.ScreenHeight = OriginalConfig.ScreenWidth, OriginalConfig.ScreenHeight
+            rl.SetWindowSize(Config.ScreenWidth, Config.ScreenHeight)
+        else
+            local monitor = rl.GetCurrentMonitor()
+            Config.ScreenWidth, Config.ScreenHeight = rl.GetMonitorWidth(monitor), rl.GetMonitorHeight(monitor)
+            rl.SetWindowSize(Config.ScreenWidth, Config.ScreenHeight)
+            rl.ToggleFullscreen()
+        end
+        --[[
+        print(Config.Fullscreen)
+        print(Config.ScreenWidth, Config.ScreenHeight)
+        --]]
+        Config.Fullscreen = not Config.Fullscreen
+        return Config.ScreenWidth / OldScreenWidth, Config.ScreenHeight / OldScreenHeight
+    end
+    if Config.Fullscreen then
+        Config.Fullscreen = false
+        ToggleFullscreen()
+    end
+
+
+
+
 
 
 
@@ -6917,6 +6960,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     end
 
     --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
+
+    --[[
     local statuslength = 200 --Status length (good/ok/bad) (ms)
     local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
     local statusanimationmove = 1/40 * Config.ScreenWidth --Status animation move
@@ -6934,6 +6979,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         [6] = {color = 'yellow'},
         [7] = {color = 'cyan'},
     }
+    --]]
 
 
     local trackend = trackstart + tracklength
@@ -7016,6 +7062,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local desynctime = 0.1 --Acceptable time for desync until correction (seconds)
 
+    local skinresolution = {1280, 720} --Resolution for opentaiko skin
     local skinfps = 60 --Fps for opentaiko skin
     local skinframems = 1000 / skinfps --Ms per frame for opentaiko skin
 
@@ -7031,7 +7078,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         PlaySong = {
             Notes = LoadImage('Graphics/5_Game/Notes.png'),
             SENotes = LoadImage('Graphics/5_Game/SENotes.png'),
-            ChipEffect = LoadImage('Graphics/5_Game/ChipEffect.png'),
+            --ChipEffect = LoadImage('Graphics/5_Game/ChipEffect.png'),
             Barlines = {
                 bar = LoadImage('Graphics/5_Game/Bar.png'),
                 bar_branch = LoadImage('Graphics/5_Game/Bar_Branch.png')
@@ -7051,26 +7098,28 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 Anim = LoadAnimSeperate('Graphics/5_Game/11_Balloon/Breaking_', '.png', 0, 5)
             },
             Effects = {
-                Hit = {
-                    --Small Good
-                    [1] = {
-                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
+                Note = {
+                    Hit = {
+                        --Small Good
+                        [1] = {
+                            Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
+                        },
+                        --Small Great
+                        [2] = {
+                            Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
+                        },
+                        --Big Good
+                        [3] = {
+                            Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
+                        },
+                        --Big Great
+                        [4] = {
+                            Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
+                        }
                     },
-                    --Small Great
-                    [2] = {
-                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
-                    },
-                    --Big Good
-                    [3] = {
-                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
-                    },
-                    --Big Great
-                    [4] = {
-                        Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
-                    }
-                },
-                Explosion = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion.png'),
-                ExplosionBig = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion_Big.png')
+                    Explosion = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion.png'),
+                    ExplosionBig = LoadImage('Graphics/5_Game/10_Effects/Hit/Explosion_Big.png')
+                }
             },
             Lanes = {
                 Lane = {
@@ -7302,53 +7351,55 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --]]
             },
             Effects = {
-                Explosion = {
-                    --Small Good
-                    [1] = {
-                        Anim = {
-                            [0] = {0, 1},
-                            [1] = {1, 1},
-                            [2] = {2, 1},
-                            [3] = {3, 1},
-                            [4] = {4, 1},
-                            [5] = {5, 1},
-                            [6] = {6, 1}
-                        }
-                    },
-                    --Small Great
-                    [2] = {
-                        Anim = {
-                            [0] = {0, 0},
-                            [1] = {1, 0},
-                            [2] = {2, 0},
-                            [3] = {3, 0},
-                            [4] = {4, 0},
-                            [5] = {5, 0},
-                            [6] = {6, 0}
-                        }
-                    },
-                    --Big Good
-                    [3] = {
-                        Anim = {
-                            [0] = {0, 3},
-                            [1] = {1, 3},
-                            [2] = {2, 3},
-                            [3] = {3, 3},
-                            [4] = {4, 3},
-                            [5] = {5, 3},
-                            [6] = {6, 3}
-                        }
-                    },
-                    --Big Great
-                    [4] = {
-                        Anim = {
-                            [0] = {0, 2},
-                            [1] = {1, 2},
-                            [2] = {2, 2},
-                            [3] = {3, 2},
-                            [4] = {4, 2},
-                            [5] = {5, 2},
-                            [6] = {6, 2}
+                Note = {
+                    Explosion = {
+                        --Small Good
+                        [1] = {
+                            Anim = {
+                                [0] = {0, 1},
+                                [1] = {1, 1},
+                                [2] = {2, 1},
+                                [3] = {3, 1},
+                                [4] = {4, 1},
+                                [5] = {5, 1},
+                                [6] = {6, 1}
+                            }
+                        },
+                        --Small Great
+                        [2] = {
+                            Anim = {
+                                [0] = {0, 0},
+                                [1] = {1, 0},
+                                [2] = {2, 0},
+                                [3] = {3, 0},
+                                [4] = {4, 0},
+                                [5] = {5, 0},
+                                [6] = {6, 0}
+                            }
+                        },
+                        --Big Good
+                        [3] = {
+                            Anim = {
+                                [0] = {0, 3},
+                                [1] = {1, 3},
+                                [2] = {2, 3},
+                                [3] = {3, 3},
+                                [4] = {4, 3},
+                                [5] = {5, 3},
+                                [6] = {6, 3}
+                            }
+                        },
+                        --Big Great
+                        [4] = {
+                            Anim = {
+                                [0] = {0, 2},
+                                [1] = {1, 2},
+                                [2] = {2, 2},
+                                [3] = {3, 2},
+                                [4] = {4, 2},
+                                [5] = {5, 2},
+                                [6] = {6, 2}
+                            }
                         }
                     }
                 }
@@ -7393,7 +7444,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     --local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
 
     --Assume skin is 720p
-    local resizefactor = Config.ScreenWidth / 1280
+    --local resizefactor = Config.ScreenWidth / 1280
     --[[
     local function Resize(t, times)
         times = times or 1
@@ -7407,17 +7458,21 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         return t
     end
     --]]
-    local function Resize(t, times)
-        times = times or 1
+    local function Resize(t, timesx, timesy)
+        timesx = timesx or 1
+        timesy = timesy or 1
         if type(t) == 'table' then
             for k, v in pairs(t) do
-                Resize(v, times)
+                Resize(v, timesx, timesy)
             end
         else
-            rl.ImageResize(t, resizefactor * t.width * times, resizefactor * t.height * times)
+            --Assume skin is 720p
+            rl.ImageResize(t, (Config.ScreenWidth / 1280) * t.width * timesx, (Config.ScreenHeight / 720) * t.height * timesy)
         end
         return t
     end
+    
+
     Textures.PlaySong.Notes = Resize(Textures.PlaySong.Notes)
     --Textures.PlaySong.ChipEffect = Resize(Textures.PlaySong.ChipEffect)
 
@@ -7428,6 +7483,68 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local tcenter = rl.new('Vector2', tsizex / 2, tsizey / 2)
     local toffsetx, toffsety = offsetx - (tsizex / 2), offsety - (tsizey / 2)
     local xmul, ymul = 1, -1
+
+    local targetpr = rl.new('Rectangle', 0, 0, 0, 0)
+
+
+
+    --needs tcenter
+    --Used when toggling fullscreen
+    local scale = {1, 1}
+    local function ResizeAll(t, timesx, timesy, recursive)
+        if not recursive then
+            scale[1] = scale[1] * timesx
+            scale[2] = scale[2] * timesy
+
+            --[[
+            target[1] = (target[1] - offsetx) * timesx + offsetx
+            target[2] = (target[2] - offsety) * timesy + offsety
+            --]]
+
+            tcenter.x = tcenter.x * timesx
+            tcenter.y = tcenter.y * timesy
+
+            --debug
+            textsize = Config.ScreenHeight / 45
+        end
+        --timesx, timesy needs to be provided
+        for k, v in pairs(t) do
+            if type(v) == 'table' then
+                ResizeAll(v, timesx, timesy, true)
+            elseif type(v) == 'number' then
+                if string.find(k, 'sizex') then
+                    t[k] = v * timesx
+                elseif string.find(k, 'sizey') then
+                    t[k] = v * timesy
+                end
+            elseif type(v) == 'cdata' then
+                local a = tostring(v)
+                if string.find(a, 'Image') then
+                    --Assume skin is 720p
+                    rl.ImageResize(t, t.width * timesx, t.height * timesy)
+                elseif string.find(a, 'Texture') then
+                    --no need to resize, just resize rects
+                elseif string.find(a, 'Vector2') then
+                    v.x = v.x * timesx
+                    v.y = v.y * timesy
+                elseif string.find(a, 'Rectangle') then
+                    if string.find(k, 'sourcerect') then
+
+                    else
+                        v.x = v.x * timesx
+                        v.y = v.y * timesy
+                        v.width = v.width * timesx
+                        v.height = v.height * timesy
+                    end
+                end
+            end
+        end
+        return t
+    end
+
+
+
+
 
 
     --Apply ChipEffect
@@ -7516,16 +7633,22 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     --Hit
 
-    Textures.PlaySong.Effects.Hit = Resize(Textures.PlaySong.Effects.Hit)
+    Textures.PlaySong.Effects.Note.Hit = Resize(Textures.PlaySong.Effects.Note.Hit)
 
-    local base = Textures.PlaySong.Effects.Hit[1].Anim[0]
-    local statusoffsetx = offsetx - (base.width / 2)
-    local statusoffsety = offsety - (base.height / 2)
-    --in case base didn't load
-    statusoffsetx = statusoffsetx == offsetx and offsetx - (130/1280 * Config.ScreenWidth) or statusoffsetx
-    statusoffsety = statusoffsety == offsety and offsety - (130/720 * Config.ScreenHeight) or statusoffsety
+    Textures.PlaySong.Effects.Note.Hit = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Note.Hit)
 
-    Textures.PlaySong.Effects.Hit = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Hit)
+
+    Textures.PlaySong.Effects.Note.sizex = Textures.PlaySong.Effects.Note.Hit[1].Anim[0].width
+    Textures.PlaySong.Effects.Note.sizey = Textures.PlaySong.Effects.Note.Hit[1].Anim[0].height
+
+    --In case base didn't load
+    Textures.PlaySong.Effects.Note.sizex = Textures.PlaySong.Effects.Note.sizex == 0 and 260/1280 * Config.ScreenWidth or Textures.PlaySong.Effects.Note.sizex
+    Textures.PlaySong.Effects.Note.sizey = Textures.PlaySong.Effects.sizey == 0 and 260/720 * Config.ScreenHeight or Textures.PlaySong.Effects.Note.sizey
+
+    Textures.PlaySong.Effects.Note.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Effects.Note.sizex, Textures.PlaySong.Effects.Note.sizey)
+    Textures.PlaySong.Effects.Note.center = rl.new('Vector2', Textures.PlaySong.Effects.Note.sizex / 2, Textures.PlaySong.Effects.Note.sizey / 2)
+
+    
 
 
 
@@ -7537,23 +7660,23 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local xymul = {260, 260}
 
 
-    Textures.PlaySong.Effects.Explosion = TextureMap.SplitUsingMap(Textures.PlaySong.Effects.Explosion, Map.PlaySong.Effects.Explosion, defaultsize, xymul)
+    Textures.PlaySong.Effects.Note.Explosion = TextureMap.SplitUsingMap(Textures.PlaySong.Effects.Note.Explosion, Map.PlaySong.Effects.Note.Explosion, defaultsize, xymul)
 
-    Textures.PlaySong.Effects.Explosion = Resize(Textures.PlaySong.Effects.Explosion)
+    Textures.PlaySong.Effects.Note.Explosion = Resize(Textures.PlaySong.Effects.Note.Explosion)
 
-    Textures.PlaySong.Effects.Explosion = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Explosion)
+    Textures.PlaySong.Effects.Note.Explosion = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Note.Explosion)
 
 
 
 
     --Explosion Big
-    --Textures.PlaySong.Effects.ExplosionBig = Resize(Textures.PlaySong.Effects.ExplosionBig)
-    local temp = {Textures.PlaySong.Effects.ExplosionBig}
-    Textures.PlaySong.Effects.ExplosionBig = Resize(temp)
+    --Textures.PlaySong.Effects.Note.ExplosionBig = Resize(Textures.PlaySong.Effects.Note.ExplosionBig)
+    local temp = {Textures.PlaySong.Effects.Note.ExplosionBig}
+    Textures.PlaySong.Effects.Note.ExplosionBig = Resize(temp)
 
-    --Textures.PlaySong.Effects.ExplosionBig = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.ExplosionBig)
+    --Textures.PlaySong.Effects.Note.ExplosionBig = TextureMap.ReplaceWithTexture(Textures.PlaySong.Effects.Note.ExplosionBig)
 
-    Textures.PlaySong.Effects.ExplosionBig = {
+    Textures.PlaySong.Effects.Note.ExplosionBig = {
         Anim = {
             [0] = TextureMap.ReplaceWithTexture(temp)[1]
         }
@@ -8914,19 +9037,21 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 if note.data == 'event' and note.event == 'barline' then
                     note.type = 'bar' --FIX: BRANCH BARLINE
                     note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
-                    note.tcenter = rl.new('Vector2', barlinecenter.x * note.radiusr, barlinecenter.y * note.radiusr)
+                    note.tcentero = rl.new('Vector2', barlinecenter.x * note.radiusr, barlinecenter.y * note.radiusr)
                 else
                     --note.pr = rl.new('Vector2', 0, 0)
                     note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
-                    note.tcenter = rl.new('Vector2', tcenter.x * note.radiusr, tcenter.y * note.radiusr)
+                    note.tcentero = rl.new('Vector2', tcenter.x * note.radiusr, tcenter.y * note.radiusr)
                 end
+                note.tcenter = rl.new('Vector2', 0, 0)
 
                 note.pr.width = note.pr.width * note.radiusr
                 note.pr.height = note.pr.height * note.radiusr
 
                 
                 if note.senote then
-                    note.senotepr = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
+                    note.osenotepr = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
+                    note.senotepr = rl.new('Rectangle', 0, 0, 0, 0)
                 end
 
 
@@ -9197,11 +9322,12 @@ do
             y2 = frameTop + 165
         }
         --]]
+        
         local animPos = {
-            x1 = target[1] + (14 / 1280 * Config.ScreenWidth),
-            y1 = target[2] - (29 / 720 * Config.ScreenHeight),
-            x2 = Config.ScreenWidth - (55 / 1280 * Config.ScreenWidth),
-            y2 = frameTop + (165 / 720 * Config.ScreenHeight)
+            x1 = target[1] + (14 / 1280 * (Config.ScreenWidth / scale[1])),
+            y1 = target[2] - (29 / 720 * (Config.ScreenHeight / scale[2])),
+            x2 = (Config.ScreenWidth / scale[1]) - (55 / 1280 * (Config.ScreenWidth / scale[1])),
+            y2 = frameTop + (165 / 720 * (Config.ScreenHeight / scale[2]))
         }
 
 
@@ -9213,7 +9339,7 @@ do
 
         --don't let height change
         --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
-        animPos.h = (63 / 720 * Config.ScreenHeight)
+        animPos.h = (63 / 720 * (Config.ScreenHeight / scale[2]))
 
         local animateBezier = {{
             -- 427, 228
@@ -9318,7 +9444,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         color = rl.new('Color', 255, 255, 255, 255)
                     },
                     sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    pr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    pr = rl.new('Rectangle', 0, 0, 0, 0),
                     center = rl.new('Vector2', 0, 0)
                 },
                 --right
@@ -9334,7 +9461,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         color = rl.new('Color', 255, 255, 255, 255)
                     },
                     sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    pr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                    pr = rl.new('Rectangle', 0, 0, 0, 0),
                     center = rl.new('Vector2', 0, 0)
                 }
             }
@@ -9428,17 +9556,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         laststatus = {
                             startms = ms,
                             status = hiteffect,
-                            statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Hit[hiteffect].Anim,
-                            explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim,
-                            explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
+                            statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim,
+                            explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim,
+                            explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
                         }
                         --]]
                         --avoid table creation
                         laststatus.startms = ms
                         laststatus.status = hiteffect
-                        laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Hit[hiteffect].Anim
-                        laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Explosion[hiteffect].Anim
-                        laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.ExplosionBig.Anim) or nil
+                        laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim
+                        laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim
+                        laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
 
                         --notehitgauge animation
                         local i = #notehitgauge.notes + 1
@@ -9886,8 +10014,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 fill = ClipN(fill, 0, 50)
                 local x = 14 * fill - 1
                 if x > 0 then
-                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
-                    Textures.PlaySong.Gauges.Meter.pr2.width = x
+                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
+                    Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
                     rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
                 end
 
@@ -9967,6 +10095,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                     --if visible
 
                                     --taikoanim.side
+                                    sideanim.pr.x = sideanim.opr.x * scale[1]
+                                    sideanim.pr.y = sideanim.opr.y * scale[2]
+                                    sideanim.pr.width = sideanim.opr.width * scale[1]
+                                    sideanim.pr.height = sideanim.opr.height * scale[2]
                                     rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko[i2], sideanim.sourcerect, sideanim.pr, sideanim.center, 0, rl.WHITE)
                                 end
                             else
@@ -9990,11 +10122,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     100-inf 2
                 ]]
                 if combo >= 10 then
-                    local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
+                    local osx, osy = 40/1280 * (Config.ScreenWidth / scale[1]), 48/720 * (Config.ScreenHeight / scale[2])
+                    local sx, sy = osx * scale[1], osy * scale[2]
                     local str = tostring(combo)
                     local a = combo < 50 and 0 or combo < 100 and 1 or 2
-                    local measurex = MeasureTextTexture(str, sx, sy)
-                    DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, sx, sy)
+                    local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
+                    DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
                 end
 
 
@@ -10005,10 +10138,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                 --draw score (right align)
-                local sx, sy = 26/1280 * Config.ScreenWidth, 34/720 * Config.ScreenHeight
+                local osx, osy = 26/1280 * (Config.ScreenWidth / scale[1]), 34/720 * (Config.ScreenHeight / scale[2])
+                local sx, sy = osx * scale[1], osy * scale[2]
                 local str = tostring(score)
-                local measurex = MeasureTextTexture(str, sx, sy)
-                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, sx, sy)
+                local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
+                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
 
 
                 --[[
@@ -10065,7 +10199,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                 --normal
-                rl.DrawTexture(Textures.PlaySong.Notes.target, Round(target[1] * xmul) + toffsetx, Round(target[2] * ymul) + toffsety, rl.WHITE)
+                --rl.DrawTexture(Textures.PlaySong.Notes.target, (Round(target[1] * xmul) + toffsetx) * scale[1], (Round(target[2] * ymul) + toffsety) * scale[2], rl.WHITE)
+
+                --scale
+                targetpr.x = (Round(target[1] * xmul) + offsetx) * scale[1]
+                targetpr.y = (Round(target[2] * ymul) + offsety) * scale[2]
+                targetpr.width = tsizex * scale[1]
+                targetpr.height = tsizey * scale[2]
+                rl.DrawTexturePro(Textures.PlaySong.Notes.target, tsourcerect, targetpr, tcenter, 0, rl.WHITE)
 
 
 
@@ -10097,9 +10238,15 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
                     if frame then
                         if frame[1] then
+                            --scale
+                            note.pr.width = tsizex * scale[1]
+                            note.pr.height = tsizey * scale[2]
+                            note.tcenter.x = note.tcentero.x * scale[1]
+                            note.tcenter.y = note.tcentero.y * scale[2]
+
                             --draw note
-                            note.pr.x = frame[1]
-                            note.pr.y = frame[2]
+                            note.pr.x = frame[1] * scale[1]
+                            note.pr.y = frame[2] * scale[2]
                             rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
                         else
                             --invis
@@ -10240,8 +10387,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         --]]
                         -- [[
                         --rendering using DrawTexturePro
-                        note.pr.x = Round(note.p[1]) + offsetx
-                        note.pr.y = Round(note.p[2]) + offsety
+                        note.pr.x = (Round(note.p[1]) + offsetx) * scale[1]
+                        note.pr.y = (Round(note.p[2]) + offsety) * scale[2]
                         --]]
 
 
@@ -10454,7 +10601,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
+                targetpr.width = targetpr.width * 2
+                targetpr.height = targetpr.height * 2
                 --Render status on bottom of notes
                 if laststatus.statusanim then
                     local difms = ms - laststatus.startms
@@ -10463,7 +10611,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local frame = laststatus.statusanim[animn]
                     if frame then
                         --Draw on target
-                        rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                        --scale
+                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
                     else
                         --Anim ended, remove status
                         laststatus.statusanim = nil
@@ -10501,15 +10652,29 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             if dorender then
                                 if note.data == 'event' then
                                     if note.event == 'barline' then
+                                        --scale
+                                        note.pr.width = barlinesizex * scale[1]
+                                        note.pr.height = barlinesizey * scale[2]
+                                        note.tcenter.x = note.tcentero.x * scale[1]
+                                        note.tcenter.y = note.tcentero.y * scale[2]
+
                                         --RAYLIB: RENDERING BARLNE
                                         --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
                                         rl.DrawTexturePro(Textures.PlaySong.Barlines[note.type], barlinesourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
                                     end
                                 elseif note.data == 'note' then
+                                    --scale
+                                    note.pr.width = tsizex * scale[1]
+                                    note.pr.height = tsizey * scale[2]
+                                    note.tcenter.x = note.tcentero.x * scale[1]
+                                    note.tcenter.y = note.tcentero.y * scale[2]
+
                                     --SENotes
                                     if note.senote then
                                         note.senotepr.x = note.pr.x
-                                        note.senotepr.y = note.pr.y + Textures.PlaySong.SENotes.offsety
+                                        note.senotepr.y = note.pr.y + (Textures.PlaySong.SENotes.offsety) * scale[2]
+                                        note.senotepr.width = note.osenotepr.width * scale[1]
+                                        note.senotepr.height = note.osenotepr.height * scale[2]
                                         rl.DrawTexturePro(Textures.PlaySong.SENotes[note.senote], Textures.PlaySong.SENotes.sourcerect, note.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
                                     end
 
@@ -10839,7 +11004,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local frame = laststatus.explosionanim[animn]
                     if frame then
                         --Draw on target
-                        rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                        --scale
+                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
                     else
                         --Anim ended, remove status
                         laststatus.explosionanim = nil
@@ -10853,7 +11021,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local frame = laststatus.explosionbiganim[animn]
                     if frame then
                         --Draw on target
-                        rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                        --scale
+                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
                     else
                         --Anim ended, remove status
                         laststatus.explosionbiganim = nil
@@ -10897,7 +11068,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                 if rl.IsKeyPressed(rl.KEY_F) then
-                    rl.ToggleFullscreen()
+                    local rx, ry = ToggleFullscreen()
+
+                    --RESCALE EVERYTHING
+                    ResizeAll(Textures, rx, ry)
                 end
                 if rl.IsKeyPressed(rl.KEY_S) then
                     --[[
