@@ -10060,8 +10060,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     --draw over
                     local fill = 39
                     local x = 14 * fill - 1
-                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x
-                    Textures.PlaySong.Gauges.Meter.pr2.width = x
+                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
+                    Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
                     rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.clear, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, gaugeclearanim.color)
                 end
 
@@ -11427,7 +11427,7 @@ a = 'taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
---a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
 --https://www.youtube.com/watch?v=7cCTaJtSIew
