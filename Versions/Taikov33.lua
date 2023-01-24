@@ -6756,6 +6756,8 @@ int MeasureText(const char *text, int fontSize)
     end
 
 
+    --Config.Offsets.Music
+    Config.Offsets.Music = MsToS(Config.Offsets.Music)
 
 
 
@@ -9705,6 +9707,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             if playmusic then
                 rl.SetMusicPitch(song, songspeedmul)
                 rl.PlayMusicStream(song)
+
+                if Config.Offsets.Music < 0 then
+                    rl.SeekMusicStream(song, -Config.Offsets.Music)
+                end
             end
 
             --Main loop
@@ -9775,20 +9781,23 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                --Prevent music desync
+                --MUSIC
                 if playmusic then
-                    local desync = s - (rl.GetMusicTimePlayed(song) / songspeedmul)
-                    --print(desync)
-                    if desync > desynctime or desync < -desynctime then --basically abs function
-                        --Resync music to notes
-                        print('RESYNC', desync)
-                        rl.SeekMusicStream(song, s * songspeedmul)
-                    end
-                end
+                    local offsets = s - Config.Offsets.Music
 
-                --Update Music
-                if playmusic then
-                    rl.UpdateMusicStream(song)
+                    if offsets >= 0 then
+                        --Prevent music desync
+                        local desync = offsets - (rl.GetMusicTimePlayed(song) / songspeedmul)
+                        --print(desync)
+                        if desync > desynctime or desync < -desynctime then --basically abs function
+                            --Resync music to notes
+                            print('RESYNC', desync)
+                            rl.SeekMusicStream(song, offsets * songspeedmul)
+                        end
+
+                        --Update Music
+                        rl.UpdateMusicStream(song)
+                    end
                 end
 
 

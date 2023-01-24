@@ -42,7 +42,7 @@ DO NOT EDIT
 	'ComboSoundEnabled' = false,
 	'Fullscreen' = true,
     'Offsets' = {
-        'Timing' = -500,
-        'Music' = 0,
+        'Timing' = 0,
+        'Music' = -500,
     },
 }
