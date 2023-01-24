@@ -9723,11 +9723,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
             while true do
-                --Update Music
-                if playmusic then
-                    rl.UpdateMusicStream(song)
-                end
-
 
                 --Make canvas
                 rl.BeginDrawing()
@@ -9790,6 +9785,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         rl.SeekMusicStream(song, s * songspeedmul)
                     end
                 end
+
+                --Update Music
+                if playmusic then
+                    rl.UpdateMusicStream(song)
+                end
+
 
 
                 --REPLAY
