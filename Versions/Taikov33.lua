@@ -10327,6 +10327,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                 --First pass: Calculate
                 --for i = loaded.s, loaded.e do
+                local offsetms = ms + Config.Offsets.Timing
+                local offsetmsminus = ms - Config.Offsets.Timing
                 local offseti = 0
                 for i = 1, #loaded do
                     local i2 = i + offseti
@@ -10335,11 +10337,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         --nearest
                         --if not nearest or (ms - note.ms > 0 and ms - note.ms < nearest) or (note.ms - ms > 0 and note.ms - ms < nearest)
                         if not (note.hit) and note.data == 'note' then
-                            if (note.type == 1 or note.type == 3) and (not nearest[1] or math.abs(ms - note.ms) < nearest[1]) then
-                                nearest[1] = math.abs(ms - note.ms)
+                            local d = math.abs(offsetms - note.ms)
+                            if (note.type == 1 or note.type == 3) and (not nearest[1] or d < nearest[1]) then
+                                nearest[1] = d
                                 nearestnote[1] = note
-                            elseif (note.type == 2 or note.type == 4) and (not nearest[2] or math.abs(ms - note.ms) < nearest[2]) then
-                                nearest[2] = math.abs(ms - note.ms)
+                            elseif (note.type == 2 or note.type == 4) and (not nearest[2] or d < nearest[2]) then
+                                nearest[2] = d
                                 nearestnote[2] = note
                             end
                         end
@@ -10434,7 +10437,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         --Auto
                         --I put this here so that even if note is going to be unloaded on this frame, we can hit it
                         if auto then
-                            if not note.hit and autohitnotes[note.type] and ms >= note.ms then
+                            if not note.hit and autohitnotes[note.type] and offsetmsminus >= note.ms then
                                 HitAuto(note)
                             end
                         end

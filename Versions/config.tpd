@@ -41,4 +41,8 @@ DO NOT EDIT
 	'ScreenWidth' = 1280,
 	'ComboSoundEnabled' = false,
 	'Fullscreen' = true,
+    'Offsets' = {
+        'Timing' = -500,
+        'Music' = 0,
+    },
 }
