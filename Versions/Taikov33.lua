@@ -7425,6 +7425,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         }
                     }
                 }
+            },
+            Nameplates = {
+                [1] = {0, 0}, --1P red
+                [3] = {0, 1}, --1P blue
+                [2] = {0, 2}, --2P blue
+                base = {0, 3},
             }
         }
     }
@@ -7752,7 +7758,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Backgrounds.Taiko.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
     Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 210/1280 * Config.ScreenWidth, 206/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
-    
+
     --ComboText (goes with Fonts.Combo)
     Textures.PlaySong.Backgrounds.ComboText.sizex = Textures.PlaySong.Backgrounds.ComboText[0].width
     Textures.PlaySong.Backgrounds.ComboText.sizey = Textures.PlaySong.Backgrounds.ComboText[0].height
@@ -7868,10 +7874,25 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+    --NAMEPLATE
+
+    local defaultsize = {220, 54}
+
+    local xymul = {220, 54}
 
 
+    Textures.PlaySong.Nameplates = TextureMap.SplitUsingMap(Textures.PlaySong.Nameplates, Map.PlaySong.Nameplates, defaultsize, xymul)
+
+    Textures.PlaySong.Nameplates = Resize(Textures.PlaySong.Nameplates)
+
+    Textures.PlaySong.Nameplates = TextureMap.ReplaceWithTexture(Textures.PlaySong.Nameplates)
 
 
+    Textures.PlaySong.Nameplates.sizex = Textures.PlaySong.Nameplates.base.width
+    Textures.PlaySong.Nameplates.sizey = Textures.PlaySong.Nameplates.base.height
+    Textures.PlaySong.Nameplates.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Nameplates.sizex, Textures.PlaySong.Nameplates.sizey)
+    Textures.PlaySong.Nameplates.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Nameplates.pr = rl.new('Rectangle', -5/1280 * Config.ScreenWidth, 296/720 * Config.ScreenHeight, Textures.PlaySong.Nameplates.sizex, Textures.PlaySong.Nameplates.sizey)
 
 
 
@@ -9924,7 +9945,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --draw coursesymbol
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
                 
-
+                --draw nameplate
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
 
 
 
