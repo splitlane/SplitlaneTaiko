@@ -68,9 +68,12 @@ TODO: Add raylib option
     TODO: notehitgauge anim 2
     TODO: skinresolution
     TODO: gogo anims
-    TODO: judgement anims (cubicout)
+    TODO: judgement anims (cubicout) --DONE
     TODO: switch to easing functions (transparency, judgement)
-    TODO: consistent on good -> ok, great -> good
+    TODO: consistent on good -> ok, great -> good --DONE
+    TODO: donchan
+    TODO: nameplate
+    TODO: look at skinconfig.ini / otherconfig.ini and realign some stuff AUTOMATICALLY (base config on that)
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -7210,7 +7213,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Score_2P.png')
                     --]]
                 }
-            }
+            },
+            Nameplates = LoadImage('Graphics/NamePlate.png')
         }
     }
 
