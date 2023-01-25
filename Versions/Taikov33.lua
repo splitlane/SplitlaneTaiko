@@ -67,6 +67,8 @@ TODO: Add raylib option
     TODO: Add CalculateLoadMsDrumroll --DONE
     TODO: notehitgauge anim 2
     TODO: skinresolution
+    TODO: gogo anims
+    TODO: judgement anims
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -6756,6 +6758,14 @@ int MeasureText(const char *text, int fontSize)
     end
 
 
+    --[[
+        Config.Offsets
+
+        About offsets:
+
+        Config.Offsets.Timing = 50 means 50 ms later is good
+        Config.Offsets.Timing = 50 means 50 ms later is music play
+    ]]
     --Config.Offsets.Music
     Config.Offsets.Music = MsToS(Config.Offsets.Music)
 
@@ -7129,6 +7139,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 Lane = {
                     default = LoadImage('Graphics/5_Game/12_Lane/Background_Main.png'),
                     gogo = LoadImage('Graphics/5_Game/12_Lane/Background_GoGo.png'),
+                    [1] = LoadImage('Graphics/5_Game/12_Lane/Red.png'),
+                    [2] = LoadImage('Graphics/5_Game/12_Lane/Blue.png'),
                     sub = LoadImage('Graphics/5_Game/12_Lane/Background_Sub.png'),
                     N = LoadImage('Graphics/5_Game/12_Lane/Base_Normal.png'),
                     E = LoadImage('Graphics/5_Game/12_Lane/Base_Expert.png'),
@@ -9089,6 +9101,25 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             --popanim
 --[[
 f	transparency
@@ -9173,6 +9204,40 @@ r, g = 1, 1
                 anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
             }
 
+
+
+
+
+
+
+            --notehitlane
+--[[
+f	transparency
+0	1
+1	1
+2	1
+3	0.75
+4	0.5
+5	0.25
+            ]]
+            local notehitlane = {
+                anim = {
+                    [0] = 1,
+                    [1] = 1,
+                    [2] = 1,
+                    [3] = 0.75,
+                    [4] = 0.5,
+                    [5] = 0.25,
+                },
+                [1] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                },
+                [2] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                }
+            }
 
 
 
@@ -9478,6 +9543,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 local taikoanim = taikoanim[side == false and 1 or side == true and 2]
                 taikoanim[v].startms = ms
                 taikoanim[v].color.a = 255
+
+                --Play notehitlane
+                notehitlane[v].startms = ms
+                notehitlane[v].color.a = 255
 
 
 
@@ -10127,6 +10196,32 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             else
                                 taikoanim.startms = nil
                             end
+                        end
+                    end
+                end
+
+                --draw notehitlane
+                for i = 1, 2 do
+                    local notehitlane2 = notehitlane[i]
+                    if notehitlane2.startms then
+                        --draw taiko side hit indicator
+
+                        local difms = ms - notehitlane2.startms
+                        local animn = math.floor(difms / skinframems)
+                        --local transparency = 255 - (animn / framen * 255)
+                        local transparency = notehitlane.anim[animn]
+
+                        if transparency then
+                            notehitlane2.color.a = 255 * transparency
+
+                            if transparency > 0 then
+                                --if visible
+
+                                --notehitlane
+                                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane[i], Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
+                            end
+                        else
+                            notehitlane2.startms = nil
                         end
                     end
                 end

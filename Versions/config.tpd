@@ -40,9 +40,9 @@ DO NOT EDIT
 	'ScreenHeight' = 720,
 	'ScreenWidth' = 1280,
 	'ComboSoundEnabled' = false,
-	'Fullscreen' = true,
+	'Fullscreen' = false,
     'Offsets' = {
         'Timing' = 0,
-        'Music' = -500,
+        'Music' = 0,
     },
 }
