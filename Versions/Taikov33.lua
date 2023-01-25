@@ -68,7 +68,9 @@ TODO: Add raylib option
     TODO: notehitgauge anim 2
     TODO: skinresolution
     TODO: gogo anims
-    TODO: judgement anims
+    TODO: judgement anims (cubicout)
+    TODO: switch to easing functions (transparency, judgement)
+    TODO: consistent on good -> ok, great -> good
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -7114,19 +7116,19 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             Effects = {
                 Note = {
                     Hit = {
-                        --Small Good
+                        --Small ok
                         [1] = {
                             Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good/', '.png', 0, 14)
                         },
-                        --Small Great
+                        --Small good
                         [2] = {
                             Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great/', '.png', 0, 14)
                         },
-                        --Big Good
+                        --Big ok
                         [3] = {
                             Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Good_Big/', '.png', 0, 14)
                         },
-                        --Big Great
+                        --Big good
                         [4] = {
                             Anim = LoadAnimSeperate('Graphics/5_Game/10_Effects/Hit/Great_Big/', '.png', 0, 14)
                         }
@@ -7348,13 +7350,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             },
             --]]
             Judges = {
-                great = {
+                [2] = {
                     0, 0
                 },
-                good = {
+                [1] = {
                     0, 1
                 },
-                bad = {
+                [0] = {
                     0, 2
                 },
                 adlib = {
@@ -7369,7 +7371,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             Effects = {
                 Note = {
                     Explosion = {
-                        --Small Good
+                        --Small ok
                         [1] = {
                             Anim = {
                                 [0] = {0, 1},
@@ -7381,7 +7383,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                                 [6] = {6, 1}
                             }
                         },
-                        --Small Great
+                        --Small good
                         [2] = {
                             Anim = {
                                 [0] = {0, 0},
@@ -7393,7 +7395,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                                 [6] = {6, 0}
                             }
                         },
-                        --Big Good
+                        --Big ok
                         [3] = {
                             Anim = {
                                 [0] = {0, 3},
@@ -7405,7 +7407,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                                 [6] = {6, 3}
                             }
                         },
-                        --Big Great
+                        --Big good
                         [4] = {
                             Anim = {
                                 [0] = {0, 2},
@@ -7640,6 +7642,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     Textures.PlaySong.Judges = TextureMap.ReplaceWithTexture(Textures.PlaySong.Judges)
 
+
+    Textures.PlaySong.Judges.sizex = Textures.PlaySong.Judges[0].width
+    Textures.PlaySong.Judges.sizey = Textures.PlaySong.Judges[0].height
+    Textures.PlaySong.Judges.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Judges.sizex, Textures.PlaySong.Judges.sizey)
+    Textures.PlaySong.Judges.center = rl.new('Vector2', Textures.PlaySong.Judges.sizex / 2, Textures.PlaySong.Judges.sizey / 2)
+    Textures.PlaySong.Judges.pr = rl.new('Rectangle', 0, 0, Textures.PlaySong.Judges.sizex, Textures.PlaySong.Judges.sizey)
 
 
 
@@ -9240,6 +9248,102 @@ f	transparency
             }
 
 
+            --judgeanim
+--[[
+f	transparency    p
+0	1
+1	1
+2	1
+3	1
+4	1
+5	1
+6	1
+7	1
+8	1
+9	1
+10	1
+11	1
+12	1
+13	1
+14	1
+15	1
+16	1
+17	1
+18	1
+19	1
+20  1
+21  1
+22  0.75
+23  0.5
+24  0.25
+25  0
+            ]]
+            local judgeanim = {
+                animp = {
+                    --Estimated using eye
+                    [0] = 98,
+                    [1] = 92,
+                    [2] = 88,
+                    [3] = 84,
+                    [4] = 80,
+                    [5] = 77,
+                    [6] = 75,
+                    [7] = 75,
+                    [8] = 75,
+                    [9] = 75,
+                    [10] = 75,
+                    [11] = 75,
+                    [12] = 75,
+                    [13] = 75,
+                    [14] = 75,
+                    [15] = 75,
+                    [16] = 75,
+                    [17] = 75,
+                    [18] = 75,
+                    [19] = 75,
+                    [20] = 75,
+                    [21] = 75,
+                    [22] = 75,
+                    [23] = 75,
+                    [24] = 75,
+                    [25] = 75,
+                },
+                animt = {
+                    [0] = 1,
+                    [1] = 1,
+                    [2] = 1,
+                    [3] = 1,
+                    [4] = 1,
+                    [5] = 1,
+                    [6] = 1,
+                    [7] = 1,
+                    [8] = 1,
+                    [9] = 1,
+                    [10] = 1,
+                    [11] = 1,
+                    [12] = 1,
+                    [13] = 1,
+                    [14] = 1,
+                    [15] = 1,
+                    [16] = 1,
+                    [17] = 1,
+                    [18] = 1,
+                    [19] = 1,
+                    [20] = 1,
+                    [21] = 1,
+                    [22] = 0.75,
+                    [23] = 0.5,
+                    [24] = 0.25,
+                    [25] = 0,
+                },
+                startms = {
+                    --startms
+                },
+                judge = {
+                    --judge
+                },
+                color = rl.new('Color', 255, 255, 255, 255)
+            }
 
 
 
@@ -9572,10 +9676,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     --[[
                         hiteffect:
                         0 -> bad
-                        1 -> smallgood
-                        2 -> smallgreat
-                        3 -> biggood
-                        4 -> biggreat
+                        1 -> smallok
+                        2 -> smallgood
+                        3 -> bigok
+                        4 -> biggood
                     ]]
                     local isbignote = (notetype == 3 or notetype == 4)
                     if n < (timing.good) then
@@ -9653,6 +9757,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             --target needs to be calced
                             CalculateNoteHitGauge(target)
                         end
+
+                        --judgeanim
+                        judgeanim.startms[#judgeanim.startms + 1] = ms
+                        judgeanim.judge[#judgeanim.judge + 1] = gaugestatus
 
                         --combo sound
                         if Sounds.PlaySong.Combo[combo] then
@@ -11135,6 +11243,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
+                --Render explosion (big) above flash
                 if laststatus.explosionbiganim then
                     local difms = ms - laststatus.startms
                     local animn = math.floor(difms / skinframems)
@@ -11152,7 +11261,30 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
-                --Render explosion (big) above flash
+                --Render judge above all
+                local offseti = 0
+                for i = 1, #judgeanim.startms do
+                    local i2 = i + offseti
+                    local difms = ms - judgeanim.startms[i2]
+                    local animn = math.floor(difms / skinframems)
+                    --Anim ended?
+                    local p = judgeanim.animp[animn]
+                    if p then
+                        local t = judgeanim.animt[animn]
+                        local j = judgeanim.judge[i2]
+                        
+                        --Draw
+                        judgeanim.color.a = 255 * t
+                        Textures.PlaySong.Judges.pr.x = targetpr.x
+                        Textures.PlaySong.Judges.pr.y = targetpr.y - (p/720 * Config.ScreenHeight)
+                        rl.DrawTexturePro(Textures.PlaySong.Judges[j], Textures.PlaySong.Judges.sourcerect, Textures.PlaySong.Judges.pr, Textures.PlaySong.Judges.center, 0, judgeanim.color)
+                    else
+                        --Anim ended, remove status
+                        table.remove(judgeanim.startms, i2)
+                        table.remove(judgeanim.judge, i2)
+                        offseti = offseti - 1
+                    end
+                end
 
 
 
