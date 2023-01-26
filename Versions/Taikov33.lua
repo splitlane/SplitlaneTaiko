@@ -6762,6 +6762,25 @@ int MeasureText(const char *text, int fontSize)
     OriginalConfig = Table.Clone(Config)
 
 
+    --Config.Controls
+    --Check if a key in a table of keys is pressed
+    local function IsKeyPressed(t)
+        for k, v in pairs(t) do
+            if rl.IsKeyPressed(k) then
+                return true
+            end
+        end
+        return false
+    end
+    local function IsKeyDown(t)
+        for k, v in pairs(t) do
+            if rl.IsKeyDown(k) then
+                return true
+            end
+        end
+        return false
+    end
+
     --Config.Fullscreen
     --Ignores Config.ScreenWidth, Config.ScreenHeight, and turns on fullscreen
     local function ToggleFullscreen()
@@ -7947,6 +7966,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     rl.InitAudioDevice()
     local song
+    local forceresync = false --force resync on next frame
     if playmusic then
         if CheckFile(Parsed.Metadata.SONG) then
             song = LoadSong(Parsed.Metadata.SONG)
@@ -10077,10 +10097,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         --Prevent music desync
                         local desync = offsets - (rl.GetMusicTimePlayed(song) / songspeedmul)
                         --print(desync)
-                        if desync > desynctime or desync < -desynctime then --basically abs function
+                        if forceresync or desync > desynctime or desync < -desynctime then --basically abs function
                             --Resync music to notes
                             print('RESYNC', desync)
                             rl.SeekMusicStream(song, offsets * songspeedmul)
+                            forceresync = false
                         end
 
                         --Update Music
@@ -10881,7 +10902,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 for k, v in pairs(Controls.Hit) do
                     if rl.IsKeyPressed(k) then
                         Hit(v[1], v[2])
-                        --TODO: Drum anim?
                     end
                 end
 
@@ -11442,7 +11462,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Fullscreen
-                if rl.IsKeyPressed(rl.KEY_F) then
+                if IsKeyPressed(Config.Controls.Fullscreen) then
                     local rx, ry = ToggleFullscreen()
 
                     --RESCALE EVERYTHING
@@ -11450,7 +11470,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Screenshot
-                if rl.IsKeyPressed(rl.KEY_S) then
+                if IsKeyPressed(Config.Controls.Screenshot) then
                     --[[
                     --might produce a screenshot with black waste parts due to gpu
                     rl.TakeScreenshot(ScreenshotPath)
@@ -11463,14 +11483,56 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     rl.UnloadImage(image)
                     --]]
                 end
-                if rl.IsKeyPressed(rl.KEY_ESCAPE) then
+
+                --Pause / Command
+                local commandactivated = IsKeyPressed(Config.Controls.Command.Init)
+                if IsKeyPressed(Config.Controls.Pause.Init) or commandactivated then
                     local before = os.clock()
 
                     rl.EndDrawing()
 
                     local stillimage = rl.LoadImageFromScreen()
                     local stilltexture = rl.LoadTextureFromImage(stillimage)
+
+                    local str, x, y, move, moving, out, consoletext, log, prompt, logtext, textbackground, textbackgroundt, textbackgroundrect, textbackgroundcenter, textbackgroundsourcerect
+                    if commandactivated then
+                        str = {
+                            'Console',
+                            '\nS: ', tostring(s),
+                            '\nMs: ', tostring(ms),
+                            '\nGogo: ', tostring(gogo),
+                            '\nLoaded: ', tostring(#loadedrfinal),
+                            '\nFramen:', framen,
+                            '\nnextnote.loadms: ', tostring(nextnote and nextnote.loadms),
+                            '\nnextnote.n: ', tostring(nextnote and nextnote.n),
+                            '\n\nMemory usage (mb): ', collectgarbage('count') / 1000,
+                            '\nFinished (%): ', ms / (endms) * 100,
+                            '\n\n'
+                        }
+                        strtext = table.concat(str)
+                        x, y = 0, 0
+                        move = 1
+                        moving = false
+
+                        out = {}
+                        consoletext = ''
+                        log = {
+
+                        }
+                        logtext = ''
+                        prompt = 'Console: '
+                        
+                        textbackground = rl.ImageFromImage(stillimage, rl.new('Rectangle', 0, 0, 1, 1))
+                        rl.ImageDrawPixel(textbackground, 0, 0, rl.new('Color', 0, 0, 0, 255 / 2))
+                        textbackgroundt = rl.LoadTextureFromImage(textbackground)
+                        rl.UnloadImage(textbackground)
+                        textbackgroundsourcerect = rl.new('Rectangle', 0, 0, 1, 1)
+                        textbackgroundrect = rl.new('Rectangle', 0, 0, 1, 1)
+                        textbackgroundcenter = rl.new('Vector2', 0, 0)
+                    end
+                    
                     rl.UnloadImage(stillimage)
+
 
                     --loop for input
                     while true do
@@ -11478,21 +11540,88 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                         rl.ClearBackground(rl.RAYWHITE)
 
+                        --draw stilltexture
                         rl.DrawTexture(stilltexture, 0, 0, rl.WHITE)
 
-                        if rl.IsKeyPressed(rl.KEY_ESCAPE) then
+                        if commandactivated then
+                            --draw textbackground
+                            local textfinal = strtext .. logtext .. prompt .. consoletext
+                            textbackgroundrect.x, textbackgroundrect.y = x, y
+                            textbackgroundrect.width, textbackgroundrect.height = GetTextSize(textfinal, textsize)
+                            rl.DrawTexturePro(textbackgroundt, textbackgroundsourcerect, textbackgroundrect, textbackgroundcenter, 0, rl.WHITE)
+
+                            --draw text
+                            rl.DrawText(textfinal, x, y, textsize, rl.RAYWHITE)
+                        end
+
+                        rl.EndDrawing()
+
+                        --Command
+                        if commandactivated then
+                            if IsKeyPressed(Config.Controls.Command.Move.Toggle) then
+                                moving = not moving
+                            end
+
+                            if moving then
+                                if IsKeyDown(Config.Controls.Command.Move.Left) then
+                                    x = x - move
+                                end
+                                if IsKeyDown(Config.Controls.Command.Move.Right) then
+                                    x = x + move
+                                end
+                                if IsKeyDown(Config.Controls.Command.Move.Up) then
+                                    y = y - move
+                                end
+                                if IsKeyDown(Config.Controls.Command.Move.Down) then
+                                    y = y + move
+                                end
+                            end
+
+
+
+                            --Console
+                            while true do
+                                local c = rl.GetCharPressed()
+                                if c == 0 then
+                                    break
+                                else
+                                    out[#out + 1] = c
+                                    --Update display
+                                    consoletext = UnicodeEncode(out)
+                                end
+                            end
+                
+                            --Remember, GetCharPressed doesn't detect special keys
+                            if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                                out[#out] = nil
+                                --Update display
+                                consoletext = UnicodeEncode(out)
+                            end
+                            if rl.IsKeyPressed(rl.KEY_ENTER) then
+                                --out = UnicodeEncode(out)
+                            end
+
+
+                        end
+                        
+
+
+                        --Input
+                        if IsKeyPressed(Config.Controls.Pause.Escape) then
                             break
                         end
                         if rl.WindowShouldClose() then
                             --rl.CloseWindow()
                             break
                         end
-                        rl.EndDrawing()
+                        
                     end
 
                     rl.EndDrawing()
 
                     rl.UnloadTexture(stilltexture)
+
+                    forceresync = true --force music resync on next frame
 
                     startt = startt + (os.clock() - before)
                 end
