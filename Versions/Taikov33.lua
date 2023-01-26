@@ -8050,7 +8050,17 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     function Taiko.SongSelect()
+        while true do
 
+            --Make canvas
+            rl.BeginDrawing()
+
+            rl.ClearBackground(rl.RAYWHITE)
+
+
+            rl.EndDrawing()
+
+        end
     end
 
 
@@ -11458,9 +11468,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                     rl.EndDrawing()
 
+                    local stillimage = rl.LoadImageFromScreen()
+                    local stilltexture = rl.LoadTextureFromImage(stillimage)
+                    rl.UnloadImage(stillimage)
+
                     --loop for input
                     while true do
                         rl.BeginDrawing()
+
+                        rl.ClearBackground(rl.RAYWHITE)
+
+                        rl.DrawTexture(stilltexture, 0, 0, rl.WHITE)
+
                         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
                             break
                         end
@@ -11472,6 +11491,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
 
                     rl.EndDrawing()
+
+                    rl.UnloadTexture(stilltexture)
 
                     startt = startt + (os.clock() - before)
                 end
