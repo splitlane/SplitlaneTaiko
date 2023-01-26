@@ -6096,9 +6096,9 @@ function Taiko.Game(Parsed, Window, Settings, Controls)
 
     --Config:
 
-    local AssetsPath = 'Assets/'
+    --Defined later
+    local AssetsPath = nil
     local ConfigPath = 'config.tpd'
-    local ScreenshotPath = 'tscreenshot.png'
     
     local Config
 
@@ -6612,6 +6612,32 @@ int MeasureText(const char *text, int fontSize)
     end
 
 
+    --Saving
+    local function GetTimestampFilename(before, after)
+        --Make file name (timestamp)
+        --https://www.lua.org/pil/22.1.html
+        --based on vlcsnap timestamp
+        local timestamp = os.date('%Y-%m-%d-%Hh%Mm%Ss000', os.time())
+        local filename = before .. timestamp .. after
+        return filename
+    end
+    local function SaveFileTimestamp(before, after, str)
+        local filename = GetTimestampFilename(before, after)
+
+        local file = io.open(filename, 'wb+')
+        if file then
+            file:write(str)
+            file:close()
+        else
+            --error('Unable to find file: ' .. filename)
+            print('Unable to find file: ' .. filename)
+        end
+    end
+
+
+
+
+
 
 
 
@@ -6775,7 +6801,13 @@ int MeasureText(const char *text, int fontSize)
     Config.Offsets.Music = MsToS(Config.Offsets.Music)
 
 
+    --[[
+        Config.Paths
 
+        Defined above
+    ]]
+    AssetsPath = Config.Paths.Assets --'Assets/'
+    ConfigPath = Config.Paths.Config --'config.tpd'
 
 
 
@@ -7431,6 +7463,14 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 [3] = {0, 1}, --1P blue
                 [2] = {0, 2}, --2P blue
                 base = {0, 3},
+                edge = {0, 4},
+                top = {0, 5},
+                rankbase = {0, 7},
+                rank = {
+                    [1] = {0, 8}, --silver
+                    [2] = {0, 9}, --gold
+                    [3] = {0, 10}, --rainbow
+                }
             }
         }
     }
@@ -8008,7 +8048,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+    function Taiko.SongSelect()
 
+    end
 
 
 
@@ -9886,8 +9928,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 }
             )
             local TextStatistic = {
-                'Combo: ', '',
-                '\nScore: ', ''
+
             } --Dynamic
 
 
@@ -9946,8 +9987,25 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
                 
                 --draw nameplate
+
+                --base
                 rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+                --edge
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+                --top
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+                --rankbase
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+                --rank
+                rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+                --1P
                 rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
 
 
 
@@ -9959,7 +10017,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 rl.DrawFPS(10, 10)
                 rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
                 --rl.DrawText(tostring(rl.GetMusicTimePlayed(song)), 800, 40, textsize, rl.BLACK)
-                rl.DrawText(table.concat(TextStatistic) .. '\n' .. gaugep, 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
+                --rl.DrawText(table.concat(TextStatistic) .. '\n' .. gaugep, 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
                 --rl.ClearBackground(rl.BLACK)
 
                 --[[
@@ -10813,7 +10871,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                 --Generate score / statistics
-                -- [[
+                --[[
                 TextStatistic[2] = tostring(combo) --Combo
                 TextStatistic[4] = tostring(score) --Score
                 --]]
@@ -11375,7 +11433,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     -- [[
                     --reliable
                     local image = rl.LoadImageFromScreen()
-                    rl.ExportImage(image, ScreenshotPath)
+                    rl.ExportImage(image, GetTimestampFilename(Config.Paths.Screenshots, Config.Formats.Screenshot))
                     rl.UnloadImage(image)
                     --]]
                 end

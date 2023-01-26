@@ -45,4 +45,13 @@ DO NOT EDIT
         'Timing' = 0,
         'Music' = 0,
     },
+    'Paths' = {
+        'Assets' = 'Assets/',
+        'Screenshots' = 'Screenshots/',
+        'Config' = 'config.tpd'
+        'Songs' = 'Songs/',
+    },
+    'Formats' = {
+        'Screenshot' = '.png',
+    },
 }
