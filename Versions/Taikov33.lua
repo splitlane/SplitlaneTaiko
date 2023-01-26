@@ -74,6 +74,7 @@ TODO: Add raylib option
     TODO: donchan
     TODO: nameplate
     TODO: look at skinconfig.ini / otherconfig.ini and realign some stuff AUTOMATICALLY (base config on that)
+    TODO: move away from optionsmap, implement it in songselect
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -11768,6 +11769,7 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
 --https://www.youtube.com/watch?v=7cCTaJtSIew
