@@ -8966,11 +8966,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
         --Statistics
+        --[[
         local lastinput = {-1, nil}
         local framen = 0
         local framerenderstotal = 0
 
         local dorender = true
+        --]]
         
         --Optimizations
         --[[
@@ -9422,6 +9424,7 @@ f	transparency    p
             --Game functions
 
             --Hit: Hit the drum with a 1 (don) or 2 (ka)
+            local s = 0
             local ms
             local nearest, nearestnote = {}, {}
             local autoside = false --false -> left, true = right
@@ -9957,6 +9960,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             end
 
             --Main loop
+            local framen = 0
             local startt = os.clock()
 
 
@@ -10035,11 +10039,22 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
+                --[[
+                --old: less precision
                 local raws = os.clock()
 
                 local s = raws - startt
                 ms = s * 1000
+                --]]
+
+                -- [[
+                --new: more precision
+                --don't add frametime on first frame?
+                s = s + (framen ~= 0 and rl.GetFrameTime() or 0)
+                --s = s + rl.GetFrameTime()
+                ms = s * 1000
+                framen = framen + 1
+                --]]
 
 
 
@@ -10963,7 +10978,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 note.brokecombo = true
                             end
 
-                            if dorender then
+                            --if dorender then
                                 if note.data == 'event' then
                                     if note.event == 'barline' then
                                         --scale
@@ -11297,7 +11312,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 else
                                     error('Invalid note.data')
                                 end
-                            end
+                            --end
 
                         end
                     end
