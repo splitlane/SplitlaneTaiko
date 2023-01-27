@@ -8070,12 +8070,27 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     function Taiko.SongSelect()
+
+        --Only stores displayed ones and a bit of cache
+        local Display = {
+            Text = {},
+            Background = {},
+        }
+
+        --Songlist
+        local Songlist = {
+            Path = {},
+            Text = {},
+        }
+
         while true do
 
             --Make canvas
             rl.BeginDrawing()
 
             rl.ClearBackground(rl.RAYWHITE)
+
+            rl.DrawFps(10, 10)
 
 
             rl.EndDrawing()
@@ -11502,7 +11517,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             '\nMs: ', tostring(ms),
                             '\nGogo: ', tostring(gogo),
                             '\nLoaded: ', tostring(#loadedrfinal),
-                            '\nFramen:', framen,
+                            '\nFramen: ', framen,
                             '\nnextnote.loadms: ', tostring(nextnote and nextnote.loadms),
                             '\nnextnote.n: ', tostring(nextnote and nextnote.n),
                             '\n\nMemory usage (mb): ', collectgarbage('count') / 1000,
@@ -11510,7 +11525,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             '\n\n'
                         }
                         strtext = table.concat(str)
-                        x, y = 0, 0
+                        x, y = 0, 360/720 * Config.ScreenHeight
                         move = 1
                         moving = false
 
@@ -11919,7 +11934,7 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
-a = 'taikobuipm/Ekiben 2000.tja'
+--a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
 --https://www.youtube.com/watch?v=7cCTaJtSIew
