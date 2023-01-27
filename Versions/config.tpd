@@ -81,7 +81,7 @@ DO NOT EDIT
     'Paths' = {
         'Assets' = 'Assets/',
         'Screenshots' = 'Screenshots/',
-        'Config' = 'config.tpd'
+        'Config' = 'config.tpd',
         'Songs' = 'Songs/',
     },
     'Formats' = {

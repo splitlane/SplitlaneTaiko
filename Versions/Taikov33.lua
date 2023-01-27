@@ -8080,8 +8080,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Songlist
         local Songlist = {
             Path = {},
-            Text = {},
         }
+
+
+        local FilesList = rl.LoadDirectoryFilesEx(Config.Paths.Songs, nil, true).paths
+        print(FilesList)error()
 
         while true do
 
@@ -11864,8 +11867,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
-    return Taiko.PlaySong(Parsed)
+    return Taiko.SongSelect()
+    --return Taiko.PlaySong(Parsed)
 
 
 
