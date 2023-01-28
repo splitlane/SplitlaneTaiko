@@ -6355,6 +6355,206 @@ int MeasureText(const char *text, int fontSize)
         end
     end
 
+    --Raylib functions fixed! (raylib functions suck at unicode paths)
+    local function GetFileName(str)
+        --INClUDES EXT
+        --note: you can use ffi.string(rl.GetFileName(str))
+        return string.reverse(string.match(string.reverse(str), '(.-)/'))
+    end
+    local function GetFileNameWithoutExt(str)
+        --note: you can use ffi.string(rl.GetFileNameWithoutExt(str))
+        local a = GetFileName(str)
+        local b = string.find(a, '%.')
+        if b then
+            return string.sub(a, b - 1)
+        else
+            return a
+        end
+    end
+    local function IsPathFile(str)
+        local a = GetFileName(str)
+        if string.find(a, '%.') then
+            return true
+        else
+            return false
+        end
+    end
+
+    local function GetAllFilesInDirectory(str)
+        local ffi = require('ffi')
+        --[[
+        --this should work, but it doesn't
+        local FilesListC = rl.LoadDirectoryFilesEx(RemoveLastSlash(Config.Paths.Songs), nil, false)
+
+        local FilesList = {}
+
+        for i = 0, FilesListC.count - 1 do
+            FilesList[i + 1] = ffi.string(FilesListC.paths[i])
+        end
+
+        return FilesList
+        --]]
+
+        local FilesListC = rl.LoadDirectoryFiles(RemoveLastSlash(str))
+
+        local FilesList = {}
+
+        for i = 0, FilesListC.count - 1 do
+            FilesList[#FilesList + 1] = ffi.string(FilesListC.paths[i])
+            if rl.IsPathFile(FilesList[#FilesList]) == false then
+                --print(FilesList[#FilesList])
+                local t = GetAllFilesInDirectory(FilesList[#FilesList])
+                FilesList[#FilesList] = nil
+                for i2 = 1, #t do
+                    FilesList[#FilesList + 1] = t[i2]
+                end
+            end
+        end
+        
+        return FilesList
+    end
+
+    local function ScanSongsFFI(str)
+        local ffi = require('ffi')
+        --[[
+            basically GetAllFilesInDirectory but does some folder organization
+        ]]
+
+        str = str or Config.Paths.Songs
+        --pathtree = pathtree or {}
+        --songtree = songtree or {}
+        local pathtree = {}
+
+        local FilesListC = rl.LoadDirectoryFiles(RemoveLastSlash(str))
+
+        local FilesList = {}
+
+        for i = 0, FilesListC.count - 1 do
+            --FilesList[#FilesList + 1] = ffi.string(FilesListC.paths[i])
+            
+            if rl.IsPathFile(FilesList[#FilesList]) == false then
+                --print(FilesList[#FilesList])
+                local dir = FilesList[#FilesList]
+                local dirname = ffi.string(rl.GetFileNameWithoutExt(FilesList[#FilesList]))
+                local t, tp = ScanSongs(FilesList[#FilesList])
+                pathtree[dirname] = tp
+                FilesList[#FilesList] = nil
+                local dirfilenamesame = true
+                for i2 = 1, #t do
+                    if dirfilenamesame then
+                        local fname = rl.GetFileNameWithoutExt(t[i2])
+                        if ffi.string(fname) == dirname then
+
+                        else
+                            dirfilenamesame = false
+                        end
+                    end
+                    FilesList[#FilesList + 1] = t[i2]
+                end
+
+                if dirfilenamesame then
+                    --It is a single song folder, put it in above directory
+                    --print(ffi.string(rl.GetPrevDirectoryPath(dir)))
+                    for i2 = 1, #pathtree[dirname] do
+                        pathtree[#pathtree + 1] = pathtree[dirname][i2]
+                    end
+                    pathtree[dirname] = nil
+                else
+                    --It is a category
+                    
+                end
+            else
+                pathtree[#pathtree + 1] = FilesList[#FilesList]
+            end
+        end
+        
+        return FilesList, pathtree
+    end
+
+    local function ScanSongs(str)
+        local lfs = require('lfs.lfs_ffi')
+        --[[
+            basically GetAllFilesInDirectory but does some folder organization
+        ]]
+
+        str = str or Config.Paths.Songs
+        --pathtree = pathtree or {}
+        --songtree = songtree or {}
+        local pathtree = {}
+
+        local toppath = RemoveLastSlash(str)
+
+        local iter, dir_obj = lfs.dir(toppath)
+
+        toppath = toppath .. '/'
+
+        local FilesList = {}
+
+        while true do
+            local file = iter(dir_obj)
+            if not file then
+                break
+            end
+
+            if file ~= '.' and file ~= '..' then
+                FilesList[#FilesList + 1] = toppath .. file
+                print(file, rl.IsPathFile(FilesList[#FilesList]))
+                if IsPathFile(FilesList[#FilesList]) == false then
+                    --print(FilesList[#FilesList])
+                    local dir = FilesList[#FilesList]
+                    local dirname = GetFileNameWithoutExt(FilesList[#FilesList])
+                    local t, tp = ScanSongs(FilesList[#FilesList])
+                    pathtree[dirname] = tp
+                    FilesList[#FilesList] = nil
+                    local dirfilenamesame = true
+                    for i2 = 1, #t do
+                        if dirfilenamesame then
+                            local fname = GetFileNameWithoutExt(t[i2])
+                            if fname == dirname then
+
+                            else
+                                dirfilenamesame = false
+                            end
+                        end
+                        FilesList[#FilesList + 1] = t[i2]
+                    end
+
+                    if dirfilenamesame then
+                        --It is a single song folder, put it in above directory
+                        --print(ffi.string(rl.GetPrevDirectoryPath(dir)))
+                        for i2 = 1, #pathtree[dirname] do
+                            pathtree[#pathtree + 1] = pathtree[dirname][i2]
+                        end
+                        pathtree[dirname] = nil
+                    else
+                        --It is a category
+                        
+                    end
+                else
+                    pathtree[#pathtree + 1] = FilesList[#FilesList]
+                end
+            end
+        end
+        
+        return FilesList, pathtree
+    end
+
+    local function BuildSongTree(pathtree)
+        local ffi = require('ffi')
+
+        local songtree = {}
+        for k, v in pairs(pathtree) do
+            --print(k, v)
+            if type(v) == 'table' then
+                songtree[k] = BuildSongTree(v)
+            else
+                songtree[ffi.string(rl.GetFileNameWithoutExt(v))] = v
+            end
+        end
+
+        return songtree
+    end
+
     local function CheckFile(str)
         local file = io.open(str, 'rb')
         if file then
@@ -8086,21 +8286,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         }
 
         --Songlist
-        local Songlist = {
-            Path = {},
-        }
+        local FilesList, PathTree = ScanSongs()
 
+        local SongTree = BuildSongTree(PathTree)
+        
+        require'ppp'(SongTree)
 
-        local FilesListC = rl.LoadDirectoryFilesEx(RemoveLastSlash(Config.Paths.Songs), nil, true)
-
-        local ffi = require('ffi')
-
-        local FilesList = {}
-
-        for i = 0, FilesListC.count - 1 do
-            FilesList[i + 1] = ffi.string(FilesListC.paths[0])
-            print(FilesList[#FilesList])
-        end
+        error()
 
         while true do
 
@@ -12007,7 +12199,7 @@ local s = {
     [4] = 1
 }
 -- [[
-    print(p[1].Metadata.SONG)
+    --print(p[1].Metadata.SONG)
 if not CheckFile(p[1].Metadata.SONG) then
     for k, v in pairs(p) do
         v.Metadata.SONG = song
