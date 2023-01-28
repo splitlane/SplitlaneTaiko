@@ -8100,7 +8100,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         for i = 0, FilesListC.count - 1 do
             FilesList[i + 1] = ffi.string(FilesListC.paths[0])
             print(FilesList[#FilesList])
-        end\
+        end
 
         while true do
 
@@ -11952,7 +11952,7 @@ a = 'Songs/taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
-a = 'taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
