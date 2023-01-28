@@ -6346,6 +6346,14 @@ int MeasureText(const char *text, int fontSize)
     local function GetFileType(str)
         return string.reverse(string.match(string.reverse(str), '(.-%.)'))
     end
+    local function RemoveLastSlash(str)
+        local last = string.sub(str, -1, -1)
+        if last == '/' or last == '\\' then
+            return string.sub(str, 1, -2)
+        else
+            return str
+        end
+    end
 
     local function CheckFile(str)
         local file = io.open(str, 'rb')
@@ -8083,8 +8091,16 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         }
 
 
-        local FilesList = rl.LoadDirectoryFilesEx(Config.Paths.Songs, nil, true).paths
-        print(FilesList)error()
+        local FilesListC = rl.LoadDirectoryFilesEx(RemoveLastSlash(Config.Paths.Songs), nil, true)
+
+        local ffi = require('ffi')
+
+        local FilesList = {}
+
+        for i = 0, FilesListC.count - 1 do
+            FilesList[i + 1] = ffi.string(FilesListC.paths[0])
+            print(FilesList[#FilesList])
+        end\
 
         while true do
 
@@ -8093,7 +8109,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
             rl.ClearBackground(rl.RAYWHITE)
 
-            rl.DrawFps(10, 10)
+            rl.DrawFPS(10, 10)
 
 
             rl.EndDrawing()
@@ -11932,7 +11948,7 @@ end
 --a = 'tja/neta/ekiben/delay.tja'
 --a = 'tja/neta/overdead.tja'
 --a = 'tja/neta/ekiben/neta.tja'
-a = 'taikobuipm/Saitama 2000.tja'
+a = 'Songs/taikobuipm/Saitama 2000.tja'
 a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
