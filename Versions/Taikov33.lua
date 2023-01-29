@@ -75,6 +75,7 @@ TODO: Add raylib option
     TODO: nameplate
     TODO: look at skinconfig.ini / otherconfig.ini and realign some stuff AUTOMATICALLY (base config on that)
     TODO: move away from optionsmap, implement it in songselect
+    TODO: MAJOR REFACTORING
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -8360,56 +8361,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     function Taiko.PlaySong(Parsed)
 
-        --[[
-        local profiler = require'profiler'
-        profiler.start()
-        --]]
-
-        --collectgarbage('stop')
-
-        --[[
-        local i = 0
-        for k, v in pairs(Taiko.GetDifficulty(Parsed, Difficulty).Data) do
-            if v.data == 'note' then
-                i = i + 1
-            end
-            print(k, v, v.data)
-        end
-        print(i)
-        error()
-        --]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        --[[
-            noteradius coordinates
-            123456789
-        ]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -8583,39 +8534,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
         local function CalculatePosition(note, ms)
-            --return note.loadp - (note.speed * (ms - note.loadms))
-
-            --x, y + relative
-            -- if notems is 200 and ms is 100
-            --[[
-            if target[1] + (-note.speed[1] * (note.ms - ms - note.delay)) > unloadrect[3] then
-                error(table.concat({note.n, target[1] + (-note.speed[1] * (note.ms - ms - note.delay))}, '\n'))
-            end
-            --]]
 
             return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
-            --return target[1] + (-note.speed[1] * (note.ms - ms)), target[2] + (-note.speed[2] * (note.ms - ms))
-
-            --[[
-            if d then
-                --disable delay
-                return note.loadp - (note.speed * (ms - note.loadms))
-            else
-                return note.loadp - (note.speed * (ms - note.loadms + (note.pdelay)))
-            end
-            --]]
         end
 
         local function CalculateLoadMs(note, ms)
-            --return ms - ((tracklength / note.speed) + buffer)
-            --support negative speed
-            --return ms - ((tracklength / math.abs(note.speed)) + buffer)
-            --bufferlength
-            --return ms - (((tracklength + bufferlength) / math.abs(note.speed)))
-
             --x, y
             local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-            --print(ms, ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2]), x, y)
             return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
         end
 
@@ -8687,14 +8612,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-        --Parsed = Taiko.GetDifficulty(Parsed, Difficulty)
-
 
         local notetable = Taiko.GetAllNotes(Parsed.Data)
 
-
-
-        --Parsed = Taiko.CalculateSpeedAll(Parsed, noteradius)
 
 
 
@@ -8724,9 +8644,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-        --require'ppp'(Taiko.CalculateSpeedAll(Parsed, 1).Data[1])
-
-
 
         --Precalculate
 
@@ -8739,20 +8656,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-
-        --Convert everything to seconds + fill up timet
-        --[[
-        local timet = {}
-        for k, v in pairs(Parsed.Data) do
-            table.insert(timet, v.ms)
-            v.ms = v.ms - startms
-            v.s = MsToS(v.ms)
-            v.loadms = CalculateLoadMs(v, v.ms)
-            v.loads = MsToS(v.loadms)
-            v.loadp = CalculateLoadPosition(v, v.loadms)
-            --v.n = k --MISTAKE: after sorted
-        end
-        --]]
         local maxcombo = 0 --needed for gauge calculation
         --notes that affect combo
         local combonote = {
@@ -8814,7 +8717,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
 
 
-            v.loadms = CalculateLoadMs(v, v.ms)
+            v.loadms = CalculateLoadMs(v, v.ms - v.delay)
             --Assume start is before end
             if v.type == 8 and (v.startnote.type == 5 or v.startnote.type == 6) then
                 v.loadms = CalculateLoadMsDrumroll(v, v.startnote.loadms < v.loadms and v.startnote.loadms or v.loadms)
@@ -8886,138 +8789,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-        if stopsong then
-            local lastnote = nil
-            local lastdelay = 0
-            local stopmst = {}
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                --print(note.ms, note.delay)
-                if note.delay ~= lastdelay then
-                    if lastnote then
-                        lastnote.stopms = note.delay - lastnote.delay
-                        lastnote.stopstart = lastnote.ms
-                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                    end
-                    lastdelay = note.delay
-                end
 
-                if lastnote and lastnote.delay ~= 0 then
-                    --[==[
-                    --recalculate
-                    -- [[
-                    lastnote.ms = lastnote.ms - lastnote.delay
-                    lastnote.s = MsToS(lastnote.ms)
-
-                    --calculate the stopms between notems and noteloadms
-                    --loadms = loadms - totalstopmsbetweennotes
-                    --nvm just calc on runtime with totaldelay
-
-                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms)
-                    lastnote.loads = MsToS(lastnote.loadms)
-                    --lastnote.loadp = CalculateLoadPosition(lastnote, lastnote.loadms)
-                    lastnote.ms = lastnote.ms + lastnote.delay
-                    lastnote.s = MsToS(lastnote.ms)
-                    --]]
-                    --]==]
-
-                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
-                    --[[
-                    if lastnote.type == 5 or lastnote.type == 6 then
-                        lastnote.loadms = CalculateLoadMsDrumroll(lastnote.endnote, lastnote.loadms)
-                    end
-                    --]]
-
-                    --[[
-                    lastnote.newloadms = lastnote.loadms
-                    lastnote.loadmscalc = lastnote.ms - lastnote.delay
-                    lastnote.loads = MsToS(lastnote.loadms)
-                    --]]
-                end
-
-
-                lastnote = note
-            end)
-
-            --error()
-
-            --[=[
-
-            local lastnote
-            local zerodelay = true
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                --print(note.ms, note.delay, i, n)
-                if note.delay ~= 0 then
-                    --recalculate time related
-                    --[[
-                    print(i)
-                    print('ms\tloadms\tloads\tloadp')
-                    print(note.ms, note.loadms, note.loads, note.loadp)
-                    --]]
-
-
-                    note.ms = note.ms - note.delay
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    note.ms = note.ms + note.delay
-                    note.s = MsToS(note.ms)
-
-                    --[[
-                    note.ms = note.ms - (note.delay / songspeedmul)
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    --]]
-
-
-
-
-
-
-                    --[[
-                    print(note.ms, note.loadms, note.loads, note.loadp)
-                    io.read()
-                    --]]
-                    --print(note.delay)
-                    --[[
-                    note.ms = note.ms - (note.delay / songspeedmul)
-                    note.s = MsToS(note.ms)
-                    note.loadms = CalculateLoadMs(note, note.ms)
-                    note.loads = MsToS(note.loadms)
-                    note.loadp = CalculateLoadPosition(note, note.loadms)
-                    --]]
-                    if zerodelay and lastnote then
-                        lastnote.stopms = note.delay - lastnote.delay
-                        lastnote.stopstart = lastnote.ms
-                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
-                        
-                        zerodelay = false
-                    end
-
-                    if note.nextnote and note.nextnote.delay ~= note.delay then
-                        note.stopms = note.nextnote.delay - note.delay
-                        note.stopstart = note.ms
-                        note.stopend = note.stopstart + note.stopms
-                    end
-                end
-                lastnote = note
-
-            end)
-
-            --]=]
-
-            --[[
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                print(note.ms, note.delay, note.stopms, note.stopstart, note.stopend)
-            end)
-
-            io.read()
-
-            stopsong = true --error()
-            --]]
-        end
 
         if bpmchange then
             local bpm = Parsed.Metadata.BPM
@@ -9074,15 +8846,48 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --print(note.type, note.oms, note.ms)
                 note.bpm = Parsed.Metadata.BPM
 
-                note.loadms = CalculateLoadMs(note, note.ms)
+                note.loadms = CalculateLoadMs(note, note.ms - note.delay)
             end)
         end
 
 
-        --error()
-        --print(Parsed.Data[68].ms)error()
 
-        --error()
+        if stopsong then
+            local lastnote = nil
+            local lastdelay = 0
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                --print(note.ms, note.delay)
+                if note.delay ~= lastdelay then
+                    if lastnote then
+                        lastnote.stopms = note.delay - lastnote.delay
+                        lastnote.stopstart = lastnote.ms
+                        lastnote.stopend = lastnote.stopstart + lastnote.stopms
+                    end
+                    lastdelay = note.delay
+                end
+
+                --[[
+                if lastnote and lastnote.delay ~= 0 then
+                    lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
+                end
+                --]]
+
+
+                lastnote = note
+            end)
+        end
+
+
+
+
+
+
+
+
+
+
+
+
         --Sort by loadms
         --Sort all branches firt
         for k, v in pairs(Parsed.Data) do
@@ -9126,38 +8931,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         Taiko.ForAll(Parsed.Data, function(note, i, n)
             --print(note.loadms)
             note.n = n
-            --delay
-            -- [[
-            --moved
-            --]]
-            --print(note.ms)
-            --print(note.loadms, note.ms)
         end)
-        --if''then return end
-        --error()
-        --]]
 
-        --[[
-        local nextnote = nil
-        for i = #Parsed.Data, 1, -1 do
-            local v = Parsed.Data[i]
-            if IsNote(v) then
-                v.n = i
-                v.nextnote = nextnote
-                nextnote = v
-            end
-        end
-        --]]
 
-        --[[
-        --ppp
-        for i = 1, #Parsed.Data do
-            print(Parsed.Data[i].loads)
-        end
-        --]]
-
-        --Calculate end time
-        --local endms = math.max(unpack(timet)) + (endms / songspeedmul)
 
         local temp = endms / songspeedmul
         local endms = timet[1]
@@ -9167,7 +8943,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
         end
         endms = endms + temp
-        --print(MsToS(endms))error()
 
 
 
@@ -9197,46 +8972,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         }
 
-        --Generate nearestnote
-        --[[
-        local lastms = nil
-        for i = 1, #timet do
-            if i ~= 1 then
-                table.insert(loaded.nearestnote, {})
-            end
-            lastms = timet[i]
-        end
-        loaded.nearestnote = {}
-        --]]
 
-
-
-
-        --[[
-        local nextnote = Parsed.Data[1]
-        local nextnotel = nextnote.loads
-
-
-        --redesign
-        while true do
-            if nextnote then
-                nextnotel = nextnote.loads
-                if nextnotel < 0 then
-                    --nextnote.p = CalculatePosition(nextnote, nextnotel)
-
-                    loaded.n = loaded.n + 1
-                    loaded[loaded.n] = nextnote
-                else
-                    break
-                end
-            else
-                break
-            end
-            nextnote = nextnote.nextnote
-        end
-        --]]
-
-        --loaded.e = loaded.n
 
         local nextnote = Parsed.Data[1]
 
@@ -9331,34 +9067,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Bpmchange
         local bpmchangequeue = {}
         --local bpmchangemul = 1
-
-
-
-
-
-        --Statistics
-        --[[
-        local lastinput = {-1, nil}
-        local framen = 0
-        local framerenderstotal = 0
-
-        local dorender = true
-        --]]
-        
-        --Optimizations
-        --[[
-        local dospeedopt = false
-
-        local speedopt = false
-        local speedoptspeed = nil
-        local speedoptoldpos = nil
-        local speedoptout = nil
-        local speedoptfirstnote = nil
-        local speedoptstartms = nil
-        local speedoptstatus = nil
-
-        --]]
-
 
 
 
@@ -9822,50 +9530,9 @@ local notehitgauge = {
         [2] = {}
     },
     anim = {
-        --[[
-            these are all out of 1280 and 720
-        ]]
-        --TODO: Anim for every target
-        --[0] = {Round(-500 / 1280 * Config.ScreenWidth), Round(-500 / 720 * Config.ScreenHeight)}, --INVIS
-        --[0] = {nil, nil} --INVIS
-        --[[
-        [1] = {374, 206},
-        [2] = {398, 174},
-        [3] = {422, 144},
-        [4] = {448, 118},
-        [5] = {484, 86},
-        [6] = {514, 64},
-        [7] = {544, 44},
-        [8] = {578, 28},
-        [9] = {610, 14},
-        [10] = {644, 0},
-        [11] = {678, -8},
-        [12] = {724, -16},
-        [13] = {758, -20},
-        [14] = {794, -20},
-        [15] = {828, -18},
-        [16] = {862, -14},
-        [17] = {900, -4},
-        [18] = {934, 2},
-        [19] = {966, 14},
-        [20] = {998, 34},
-        [21] = {1028, 46},
-        [22] = {1056, 72},
-        [23] = {1088, 102},
-        [24] = {1114, 126},
-        [25] = {1138, 154},
-        [26] = {1150, 162},
-        [27] = {1150, 162},
-        [28] = {1150, 162}
-        --]]
+        
     }
 }
---[[
-for k, v in pairs(notehitgauge.anim) do
-    v[1] = Round(v[1] / 1280 * Config.ScreenWidth)
-    v[2] = Round(v[2] / 720 * Config.ScreenHeight)
-end
---]]
 --[[
     TODO:
     Reduce table creation
@@ -9890,7 +9557,6 @@ do
 
 
     CalculateNoteHitGauge = function(rawtarget)
-        --print(unpack(rawtarget))
         local function calcBezierPoint(t, data, dest)
             local at = 1 - t
             --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
@@ -9910,10 +9576,7 @@ do
             return math.sin(math.pi / 2 * pos)
         end
 
-        --local Config = {ScreenWidth = 1280,
-        --ScreenHeight = 720}
 
-        --local frameTop = Config.ScreenHeight / 2 - 720 / 2
         local frameTop = 0
         
         local target = {
@@ -9984,12 +9647,6 @@ do
         for i = 1, animFrames do
             local animPoint = (i - 1) / (animFrames - 1)
             local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
-            --print(bezierPoint[1] .. ',' .. bezierPoint[2])
-            --[[
-            bezierPoint[1] = Round(bezierPoint[1] / 1280 * Config.ScreenWidth)
-            bezierPoint[2] = Round(bezierPoint[2] / 720 * Config.ScreenHeight)
-            --]]
-            --notehitgauge.anim[i] = bezierPoint
             anim[i] = bezierPoint
         end
     end
@@ -10301,9 +9958,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     '\nReplaying: ', tostring(replaying)
                 }
             )
-            local TextStatistic = {
-
-            } --Dynamic
 
 
             --Wait for start
@@ -10335,14 +9989,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             local startt = os.clock()
 
 
-            --Frame Rate
-            --[[
-            local frames, nextframes
-            if framerate then
-                frames = 1 / framerate
-                nextframes = startt + frames
-            end
-            --]]
 
 
 
@@ -10391,9 +10037,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --TODO: Draw before / after rendering?
                 rl.DrawFPS(10, 10)
                 rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
-                --rl.DrawText(tostring(rl.GetMusicTimePlayed(song)), 800, 40, textsize, rl.BLACK)
-                --rl.DrawText(table.concat(TextStatistic) .. '\n' .. gaugep, 10, Config.ScreenHeight - (textsize * 5), textsize, rl.BLACK)
-                --rl.ClearBackground(rl.BLACK)
 
                 --[[
                 --debug
@@ -10470,7 +10113,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                --target[1] = (1/2 * tracklength) + (tracklength / 3) * math.sin(ms / (tracklength / 3))
 
                 --Event checking
                 if stopend and ms > stopend then
@@ -10526,10 +10168,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 jposscrollspeed[1] = (defaulttarget[1] - target[1]) / note.jposscroll.lengthms
                                 jposscrollspeed[2] = (defaulttarget[2] - target[2]) / note.jposscroll.lengthms
                             else
-                                --[[
-                                jposscrollspeed[1] = ((note.jposscroll.p) and (note.jposscroll.p[1]) or (note.jposscroll.lanep[1] * tracklength)) / note.jposscroll.lengthms
-                                jposscrollspeed[2] = ((note.jposscroll.p) and (note.jposscroll.p[2]) or (note.jposscroll.lanep[2] * tracklength)) / note.jposscroll.lengthms
-                                --]]
                                 jposscrollspeed[1] = ((note.jposscroll.p and note.jposscroll.p[1]) and note.jposscroll.p[1] or (note.jposscroll.lanep and note.jposscroll.lanep[1]) and (note.jposscroll.lanep[1] * tracklength) or 0) / note.jposscroll.lengthms
                                 jposscrollspeed[2] = ((note.jposscroll.p and note.jposscroll.p[2]) and note.jposscroll.p[2] or (note.jposscroll.lanep and note.jposscroll.lanep[2]) and (note.jposscroll.lanep[2] * tracklength) or 0) / note.jposscroll.lengthms
                             end
@@ -10610,14 +10248,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --See if next note is ready to be loaded
                 if nextnote then
                     while true do
-                        --[[
-                        if (nextnote and recalculateloadms) then
-                            --Recalculate loadms
-                            nextnote.newloadms = CalculateLoadMs(nextnote, nextnote.loadmscalc)
-                            recalculateloadms = false
-                        end
-                        --]]
-                        --if nextnote and (nextnote.loadms < ms + totaldelay or nextnote.newloadms < ms + totaldelay) then
                         if nextnote and (nextnote.loadms < ms + totaldelay) then
                             loaded[#loaded + 1] = nextnote
 
@@ -10641,15 +10271,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                 --logically, branch should not start with endnote
 
-                                --Recalc Loadms?
-                                --[[
-                                if not (target[1] == defaulttarget[1] and target[2] == defaulttarget[2]) then
-                                    nextnote.loadms = CalculateLoadMs(nextnote, nextnote.ms)
-                                    nextnote.loads = MsToS(nextnote.loadms)
-                                end
-                                --]]
                             end
-                            --recalculateloadms = true
                         else
                             break
                         end
@@ -10884,14 +10506,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
 
 
-                --[[
-                --draw combo
 
-                local sx, sy = 40/1280 * Config.ScreenWidth, 48/720 * Config.ScreenHeight
-                local str = tostring(score)
-                local measurex = MeasureTextTexture(str, sx, sy)
-                DrawTextTexture(Textures.PlaySong.Fonts.Combo[0], str, 160/1280 * Config.ScreenWidth - measurex, Textures.PlaySong.Backgrounds.Background.InfoBar.pr.y, sx, sy)
-                --]]
 
 
 
@@ -10909,19 +10524,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 if jposscrollstart and ms >= jposscrollstart then
                     target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
                     target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
-                    
-                    --recalculateloadms = true
-                    --Recalc?
-                    --[[
-                    for k, v in pairs(notetable) do
-                        v.loadms = CalculateLoadMs(v, v.ms)
-                    end
-                    --]]
-                    --Just recalc for nextnote
-                    --[[
-                    nextnote.loadms = CalculateLoadMs(nextnote, nextnote.ms)
-                    nextnote.loads = MsToS(nextnote.loadms)
-                    --]]
                 end
 
 
@@ -10934,11 +10536,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 unloadrectchanged[4] = unloadrect[4] + targetoffsety
 
 
-                --print(targetoffsetx, targetoffsety, unloadrect[1])
+
 
 
                 --normal
-                --rl.DrawTexture(Textures.PlaySong.Notes.target, (Round(target[1] * xmul) + toffsetx) * scale[1], (Round(target[2] * ymul) + toffsety) * scale[2], rl.WHITE)
 
                 --scale
                 targetpr.x = (Round(target[1] * xmul) + offsetx) * scale[1]
@@ -10966,14 +10567,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     --Anim ended?
                     --local frame = notehitgauge.anim[animn]
                     local currenttarget = notehitgauge.currenttarget
-                    --[[
-                    for x, v in pairs(notehitgauge.anim) do
-                        for y, v2 in pairs(v) do
-                            print(currenttarget[1][i2], currenttarget[2][i2])
-                            print(x, y)
-                        end
-                    end
-                    --]]
                     local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
                     if frame then
                         if frame[1] then
@@ -11061,7 +10654,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local note = loaded[i2]
                     if note then
                         --nearest
-                        --if not nearest or (ms - note.ms > 0 and ms - note.ms < nearest) or (note.ms - ms > 0 and note.ms - ms < nearest)
                         if not (note.hit) and note.data == 'note' then
                             local d = math.abs(offsetms - note.ms)
                             if (note.type == 1 or note.type == 3) and (not nearest[1] or d < nearest[1]) then
@@ -11140,19 +10732,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
-                        --[[
-                        if stopsong and note.stopstart and ms > note.stopstart then
-                            stopfreezems = totaldelay + note.stopstart
-                            stopms = note.stopms
-                            totaldelay = totaldelay - note.stopms
-                            stopstart = note.stopstart
-                            stopend = note.stopend
-
-                            --to prevent retriggering
-                            note.stopstart = nil
-                        end
-                        --]]
 
 
 
@@ -11302,16 +10881,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                --Generate score / statistics
-                --[[
-                TextStatistic[2] = tostring(combo) --Combo
-                TextStatistic[4] = tostring(score) --Score
-                --]]
-
-
-
-
-
 
 
 
@@ -11448,43 +11017,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                             --New code (12/8/22)
                                             if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
-                                                --TODO: implement negativey
-                                                --[[
-                                                local negativex = startnote.scrollx > 0
-                                                local positivey = startnote.scrolly <= 0
-                                                --]]
-
-
-                                                --Flip if endnote goes past startnote
-                                                --[[
-                                                -- -90 < x < 90
-                                                if (note.rotationr < 90 or note.rotationr > 270) and (x2 - x1 <= 0) then
-                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
-                                                elseif (note.rotationr > 90 and note.rotationr < 270) and (x2 - x1 > 0) then
-                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
-                                                end
-
-
-                                                -- 0 < x < 180
-                                                if (y2 - y1 < 0) and (note.rotationr < 180) then
-                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
-                                                elseif (note.rotationr > 180) and (y2 - y1 > 0) then
-                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
-                                                end
-                                                --]]
-
-
-
-
-
-                                                --DIRTY LMAO
-                                                -- -90 < x < 90
-                                                --[[
-                                                if ((note.rotationr < 90 or note.rotationr > 270) and (x2 - x1 <= 0)) or ((note.rotationr > 90 and note.rotationr < 270) and (x2 - x1 > 0)) or ((y2 - y1 < 0) and (note.rotationr < 180)) or ((note.rotationr > 180) and (y2 - y1 > 0)) then
-                                                    note.rotationr = NormalizeAngle(note.rotationr + 180)
-                                                end
-                                                --]]
-
 
 
 
