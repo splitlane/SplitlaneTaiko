@@ -8668,7 +8668,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-
+        --Jposscroll queue
+        local jposscrollqueue = {}
 
 
         local maxcombo = 0 --needed for gauge calculation
@@ -8724,6 +8725,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 v.jposscroll.lengthms = v.jposscroll.olengthms or v.jposscroll.lengthms
                 v.jposscroll.olengthms = v.jposscroll.lengthms
                 v.jposscroll.lengthms = v.jposscroll.lengthms / songspeedmul
+                jposscrollqueue[#jposscrollqueue + 1] = v
             end
 
 
@@ -8800,7 +8802,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-
+        local bpmchangequeue = {}
         if bpmchange then
             local bpm = Parsed.Metadata.BPM
             local bpmchanges = {
@@ -8826,6 +8828,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     bpmchanges.ms[#bpmchanges.ms + 1] = note.ms
                     bpmchanges.bpmchangemul[#bpmchanges.bpmchangemul + 1] = note.bpmchangemul
 
+
+                    bpmchangequeue[#bpmchangequeue + 1] = note
 
 
                     --print('BPMCHANGE', note.ms, note.type)
@@ -8864,7 +8868,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         end
 
 
-
+        local stopqueue = {}
         if stopsong then
             local lastnote = nil
             local lastdelay = 0
@@ -8884,6 +8888,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
                 end
                 --]]
+                if note.stopstart then
+                    stopqueue[#stopqueue + 1] = note
+                end
 
 
                 lastnote = note
@@ -9064,7 +9071,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local stopfreezems = nil
         local stopstart = nil
         local stopend = nil
-        local stopqueue = {}
+        --local stopqueue = {} --DEFINED ABOVE
         --local adddelay = false
         local totaldelay = 0
 
@@ -9074,11 +9081,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local jposscrollend = nil
         local jposscrollspeed = {nil, nil}
         local jposscrollstartp = {nil, nil}
-        local jposscrollqueue = {}
+        --local jposscrollqueue = {} --DEFINED ABOVE
         --local recalculateloadms = false --opt
 
         --Bpmchange
-        local bpmchangequeue = {}
+        --local bpmchangequeue = {} --DEFINED ABOVE
         --local bpmchangemul = 1
 
 
@@ -9266,6 +9273,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
                 --queues
 
+                --[[
+                --queues are ordered by ms due to alignment issues
                 if note.jposscroll then
                     jposscrollqueue[#jposscrollqueue + 1] = note
                 end
@@ -9275,6 +9284,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 if note.bpmchange then
                     bpmchangequeue[#bpmchangequeue + 1] = note
                 end
+                --]]
             end)
 
 
@@ -10234,7 +10244,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             --bpmchangemul = note.bpmchangemul
                             local bpmchangems = note.ms
                             local bpmchangemul = note.bpmchangemul
-                            print(bpmchangemul, note.line)
 
                             --Modify ALL Notes
                             Taiko.ForAll(Parsed.Data, function(note, i, n)
