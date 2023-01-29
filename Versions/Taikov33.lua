@@ -3054,6 +3054,7 @@ function Taiko.ParseTJA(source)
 
             --bmscroll and hbscroll
             disablescroll = false,
+            attachbpmchange = false,
             stopsong = false,
             delay = 0,
 
@@ -3954,6 +3955,15 @@ function Taiko.ParseTJA(source)
                         ]]
                         --Parsed.Metadata.BPM = tonumber(match[2]) or Parsed.Metadata.BPM --UNSAFE
                         Parser.bpm = CheckN(match[1], match[2], 'Invalid bpmchange') or Parser.bpm --UNSAFE
+
+                        if Parser.attachbpmchange then
+                            --NO: Attach it to next note
+                            table.insert(Parser.currentmeasure, {
+                                --match[1],
+                                'BPMCHANGE',
+                                Parser.bpm
+                            }) --Just like delay
+                        end
                     elseif match[1] == 'DELAY' then
                         --[[
                             - Floating point value in seconds that offsets the position of the following song notation.
@@ -4188,6 +4198,7 @@ function Taiko.ParseTJA(source)
                             - In short, the score scrolls according to the current BPM.
                         ]]
                         Parser.disablescroll = true
+                        Parser.attachbpmchange = true
                         --Parser.stopsong = true
                         Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'HBSCROLL' then
@@ -4196,6 +4207,7 @@ function Taiko.ParseTJA(source)
                             - Please describe before #START.
                             - If this instruction is present, the scroll method will include the effect of #SCROLL in BMSCROLL.
                         ]]
+                        Parser.attachbpmchange = true
                         --Parser.stopsong = true
                         Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'SENOTECHANGE' then
@@ -4850,6 +4862,7 @@ Everyone who DL
                         --print(increment)
                         --print(firstmspermeasure, increment, notes)
                         local nextjposscroll = false
+                        local nextbpmchange = false
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
@@ -4868,6 +4881,8 @@ Everyone who DL
                                 end
                                 --]]
                                 nextjposscroll = c[2]
+                            elseif c[1] == 'BPMCHANGE' then
+                                nextbpmchange = c[2]
                             else
 
                                 --if it is not air
@@ -4907,6 +4922,11 @@ Everyone who DL
                                     c.jposscroll = nextjposscroll
                                     --c.jposscroll.startms = c.ms --no need, just use note.ms
                                     nextjposscroll = false
+                                end
+                                if nextbpmchange then
+                                    --Put bpmchange on!
+                                    c.bpmchange = nextbpmchange
+                                    nextbpmchange = false
                                 end
 
                                 --[[
@@ -5022,6 +5042,9 @@ Everyone who DL
                     Parser.currentmeasure = {}
                     if nextjposscroll then
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
+                    end
+                    if nextbpmchange then
+                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextbpmchange
                     end
                     Parser.insertbarline = true
                     Parser.zeroopt = zeroopt
@@ -6592,6 +6615,19 @@ int MeasureText(const char *text, int fontSize)
         return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
         --]]
 
+        --[[
+        local a = rl.LoadMusicStream(str)
+        local data = LoadFile(str)
+        local b = rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
+        print(a.frameCount, b.frameCount)
+        print(a.looping, b.looping)
+        print(a.ctxType, b.ctxType)
+        print(a.stream, b.stream)
+        print(a.stream.sampleRate, b.stream.sampleRate)
+        print(a.stream.sampleSize, b.stream.sampleSize)
+        print(a.stream.channels, b.stream.channels)
+        error()
+        --]]
 
     end
     --[=[
@@ -7172,6 +7208,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     --local stopsong = true --Stop song enabled?
     local stopsong = Parsed.Metadata.STOPSONG
     local jposscroll = true
+    local bpmchange = true --If it exists
 
 
 
@@ -8410,6 +8447,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             return (note.data == 'note') or (note.data == 'event' and note.event == 'barline')
         end
         local function IsPointInRectangle(x, y, x1, y1, x2, y2)
+            --print(x, y, x1, y1, x2, y2)
             --[[
                 assumptions
                 x1 < x2
@@ -8771,6 +8809,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 v.jposscrolldone = false
             end
 
+            if v.bpmchange then
+                v.bpmchangedone = false
+            end
+
 
             v.loadms = CalculateLoadMs(v, v.ms)
             --Assume start is before end
@@ -8803,7 +8845,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
         end
 
-        if stopsong then
+        if stopsong or bpmchange then
             --sort with ms
             for k, v in pairs(Parsed.Data) do
                 if v.branch then
@@ -8840,8 +8882,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     return a.ms < b.ms
                 end
             end)
+        end
 
 
+
+        if stopsong then
             local lastnote = nil
             local lastdelay = 0
             local stopmst = {}
@@ -8972,6 +9017,63 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
             stopsong = true --error()
             --]]
+        end
+
+        if bpmchange then
+            local bpm = Parsed.Metadata.BPM
+            local bpmchanges = {
+                ms = {
+
+                },
+                bpmchangemul = {
+
+                },
+                offset = 0, --Cumulative offset
+            }
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                if note.bpmchange then
+                    note.bpmchangemul = note.bpmchange / bpm
+
+                    --Modify ms
+                    --[[
+                        ex: bpmchangemul = 2
+                        note get 2x further
+                    ]]
+
+                    bpm = note.bpmchange
+                    bpmchanges.ms[#bpmchanges.ms + 1] = note.ms
+                    bpmchanges.bpmchangemul[#bpmchanges.bpmchangemul + 1] = note.bpmchangemul
+
+
+
+                    --print('BPMCHANGE', note.ms, note.type)
+                end
+
+                --[[
+                    reverse this
+
+                    --reverse (WRONG)
+                    note.ms = (note.ms + bpmchangems) * bpmchangemul - bpmchangems
+
+                    --reverse
+                    note.ms = ((note.ms - bpmchangems) * bpmchangemul) + bpmchangems
+
+                    --original
+                    note.ms = bpmchangems + (note.ms - bpmchangems) / bpmchangemul
+                ]]
+                for i = #bpmchanges.ms, 1, -1 do
+                    note.ms = ((note.ms - bpmchanges.ms[i]) * bpmchanges.bpmchangemul[i]) + bpmchanges.ms[i]
+
+                    note.speed[1] = note.speed[1] / bpmchanges.bpmchangemul[i]
+                    note.speed[2] = note.speed[2] / bpmchanges.bpmchangemul[i]
+                end
+
+
+
+
+                --print(note.type, note.oms, note.ms)
+                note.bpm = Parsed.Metadata.BPM
+            end)
         end
 
 
@@ -9224,7 +9326,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local jposscrollqueue = {}
         --local recalculateloadms = false --opt
 
-
+        --Bpmchange
+        local bpmchangequeue = {}
+        --local bpmchangemul = 1
 
 
 
@@ -10339,6 +10443,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         end
 
                         --Update Music
+
                         rl.UpdateMusicStream(song)
                     end
                 end
@@ -10456,6 +10561,46 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     end
                 end
 
+                if bpmchange then
+                    for i = 1, #bpmchangequeue do
+                        local note = bpmchangequeue[i]
+                        if ms >= note.ms then
+                            --bpmchangemul = note.bpmchangemul
+                            local bpmchangems = note.ms
+                            local bpmchangemul = note.bpmchangemul
+
+                            --Modify ALL Notes
+                            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                                --Modify ms
+                                --[[
+                                    ex: bpmchangemul = 2
+                                    note get 2x faster
+                                    note get 2x further
+                                ]]
+                                --[[
+                                --original
+                                local dif = note.ms - bpmchangems
+                                note.ms = note.ms - dif + dif / bpmchangemul
+                                --]]
+
+                                -- [[
+                                note.ms = bpmchangems + (note.ms - bpmchangems) / bpmchangemul
+                                --]]
+                                
+
+                                --Finally modify scroll or bpm, but I'll modify bpm (it doesn't matter which one you modify, they are both the same in speedcalculations)
+                                --NVM: Modify speed only
+                                note.speed[1] = note.speed[1] * bpmchangemul
+                                note.speed[2] = note.speed[2] * bpmchangemul
+                            end)
+                            print(bpmchangemul)
+
+                            table.remove(bpmchangequeue, i)
+                            break
+                        end
+                    end
+                end
+
 
 
 
@@ -10471,7 +10616,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         end
                         --]]
                         --if nextnote and (nextnote.loadms < ms + totaldelay or nextnote.newloadms < ms + totaldelay) then
-                        if nextnote and nextnote.loadms < ms + totaldelay then
+                        local x, y
+                        if nextnote then
+                            x, y = CalculatePosition(nextnote, stopfreezems or (ms + totaldelay))
+                            x = x * xmul
+                            y = y * ymul
+                        else
+                            break
+                        end
+                        if nextnote and (nextnote.loadms < ms + totaldelay or (
+                            --calc position, see if it is inside loadrect
+                            IsPointInRectangle(x, y, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+                        )) then
                             loaded[#loaded + 1] = nextnote
 
                             if nextnote.endnote then
@@ -11028,6 +11184,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             --print(note.ms, note.jposscroll.lengthms, note.ms + note.jposscroll.lengthms)
                             jposscrollqueue[#jposscrollqueue + 1] = note
                             note.jposscrolldone = true
+                        end
+
+                        if bpmchange and note.bpmchange and (not note.bpmchangedone) then
+                            bpmchangequeue[#bpmchangequeue + 1] = note
+                            note.bpmchangedone = true
                         end
 
                         if stopsong and note.stopstart and (not note.stopdone) then
@@ -12156,6 +12317,7 @@ a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
 a = 'Songs/Bakemono2/test.tja'
+a = 'tja/neta/Bakemono/bpmchange.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
