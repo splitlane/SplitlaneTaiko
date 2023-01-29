@@ -9073,6 +9073,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
                 --print(note.type, note.oms, note.ms)
                 note.bpm = Parsed.Metadata.BPM
+
+                note.loadms = CalculateLoadMs(note, note.ms)
             end)
         end
 
@@ -10593,7 +10595,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 note.speed[1] = note.speed[1] * bpmchangemul
                                 note.speed[2] = note.speed[2] * bpmchangemul
                             end)
-                            print(bpmchangemul)
+                            --print(bpmchangemul)
 
                             table.remove(bpmchangequeue, i)
                             break
@@ -10616,18 +10618,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         end
                         --]]
                         --if nextnote and (nextnote.loadms < ms + totaldelay or nextnote.newloadms < ms + totaldelay) then
-                        local x, y
-                        if nextnote then
-                            x, y = CalculatePosition(nextnote, stopfreezems or (ms + totaldelay))
-                            x = x * xmul
-                            y = y * ymul
-                        else
-                            break
-                        end
-                        if nextnote and (nextnote.loadms < ms + totaldelay or (
-                            --calc position, see if it is inside loadrect
-                            IsPointInRectangle(x, y, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-                        )) then
+                        if nextnote and (nextnote.loadms < ms + totaldelay) then
                             loaded[#loaded + 1] = nextnote
 
                             if nextnote.endnote then
@@ -12318,6 +12309,7 @@ a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
 a = 'Songs/Bakemono2/test.tja'
 a = 'tja/neta/Bakemono/bpmchange.tja'
+a = 'tja/neta/ekiben/neta.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
