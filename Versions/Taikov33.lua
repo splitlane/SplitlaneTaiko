@@ -6498,7 +6498,6 @@ int MeasureText(const char *text, int fontSize)
 
             if file ~= '.' and file ~= '..' then
                 FilesList[#FilesList + 1] = toppath .. file
-                print(file, rl.IsPathFile(FilesList[#FilesList]))
                 if IsPathFile(FilesList[#FilesList]) == false then
                     --print(FilesList[#FilesList])
                     local dir = FilesList[#FilesList]
@@ -6579,12 +6578,21 @@ int MeasureText(const char *text, int fontSize)
         UpdateProgress(str)
         return LoadFile(AssetsPath .. str)
     end
+    local function LoadMusicStreamFromMemory(str)
+        --https://github.com/raysan5/raylib/blob/83ff7b246613c57dd5703d24965b4036332a100f/src/raudio.c#L1272
+        --https://github.com/raysan5/raylib/blob/83ff7b246613c57dd5703d24965b4036332a100f/src/raudio.c#L1443
+
+    end
     local function LoadSong(str)
+        -- [[
         return rl.LoadMusicStream(str)
+        --]]
         --[[
         local data = LoadFile(str)
         return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
         --]]
+
+
     end
     --[=[
     local function LoadImage(str)
@@ -8290,7 +8298,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         local SongTree = BuildSongTree(PathTree)
         
-        require'ppp'(SongTree)
+        --require'ppp'(SongTree)
 
         error()
 
@@ -12075,8 +12083,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-    return Taiko.SongSelect()
-    --return Taiko.PlaySong(Parsed)
+    --return Taiko.SongSelect()
+    return Taiko.PlaySong(Parsed)
 
 
 
@@ -12145,6 +12153,9 @@ a = 'tja/neta/donkama/neta.tja'
 --a = 'tja/neta/ekiben/notehitgauge.tja'
 --a = 'tja/neta/ekiben/spiraltest.tja'
 a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
+
+--a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
+a = 'Songs/Bakemono2/test.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
