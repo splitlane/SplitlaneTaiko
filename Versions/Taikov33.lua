@@ -76,7 +76,8 @@ TODO: Add raylib option
     TODO: look at skinconfig.ini / otherconfig.ini and realign some stuff AUTOMATICALLY (base config on that)
     TODO: move away from optionsmap, implement it in songselect
     TODO: MAJOR REFACTORING
-    TODO: prequeue jposscroll and stopms and bpmchange, don't check for every note
+    TODO: prequeue jposscroll and stopms and bpmchange, don't check for every note --DONE
+    TODO: fix loadms for bpmchange
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -3959,6 +3960,7 @@ function Taiko.ParseTJA(source)
                         Parser.bpm = CheckN(match[1], match[2], 'Invalid bpmchange') or Parser.bpm --UNSAFE
 
                         if Parser.attachbpmchange then
+                            Parser.zeroopt = false
                             --NO: Attach it to next note
                             table.insert(Parser.currentmeasure, {
                                 --match[1],
@@ -8854,6 +8856,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --print(note.type, note.oms, note.ms)
                 note.bpm = Parsed.Metadata.BPM
 
+                --Somehow Precalculate Loadms?
+
+
                 note.loadms = CalculateLoadMs(note, note.ms - note.delay)
             end)
         end
@@ -10229,6 +10234,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             --bpmchangemul = note.bpmchangemul
                             local bpmchangems = note.ms
                             local bpmchangemul = note.bpmchangemul
+                            print(bpmchangemul, note.line)
 
                             --Modify ALL Notes
                             Taiko.ForAll(Parsed.Data, function(note, i, n)
@@ -10249,10 +10255,65 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                 --]]
                                 
 
+
+
+
+                                --Modify loadms (recalculate)
+                                --[[
+                                    --SCALE ACCORDINGLY
+                                    --x, y
+                                    local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+                                    return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+                                ]]
+
+                                --note.loadms = note.loadms + (note.loadms - note.ms) / bpmchangemul
+                                --[[
+
+                                
+                                local ms = note.oms2 - note.delay
+                                --[[
+                                    note.loadms = note.ms - (x / -note.speed[1])
+                                    -note.loadms + note.ms = x / -note.speed[1]
+                                    x = (-note.loadms + note.ms) * -note.speed
+                                --]]
+                                --[[
+                                loadms = ms - (x / -note.speed[1])
+                                loadms - ms = -(x/-note.speed[1])
+                                --]]
+                                --[[
+                                local x = (-note.loadms + ms) * -note.ospeed2[1]
+                                print(x)
+                                note.loadms = ms - (x / -(note.speed[1] * bpmchangemul))
+                                --]]
+                                --print(x)
+                                --note.loadms = ms + (note.loadms - ms) / (bpmchangemul)
+                                --note.loadms = ms + (((note.loadms - ms)) / (bpmchangemul))
+
+                                --]]
+                                --print((note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1])), (note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1] * bpmchangemul)))
+                                --note.loadms = (note.ms - note.delay) + (((note.loadms - (note.ms - note.delay))) / (bpmchangemul))
+
+                                --[[
+                                note.loadms = note.ms - (note.loadms * -note.speed[1] / (-note.speed[1] * bpmchangemul))
+                                note.loadms = note.ms - (note.loadms / bpmchangemul)
+                                --]]
+
+                                --LAZY, DIRTY
+                                note.loadms = CalculateLoadMs(note, note.ms - note.delay)
+
+
+
+
+
+
+
                                 --Finally modify scroll or bpm, but I'll modify bpm (it doesn't matter which one you modify, they are both the same in speedcalculations)
                                 --NVM: Modify speed only
                                 note.speed[1] = note.speed[1] * bpmchangemul
                                 note.speed[2] = note.speed[2] * bpmchangemul
+
+
+
                             end)
                             --print(bpmchangemul)
 
@@ -11427,6 +11488,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             '\nFramen: ', framen,
                             '\nnextnote.loadms: ', tostring(nextnote and nextnote.loadms),
                             '\nnextnote.n: ', tostring(nextnote and nextnote.n),
+                            '\nballoonstart: ', tostring(balloonstart),
+                            '\nballoonend: ', tostring(balloonend),
                             '\n\nMemory usage (mb): ', collectgarbage('count') / 1000,
                             '\nFinished (%): ', ms / (endms) * 100,
                             '\n\n'
@@ -11843,7 +11906,7 @@ a = 'tja/neta/donkama/neta.tja'
 a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
---a = 'Songs/Bakemono2/test.tja'
+a = 'Songs/Bakemono2/test.tja'
 --a = 'tja/neta/Bakemono/bpmchange.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
