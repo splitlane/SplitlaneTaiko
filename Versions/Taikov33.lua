@@ -7016,7 +7016,7 @@ int MeasureText(const char *text, int fontSize)
     OriginalConfig = Table.Clone(Config)
 
 
-    --Config.Controls
+    --Config.Controls.PlaySong
     --Check if a key in a table of keys is pressed
     local function IsKeyPressed(t)
         for k, v in pairs(t) do
@@ -7216,7 +7216,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     --Controls
     --Hit, Escape, L, R, Select
-    local Controls = Config.Controls
+    --local Controls = Config.Controls.PlaySong
     --[=[
     local Controls = Controls or {}
     Controls = {
@@ -8339,7 +8339,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         
         --require'ppp'(SongTree)
 
-        error()
+        local Selected = 1
+
+        local RenderDistance = 5
 
         while true do
 
@@ -8350,8 +8352,18 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
             rl.DrawFPS(10, 10)
 
+            for i = Selected - RenderDistance, Selected + RenderDistance do
+                --Wrap
+                local i2 = (i < 1) and (#Display.Text - i) or i
+                
+            end
+
 
             rl.EndDrawing()
+
+            if rl.WindowShouldClose() then
+                break
+            end
 
         end
     end
@@ -10856,7 +10868,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 --]]
 
                 --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
-                for k, v in pairs(Controls.Hit) do
+                for k, v in pairs(Config.Controls.PlaySong.Hit) do
                     if rl.IsKeyPressed(k) then
                         Hit(v[1], v[2])
                     end
@@ -11372,7 +11384,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Fullscreen
-                if IsKeyPressed(Config.Controls.Fullscreen) then
+                if IsKeyPressed(Config.Controls.PlaySong.Fullscreen) then
                     local rx, ry = ToggleFullscreen()
 
                     --RESCALE EVERYTHING
@@ -11380,7 +11392,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Screenshot
-                if IsKeyPressed(Config.Controls.Screenshot) then
+                if IsKeyPressed(Config.Controls.PlaySong.Screenshot) then
                     --[[
                     --might produce a screenshot with black waste parts due to gpu
                     rl.TakeScreenshot(ScreenshotPath)
@@ -11395,8 +11407,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
 
                 --Pause / Command
-                local commandactivated = IsKeyPressed(Config.Controls.Command.Init)
-                if IsKeyPressed(Config.Controls.Pause.Init) or commandactivated then
+                local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
+                if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
                     local before = os.clock()
 
                     rl.EndDrawing()
@@ -11468,21 +11480,21 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                         --Command
                         if commandactivated then
-                            if IsKeyPressed(Config.Controls.Command.Move.Toggle) then
+                            if IsKeyPressed(Config.Controls.PlaySong.Command.Move.Toggle) then
                                 moving = not moving
                             end
 
                             if moving then
-                                if IsKeyDown(Config.Controls.Command.Move.Left) then
+                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Left) then
                                     x = x - move
                                 end
-                                if IsKeyDown(Config.Controls.Command.Move.Right) then
+                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Right) then
                                     x = x + move
                                 end
-                                if IsKeyDown(Config.Controls.Command.Move.Up) then
+                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Up) then
                                     y = y - move
                                 end
-                                if IsKeyDown(Config.Controls.Command.Move.Down) then
+                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Down) then
                                     y = y + move
                                 end
                             end
@@ -11517,7 +11529,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                         --Input
-                        if IsKeyPressed(Config.Controls.Pause.Escape) then
+                        if IsKeyPressed(Config.Controls.PlaySong.Pause.Escape) then
                             break
                         end
                         if rl.WindowShouldClose() then
@@ -11831,8 +11843,8 @@ a = 'tja/neta/donkama/neta.tja'
 a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
-a = 'Songs/Bakemono2/test.tja'
-a = 'tja/neta/Bakemono/bpmchange.tja'
+--a = 'Songs/Bakemono2/test.tja'
+--a = 'tja/neta/Bakemono/bpmchange.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'

@@ -4,68 +4,70 @@ This file will be read and overwritten.
 DO NOT EDIT
 {
 	'Controls' = {
-		'Pause' = {
-            'Init' = {
-			    256 = true,
-            },
-            'Escape' = {
-			    256 = true,
-            },
-		},
-		'Hit' = {
-			52 = {
-                1 = 2,
-                2 = false,
-            },
-			56 = {
-                1 = 2,
-                2 = true,
-            },
-			78 = {
-                1 = 1,
-                2 = true,
-            },
-			86 = {
-                1 = 1,
-                2 = false,
-            },
-		},
-		'L' = {
-			263 = true,
-			265 = true,
-		},
-		'R' = {
-			262 = true,
-			264 = true,
-		},
-		'Select' = {
-			257 = true,
-		},
-        'Screenshot' = {
-            83 = true,
-        },
-        'Fullscreen' = {
-            70 = true,
-        },
-        'Command' = {
-            'Init' = {
-                290 = true,
-            },
-            'Move' = {
-                'Left' = {
-                    263 = true,
+        'PlaySong' = {
+            'Pause' = {
+                'Init' = {
+                    256 = true,
                 },
-                'Right' = {
-                    262 = true,
+                'Escape' = {
+                    256 = true,
                 },
-                'Up' = {
-                    265 = true,
+            },
+            'Hit' = {
+                52 = {
+                    1 = 2,
+                    2 = false,
                 },
-                'Down' = {
-                    264 = true,
+                56 = {
+                    1 = 2,
+                    2 = true,
                 },
-                'Toggle' = {
-                    77 = true,
+                78 = {
+                    1 = 1,
+                    2 = true,
+                },
+                86 = {
+                    1 = 1,
+                    2 = false,
+                },
+            },
+            'L' = {
+                263 = true,
+                265 = true,
+            },
+            'R' = {
+                262 = true,
+                264 = true,
+            },
+            'Select' = {
+                257 = true,
+            },
+            'Screenshot' = {
+                83 = true,
+            },
+            'Fullscreen' = {
+                70 = true,
+            },
+            'Command' = {
+                'Init' = {
+                    290 = true,
+                },
+                'Move' = {
+                    'Left' = {
+                        263 = true,
+                    },
+                    'Right' = {
+                        262 = true,
+                    },
+                    'Up' = {
+                        265 = true,
+                    },
+                    'Down' = {
+                        264 = true,
+                    },
+                    'Toggle' = {
+                        77 = true,
+                    },
                 },
             },
         },
