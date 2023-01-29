@@ -6942,6 +6942,8 @@ int MeasureText(const char *text, int fontSize)
     rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
     --rl.SetTargetFPS(120)
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
+    --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
+    --rl.SetTraceLogLevel(rl.LOG_NONE)
     rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
 
     rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
@@ -7949,6 +7951,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Balloons.sizey = Textures.PlaySong.Balloons.Anim[0].height
     Textures.PlaySong.Balloons.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
     Textures.PlaySong.Balloons.center = rl.new('Vector2', Textures.PlaySong.Balloons.sizex / 2, Textures.PlaySong.Balloons.sizey / 2)
+    Textures.PlaySong.Balloons.pr = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
 
 
 
@@ -9266,7 +9269,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                             a.endtype = 'DRUMROLLend'
                         end
                     elseif a.type == 7 then
-                        note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
+                        --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                     end
                 end
 
@@ -11311,7 +11314,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                                         if transparency > 0 then
                                                             --if visible
-                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
+                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
                                                         end
                                                     else
                                                         startnote.hit = true
@@ -11320,9 +11323,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                     --Trying to blow
 
                                                     --draw balloon at same position as non-hit above donchan
-                                                    note.balloonrect.x = startnote.pr.x + startnote.pr.width --DIRTY
-                                                    note.balloonrect.y = startnote.pr.y
-                                                    rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, note.balloonrect, Textures.PlaySong.Balloons.center, startnote.rotationr, rl.WHITE)
+                                                    Textures.PlaySong.Balloons.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                                    Textures.PlaySong.Balloons.pr.y = startnote.pr.y
+                                                    rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, rl.WHITE)
                                                 end
                                             end
 
