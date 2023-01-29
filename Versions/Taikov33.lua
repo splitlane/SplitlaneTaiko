@@ -76,6 +76,7 @@ TODO: Add raylib option
     TODO: look at skinconfig.ini / otherconfig.ini and realign some stuff AUTOMATICALLY (base config on that)
     TODO: move away from optionsmap, implement it in songselect
     TODO: MAJOR REFACTORING
+    TODO: prequeue jposscroll and stopms and bpmchange, don't check for every note
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -8709,12 +8710,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 v.jposscroll.lengthms = v.jposscroll.olengthms or v.jposscroll.lengthms
                 v.jposscroll.olengthms = v.jposscroll.lengthms
                 v.jposscroll.lengthms = v.jposscroll.lengthms / songspeedmul
-                v.jposscrolldone = false
             end
 
-            if v.bpmchange then
-                v.bpmchangedone = false
-            end
 
 
             v.loadms = CalculateLoadMs(v, v.ms - v.delay)
@@ -8736,7 +8733,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             v.setdelay = false
             v.pop = false
 
-            v.stopdone = false
             --v.n = k --MISTAKE: after sorted
             --table.insert(timet, v.ms)
             timet[#timet + 1] = v.ms
@@ -9248,6 +9244,19 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     elseif a.type == 7 then
                         note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                     end
+                end
+
+
+                --queues
+
+                if note.jposscroll then
+                    jposscrollqueue[#jposscrollqueue + 1] = note
+                end
+                if note.stopstart then
+                    stopqueue[#stopqueue + 1] = note
+                end
+                if note.bpmchange then
+                    bpmchangequeue[#bpmchangequeue + 1] = note
                 end
             end)
 
@@ -10750,23 +10759,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                        if jposscroll and note.jposscroll and (not note.jposscrolldone) then
-                            --print(note.ms, note.jposscroll.lengthms, note.ms + note.jposscroll.lengthms)
-                            jposscrollqueue[#jposscrollqueue + 1] = note
-                            note.jposscrolldone = true
-                        end
-
-                        if bpmchange and note.bpmchange and (not note.bpmchangedone) then
-                            bpmchangequeue[#bpmchangequeue + 1] = note
-                            note.bpmchangedone = true
-                        end
-
-                        if stopsong and note.stopstart and (not note.stopdone) then
-                            stopqueue[#stopqueue + 1] = note
-                            note.stopdone = true
-                        end
-
-                        
 
 
 
@@ -11841,7 +11833,7 @@ a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
 a = 'Songs/Bakemono2/test.tja'
 a = 'tja/neta/Bakemono/bpmchange.tja'
-a = 'tja/neta/ekiben/neta.tja'
+--a = 'tja/neta/ekiben/neta.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
 --a = 'tja/neta/ekiben/scrolldrumroll.tja'
 
