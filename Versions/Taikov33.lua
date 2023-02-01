@@ -77,8 +77,12 @@ TODO: Add raylib option
     TODO: move away from optionsmap, implement it in songselect
     TODO: MAJOR REFACTORING
     TODO: prequeue jposscroll and stopms and bpmchange, don't check for every note --DONE
-    TODO: fix loadms for bpmchange
-    TODO: have just one SENOTE pr 
+    TODO: fix loadms for bpmchange --DONE
+    TODO: have just one SENOTE pr
+    TODO: fix drumroll scaling when losing aspect ratio
+    TODO: parse box.def
+    TODO: parse Config.ini files
+    TODO: GIMMICK: sine in scrolls
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2181,7 +2185,7 @@ perfectly touching at
 
 Taiko.Data = {
     Languages = {'', 'EN', 'JA', 'CN', 'TW', 'KO'}, --Order as order of desiredness
-    GenreName = {
+    GenreAlias = {
         --https://github.com/bui/taiko-web/wiki/TJA-format#genre-i
         --Custom genres are also supported
         Pop = {'pop', 'j-pop'},
@@ -2193,6 +2197,22 @@ Taiko.Data = {
         ['Game Music'] = {'game music', 'ゲームミュージック'},
         ['Namco Original'] = {'namco original', 'ナムコオリジナル'}
     },
+    --[[
+    GenreName = {
+        [0] = 'Custom',
+        [1] = 'Pop',
+        [2] = 'Kids',
+        [3] = 'Anime',
+        [4] = 'Classic',
+        [5] = 'Game Music',
+        [6] = 'VOCALOID',
+        [7] = 'Variety',
+        [8] = 'Namco Original'
+    }
+    GenreId = {
+
+    }
+    --]]
     CourseId = {
         easy = 0,
         normal = 1,
@@ -3562,7 +3582,7 @@ function Taiko.ParseTJA(source)
                                 - When hosted on taiko-web, "category_id" field and "categories" collection in the database are used.
                             ]]
                             --Lua doesn't work well with unicode, so just convert them
-                            for k, v in pairs(Taiko.Data.GenreName) do
+                            for k, v in pairs(Taiko.Data.GenreAlias) do
                                 for i = 1, #v do
                                     if v[i] == Parsed.Metadata.GENRE then
                                         Parsed.Metadata.GENRE = k
@@ -7527,6 +7547,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 }
             },
             Nameplates = LoadImage('Graphics/NamePlate.png')
+        },
+        SongSelect = {
+            GenreBar = {
+                --INSTEAD OF HARDCODING, PARSE BOX.DEF
+            }
         }
     }
 
@@ -7763,6 +7788,23 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     --Load!
     UpdateProgress('Splitting into textures')
     
+
+
+
+
+
+    --PLAYSONG
+
+
+
+
+
+
+
+
+
+
+
 
     --Notes
 
@@ -11333,7 +11375,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                                         if transparency > 0 then
                                                             --if visible
-                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
+                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
                                                         end
                                                     else
                                                         startnote.hit = true
@@ -11865,8 +11907,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-    --return Taiko.SongSelect()
-    return Taiko.PlaySong(Parsed)
+    return Taiko.SongSelect()
+    --return Taiko.PlaySong(Parsed)
 
 
 
@@ -11937,8 +11979,9 @@ a = 'tja/neta/donkama/neta.tja'
 a = 'Songs/taikobuipm/Yuugen no Ran/Yuugen no Ran.tja'
 
 --a = 'Songs/BakemonoFriends/ようこそジャパリパークへ.tja'
-a = 'Songs/Bakemono2/test.tja'
-a = 'tja/neta/ekiben/drumrolltest.tja'
+--a = 'Songs/Bakemono2/test.tja'
+--a = 'Songs/taikobuipm/Ekiben 2000.tja'
+--a = 'tja/neta/ekiben/drumrolltest.tja'
 --a = 'tja/neta/Bakemono/bpmchange.tja'
 --a = 'tja/neta/ekiben/neta.tja'
 --a = 'taikobuipm/Ekiben 2000.tja'
@@ -11961,7 +12004,7 @@ end
 
 local p = Taiko.ParseTJAFile(a)
 --local song = 'taikobuipm/EkiBEN 2000.ogg'
-song = 'taikobuipm/Donkama 2000.ogg'
+song = 'Songs/taikobuipm/Donkama 2000.ogg'
 --[[
         local optionsmap = {
         auto = {
