@@ -2082,7 +2082,21 @@ function SToMs(s)
 end
 
 
-
+--[[
+Hex to RGB Modified
+https://gist.github.com/fernandohenriques/12661bf250c8c2d8047188222cab7e28
+]]
+function HexToRGB(hex)
+    --[[
+        rgb -> [0, 255]
+    ]]
+    hex = string.gsub(hex, '#', '')
+    if #hex == 3 then
+        return (tonumber('0x' .. string.sub(hex, 1, 1)) * 17), (tonumber('0x' .. string.sub(hex, 2, 2)) * 17), (tonumber('0x' .. string.sub(hex, 3, 3)) * 17)
+    else
+        return (tonumber('0x' .. string.sub(hex, 1, 2))), (tonumber('0x' .. string.sub(hex, 3, 4))), (tonumber('0x' .. string.sub(hex, 5, 6)))
+    end
+end
 
 
 
@@ -8372,7 +8386,77 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+    function Taiko.ParseBoxDef(source)
+        --[[
+            https://github.com/0auBSQ/OpenTaiko/blob/f47c4df82bc722eec0579ae52efa8dc00569d4df/Test/Documentation/Tja/NewCommands.md
 
+            BOXCOLOR : (Hex) Color filter to apply on the box (Ensou song select screen).
+
+            BGCOLOR : (Hex) Color filter to apply on the background (Ensou song select screen).
+
+            BACKCOLOR : (Hex) Color of the text outline (Ensou song select screen).
+
+            FRONTCOLOR : (Hex) Text color (Ensou song select screen).
+
+            BGTYPE : (Int) Texture to use for the background (3_SongSelect\Genre_Background, Ensou song select screen, Default : Genre id or 0).
+
+            BOXTYPE : (Int) Texture to use for the boxes (3_SongSelect\Bar_Genre and 3_SongSelect\Difficulty_Select\Difficulty_Back, Ensou song select screen, Default : Genre id or 0).
+
+            BOXCHARA : (Int) Texture to use for the boxes' characters (3_SongSelect\Box_Chara, Ensou song select screen, Default : Genre id or 0).
+
+            https://github.com/0auBSQ/OpenTaiko/blob/0e6870b955dabc5412042e48ffcbb84187677684/TJAPlayer3/Songs/CBoxDef.cs#L10
+
+            https://github.com/0auBSQ/OpenTaiko/blob/0e6870b955dabc5412042e48ffcbb84187677684/TJAPlayer3/Songs/CSong%E7%AE%A1%E7%90%86.cs#L713
+        ]]
+
+        local out = {}
+
+        --Start
+        local lines = Split(source, '\n')
+        for i = 1, #lines do
+            local line = Trim(lines[i])
+
+            if string.sub(line, 1, 1) == ';' then
+                --Do nothing
+            else
+                --Check for comments
+                local comment = string.find(line, ';')
+                if comment then
+                    line = string.sub(line, 1, comment - 1)
+                end
+
+                local match = {string.match(line, '#(%u+):(.*)')}
+                if match[1] then
+                    out[match[1]] = match[2]
+                end
+            end
+        end
+
+        --Convert / Default
+
+        out.TITLE = tostring(out.TITLE)
+        out.GENRE = tostring(out.GENRE)
+        out.FONTCOLOR = {HexToRGB(out.FONTCOLOR or '#000000')}
+        out.FORECOLOR = {HexToRGB(out.FORECOLOR or '#000000')}
+        out.BACKCOLOR = {HexToRGB(out.BACKCOLOR or '#000000')}
+        out.BOXCOLOR = {HexToRGB(out.BOXCOLOR or '#000000')}
+        out.BGCOLOR = {HexToRGB(out.BGCOLOR or '#000000')}
+        out.BGTYPE = out.BGTYPE or 0
+        out.BOXTYPE = out.BOXTYPE or 0
+        out.BOXCHARA = out.BOXCHARA or 0
+
+        local i = 1
+        out.BOXEXPLANATION = {}
+        for i = 0, 3 do
+            local k = 'BOXEXPLANATION' .. tostring(i)
+            if out[k] then
+                out.BOXEXPLANATION[i] = out[k]
+            end
+        end
+
+
+        return out
+    end
 
 
     function Taiko.SongSelect()
