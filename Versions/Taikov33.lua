@@ -6428,7 +6428,7 @@ int MeasureText(const char *text, int fontSize)
         local a = GetFileName(str)
         local b = string.find(a, '%.')
         if b then
-            return string.sub(a, b - 1)
+            return string.sub(a, 1, b - 1)
         else
             return a
         end
@@ -6609,7 +6609,8 @@ int MeasureText(const char *text, int fontSize)
             if type(v) == 'table' then
                 songtree[k] = BuildSongTree(v)
             else
-                songtree[ffi.string(rl.GetFileNameWithoutExt(v))] = v
+                --songtree[ffi.string(rl.GetFileNameWithoutExt(v))] = v
+                songtree[GetFileNameWithoutExt(v)] = v
             end
         end
 
@@ -8471,13 +8472,36 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local FilesList, PathTree = ScanSongs()
 
         local SongTree = BuildSongTree(PathTree)
-        
-        --require'ppp'(SongTree)
 
         local Selected = 1
 
         local RenderDistance = 5
 
+
+        --Put root directory into Display
+
+
+        --Iterator
+        local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+        --Priority
+        local function DirectoryPriority(t, a, b)
+            if type(t[a]) == 'string' and type(t[b]) == 'string' then
+                return t[a] < t[b]
+            elseif type(t[a]) == 'string' then
+                return false
+            elseif type(t[b]) == 'string' then
+                return true
+            else
+                return a < b
+            end
+        end
+
+        for k, v in spairs(SongTree, DirectoryPriority) do
+            print(k, v)
+        end
+
+
+        --Main Loop
         while true do
 
             --Make canvas
@@ -8491,6 +8515,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --Wrap
                 local i2 = (i < 1) and (#Display.Text - i) or i
                 
+                --Draw box
+                rl.DrawText(Display.Text[i2], 100, i * 100, fontsize, rl.BLACK)
             end
 
 
