@@ -8465,7 +8465,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Only stores displayed ones and a bit of cache
         local Display = {
             Text = {},
-            Background = {},
+            Config = {},
         }
 
         --Songlist
@@ -8497,7 +8497,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         end
 
         for k, v in spairs(SongTree, DirectoryPriority) do
-            print(k, v)
+            Display.Text[#Display.Text + 1] = k
+            --Display.Config
         end
 
 
@@ -8511,12 +8512,14 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
             rl.DrawFPS(10, 10)
 
-            for i = Selected - RenderDistance, Selected + RenderDistance do
+            --Center on Selected
+            for i = Selected - RenderDistance + 1, Selected + RenderDistance + 1 do
                 --Wrap
-                local i2 = (i < 1) and (#Display.Text - i) or i
+                --local i2 = (i < 1) and (#Display.Text - i) or i
+                local i2 = #Display.Text - (i % #Display.Text)
                 
                 --Draw box
-                rl.DrawText(Display.Text[i2], 100, i * 100, fontsize, rl.BLACK)
+                rl.DrawText(Display.Text[i2], 100, i * 25 + Config.ScreenHeight / 2, fontsize / 2, rl.BLACK)
             end
 
 
