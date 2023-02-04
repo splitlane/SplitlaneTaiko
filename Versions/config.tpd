@@ -71,6 +71,18 @@ DO NOT EDIT
                 },
             },
         },
+        'SongSelect' = {
+            'L' = {
+                263 = true,
+                265 = true,
+            },
+            'R' = {
+                262 = true,
+                264 = true,
+            },
+            'FastScrollTime' = 1000,
+            'FastScrollInterval' = 400,
+        },
 	},
 	'ScreenHeight' = 720,
 	'ScreenWidth' = 1280,

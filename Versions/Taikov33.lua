@@ -83,6 +83,8 @@ TODO: Add raylib option
     TODO: parse box.def
     TODO: parse Config.ini files
     TODO: GIMMICK: sine in scrolls
+    TODO: Add errors to PlaySong / SongSelect when invalid tja (popup)
+    TODO: Work on pause menu PlaySong
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -7056,7 +7058,7 @@ int MeasureText(const char *text, int fontSize)
     OriginalConfig = Table.Clone(Config)
 
 
-    --Config.Controls.PlaySong
+    --Config.Controls
     --Check if a key in a table of keys is pressed
     local function IsKeyPressed(t)
         for k, v in pairs(t) do
@@ -7123,6 +7125,10 @@ int MeasureText(const char *text, int fontSize)
     AssetsPath = Config.Paths.Assets --'Assets/'
     ConfigPath = Config.Paths.Config --'config.tpd'
 
+
+    --Convert from ms to s
+    Config.Controls.SongSelect.FastScrollTime = MsToS(Config.Controls.SongSelect.FastScrollTime)
+    Config.Controls.SongSelect.FastScrollInterval = MsToS(Config.Controls.SongSelect.FastScrollInterval)
 
 
 
@@ -8477,6 +8483,15 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         local RenderDistance = 5
 
+        --FastScroll
+        --[[
+            FastScroll:
+            It it just like how you can hold a key and it'll start spamming it
+        ]]
+        local FastScrollTime = 0
+        local FastScrollKey = nil
+        local FastScrollAdd = nil
+        local FastScrollIntervalMod = 0
 
         --Put root directory into Display
 
@@ -8513,21 +8528,81 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             rl.DrawFPS(10, 10)
 
             --Center on Selected
+            local i3 = 0
             for i = Selected - RenderDistance + 1, Selected + RenderDistance + 1 do
-                --Wrap
-                --local i2 = (i < 1) and (#Display.Text - i) or i
+                --i = Relative position (does not matter)
+
+
+                --i2 = Wrapped i for indexing SongTree
                 local i2 = #Display.Text - (i % #Display.Text)
-                
+
+                --i3 = Order from the top (top = 1)
+                i3 = i3 + 1
+
                 --Draw box
-                rl.DrawText(Display.Text[i2], 100, i * 25 + Config.ScreenHeight / 2, fontsize / 2, rl.BLACK)
+                rl.DrawText(Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
             end
 
 
             rl.EndDrawing()
 
+            --Handle other special input
             if rl.WindowShouldClose() then
+                rl.CloseWindow()
                 break
             end
+
+            --L
+            if IsKeyPressed(Config.Controls.SongSelect.L) then
+                Selected = Selected - 1
+            end
+            --R
+            if IsKeyPressed(Config.Controls.SongSelect.R) then
+                Selected = Selected + 1
+            end
+
+            --FastScroll
+            local key = Config.Controls.SongSelect.L
+            if IsKeyDown(key) then
+                if FastScrollKey ~= key then
+                    --Reset timer and swap
+                    FastScrollTime = 0
+                    FastScrollKey = key
+                    FastScrollAdd = -1
+                end
+                --Add time
+                FastScrollTime = FastScrollTime + rl.GetFrameTime()
+            elseif key == FastScrollKey then
+                --Reset timer and swap
+                FastScrollTime = 0
+                FastScrollKey = nil
+            end
+
+            local key = Config.Controls.SongSelect.R
+            if IsKeyDown(key) then
+                if FastScrollKey ~= key then
+                    --Reset timer and swap
+                    FastScrollTime = 0
+                    FastScrollKey = key
+                    FastScrollAdd = 1
+                end
+                --Add time
+                FastScrollTime = FastScrollTime + rl.GetFrameTime()
+            elseif key == FastScrollKey then
+                --Reset timer and swap
+                FastScrollTime = 0
+                FastScrollKey = nil
+            end
+
+            --print(FastScrollTime)
+            if FastScrollTime - (FastScrollIntervalMod * Config.Controls.SongSelect.FastScrollInterval) >= Config.Controls.SongSelect.FastScrollTime then
+                Selected = Selected + FastScrollAdd
+                FastScrollIntervalMod = FastScrollIntervalMod + 1
+            else
+                --Reset occured probably
+                FastScrollIntervalMod = 0
+            end
+
 
         end
     end
