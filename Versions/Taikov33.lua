@@ -8477,9 +8477,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             Name = {},
             Config = {},
             Expanded = {}, --all nils except expanded dir, which has dir length
-            LoadedCheck = {}, --loaded once already?
+            --LoadedCheck = {}, --loaded once already?
             Path = {}, --path (parent folder)
-            Loaded = {}, --loaded files list in order (displayed) (completely seperate with other)
+            --Loaded = {}, --loaded files list in order (displayed) (completely seperate with other)
         }
 
         --Songlist
@@ -8558,9 +8558,34 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --TODO: Display.Config
             end
 
+            for k, v in pairs(Display.Expanded) do
+                if k >= pos then
+                    Display.Expanded[k + i] = v
+                    Display.Expanded[k] = nil
+                end
+            end
+
             return i --length
         end
 
+
+        local function CondenseDirectory(pos, length)
+            for k, v in pairs(Display.Expanded) do
+                if k >= pos then
+                    Display.Expanded[k - length] = v
+                    Display.Expanded[k] = nil
+                end
+            end
+
+            for i2 = 1, length do
+                table.remove(Display.Text, pos)
+                table.remove(Display.Name, pos)
+                table.remove(Display.Path, pos)
+            end
+        end
+
+
+        --[[
         local function DisplayPosToLoadedPos(displaypos)
             local pos
             for i = 1, #Display.Loaded do
@@ -8583,7 +8608,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             return pos
         end
 
-        local function CondenseDirectory(displaypos, length)
+        local function UnloadDirectory(displaypos, length)
             local pos = DisplayPosToLoadedPos(displaypos - 1)
 
             for i2 = 1, length do
@@ -8613,16 +8638,17 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 i3 = i3 + 1
             end
 
-            -- [[
+            --
             for k, v in pairs(Display.Loaded) do print(k, v)end
             for k, v in pairs(Display.Text) do print(k, v )end
-            --]]
+            --
         end
+        --]]
 
 
         --Put root directory into Display
         local length = ExpandDirectory(SongTree, 1, CopyPath(Path))
-        LoadDirectory(1, length)
+        --LoadDirectory(1, length)
 
 
 
@@ -8647,13 +8673,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --local i2 = #Display.Text - (i % #Display.Text)
                 --local i2 = i > 0 and i % #Display.Text or #Display.Text - (-i % #Display.Text)
                 local i2 = nil
-                if i > #Display.Loaded then
-                    i2 = i % #Display.Loaded
+                if i > #Display.Text then
+                    i2 = i % #Display.Text
                     if i2 == 0 then
-                        i2 = #Display.Loaded
+                        i2 = #Display.Text
                     end
                 elseif i < 1 then
-                    i2 = #Display.Loaded - (-i % #Display.Loaded)
+                    i2 = #Display.Text - (-i % #Display.Text)
                 else
                     i2 = i
                 end
@@ -8665,11 +8691,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 i3 = i3 + 1
 
                 --i4 = Display i (skips hidden)
-                local i4 = Display.Loaded[i2]
+                --local i4 = Display.Text[i2]
                 --print(i4)
 
                 --Draw box
-                rl.DrawText(i == Selected and '> ' .. Display.Text[i4] or Display.Text[i4], 100, i3 * 50, fontsize, rl.BLACK)
+                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
             end
 
 
@@ -8741,30 +8767,30 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 Selected = #Display.Text - Selected
             end
             --]]
-            if Selected > #Display.Loaded then
-                Selected = Selected % #Display.Loaded
+            if Selected > #Display.Text then
+                Selected = Selected % #Display.Text
                 if Selected == 0 then
-                    Selected = #Display.Loaded
+                    Selected = #Display.Text
                 end
             elseif Selected < 1 then
-                Selected = #Display.Loaded - (-Selected % #Display.Loaded)
+                Selected = #Display.Text - (-Selected % #Display.Text)
             else
                 --Selected = Selected
             end
 
             --Update Path
-            Path = Display.Path[Display.Loaded[Selected]]
+            --Path = Display.Path[Display.Loaded[Selected]]
+            Path = Display.Path[Selected]
             rl.DrawText('Path: ' .. DisplayPath(Path), 100, 0, fontsize, rl.BLACK)
 
             --Select
             if IsKeyPressed(Config.Controls.SongSelect.Select) then
                 --Update CurrentTree
                 CurrentTree = GetTree(SongTree, Path)
-                local Selected = Display.Loaded[Selected]
+                --local Selected = Display.Loaded[Selected]
 
                 --if Display.Name[Selected] then
                 local nextname = Display.Name[Selected]
-                print(nextname)
                 local nextdir = CurrentTree[nextname]
                 if type(nextdir) == 'string' then
                     --File
@@ -8773,11 +8799,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     --Folder
                     if Display.Expanded[Selected] then
                         --Expanded, Close
-                        CondenseDirectory(Selected + 1, Display.LoadedCheck[Selected])
+                        --UnloadDirectory(Selected + 1, Display.Expanded[Selected])
+                        CondenseDirectory(Selected + 1, Display.Expanded[Selected])
 
                         Display.Expanded[Selected] = nil
                     else
                         --Not Expanded, Open
+                        --[[
                         if Display.LoadedCheck[Selected] then
                             Display.Expanded[Selected] = Display.LoadedCheck[Selected]
                         else
@@ -8788,8 +8816,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         end
                         
                         LoadDirectory(Selected + 1, Display.LoadedCheck[Selected])
+                        --]]
                         
-                        
+                        local path = CopyPath(Path)
+                        path[#path + 1] = nextname
+                        Display.Expanded[Selected] = ExpandDirectory(nextdir, Selected + 1, path)
+
                     end
 
 
