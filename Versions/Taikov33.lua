@@ -9598,180 +9598,176 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-            --REPLAY
-            local recording = false
-            local record
-            local recordfile = 'test.trp'
+        --REPLAY
+        local recording = false
+        local record
+        local recordfile = 'test.trp'
 
-            local replaying = false
-            local replay
-            local replayfile = 'test.trp'
-            local replaymetadata
-            local replaymst
-            local replaynextms
-            local replayi
+        local replaying = false
+        local replay
+        local replayfile = 'test.trp'
+        local replaymetadata
+        local replaymst
+        local replaynextms
+        local replayi
 
-            if recording then
-                record = {
-                    [1] = {},
-                    [2] = {}
-                }
-            end
-            if replaying then
-                replay, replaymetadata = Replay.Load(Replay.Read(replayfile))
+        if recording then
+            record = {
+                [1] = {},
+                [2] = {}
+            }
+        end
+        if replaying then
+            replay, replaymetadata = Replay.Load(Replay.Read(replayfile))
 
-                --Safety checks / Verify
-                local function check(b, err)
-                    if b then
+            --Safety checks / Verify
+            local function check(b, err)
+                if b then
 
-                    else
-                        error(err .. ' does not match')
-                    end
+                else
+                    error(err .. ' does not match')
                 end
-                check(Replay.Version == replaymetadata.version, 'Version')
-                check(Parsed.Metadata.TITLE == replaymetadata.title, 'Title')
+            end
+            check(Replay.Version == replaymetadata.version, 'Version')
+            check(Parsed.Metadata.TITLE == replaymetadata.title, 'Title')
 
 
 
 
-                --Precalculate mst
-                replaymst = {}
-                for k, v in pairs(replay) do
-                    replaymst[#replaymst + 1] = k
-                end
-                table.sort(replaymst)
-                replayi = 1
-                replaynextms = replaymst[replayi]
+            --Precalculate mst
+            replaymst = {}
+            for k, v in pairs(replay) do
+                replaymst[#replaymst + 1] = k
+            end
+            table.sort(replaymst)
+            replayi = 1
+            replaynextms = replaymst[replayi]
+        end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        --Precalculate some more stuff
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            --[[
+                coming from -> degree
+                r -> 0
+                ru -> 360 - 45 = 315
+                rd -> 180 - 45 = 135
+
+                l -> 0
+                lu -> 45
+                ld -> 315
+
+            ]]
+            --https://en.wikipedia.org/wiki/Atan2
+            local r = NormalizeAngle(math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
+            --print(note.type, r, math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
+            --Just mess around with equals sign lmao to tweak vertical note behavior
+            if r < 90 or r >= 270 then
+                --coming from right or (0, 0)
+                note.rotationr = r
+            else
+                --coming from left
+                note.rotationr = 180 + r
             end
 
 
+            --[[
+                degree -> facing
+                0 -> up
+                90 -> right
+                180 -> down
+                270 -> left
+            ]]
 
 
 
+            --remove bignotemul from parser
+            if note.type == 3 or note.type == 4 or note.type == 6 then
+                note.radiusr = note.radius / bignotemul
+            else
+                --might be barline, so add or 1
+                note.radiusr = note.radius or 1
+            end
+
+            if note.data == 'event' and note.event == 'barline' then
+                note.type = 'bar' --FIX: BRANCH BARLINE
+                note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
+                note.tcentero = rl.new('Vector2', barlinecenter.x * note.radiusr, barlinecenter.y * note.radiusr)
+            else
+                --note.pr = rl.new('Vector2', 0, 0)
+                note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+                note.tcentero = rl.new('Vector2', tcenter.x * note.radiusr, tcenter.y * note.radiusr)
+            end
+            note.tcenter = rl.new('Vector2', 0, 0)
+
+            note.pr.width = note.pr.width * note.radiusr
+            note.pr.height = note.pr.height * note.radiusr
+
+            
+            if note.senote then
+                note.osenotepr = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
+                note.senotepr = rl.new('Rectangle', 0, 0, 0, 0)
+            end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-            --Precalculate some more stuff
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                --[[
-                    coming from -> degree
-                    r -> 0
-                    ru -> 360 - 45 = 315
-                    rd -> 180 - 45 = 135
-
-                    l -> 0
-                    lu -> 45
-                    ld -> 315
-
-                ]]
-                --https://en.wikipedia.org/wiki/Atan2
-                local r = NormalizeAngle(math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
-                --print(note.type, r, math.deg(math.atan2(-note.scrollx, -note.scrolly)) - 90)
-                --Just mess around with equals sign lmao to tweak vertical note behavior
-                if r < 90 or r >= 270 then
-                    --coming from right or (0, 0)
+            --drumroll
+            if note.startnote then
+                local a = note.startnote
+                if a.type == 5 or a.type == 6 then
                     note.rotationr = r
-                else
-                    --coming from left
-                    note.rotationr = 180 + r
-                end
+                    --[[
+                    note.drumrollrect = rl.new('Rectangle', 0, 0, 0, 0)
+                    note.drumrollrect2 = rl.new('Rectangle', 0, 0, 0, 0)
+                    --]]
 
-
-                --[[
-                    degree -> facing
-                    0 -> up
-                    90 -> right
-                    180 -> down
-                    270 -> left
-                ]]
-
-
-
-                --remove bignotemul from parser
-                if note.type == 3 or note.type == 4 or note.type == 6 then
-                    note.radiusr = note.radius / bignotemul
-                else
-                    --might be barline, so add or 1
-                    note.radiusr = note.radius or 1
-                end
-
-                if note.data == 'event' and note.event == 'barline' then
-                    note.type = 'bar' --FIX: BRANCH BARLINE
-                    note.pr = rl.new('Rectangle', 0, 0, barlinesizex, barlinesizey)
-                    note.tcentero = rl.new('Vector2', barlinecenter.x * note.radiusr, barlinecenter.y * note.radiusr)
-                else
-                    --note.pr = rl.new('Vector2', 0, 0)
-                    note.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
-                    note.tcentero = rl.new('Vector2', tcenter.x * note.radiusr, tcenter.y * note.radiusr)
-                end
-                note.tcenter = rl.new('Vector2', 0, 0)
-
-                note.pr.width = note.pr.width * note.radiusr
-                note.pr.height = note.pr.height * note.radiusr
-
-                
-                if note.senote then
-                    note.osenotepr = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
-                    note.senotepr = rl.new('Rectangle', 0, 0, 0, 0)
-                end
-
-
-                --drumroll
-                if note.startnote then
-                    local a = note.startnote
-                    if a.type == 5 or a.type == 6 then
-                        note.rotationr = r
-                        --[[
-                        note.drumrollrect = rl.new('Rectangle', 0, 0, 0, 0)
-                        note.drumrollrect2 = rl.new('Rectangle', 0, 0, 0, 0)
-                        --]]
-
-                        --note.drumrollrect2 = rl.new('Vector2', 0, 0)
-                        if a.type == 5 then
-                            a.notetype = 'drumrollnote'
-                            a.recttype = 'drumrollrect'
-                            a.endtype = 'drumrollend'
-                        elseif a.type == 6 then
-                            a.notetype = 'DRUMROLLnote'
-                            a.recttype = 'DRUMROLLrect'
-                            a.endtype = 'DRUMROLLend'
-                        end
-                    elseif a.type == 7 then
-                        --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
+                    --note.drumrollrect2 = rl.new('Vector2', 0, 0)
+                    if a.type == 5 then
+                        a.notetype = 'drumrollnote'
+                        a.recttype = 'drumrollrect'
+                        a.endtype = 'drumrollend'
+                    elseif a.type == 6 then
+                        a.notetype = 'DRUMROLLnote'
+                        a.recttype = 'DRUMROLLrect'
+                        a.endtype = 'DRUMROLLend'
                     end
+                elseif a.type == 7 then
+                    --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                 end
+            end
 
 
-                --queues
+            --queues
 
-                --[[
-                --queues are ordered by ms due to alignment issues
-                if note.jposscroll then
-                    jposscrollqueue[#jposscrollqueue + 1] = note
-                end
-                if note.stopstart then
-                    stopqueue[#stopqueue + 1] = note
-                end
-                if note.bpmchange then
-                    bpmchangequeue[#bpmchangequeue + 1] = note
-                end
-                --]]
-            end)
-
-
-
-
+            --[[
+            --queues are ordered by ms due to alignment issues
+            if note.jposscroll then
+                jposscrollqueue[#jposscrollqueue + 1] = note
+            end
+            if note.stopstart then
+                stopqueue[#stopqueue + 1] = note
+            end
+            if note.bpmchange then
+                bpmchangequeue[#bpmchangequeue + 1] = note
+            end
+            --]]
+        end)
 
 
 
@@ -9794,7 +9790,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-            --popanim
+
+
+
+
+        --popanim
 --[[
 f	transparency
 0	12.5*8
@@ -9806,85 +9806,85 @@ f	transparency
 6	12.5*2
 7	12.5*1
 8	12.5*0
-            ]]
-            local popanim = {
-                startms = nil,
-                framen = CountAnimFrames(Textures.PlaySong.Balloons.Anim),
-                anim = {
-                    [0] = 0.125*8,
-                    [1] = 0.125*7,
-                    [2] = 0.125*6,
-                    [3] = 0.125*5,
-                    [4] = 0.125*4,
-                    [5] = 0.125*3,
-                    [6] = 0.125*2,
-                    [7] = 0.125*1,
-                    [8] = 0.125*0,
-                },
-                color = rl.new('Color', 255, 255, 255, 255)
-            }
+        ]]
+        local popanim = {
+            startms = nil,
+            framen = CountAnimFrames(Textures.PlaySong.Balloons.Anim),
+            anim = {
+                [0] = 0.125*8,
+                [1] = 0.125*7,
+                [2] = 0.125*6,
+                [3] = 0.125*5,
+                [4] = 0.125*4,
+                [5] = 0.125*3,
+                [6] = 0.125*2,
+                [7] = 0.125*1,
+                [8] = 0.125*0,
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
 
 
 
 
-            --gaugeclearanim
+        --gaugeclearanim
 --[[
 (white -> yellow -> white)
 r, g = 1, 1
-            ]]
-            local gaugeclearanim = {
-                startms = nil,
-                framen = 31,
-                anim = {
-                    [0] = 0,
-                    [1] = 0,
-                    [2] = 0,
-                    [3] = 0,
-                    [4] = 0,
-                    [5] = 0,
-                    [6] = 0,
-                    [7] = 0,
-                    [8] = 0,
-                    [9] = 0,
-                    [10] = 0,
-                    [11] = 0,
-                    [12] = 0,
-                    [13] = 0,
-                    [14] = 0,
-                    [15] = 0,
-                    [16] = 0,
-                    [17] = 0,
-                    [18] = 0,
-                    [19] = 0,
-                    [20] = 0,
-                    [21] = 0,
-                    [22] = 0,
-                    [23] = 0.2,
-                    [24] = 0.4,
-                    [25] = 0.6,
-                    [26] = 0.8,
-                    [27] = 1,
-                    [28] = 0.8,
-                    [29] = 0.6,
-                    [30] = 0.4,
-                    [31] = 0.2,
-                },
-                color = rl.new('Color', 255, 255, 255, 255)
-            }
+        ]]
+        local gaugeclearanim = {
+            startms = nil,
+            framen = 31,
+            anim = {
+                [0] = 0,
+                [1] = 0,
+                [2] = 0,
+                [3] = 0,
+                [4] = 0,
+                [5] = 0,
+                [6] = 0,
+                [7] = 0,
+                [8] = 0,
+                [9] = 0,
+                [10] = 0,
+                [11] = 0,
+                [12] = 0,
+                [13] = 0,
+                [14] = 0,
+                [15] = 0,
+                [16] = 0,
+                [17] = 0,
+                [18] = 0,
+                [19] = 0,
+                [20] = 0,
+                [21] = 0,
+                [22] = 0,
+                [23] = 0.2,
+                [24] = 0.4,
+                [25] = 0.6,
+                [26] = 0.8,
+                [27] = 1,
+                [28] = 0.8,
+                [29] = 0.6,
+                [30] = 0.4,
+                [31] = 0.2,
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
 
-            local gaugeoverflowanim = {
-                startms = nil,
-                framen = 12,
-                anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
-            }
-
-
+        local gaugeoverflowanim = {
+            startms = nil,
+            framen = 12,
+            anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
+        }
 
 
 
 
 
-            --notehitlane
+
+
+        --notehitlane
 --[[
 f	transparency
 0	1
@@ -9893,28 +9893,28 @@ f	transparency
 3	0.75
 4	0.5
 5	0.25
-            ]]
-            local notehitlane = {
-                anim = {
-                    [0] = 1,
-                    [1] = 1,
-                    [2] = 1,
-                    [3] = 0.75,
-                    [4] = 0.5,
-                    [5] = 0.25,
-                },
-                [1] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255)
-                },
-                [2] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255)
-                }
+        ]]
+        local notehitlane = {
+            anim = {
+                [0] = 1,
+                [1] = 1,
+                [2] = 1,
+                [3] = 0.75,
+                [4] = 0.5,
+                [5] = 0.25,
+            },
+            [1] = {
+                startms = nil,
+                color = rl.new('Color', 255, 255, 255, 255)
+            },
+            [2] = {
+                startms = nil,
+                color = rl.new('Color', 255, 255, 255, 255)
             }
+        }
 
 
-            --judgeanim
+        --judgeanim
 --[[
 f	transparency    p
 0	1
@@ -9943,73 +9943,73 @@ f	transparency    p
 23  0.5
 24  0.25
 25  0
-            ]]
-            local judgeanim = {
-                animp = {
-                    --Estimated using eye
-                    [0] = 98,
-                    [1] = 92,
-                    [2] = 88,
-                    [3] = 84,
-                    [4] = 80,
-                    [5] = 77,
-                    [6] = 75,
-                    [7] = 75,
-                    [8] = 75,
-                    [9] = 75,
-                    [10] = 75,
-                    [11] = 75,
-                    [12] = 75,
-                    [13] = 75,
-                    [14] = 75,
-                    [15] = 75,
-                    [16] = 75,
-                    [17] = 75,
-                    [18] = 75,
-                    [19] = 75,
-                    [20] = 75,
-                    [21] = 75,
-                    [22] = 75,
-                    [23] = 75,
-                    [24] = 75,
-                    [25] = 75,
-                },
-                animt = {
-                    [0] = 1,
-                    [1] = 1,
-                    [2] = 1,
-                    [3] = 1,
-                    [4] = 1,
-                    [5] = 1,
-                    [6] = 1,
-                    [7] = 1,
-                    [8] = 1,
-                    [9] = 1,
-                    [10] = 1,
-                    [11] = 1,
-                    [12] = 1,
-                    [13] = 1,
-                    [14] = 1,
-                    [15] = 1,
-                    [16] = 1,
-                    [17] = 1,
-                    [18] = 1,
-                    [19] = 1,
-                    [20] = 1,
-                    [21] = 1,
-                    [22] = 0.75,
-                    [23] = 0.5,
-                    [24] = 0.25,
-                    [25] = 0,
-                },
-                startms = {
-                    --startms
-                },
-                judge = {
-                    --judge
-                },
-                color = rl.new('Color', 255, 255, 255, 255)
-            }
+        ]]
+        local judgeanim = {
+            animp = {
+                --Estimated using eye
+                [0] = 98,
+                [1] = 92,
+                [2] = 88,
+                [3] = 84,
+                [4] = 80,
+                [5] = 77,
+                [6] = 75,
+                [7] = 75,
+                [8] = 75,
+                [9] = 75,
+                [10] = 75,
+                [11] = 75,
+                [12] = 75,
+                [13] = 75,
+                [14] = 75,
+                [15] = 75,
+                [16] = 75,
+                [17] = 75,
+                [18] = 75,
+                [19] = 75,
+                [20] = 75,
+                [21] = 75,
+                [22] = 75,
+                [23] = 75,
+                [24] = 75,
+                [25] = 75,
+            },
+            animt = {
+                [0] = 1,
+                [1] = 1,
+                [2] = 1,
+                [3] = 1,
+                [4] = 1,
+                [5] = 1,
+                [6] = 1,
+                [7] = 1,
+                [8] = 1,
+                [9] = 1,
+                [10] = 1,
+                [11] = 1,
+                [12] = 1,
+                [13] = 1,
+                [14] = 1,
+                [15] = 1,
+                [16] = 1,
+                [17] = 1,
+                [18] = 1,
+                [19] = 1,
+                [20] = 1,
+                [21] = 1,
+                [22] = 0.75,
+                [23] = 0.5,
+                [24] = 0.25,
+                [25] = 0,
+            },
+            startms = {
+                --startms
+            },
+            judge = {
+                --judge
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
 
 
 
@@ -10018,13 +10018,13 @@ f	transparency    p
 
 
 
-            --Game functions
+        --Game functions
 
-            --Hit: Hit the drum with a 1 (don) or 2 (ka)
-            local s = 0
-            local ms
-            local nearest, nearestnote = {}, {}
-            local autoside = false --false -> left, true = right
+        --Hit: Hit the drum with a 1 (don) or 2 (ka)
+        local s = 0
+        local ms
+        local nearest, nearestnote = {}, {}
+        local autoside = false --false -> left, true = right
 
 
 
@@ -10208,245 +10208,423 @@ left 0-60 (0-Textures.PlaySong.Backgrounds.Taiko.sizex/2)
 right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 ]]
 
-            local taikoanim = {
-                anim = {
-                    [0] = 0.125*8,
-                    [1] = 0.125*8,
-                    [2] = 0.125*8,
-                    [3] = 0.125*8,
-                    [4] = 0.125*8,
-                    [5] = 0.125*6,
-                    [6] = 0.125*4,
-                    [7] = 0.125*2,
-                    [8] = 0.125*0,
-                },
-                --left
+        local taikoanim = {
+            anim = {
+                [0] = 0.125*8,
+                [1] = 0.125*8,
+                [2] = 0.125*8,
+                [3] = 0.125*8,
+                [4] = 0.125*8,
+                [5] = 0.125*6,
+                [6] = 0.125*4,
+                [7] = 0.125*2,
+                [8] = 0.125*0,
+            },
+            --left
+            [1] = {
+                --don
                 [1] = {
-                    --don
-                    [1] = {
-                        startms = nil,
-                        color = rl.new('Color', 255, 255, 255, 255),
-                    },
-                    --ka
-                    [2] = {
-                        startms = nil,
-                        color = rl.new('Color', 255, 255, 255, 255)
-                    },
-                    sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    pr = rl.new('Rectangle', 0, 0, 0, 0),
-                    center = rl.new('Vector2', 0, 0)
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255),
                 },
-                --right
+                --ka
                 [2] = {
-                    --don
-                    [1] = {
-                        startms = nil,
-                        color = rl.new('Color', 255, 255, 255, 255),
-                    },
-                    --ka
-                    [2] = {
-                        startms = nil,
-                        color = rl.new('Color', 255, 255, 255, 255)
-                    },
-                    sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                    pr = rl.new('Rectangle', 0, 0, 0, 0),
-                    center = rl.new('Vector2', 0, 0)
-                }
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                },
+                sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                pr = rl.new('Rectangle', 0, 0, 0, 0),
+                center = rl.new('Vector2', 0, 0)
+            },
+            --right
+            [2] = {
+                --don
+                [1] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255),
+                },
+                --ka
+                [2] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                },
+                sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                pr = rl.new('Rectangle', 0, 0, 0, 0),
+                center = rl.new('Vector2', 0, 0)
             }
-            local function Hit(v, side)
-                --Play Sound
-                rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
-                
-                --Play Anim
-                local taikoanim = taikoanim[side == false and 1 or side == true and 2]
-                taikoanim[v].startms = ms
-                taikoanim[v].color.a = 255
+        }
+        local function Hit(v, side)
+            --Play Sound
+            rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
+            
+            --Play Anim
+            local taikoanim = taikoanim[side == false and 1 or side == true and 2]
+            taikoanim[v].startms = ms
+            taikoanim[v].color.a = 255
 
-                --Play notehitlane
-                notehitlane[v].startms = ms
-                notehitlane[v].color.a = 255
+            --Play notehitlane
+            notehitlane[v].startms = ms
+            notehitlane[v].color.a = 255
 
 
 
-                --Record
-                if recording then
-                    record[v][#record[v] + 1] = ms
+            --Record
+            if recording then
+                record[v][#record[v] + 1] = ms
+            end
+
+            --Process hit
+
+            --if nearest[v] and (not nearestnote[v].hit) then
+            if nearestnote[v] and (not nearestnote[v].hit) then
+                local note = nearestnote[v]
+                local notetype = note.type
+            --local notegogo = note.gogo
+
+                local n = nearest[v]
+                local status
+                local gaugestatus
+                --No leniency for good
+                local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                local hiteffect = nil --Different than status
+                --[[
+                    hiteffect:
+                    0 -> bad
+                    1 -> smallok
+                    2 -> smallgood
+                    3 -> bigok
+                    4 -> biggood
+                ]]
+                local isbignote = (notetype == 3 or notetype == 4)
+                if n < (timing.good) then
+                    --good
+                    --local a = nearestnote[v].type
+                    --TODO: Easy big notes config
+                    status = (isbignote and 3) or 2 --2 or 3?
+                    combo = combo + 1
+                    hiteffect = (isbignote and 4) or 2
+                    gaugestatus = 2
+                elseif n < (timing.ok * leniency) then
+                    --ok
+                    --status = 1
+                    status = (isbignote and 2) or 1
+                    combo = combo + 1
+                    hiteffect = (isbignote and 3) or 1
+                    gaugestatus = 1
+                elseif n < (timing.bad * leniency) then
+                    --bad
+                    status = 0
+                    combo = 0
+                    hiteffect = 0
+                    gaugestatus = 0
+                else
+                    --complete miss
+                    status = nil
                 end
+                if status then
+                    --Calculate Score
+                    score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
 
-                --Process hit
+                    --Calculate Gauge
+                    gauge = gauge + gauget[gaugestatus]
+                    gaugep = gaugepercentf(gauge)
+                    gaugeclear = gaugep >= Taiko.Data.Gauge.ClearPercent
+                    local oldgaugeoverflow = gaugeoverflow
+                    gaugeoverflow = gaugep >= Taiko.Data.Gauge.OverflowPercent
+                    if gaugeoverflow and (not oldgaugeoverflow) then
+                        --just turned on
+                        gaugeoverflowanim.startms = ms
+                    end
 
-                --if nearest[v] and (not nearestnote[v].hit) then
-                if nearestnote[v] and (not nearestnote[v].hit) then
-                    local note = nearestnote[v]
-                    local notetype = note.type
-                --local notegogo = note.gogo
-
-                    local n = nearest[v]
-                    local status
-                    local gaugestatus
-                    --No leniency for good
-                    local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
-                    local hiteffect = nil --Different than status
+                    --Effects
                     --[[
-                        hiteffect:
-                        0 -> bad
-                        1 -> smallok
-                        2 -> smallgood
-                        3 -> bigok
-                        4 -> biggood
+                        Effects:
+
+                        Judge: https://github.com/0auBSQ/OpenTaiko/blob/c25c744cf11bc8ca997c1318eef4893269fd74d2/TJAPlayer3/Stages/07.Game/Taiko/CAct%E6%BC%94%E5%A5%8FDrums%E5%88%A4%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%97.cs
                     ]]
-                    local isbignote = (notetype == 3 or notetype == 4)
-                    if n < (timing.good) then
-                        --good
-                        --local a = nearestnote[v].type
-                        --TODO: Easy big notes config
-                        status = (isbignote and 3) or 2 --2 or 3?
-                        combo = combo + 1
-                        hiteffect = (isbignote and 4) or 2
-                        gaugestatus = 2
-                    elseif n < (timing.ok * leniency) then
-                        --ok
-                        --status = 1
-                        status = (isbignote and 2) or 1
-                        combo = combo + 1
-                        hiteffect = (isbignote and 3) or 1
-                        gaugestatus = 1
-                    elseif n < (timing.bad * leniency) then
-                        --bad
-                        status = 0
-                        combo = 0
-                        hiteffect = 0
-                        gaugestatus = 0
+                    nearestnote[v].hit = true
+                    --[[
+                    laststatus = {
+                        startms = ms,
+                        status = hiteffect,
+                        statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim,
+                        explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim,
+                        explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
+                    }
+                    --]]
+                    --avoid table creation
+                    laststatus.startms = ms
+                    laststatus.status = hiteffect
+                    laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim
+                    laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim
+                    laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
+
+                    --notehitgauge animation
+                    local i = #notehitgauge.notes + 1
+                    notehitgauge.notes[i] = nearestnote[v]
+                    notehitgauge.startms[i] = ms
+                    notehitgauge.currenttarget[1][i] = target[1]
+                    notehitgauge.currenttarget[2][i] = target[2]
+                    if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
+                        --target already calced
                     else
-                        --complete miss
-                        status = nil
+                        --target needs to be calced
+                        CalculateNoteHitGauge(target)
                     end
-                    if status then
-                        --Calculate Score
-                        score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
 
-                        --Calculate Gauge
-                        gauge = gauge + gauget[gaugestatus]
-                        gaugep = gaugepercentf(gauge)
-                        gaugeclear = gaugep >= Taiko.Data.Gauge.ClearPercent
-                        local oldgaugeoverflow = gaugeoverflow
-                        gaugeoverflow = gaugep >= Taiko.Data.Gauge.OverflowPercent
-                        if gaugeoverflow and (not oldgaugeoverflow) then
-                            --just turned on
-                            gaugeoverflowanim.startms = ms
-                        end
+                    --judgeanim
+                    judgeanim.startms[#judgeanim.startms + 1] = ms
+                    judgeanim.judge[#judgeanim.judge + 1] = gaugestatus
 
-                        --Effects
-                        --[[
-                            Effects:
-
-                            Judge: https://github.com/0auBSQ/OpenTaiko/blob/c25c744cf11bc8ca997c1318eef4893269fd74d2/TJAPlayer3/Stages/07.Game/Taiko/CAct%E6%BC%94%E5%A5%8FDrums%E5%88%A4%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%97.cs
-                        ]]
-                        nearestnote[v].hit = true
-                        --[[
-                        laststatus = {
-                            startms = ms,
-                            status = hiteffect,
-                            statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim,
-                            explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim,
-                            explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
-                        }
-                        --]]
-                        --avoid table creation
-                        laststatus.startms = ms
-                        laststatus.status = hiteffect
-                        laststatus.statusanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Hit[hiteffect].Anim
-                        laststatus.explosionanim = hiteffect ~= 0 and Textures.PlaySong.Effects.Note.Explosion[hiteffect].Anim
-                        laststatus.explosionbiganim = (isbignote and Textures.PlaySong.Effects.Note.ExplosionBig.Anim) or nil
-
-                        --notehitgauge animation
-                        local i = #notehitgauge.notes + 1
-                        notehitgauge.notes[i] = nearestnote[v]
-                        notehitgauge.startms[i] = ms
-                        notehitgauge.currenttarget[1][i] = target[1]
-                        notehitgauge.currenttarget[2][i] = target[2]
-                        if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
-                            --target already calced
-                        else
-                            --target needs to be calced
-                            CalculateNoteHitGauge(target)
-                        end
-
-                        --judgeanim
-                        judgeanim.startms[#judgeanim.startms + 1] = ms
-                        judgeanim.judge[#judgeanim.judge + 1] = gaugestatus
-
-                        --combo sound
-                        if Sounds.PlaySong.Combo[combo] then
-                            rl.PlaySound(Sounds.PlaySong.Combo[combo])
-                        end
+                    --combo sound
+                    if Sounds.PlaySong.Combo[combo] then
+                        rl.PlaySound(Sounds.PlaySong.Combo[combo])
                     end
-                end
-
-
-                --Check again (one at a time)
-                if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) and (not balloon.pop) then
-                    --balloon = hit don or ka
-                    balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
-                    score = balloonscoref(score, balloon.type, notegogo)
-                    if balloon.timeshit >= balloon.requiredhits then
-                        balloon.pop = true
-                        popanim.startms = ms
-                        popanim.color.a = 255
-                        rl.PlaySound(Sounds.PlaySong.Notes.balloonpop)
-                    end
-                end
-                if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
-                    --drumroll = hit don or ka
-                    drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
-                    score = drumrollscoref(score, drumroll.type, notegogo)
                 end
             end
 
 
-
-
-            local function HitAuto(note)
-                local v = autohitnotes[note.type] --Assume it is called with a valid note
-
-                --DIRTY
-                --local temp1, temp2 = nearest, nearestnote
-                nearest[v] = 0
-                nearestnote[v] = note
-                Hit(v, autoside)
-                autoside = not autoside
-                --nearest, nearestnote = temp1, temp2
+            --Check again (one at a time)
+            if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) and (not balloon.pop) then
+                --balloon = hit don or ka
+                balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
+                score = balloonscoref(score, balloon.type, notegogo)
+                if balloon.timeshit >= balloon.requiredhits then
+                    balloon.pop = true
+                    popanim.startms = ms
+                    popanim.color.a = 255
+                    rl.PlaySound(Sounds.PlaySong.Notes.balloonpop)
+                end
             end
-            local function HitAutoNow(v)
-                Hit(v, autoside)
-                autoside = not autoside
+            if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                --drumroll = hit don or ka
+                drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
+                score = drumrollscoref(score, drumroll.type, notegogo)
             end
+        end
+
+
+
+
+        local function HitAuto(note)
+            local v = autohitnotes[note.type] --Assume it is called with a valid note
+
+            --DIRTY
+            --local temp1, temp2 = nearest, nearestnote
+            nearest[v] = 0
+            nearestnote[v] = note
+            Hit(v, autoside)
+            autoside = not autoside
+            --nearest, nearestnote = temp1, temp2
+        end
+        local function HitAutoNow(v)
+            Hit(v, autoside)
+            autoside = not autoside
+        end
+
+        --[[
+        --OLD VERSION: Based on position
+        local function priority(a, b)
+            --TODO: possibly render from closest to target
+            --Rendering from left to right, down to up
+            return
+            (a.p[1] == b.p[1]) --is x equal?
+            and (a.p[2] < b.p[2]) --if x equal then use y
+            or (a.p[1] > b.p[1]) --if x not equal then just use x
+        end
+        --]]
+
+        -- [[
+        --NEW VERSION: Based on ms
+        local function priority(a, b)
+            --when ms is bigger, it is further away
+            --render from far to in
+            return a.ms > b.ms
+        end
+        --]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        --Generate Text Metadata
+        local TextMetadata = table.concat(
+            {
+                'Title: ', Parsed.Metadata.TITLE,
+                '\nSubtitle: ', '',
+                '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
+                '\nStars: ', tostring(Parsed.Metadata.LEVEL),
+                '\n\nAuto: ', tostring(auto),
+                '\nRecording: ', tostring(recording),
+                '\nReplaying: ', tostring(replaying)
+            }
+        )
+
+
+        --Wait for start
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
+            rl.EndDrawing()
+            if rl.IsKeyPressed(32) then
+                break
+            end
+        end
+
+
+
+
+        --Play music (before or after?)
+        if playmusic then
+            rl.SetMusicPitch(song, songspeedmul)
+            rl.PlayMusicStream(song)
+
+            if Config.Offsets.Music < 0 then
+                rl.SeekMusicStream(song, -Config.Offsets.Music)
+            end
+        end
+
+        --Main loop
+        local framen = 0
+        local startt = os.clock()
+
+
+
+
+
+        while true do
+
+            --Make canvas
+            rl.BeginDrawing()
+
+            rl.ClearBackground(rl.RAYWHITE)
+
+            --draw bottom
+
+            --draw infobar
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
+
+            --draw coursesymbol
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
+            
+            --draw nameplate
+
+            --base
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --edge
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --top
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rankbase
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rank
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --1P
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+
+
+
+
+
+
+
+            --TODO: Draw before / after rendering?
+            rl.DrawFPS(10, 10)
+            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
 
             --[[
-            --OLD VERSION: Based on position
-            local function priority(a, b)
-                --TODO: possibly render from closest to target
-                --Rendering from left to right, down to up
-                return
-                (a.p[1] == b.p[1]) --is x equal?
-                and (a.p[2] < b.p[2]) --if x equal then use y
-                or (a.p[1] > b.p[1]) --if x not equal then just use x
-            end
+            --debug
+            rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
+            rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
+            rl.DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
+            --]]
+
+
+
+
+
+
+
+
+
+            --[[
+            --old: less precision
+            local raws = os.clock()
+
+            local s = raws - startt
+            ms = s * 1000
             --]]
 
             -- [[
-            --NEW VERSION: Based on ms
-            local function priority(a, b)
-                --when ms is bigger, it is further away
-                --render from far to in
-                return a.ms > b.ms
-            end
+            --new: more precision
+            --don't add frametime on first frame?
+            s = s + (framen ~= 0 and rl.GetFrameTime() or 0)
+            --s = s + rl.GetFrameTime()
+            ms = s * 1000
+            framen = framen + 1
             --]]
 
 
 
+            --MUSIC
+            if playmusic then
+                local offsets = s - Config.Offsets.Music
+
+                if offsets >= 0 then
+                    --Prevent music desync
+                    local desync = offsets - (rl.GetMusicTimePlayed(song) / songspeedmul)
+                    --print(desync)
+                    if forceresync or desync > desynctime or desync < -desynctime then --basically abs function
+                        --Resync music to notes
+                        print('RESYNC', desync)
+                        rl.SeekMusicStream(song, offsets * songspeedmul)
+                        forceresync = false
+                    end
+
+                    --Update Music
+
+                    rl.UpdateMusicStream(song)
+                end
+            end
+
+
+
+            --REPLAY
+            if replaying and replaynextms and ms >= replaynextms then
+                local t = replay[replaynextms]
+                for i = 1, #t do
+                    --TODO: Fix replay side taiko
+                    Hit(tonumber(t[i]), false)
+                end
+                
+
+                replayi = replayi + 1
+                replaynextms = replaymst[replayi]
+            end
 
 
 
@@ -10454,6 +10632,165 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+            --Event checking
+            if stopend and ms > stopend then
+                stopfreezems, stopstart, stopend = nil, nil, nil
+            end
+            if balloonend and ms > balloonend then
+                balloon, balloonstart, balloonend = nil, nil, nil
+            end
+            if drumrollend and ms > drumrollend then
+                drumroll, drumrollstart, drumrollend = nil, nil, nil
+            end
+
+
+
+            --[[
+                Both stop and jposscroll queues assume no 2 activate on same frame (break)
+            ]]
+            --stop
+            if stopsong then
+                for i = 1, #stopqueue do
+                    local note = stopqueue[i]
+                    if ms >= note.stopstart then
+                        stopfreezems = totaldelay + note.stopstart
+                        stopms = note.stopms
+                        totaldelay = totaldelay - note.stopms
+                        stopstart = note.stopstart
+                        stopend = note.stopend
+
+                        table.remove(stopqueue, i)
+                        break
+                    end
+                end
+            end
+
+            --jposscroll
+            --local offseti = 0
+            if jposscroll then
+                for i = 1, #jposscrollqueue do
+                    --local i2 = i + offseti
+                    local note = jposscrollqueue[i]
+                    --if (note.jposscroll and (ms >= note.ms)) then
+                    if ms >= note.ms then
+                        --Previous jposscroll hasn't ended yet, so make sure it didn't skip over
+                        if jposscrollstart then
+                            local d = note.ms - jposscrollstart
+                            target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * d)
+                            target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * d)
+                        end
+                        
+                        jposscrollstart = note.ms
+                        jposscrollend = note.ms + note.jposscroll.lengthms
+                        if note.jposscroll.p == 'default' then
+                            jposscrollspeed[1] = (defaulttarget[1] - target[1]) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = (defaulttarget[2] - target[2]) / note.jposscroll.lengthms
+                        else
+                            jposscrollspeed[1] = ((note.jposscroll.p and note.jposscroll.p[1]) and note.jposscroll.p[1] or (note.jposscroll.lanep and note.jposscroll.lanep[1]) and (note.jposscroll.lanep[1] * tracklength) or 0) / note.jposscroll.lengthms
+                            jposscrollspeed[2] = ((note.jposscroll.p and note.jposscroll.p[2]) and note.jposscroll.p[2] or (note.jposscroll.lanep and note.jposscroll.lanep[2]) and (note.jposscroll.lanep[2] * tracklength) or 0) / note.jposscroll.lengthms
+                        end
+                        jposscrollstartp[1] = target[1]
+                        jposscrollstartp[2] = target[2]
+
+                        table.remove(jposscrollqueue, i)
+
+
+                        break
+                        --offseti = offseti - 1
+                    end
+                end
+
+                --why not nest in loop!
+                if jposscrollend and ms > jposscrollend then
+                    --Add more preciseness and end at endposition!
+                    local length = jposscrollend - jposscrollstart
+                    target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * length)
+                    target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * length)
+
+
+                    jposscrollstart, jposscrollend = nil, nil
+                    --[[
+                    --Don't bother setting to nil, it won't be used anyways
+                    jposscrollspeed[1] = nil
+                    jposscrollspeed[2] = nil
+                    jposscrollstartp[1] = nil
+                    jposscrollstartp[2] = nil
+                    --]]
+                end
+            end
+
+            if bpmchange then
+                for i = 1, #bpmchangequeue do
+                    local note = bpmchangequeue[i]
+                    if ms >= note.ms then
+                        --bpmchangemul = note.bpmchangemul
+                        local bpmchangems = note.ms
+                        local bpmchangemul = note.bpmchangemul
+
+                        --Modify ALL Notes
+                        Taiko.ForAll(Parsed.Data, function(note, i, n)
+                            --Modify ms
+                            --[[
+                                ex: bpmchangemul = 2
+                                note get 2x faster
+                                note get 2x further
+                            ]]
+                            --[[
+                            --original
+                            local dif = note.ms - bpmchangems
+                            note.ms = note.ms - dif + dif / bpmchangemul
+                            --]]
+
+                            -- [[
+                            note.ms = bpmchangems + (note.ms - bpmchangems) / bpmchangemul
+                            --]]
+                            
+
+
+
+
+                            --Modify loadms (recalculate)
+                            --[[
+                                --SCALE ACCORDINGLY
+                                --x, y
+                                local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+                                return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+                            ]]
+
+                            --note.loadms = note.loadms + (note.loadms - note.ms) / bpmchangemul
+                            --[[
+
+                            
+                            local ms = note.oms2 - note.delay
+                            --[[
+                                note.loadms = note.ms - (x / -note.speed[1])
+                                -note.loadms + note.ms = x / -note.speed[1]
+                                x = (-note.loadms + note.ms) * -note.speed
+                            --]]
+                            --[[
+                            loadms = ms - (x / -note.speed[1])
+                            loadms - ms = -(x/-note.speed[1])
+                            --]]
+                            --[[
+                            local x = (-note.loadms + ms) * -note.ospeed2[1]
+                            print(x)
+                            note.loadms = ms - (x / -(note.speed[1] * bpmchangemul))
+                            --]]
+                            --print(x)
+                            --note.loadms = ms + (note.loadms - ms) / (bpmchangemul)
+                            --note.loadms = ms + (((note.loadms - ms)) / (bpmchangemul))
+
+                            --]]
+                            --print((note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1])), (note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1] * bpmchangemul)))
+                            --note.loadms = (note.ms - note.delay) + (((note.loadms - (note.ms - note.delay))) / (bpmchangemul))
+
+                            --[[
+                            note.loadms = note.ms - (note.loadms * -note.speed[1] / (-note.speed[1] * bpmchangemul))
+                            note.loadms = note.ms - (note.loadms / bpmchangemul)
+                            --]]
+
+                            --LAZY, DIRTY
+                            note.loadms = CalculateLoadMs(note, note.ms - note.delay)
 
 
 
@@ -10461,30 +10798,59 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+                            --Finally modify scroll or bpm, but I'll modify bpm (it doesn't matter which one you modify, they are both the same in speedcalculations)
+                            --NVM: Modify speed only
+                            note.speed[1] = note.speed[1] * bpmchangemul
+                            note.speed[2] = note.speed[2] * bpmchangemul
 
 
 
-            --Generate Text Metadata
-            local TextMetadata = table.concat(
-                {
-                    'Title: ', Parsed.Metadata.TITLE,
-                    '\nSubtitle: ', '',
-                    '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
-                    '\nStars: ', tostring(Parsed.Metadata.LEVEL),
-                    '\n\nAuto: ', tostring(auto),
-                    '\nRecording: ', tostring(recording),
-                    '\nReplaying: ', tostring(replaying)
-                }
-            )
+                        end)
+                        --print(bpmchangemul)
+
+                        table.remove(bpmchangequeue, i)
+                        break
+                    end
+                end
+            end
 
 
-            --Wait for start
-            while not rl.WindowShouldClose() do
-                rl.BeginDrawing()
-                rl.ClearBackground(rl.RAYWHITE)
-                rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
-                rl.EndDrawing()
-                if rl.IsKeyPressed(32) then
+
+
+
+            --See if next note is ready to be loaded
+            if nextnote then
+                while true do
+                    if nextnote and (nextnote.loadms < ms + totaldelay) then
+                        loaded[#loaded + 1] = nextnote
+
+                        if nextnote.endnote then
+                            loaded[#loaded + 1] = nextnote.endnote
+                        end
+
+
+                        nextnote = nextnote.nextnote
+                        
+                        if nextnote then
+                            if nextnote.startnote then
+                                --end note
+                                nextnote = nextnote.nextnote
+                            end
+
+
+                            if nextnote and nextnote.branch then
+                                nextnote = nextnote.branch.paths[branch][1]
+                            end
+
+                            --logically, branch should not start with endnote
+
+                        end
+                    else
+                        break
+                    end
+                end
+            else
+                if ms > endms then
                     break
                 end
             end
@@ -10492,679 +10858,313 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-            --Play music (before or after?)
-            if playmusic then
-                rl.SetMusicPitch(song, songspeedmul)
-                rl.PlayMusicStream(song)
 
-                if Config.Offsets.Music < 0 then
-                    rl.SeekMusicStream(song, -Config.Offsets.Music)
-                end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --draw frame
+
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
+
+
+
+            --draw gauge (meter)
+
+            --draw base
+            rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
+
+            --draw filled
+            --[[
+                width 14 for 1
+
+                1 -> 0 - 13
+                2 -> 14 - 27
+                3 -> 28 - 41
+                formula
+                x = 14 * x - 1
+
+
+                fill
+                0 -> nothing
+                39 -> all red
+                49 -> all read 1 yellow
+                50 -> all
+            ]]
+            local fill = math.floor(50 * gaugep)
+            fill = ClipN(fill, 0, 50)
+            local x = 14 * fill - 1
+            if x > 0 then
+                Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
+                Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
+                rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
             end
 
-            --Main loop
-            local framen = 0
-            local startt = os.clock()
 
 
-
-
-
-            while true do
-
-                --Make canvas
-                rl.BeginDrawing()
-
-                rl.ClearBackground(rl.RAYWHITE)
-
-                --draw bottom
-
-                --draw infobar
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
-
-                --draw coursesymbol
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
-                
-                --draw nameplate
-
-                --base
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-                --edge
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-                --top
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-                --rankbase
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-                --rank
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-                --1P
-                rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-
-
-
-
-
-
-
-                --TODO: Draw before / after rendering?
-                rl.DrawFPS(10, 10)
-                rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
-
-                --[[
-                --debug
-                rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
-                rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
-                rl.DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
-                --]]
-
-
-
-
-
-
-
-
-
-                --[[
-                --old: less precision
-                local raws = os.clock()
-
-                local s = raws - startt
-                ms = s * 1000
-                --]]
-
-                -- [[
-                --new: more precision
-                --don't add frametime on first frame?
-                s = s + (framen ~= 0 and rl.GetFrameTime() or 0)
-                --s = s + rl.GetFrameTime()
-                ms = s * 1000
-                framen = framen + 1
-                --]]
-
-
-
-                --MUSIC
-                if playmusic then
-                    local offsets = s - Config.Offsets.Music
-
-                    if offsets >= 0 then
-                        --Prevent music desync
-                        local desync = offsets - (rl.GetMusicTimePlayed(song) / songspeedmul)
-                        --print(desync)
-                        if forceresync or desync > desynctime or desync < -desynctime then --basically abs function
-                            --Resync music to notes
-                            print('RESYNC', desync)
-                            rl.SeekMusicStream(song, offsets * songspeedmul)
-                            forceresync = false
-                        end
-
-                        --Update Music
-
-                        rl.UpdateMusicStream(song)
-                    end
-                end
-
-
-
-                --REPLAY
-                if replaying and replaynextms and ms >= replaynextms then
-                    local t = replay[replaynextms]
-                    for i = 1, #t do
-                        --TODO: Fix replay side taiko
-                        Hit(tonumber(t[i]), false)
-                    end
-                    
-
-                    replayi = replayi + 1
-                    replaynextms = replaymst[replayi]
-                end
-
-
-
-
-
-
-
-                --Event checking
-                if stopend and ms > stopend then
-                    stopfreezems, stopstart, stopend = nil, nil, nil
-                end
-                if balloonend and ms > balloonend then
-                    balloon, balloonstart, balloonend = nil, nil, nil
-                end
-                if drumrollend and ms > drumrollend then
-                    drumroll, drumrollstart, drumrollend = nil, nil, nil
-                end
-
-
-
-                --[[
-                    Both stop and jposscroll queues assume no 2 activate on same frame (break)
-                ]]
-                --stop
-                if stopsong then
-                    for i = 1, #stopqueue do
-                        local note = stopqueue[i]
-                        if ms >= note.stopstart then
-                            stopfreezems = totaldelay + note.stopstart
-                            stopms = note.stopms
-                            totaldelay = totaldelay - note.stopms
-                            stopstart = note.stopstart
-                            stopend = note.stopend
-
-                            table.remove(stopqueue, i)
-                            break
-                        end
-                    end
-                end
-
-                --jposscroll
-                --local offseti = 0
-                if jposscroll then
-                    for i = 1, #jposscrollqueue do
-                        --local i2 = i + offseti
-                        local note = jposscrollqueue[i]
-                        --if (note.jposscroll and (ms >= note.ms)) then
-                        if ms >= note.ms then
-                            --Previous jposscroll hasn't ended yet, so make sure it didn't skip over
-                            if jposscrollstart then
-                                local d = note.ms - jposscrollstart
-                                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * d)
-                                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * d)
-                            end
-                            
-                            jposscrollstart = note.ms
-                            jposscrollend = note.ms + note.jposscroll.lengthms
-                            if note.jposscroll.p == 'default' then
-                                jposscrollspeed[1] = (defaulttarget[1] - target[1]) / note.jposscroll.lengthms
-                                jposscrollspeed[2] = (defaulttarget[2] - target[2]) / note.jposscroll.lengthms
-                            else
-                                jposscrollspeed[1] = ((note.jposscroll.p and note.jposscroll.p[1]) and note.jposscroll.p[1] or (note.jposscroll.lanep and note.jposscroll.lanep[1]) and (note.jposscroll.lanep[1] * tracklength) or 0) / note.jposscroll.lengthms
-                                jposscrollspeed[2] = ((note.jposscroll.p and note.jposscroll.p[2]) and note.jposscroll.p[2] or (note.jposscroll.lanep and note.jposscroll.lanep[2]) and (note.jposscroll.lanep[2] * tracklength) or 0) / note.jposscroll.lengthms
-                            end
-                            jposscrollstartp[1] = target[1]
-                            jposscrollstartp[2] = target[2]
-
-                            table.remove(jposscrollqueue, i)
-
-
-                            break
-                            --offseti = offseti - 1
-                        end
-                    end
-
-                    --why not nest in loop!
-                    if jposscrollend and ms > jposscrollend then
-                        --Add more preciseness and end at endposition!
-                        local length = jposscrollend - jposscrollstart
-                        target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * length)
-                        target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * length)
-
-
-                        jposscrollstart, jposscrollend = nil, nil
-                        --[[
-                        --Don't bother setting to nil, it won't be used anyways
-                        jposscrollspeed[1] = nil
-                        jposscrollspeed[2] = nil
-                        jposscrollstartp[1] = nil
-                        jposscrollstartp[2] = nil
-                        --]]
-                    end
-                end
-
-                if bpmchange then
-                    for i = 1, #bpmchangequeue do
-                        local note = bpmchangequeue[i]
-                        if ms >= note.ms then
-                            --bpmchangemul = note.bpmchangemul
-                            local bpmchangems = note.ms
-                            local bpmchangemul = note.bpmchangemul
-
-                            --Modify ALL Notes
-                            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                                --Modify ms
-                                --[[
-                                    ex: bpmchangemul = 2
-                                    note get 2x faster
-                                    note get 2x further
-                                ]]
-                                --[[
-                                --original
-                                local dif = note.ms - bpmchangems
-                                note.ms = note.ms - dif + dif / bpmchangemul
-                                --]]
-
-                                -- [[
-                                note.ms = bpmchangems + (note.ms - bpmchangems) / bpmchangemul
-                                --]]
-                                
-
-
-
-
-                                --Modify loadms (recalculate)
-                                --[[
-                                    --SCALE ACCORDINGLY
-                                    --x, y
-                                    local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-                                    return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
-                                ]]
-
-                                --note.loadms = note.loadms + (note.loadms - note.ms) / bpmchangemul
-                                --[[
-
-                                
-                                local ms = note.oms2 - note.delay
-                                --[[
-                                    note.loadms = note.ms - (x / -note.speed[1])
-                                    -note.loadms + note.ms = x / -note.speed[1]
-                                    x = (-note.loadms + note.ms) * -note.speed
-                                --]]
-                                --[[
-                                loadms = ms - (x / -note.speed[1])
-                                loadms - ms = -(x/-note.speed[1])
-                                --]]
-                                --[[
-                                local x = (-note.loadms + ms) * -note.ospeed2[1]
-                                print(x)
-                                note.loadms = ms - (x / -(note.speed[1] * bpmchangemul))
-                                --]]
-                                --print(x)
-                                --note.loadms = ms + (note.loadms - ms) / (bpmchangemul)
-                                --note.loadms = ms + (((note.loadms - ms)) / (bpmchangemul))
-
-                                --]]
-                                --print((note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1])), (note.ms - note.delay) - (((note.loadms - (note.ms - note.delay)) * note.speed[1]) / -(note.speed[1] * bpmchangemul)))
-                                --note.loadms = (note.ms - note.delay) + (((note.loadms - (note.ms - note.delay))) / (bpmchangemul))
-
-                                --[[
-                                note.loadms = note.ms - (note.loadms * -note.speed[1] / (-note.speed[1] * bpmchangemul))
-                                note.loadms = note.ms - (note.loadms / bpmchangemul)
-                                --]]
-
-                                --LAZY, DIRTY
-                                note.loadms = CalculateLoadMs(note, note.ms - note.delay)
-
-
-
-
-
-
-
-                                --Finally modify scroll or bpm, but I'll modify bpm (it doesn't matter which one you modify, they are both the same in speedcalculations)
-                                --NVM: Modify speed only
-                                note.speed[1] = note.speed[1] * bpmchangemul
-                                note.speed[2] = note.speed[2] * bpmchangemul
-
-
-
-                            end)
-                            --print(bpmchangemul)
-
-                            table.remove(bpmchangequeue, i)
-                            break
-                        end
-                    end
-                end
-
-
-
-
-
-                --See if next note is ready to be loaded
-                if nextnote then
-                    while true do
-                        if nextnote and (nextnote.loadms < ms + totaldelay) then
-                            loaded[#loaded + 1] = nextnote
-
-                            if nextnote.endnote then
-                                loaded[#loaded + 1] = nextnote.endnote
-                            end
-
-
-                            nextnote = nextnote.nextnote
-                            
-                            if nextnote then
-                                if nextnote.startnote then
-                                    --end note
-                                    nextnote = nextnote.nextnote
-                                end
-
-
-                                if nextnote and nextnote.branch then
-                                    nextnote = nextnote.branch.paths[branch][1]
-                                end
-
-                                --logically, branch should not start with endnote
-
-                            end
-                        else
-                            break
-                        end
-                    end
+            --draw gauge modifiers
+
+            if gaugeoverflow then
+                --draw gaugeoverflow
+                local difms = ms - gaugeoverflowanim.startms
+                local animn = math.floor(difms / skinframems) % (gaugeoverflowanim.framen - 1)
+                --Anim ended?
+                local frame = gaugeoverflowanim.anim[animn]
+                rl.DrawTexturePro(frame, Textures.PlaySong.Gauges.Meter.rainbow.sourcerect, Textures.PlaySong.Gauges.Meter.rainbow.pr, Textures.PlaySong.Gauges.Meter.rainbow.center, 0, rl.WHITE)
+            elseif gaugeclear then
+                --draw gaugeclear
+                gaugeclearanim.startms = gaugeclearanim.startms or ms
+                local difms = ms - gaugeclearanim.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = gaugeclearanim.anim[animn]
+                if frame then
+                    gaugeclearanim.color.a = 255 * frame
                 else
-                    if ms > endms then
-                        break
-                    end
+                    --Anim ended, repeat
+                    gaugeclearanim.startms = gaugeclearanim.startms + gaugeclearanim.framen * (1000 / skinfps)
                 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                --rendering
-
-
-
-
-
-
-
-
-
-
-
-
-
-                --draw frame
-
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Frame[1], Textures.PlaySong.Backgrounds.Frame.sourcerect, Textures.PlaySong.Backgrounds.Frame.pr, Textures.PlaySong.Backgrounds.Frame.center, 0, rl.WHITE)
-
-
-
-                --draw gauge (meter)
-
-                --draw base
-                rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.base, Textures.PlaySong.Gauges.Meter.sourcerect, Textures.PlaySong.Gauges.Meter.pr, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
-
-                --draw filled
-                --[[
-                    width 14 for 1
-
-                    1 -> 0 - 13
-                    2 -> 14 - 27
-                    3 -> 28 - 41
-                    formula
-                    x = 14 * x - 1
-
-
-                    fill
-                    0 -> nothing
-                    39 -> all red
-                    49 -> all read 1 yellow
-                    50 -> all
-                ]]
-                local fill = math.floor(50 * gaugep)
-                fill = ClipN(fill, 0, 50)
+                --draw over
+                local fill = 39
                 local x = 14 * fill - 1
-                if x > 0 then
-                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
-                    Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
-                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.full, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, rl.WHITE)
-                end
+                Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
+                Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
+                rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.clear, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, gaugeclearanim.color)
+            end
 
 
 
-                --draw gauge modifiers
-
-                if gaugeoverflow then
-                    --draw gaugeoverflow
-                    local difms = ms - gaugeoverflowanim.startms
-                    local animn = math.floor(difms / skinframems) % (gaugeoverflowanim.framen - 1)
-                    --Anim ended?
-                    local frame = gaugeoverflowanim.anim[animn]
-                    rl.DrawTexturePro(frame, Textures.PlaySong.Gauges.Meter.rainbow.sourcerect, Textures.PlaySong.Gauges.Meter.rainbow.pr, Textures.PlaySong.Gauges.Meter.rainbow.center, 0, rl.WHITE)
-                elseif gaugeclear then
-                    --draw gaugeclear
-                    gaugeclearanim.startms = gaugeclearanim.startms or ms
-                    local difms = ms - gaugeclearanim.startms
-                    local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    local frame = gaugeclearanim.anim[animn]
-                    if frame then
-                        gaugeclearanim.color.a = 255 * frame
-                    else
-                        --Anim ended, repeat
-                        gaugeclearanim.startms = gaugeclearanim.startms + gaugeclearanim.framen * (1000 / skinfps)
-                    end
-
-                    --draw over
-                    local fill = 39
-                    local x = 14 * fill - 1
-                    Textures.PlaySong.Gauges.Meter.sourcerect2.width = x/1280 * (Config.ScreenWidth / scale[1])
-                    Textures.PlaySong.Gauges.Meter.pr2.width = x/1280 * Config.ScreenWidth
-                    rl.DrawTexturePro(Textures.PlaySong.Gauges.Meter.clear, Textures.PlaySong.Gauges.Meter.sourcerect2, Textures.PlaySong.Gauges.Meter.pr2, Textures.PlaySong.Gauges.Meter.center, 0, gaugeclearanim.color)
-                end
-
-
-
-                --draw clear symbol
-                
-                rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[gaugeclear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
+            --draw clear symbol
+            
+            rl.DrawTexturePro(Textures.PlaySong.Gauges.Clear[gaugeclear], Textures.PlaySong.Gauges.Clear.sourcerect, Textures.PlaySong.Gauges.Clear.pr, Textures.PlaySong.Gauges.Clear.center, 0, rl.WHITE)
 
 
 
 
 
-                
+            
 
-                --draw lane
+            --draw lane
 
-                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.default, Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
+            rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.default, Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
 
-                --draw lane sub
+            --draw lane sub
 
-                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.sub, Textures.PlaySong.Lanes.ssourcerect, Textures.PlaySong.Lanes.spr, Textures.PlaySong.Lanes.scenter, 0, rl.WHITE)
+            rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane.sub, Textures.PlaySong.Lanes.ssourcerect, Textures.PlaySong.Lanes.spr, Textures.PlaySong.Lanes.scenter, 0, rl.WHITE)
 
-                --draw taiko
-                
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko.base, Textures.PlaySong.Backgrounds.Taiko.sourcerect, Textures.PlaySong.Backgrounds.Taiko.pr, Textures.PlaySong.Backgrounds.Taiko.center, 0, rl.WHITE)
+            --draw taiko
+            
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko.base, Textures.PlaySong.Backgrounds.Taiko.sourcerect, Textures.PlaySong.Backgrounds.Taiko.pr, Textures.PlaySong.Backgrounds.Taiko.center, 0, rl.WHITE)
 
-                for i = 1, 2 do
-                    local sideanim = taikoanim[i]
-                    for i2 = 1, 2 do
-                        local taikoanim2 = sideanim[i2]
-                        if taikoanim2.startms then
-                            --draw taiko side hit indicator
-
-                            local difms = ms - taikoanim2.startms
-                            local animn = math.floor(difms / skinframems)
-                            --local transparency = 255 - (animn / framen * 255)
-                            local transparency = taikoanim.anim[animn]
-
-                            if transparency then
-                                taikoanim2.color.a = 255 * transparency
-
-                                if transparency > 0 then
-                                    --if visible
-
-                                    --taikoanim.side
-                                    sideanim.pr.x = sideanim.opr.x * scale[1]
-                                    sideanim.pr.y = sideanim.opr.y * scale[2]
-                                    sideanim.pr.width = sideanim.opr.width * scale[1]
-                                    sideanim.pr.height = sideanim.opr.height * scale[2]
-                                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko[i2], sideanim.sourcerect, sideanim.pr, sideanim.center, 0, rl.WHITE)
-                                end
-                            else
-                                taikoanim.startms = nil
-                            end
-                        end
-                    end
-                end
-
-                --draw notehitlane
-                for i = 1, 2 do
-                    local notehitlane2 = notehitlane[i]
-                    if notehitlane2.startms then
+            for i = 1, 2 do
+                local sideanim = taikoanim[i]
+                for i2 = 1, 2 do
+                    local taikoanim2 = sideanim[i2]
+                    if taikoanim2.startms then
                         --draw taiko side hit indicator
 
-                        local difms = ms - notehitlane2.startms
+                        local difms = ms - taikoanim2.startms
                         local animn = math.floor(difms / skinframems)
                         --local transparency = 255 - (animn / framen * 255)
-                        local transparency = notehitlane.anim[animn]
+                        local transparency = taikoanim.anim[animn]
 
                         if transparency then
-                            notehitlane2.color.a = 255 * transparency
+                            taikoanim2.color.a = 255 * transparency
 
                             if transparency > 0 then
                                 --if visible
 
-                                --notehitlane
-                                rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane[i], Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
+                                --taikoanim.side
+                                sideanim.pr.x = sideanim.opr.x * scale[1]
+                                sideanim.pr.y = sideanim.opr.y * scale[2]
+                                sideanim.pr.width = sideanim.opr.width * scale[1]
+                                sideanim.pr.height = sideanim.opr.height * scale[2]
+                                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Taiko[i2], sideanim.sourcerect, sideanim.pr, sideanim.center, 0, rl.WHITE)
                             end
                         else
-                            notehitlane2.startms = nil
+                            taikoanim.startms = nil
                         end
                     end
                 end
+            end
 
-                --draw combotext
+            --draw notehitlane
+            for i = 1, 2 do
+                local notehitlane2 = notehitlane[i]
+                if notehitlane2.startms then
+                    --draw taiko side hit indicator
 
-                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.ComboText[0], Textures.PlaySong.Backgrounds.ComboText.sourcerect, Textures.PlaySong.Backgrounds.ComboText.pr, Textures.PlaySong.Backgrounds.ComboText.center, 0, rl.WHITE)
-
-                --draw combo (center align)
-
-                --[[
-                    combo
-                    0-9     invis
-                    10-49    0
-                    50-99   1
-                    100-inf 2
-                ]]
-                if combo >= 10 then
-                    local osx, osy = 40/1280 * (Config.ScreenWidth / scale[1]), 48/720 * (Config.ScreenHeight / scale[2])
-                    local sx, sy = osx * scale[1], osy * scale[2]
-                    local str = tostring(combo)
-                    local a = combo < 50 and 0 or combo < 100 and 1 or 2
-                    local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
-                    DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
-                end
-
-
-
-
-
-
-
-
-                --draw score (right align)
-                local osx, osy = 26/1280 * (Config.ScreenWidth / scale[1]), 34/720 * (Config.ScreenHeight / scale[2])
-                local sx, sy = osx * scale[1], osy * scale[2]
-                local str = tostring(score)
-                local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
-                DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                --draw target
-
-                if jposscrollstart and ms >= jposscrollstart then
-                    target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
-                    target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
-                end
-
-
-                local targetoffsetx = target[1] - defaulttarget[1]
-                local targetoffsety = target[2] - defaulttarget[2]
-                
-                unloadrectchanged[1] = unloadrect[1] + targetoffsetx
-                unloadrectchanged[2] = unloadrect[2] + targetoffsety
-                unloadrectchanged[3] = unloadrect[3] + targetoffsetx
-                unloadrectchanged[4] = unloadrect[4] + targetoffsety
-
-
-
-
-
-                --normal
-
-                --scale
-                targetpr.x = (Round(target[1] * xmul) + offsetx) * scale[1]
-                targetpr.y = (Round(target[2] * ymul) + offsety) * scale[2]
-                targetpr.width = tsizex * scale[1]
-                targetpr.height = tsizey * scale[2]
-                rl.DrawTexturePro(Textures.PlaySong.Notes.target, tsourcerect, targetpr, tcenter, 0, rl.WHITE)
-
-
-
-
-
-
-
-
-
-                --draw notehitgauge (below title, status, explosion, (notes?)) (above background, gauge, lane)
-                local offseti = 0
-                for i = 1, #notehitgauge.notes do
-                    local i2 = i + offseti
-                    local note = notehitgauge.notes[i2]
-                    local startms = notehitgauge.startms[i2]
-                    local difms = ms - startms
+                    local difms = ms - notehitlane2.startms
                     local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    --local frame = notehitgauge.anim[animn]
-                    local currenttarget = notehitgauge.currenttarget
-                    local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
-                    if frame then
-                        if frame[1] then
-                            --scale
-                            note.pr.width = tsizex * scale[1]
-                            note.pr.height = tsizey * scale[2]
-                            note.tcenter.x = note.tcentero.x * scale[1]
-                            note.tcenter.y = note.tcentero.y * scale[2]
+                    --local transparency = 255 - (animn / framen * 255)
+                    local transparency = notehitlane.anim[animn]
 
-                            --draw note
-                            note.pr.x = frame[1] * scale[1]
-                            note.pr.y = frame[2] * scale[2]
-                            rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
-                        else
-                            --invis
+                    if transparency then
+                        notehitlane2.color.a = 255 * transparency
+
+                        if transparency > 0 then
+                            --if visible
+
+                            --notehitlane
+                            rl.DrawTexturePro(Textures.PlaySong.Lanes.Lane[i], Textures.PlaySong.Lanes.sourcerect, Textures.PlaySong.Lanes.pr, Textures.PlaySong.Lanes.center, 0, rl.WHITE)
                         end
                     else
-                        --Anim ended, remove status
-                        table.remove(notehitgauge.notes, i2)
-                        table.remove(notehitgauge.startms, i2)
-                        table.remove(notehitgauge.currenttarget[1], i2)
-                        table.remove(notehitgauge.currenttarget[2], i2)
-                        offseti = offseti - 1
+                        notehitlane2.startms = nil
                     end
                 end
+            end
+
+            --draw combotext
+
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.ComboText[0], Textures.PlaySong.Backgrounds.ComboText.sourcerect, Textures.PlaySong.Backgrounds.ComboText.pr, Textures.PlaySong.Backgrounds.ComboText.center, 0, rl.WHITE)
+
+            --draw combo (center align)
+
+            --[[
+                combo
+                0-9     invis
+                10-49    0
+                50-99   1
+                100-inf 2
+            ]]
+            if combo >= 10 then
+                local osx, osy = 40/1280 * (Config.ScreenWidth / scale[1]), 48/720 * (Config.ScreenHeight / scale[2])
+                local sx, sy = osx * scale[1], osy * scale[2]
+                local str = tostring(combo)
+                local a = combo < 50 and 0 or combo < 100 and 1 or 2
+                local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
+                DrawTextTexture(Textures.PlaySong.Fonts.Combo[a], str, 250/1280 * Config.ScreenWidth - (measurex / 2), 220/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
+            end
+
+
+
+
+
+
+
+
+            --draw score (right align)
+            local osx, osy = 26/1280 * (Config.ScreenWidth / scale[1]), 34/720 * (Config.ScreenHeight / scale[2])
+            local sx, sy = osx * scale[1], osy * scale[2]
+            local str = tostring(score)
+            local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
+            DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --draw target
+
+            if jposscrollstart and ms >= jposscrollstart then
+                target[1] = jposscrollstartp[1] + (jposscrollspeed[1] * (ms - jposscrollstart))
+                target[2] = jposscrollstartp[2] + (jposscrollspeed[2] * (ms - jposscrollstart))
+            end
+
+
+            local targetoffsetx = target[1] - defaulttarget[1]
+            local targetoffsety = target[2] - defaulttarget[2]
+            
+            unloadrectchanged[1] = unloadrect[1] + targetoffsetx
+            unloadrectchanged[2] = unloadrect[2] + targetoffsety
+            unloadrectchanged[3] = unloadrect[3] + targetoffsetx
+            unloadrectchanged[4] = unloadrect[4] + targetoffsety
+
+
+
+
+
+            --normal
+
+            --scale
+            targetpr.x = (Round(target[1] * xmul) + offsetx) * scale[1]
+            targetpr.y = (Round(target[2] * ymul) + offsety) * scale[2]
+            targetpr.width = tsizex * scale[1]
+            targetpr.height = tsizey * scale[2]
+            rl.DrawTexturePro(Textures.PlaySong.Notes.target, tsourcerect, targetpr, tcenter, 0, rl.WHITE)
+
+
+
+
+
+
+
+
+
+            --draw notehitgauge (below title, status, explosion, (notes?)) (above background, gauge, lane)
+            local offseti = 0
+            for i = 1, #notehitgauge.notes do
+                local i2 = i + offseti
+                local note = notehitgauge.notes[i2]
+                local startms = notehitgauge.startms[i2]
+                local difms = ms - startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                --local frame = notehitgauge.anim[animn]
+                local currenttarget = notehitgauge.currenttarget
+                local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
+                if frame then
+                    if frame[1] then
+                        --scale
+                        note.pr.width = tsizex * scale[1]
+                        note.pr.height = tsizey * scale[2]
+                        note.tcenter.x = note.tcentero.x * scale[1]
+                        note.tcenter.y = note.tcentero.y * scale[2]
+
+                        --draw note
+                        note.pr.x = frame[1] * scale[1]
+                        note.pr.y = frame[2] * scale[2]
+                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                    else
+                        --invis
+                    end
+                else
+                    --Anim ended, remove status
+                    table.remove(notehitgauge.notes, i2)
+                    table.remove(notehitgauge.startms, i2)
+                    table.remove(notehitgauge.currenttarget[1], i2)
+                    table.remove(notehitgauge.currenttarget[2], i2)
+                    offseti = offseti - 1
+                end
+            end
 
 
 
@@ -11187,96 +11187,96 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                --notes
+            --notes
 
-                --nearest (IF THERE IS NOTHING LOADED IT WILL BE NIL)
-                nearest = {
-                    
+            --nearest (IF THERE IS NOTHING LOADED IT WILL BE NIL)
+            nearest = {
+                
+            }
+            nearestnote = {
+
+            }
+
+            loadedr = {
+                barline = {
+
+                },
+                drumroll = {
+
+                },
+                balloon  = {
+
+                },
+                notes = {
+
                 }
-                nearestnote = {
-
-                }
-
-                loadedr = {
-                    barline = {
-
-                    },
-                    drumroll = {
-
-                    },
-                    balloon  = {
-
-                    },
-                    notes = {
-
-                    }
-                }
+            }
 
 
 
 
 
 
-                --First pass: Calculate
-                --for i = loaded.s, loaded.e do
-                local offsetms = ms + Config.Offsets.Timing
-                local offsetmsminus = ms - Config.Offsets.Timing
-                local offseti = 0
-                for i = 1, #loaded do
-                    local i2 = i + offseti
-                    local note = loaded[i2]
-                    if note then
-                        --nearest
-                        if not (note.hit) and note.data == 'note' then
-                            local d = math.abs(offsetms - note.ms)
-                            if (note.type == 1 or note.type == 3) and (not nearest[1] or d < nearest[1]) then
-                                nearest[1] = d
-                                nearestnote[1] = note
-                            elseif (note.type == 2 or note.type == 4) and (not nearest[2] or d < nearest[2]) then
-                                nearest[2] = d
-                                nearestnote[2] = note
-                            end
+            --First pass: Calculate
+            --for i = loaded.s, loaded.e do
+            local offsetms = ms + Config.Offsets.Timing
+            local offsetmsminus = ms - Config.Offsets.Timing
+            local offseti = 0
+            for i = 1, #loaded do
+                local i2 = i + offseti
+                local note = loaded[i2]
+                if note then
+                    --nearest
+                    if not (note.hit) and note.data == 'note' then
+                        local d = math.abs(offsetms - note.ms)
+                        if (note.type == 1 or note.type == 3) and (not nearest[1] or d < nearest[1]) then
+                            nearest[1] = d
+                            nearestnote[1] = note
+                        elseif (note.type == 2 or note.type == 4) and (not nearest[2] or d < nearest[2]) then
+                            nearest[2] = d
+                            nearestnote[2] = note
                         end
+                    end
 
 
-                        local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
-                        note.p[1] = px * xmul
-                        note.p[2] = py * ymul
+                    local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
+                    note.p[1] = px * xmul
+                    note.p[2] = py * ymul
 
 
 
-                        --after target pass
-                        if ms > note.ms then
-                            --gogo
-                            gogo = note.gogo
-                            if note.type == 7 then
-                                if balloon then
-                                    note.hit = false
-                                    if balloon.n == note.n then
-                                        --Same balloon
-                                        note.p[1] = target[1] * xmul
-                                        note.p[2] = target[2] * ymul
+                    --after target pass
+                    if ms > note.ms then
+                        --gogo
+                        gogo = note.gogo
+                        if note.type == 7 then
+                            if balloon then
+                                note.hit = false
+                                if balloon.n == note.n then
+                                    --Same balloon
+                                    note.p[1] = target[1] * xmul
+                                    note.p[2] = target[2] * ymul
 
-                                        if not balloon.setdelay then
-                                            --make it go from target after ending, smooth
-                                            balloon.delay = balloon.delay - balloon.lengthms
-                                            balloon.setdelay = true
-                                        end
-                                    else
-                                        --Previous balloon hasn't ended yet
-                                        --Replace
+                                    if not balloon.setdelay then
+                                        --make it go from target after ending, smooth
+                                        balloon.delay = balloon.delay - balloon.lengthms
+                                        balloon.setdelay = true
                                     end
+                                else
+                                    --Previous balloon hasn't ended yet
+                                    --Replace
                                 end
-                                balloon = note
-                                balloonstart = note.ms
-                                balloonend = note.ms + note.lengthms
-                            elseif note.type == 5 or note.type == 6 then
-                                --Drumroll
-                                drumroll = note
-                                drumrollstart = note.ms
-                                drumrollend = note.ms + note.lengthms
                             end
+                            balloon = note
+                            balloonstart = note.ms
+                            balloonend = note.ms + note.lengthms
+                        elseif note.type == 5 or note.type == 6 then
+                            --Drumroll
+                            drumroll = note
+                            drumrollstart = note.ms
+                            drumrollend = note.ms + note.lengthms
                         end
+                    end
 
 
 
@@ -11286,17 +11286,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                        --pr: rendering
-                        --[[
-                        --rendering using DrawTextureEx
-                        note.pr.x = Round(note.p[1]) + toffsetx
-                        note.pr.y = Round(note.p[2]) + toffsety
-                        --]]
-                        -- [[
-                        --rendering using DrawTexturePro
-                        note.pr.x = (Round(note.p[1]) + offsetx) * scale[1]
-                        note.pr.y = (Round(note.p[2]) + offsety) * scale[2]
-                        --]]
+                    --pr: rendering
+                    --[[
+                    --rendering using DrawTextureEx
+                    note.pr.x = Round(note.p[1]) + toffsetx
+                    note.pr.y = Round(note.p[2]) + toffsety
+                    --]]
+                    -- [[
+                    --rendering using DrawTexturePro
+                    note.pr.x = (Round(note.p[1]) + offsetx) * scale[1]
+                    note.pr.y = (Round(note.p[2]) + offsety) * scale[2]
+                    --]]
 
 
 
@@ -11312,373 +11312,338 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-                        --Auto
-                        --I put this here so that even if note is going to be unloaded on this frame, we can hit it
-                        if auto then
-                            if not note.hit and autohitnotes[note.type] and offsetmsminus >= note.ms then
-                                HitAuto(note)
+                    --Auto
+                    --I put this here so that even if note is going to be unloaded on this frame, we can hit it
+                    if auto then
+                        if not note.hit and autohitnotes[note.type] and offsetmsminus >= note.ms then
+                            HitAuto(note)
+                        end
+                    end
+
+
+
+
+
+
+
+
+
+
+                    --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
+                    --rewrite condition
+                    if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)
+                    --drumroll code
+                    --startnote
+                    and ((not note.endnote) or (note.endnote.done))
+                    --endnote
+                    --TODO: https://gist.github.com/ChickenProp/3194723
+                    --and ((not note.startnote) or (IsPointInRectangle(note.startnote.p[1], note.startnote.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)) then
+                    and ((not note.startnote) or (IsLineOutsideRectangle(
+                        note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
+                        note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
+                        note.p[1] < note.startnote.p[1] and note.startnote.p[1] or note.p[2],
+                        note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
+                        unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]
+                    ))) then
+                        --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
+                        --print('UNLOAD')
+                        note.done = true
+                        table.remove(loaded, i2)
+                        offseti = offseti - 1
+
+                    --just connect with else
+                    else
+                        if note.data == 'event' then
+                            if note.event == 'barline' then
+                                loadedr.barline[#loadedr.barline + 1] = note
                             end
-                        end
-
-
-
-
-
-
-
-
-
-
-                        --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
-                        --rewrite condition
-                        if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)
-                        --drumroll code
-                        --startnote
-                        and ((not note.endnote) or (note.endnote.done))
-                        --endnote
-                        --TODO: https://gist.github.com/ChickenProp/3194723
-                        --and ((not note.startnote) or (IsPointInRectangle(note.startnote.p[1], note.startnote.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)) then
-                        and ((not note.startnote) or (IsLineOutsideRectangle(
-                            note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
-                            note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
-                            note.p[1] < note.startnote.p[1] and note.startnote.p[1] or note.p[2],
-                            note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
-                            unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]
-                        ))) then
-                            --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
-                            --print('UNLOAD')
-                            note.done = true
-                            table.remove(loaded, i2)
-                            offseti = offseti - 1
-
-                        --just connect with else
                         else
+                            if note.type == 8 then
+                                loadedr.drumroll[#loadedr.drumroll + 1] = note
+                            elseif note.type == 7 then
+                                loadedr.balloon[#loadedr.balloon + 1] = note
+                            else
+                                loadedr.notes[#loadedr.notes + 1] = note
+                            end
+                        end
+
+                    end
+                end
+            end
+
+
+
+
+
+
+
+            --Moved input here so it can be rendered instantly, no input delay
+
+
+            --Raylib Input
+
+            --Take auto first
+            if auto then
+                local n1 = nearest[1]
+                local n2 = nearest[2]
+                --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
+                local testv =
+                (n1 and n2)
+                and (
+                    (n1 < n2)
+                    and 1 or 2
+                )
+                or (n1 and 1 or 2)
+                local n = nearest[testv]
+                local note = nearestnote[testv]
+
+                if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
+                    --make sure we can't hit note as bad
+                    if balloonstart and (ms > balloonstart and ms < balloonend) and not balloon.pop then
+                        HitAutoNow(1)
+                    elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
+                        HitAutoNow(1)
+                    end
+                end
+            end
+
+            --[[
+            while true do
+                local key = rl.GetCharPressed() --or rl.GetKeyPressed()
+                if key == 0 then
+                    break
+                else
+                    --Process
+                    --local a = Controls.Hit[key]
+                end
+            end
+            --]]
+
+            --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
+            for k, v in pairs(Config.Controls.PlaySong.Hit) do
+                if rl.IsKeyPressed(k) then
+                    Hit(v[1], v[2])
+                end
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            loadedrfinal = loadedr.barline
+
+
+
+
+            table.sort(loadedr.drumroll, priority)
+            table.sort(loadedr.notes, priority)
+            table.sort(loadedr.balloon, priority)
+
+
+            for i = 1, #loadedr.drumroll do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.drumroll[i]
+            end
+            for i = 1, #loadedr.notes do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.notes[i]
+            end
+            for i = 1, #loadedr.balloon do
+                loadedrfinal[#loadedrfinal + 1] = loadedr.balloon[i]
+            end
+
+
+
+
+
+
+            targetpr.width = targetpr.width * 2
+            targetpr.height = targetpr.height * 2
+            --Render status on bottom of notes
+            if laststatus.statusanim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.statusanim[animn]
+                if frame then
+                    --Draw on target
+                    --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                    --scale
+                    rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.statusanim = nil
+                end
+            end
+
+
+
+
+
+
+
+
+
+
+            --Second pass: Rendering
+
+            for i = 1, #loadedrfinal do
+                local note = loadedrfinal[i]
+                if note then
+                    --Draw note on canvas
+
+                    if not note.hit then
+
+                        --Break combo if too late
+                        local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                        if (not note.brokecombo) and (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
+                            --bad
+                            --status = 0
+                            combo = 0
+                            --prevent retriggering
+                            note.brokecombo = true
+                        end
+
+                        --if dorender then
                             if note.data == 'event' then
                                 if note.event == 'barline' then
-                                    loadedr.barline[#loadedr.barline + 1] = note
-                                end
-                            else
-                                if note.type == 8 then
-                                    loadedr.drumroll[#loadedr.drumroll + 1] = note
-                                elseif note.type == 7 then
-                                    loadedr.balloon[#loadedr.balloon + 1] = note
-                                else
-                                    loadedr.notes[#loadedr.notes + 1] = note
-                                end
-                            end
-
-                        end
-                    end
-                end
-
-
-
-
-
-
-
-                --Moved input here so it can be rendered instantly, no input delay
-
-
-                --Raylib Input
-
-                --Take auto first
-                if auto then
-                    local n1 = nearest[1]
-                    local n2 = nearest[2]
-                    --local testv = (nearest[1] and nearest[2]) and ((nearest[1] < nearest[2]) and 1 or 2) or (nearest[1] and 1 or 2)
-                    local testv =
-                    (n1 and n2)
-                    and (
-                        (n1 < n2)
-                        and 1 or 2
-                    )
-                    or (n1 and 1 or 2)
-                    local n = nearest[testv]
-                    local note = nearestnote[testv]
-
-                    if not n or (n and n > (timing.bad * (((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1))) then
-                        --make sure we can't hit note as bad
-                        if balloonstart and (ms > balloonstart and ms < balloonend) and not balloon.pop then
-                            HitAutoNow(1)
-                        elseif drumrollstart and (ms > drumrollstart and ms < drumrollend) then
-                            HitAutoNow(1)
-                        end
-                    end
-                end
-
-                --[[
-                while true do
-                    local key = rl.GetCharPressed() --or rl.GetKeyPressed()
-                    if key == 0 then
-                        break
-                    else
-                        --Process
-                        --local a = Controls.Hit[key]
-                    end
-                end
-                --]]
-
-                --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
-                for k, v in pairs(Config.Controls.PlaySong.Hit) do
-                    if rl.IsKeyPressed(k) then
-                        Hit(v[1], v[2])
-                    end
-                end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                loadedrfinal = loadedr.barline
-
-
-
-
-                table.sort(loadedr.drumroll, priority)
-                table.sort(loadedr.notes, priority)
-                table.sort(loadedr.balloon, priority)
-
-
-                for i = 1, #loadedr.drumroll do
-                    loadedrfinal[#loadedrfinal + 1] = loadedr.drumroll[i]
-                end
-                for i = 1, #loadedr.notes do
-                    loadedrfinal[#loadedrfinal + 1] = loadedr.notes[i]
-                end
-                for i = 1, #loadedr.balloon do
-                    loadedrfinal[#loadedrfinal + 1] = loadedr.balloon[i]
-                end
-
-
-
-
-
-
-                targetpr.width = targetpr.width * 2
-                targetpr.height = targetpr.height * 2
-                --Render status on bottom of notes
-                if laststatus.statusanim then
-                    local difms = ms - laststatus.startms
-                    local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    local frame = laststatus.statusanim[animn]
-                    if frame then
-                        --Draw on target
-                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
-
-                        --scale
-                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
-                    else
-                        --Anim ended, remove status
-                        laststatus.statusanim = nil
-                    end
-                end
-
-
-
-
-
-
-
-
-
-
-                --Second pass: Rendering
-
-                for i = 1, #loadedrfinal do
-                    local note = loadedrfinal[i]
-                    if note then
-                        --Draw note on canvas
-
-                        if not note.hit then
-
-                            --Break combo if too late
-                            local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
-                            if (not note.brokecombo) and (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
-                                --bad
-                                --status = 0
-                                combo = 0
-                                --prevent retriggering
-                                note.brokecombo = true
-                            end
-
-                            --if dorender then
-                                if note.data == 'event' then
-                                    if note.event == 'barline' then
-                                        --scale
-                                        note.pr.width = barlinesizex * scale[1]
-                                        note.pr.height = barlinesizey * scale[2]
-                                        note.tcenter.x = note.tcentero.x * scale[1]
-                                        note.tcenter.y = note.tcentero.y * scale[2]
-
-                                        --RAYLIB: RENDERING BARLNE
-                                        --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
-                                        rl.DrawTexturePro(Textures.PlaySong.Barlines[note.type], barlinesourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
-                                    end
-                                elseif note.data == 'note' then
                                     --scale
-                                    note.pr.width = tsizex * scale[1]
-                                    note.pr.height = tsizey * scale[2]
+                                    note.pr.width = barlinesizex * scale[1]
+                                    note.pr.height = barlinesizey * scale[2]
                                     note.tcenter.x = note.tcentero.x * scale[1]
                                     note.tcenter.y = note.tcentero.y * scale[2]
 
-                                    --SENotes
-                                    if note.senote then
-                                        note.senotepr.x = note.pr.x
-                                        note.senotepr.y = note.pr.y + (Textures.PlaySong.SENotes.offsety) * scale[2]
-                                        note.senotepr.width = note.osenotepr.width * scale[1]
-                                        note.senotepr.height = note.osenotepr.height * scale[2]
-                                        rl.DrawTexturePro(Textures.PlaySong.SENotes[note.senote], Textures.PlaySong.SENotes.sourcerect, note.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
-                                    end
+                                    --RAYLIB: RENDERING BARLNE
+                                    --rl.DrawLine(Round(note.p[1]) + offsetx, Round(note.p[2]) - tracky + offsety, Round(note.p[1]) + offsetx, Round(note.p[2]) + offsety, barlinecolor)
+                                    rl.DrawTexturePro(Textures.PlaySong.Barlines[note.type], barlinesourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
+                                end
+                            elseif note.data == 'note' then
+                                --scale
+                                note.pr.width = tsizex * scale[1]
+                                note.pr.height = tsizey * scale[2]
+                                note.tcenter.x = note.tcentero.x * scale[1]
+                                note.tcenter.y = note.tcentero.y * scale[2]
+
+                                --SENotes
+                                if note.senote then
+                                    note.senotepr.x = note.pr.x
+                                    note.senotepr.y = note.pr.y + (Textures.PlaySong.SENotes.offsety) * scale[2]
+                                    note.senotepr.width = note.osenotepr.width * scale[1]
+                                    note.senotepr.height = note.osenotepr.height * scale[2]
+                                    rl.DrawTexturePro(Textures.PlaySong.SENotes[note.senote], Textures.PlaySong.SENotes.sourcerect, note.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                end
 
 
-                                    --RAYLIB: RENDERING NOTE
-                                    if Textures.PlaySong.Notes[note.type] then
-                                        --rl.DrawTexture(Textures.PlaySong.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
-                                        --rl.DrawTextureEx(Textures.PlaySong.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
+                                --RAYLIB: RENDERING NOTE
+                                if Textures.PlaySong.Notes[note.type] then
+                                    --rl.DrawTexture(Textures.PlaySong.Notes[note.type], Round(note.p[1]) + toffsetx, Round(note.p[2]) + toffsety, rl.WHITE)
+                                    --rl.DrawTextureEx(Textures.PlaySong.Notes[note.type], note.pr, note.rotationr, note.radius, rl.WHITE)
 
-                                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                                    rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
 
-                                    elseif note.type == 8 then
-                                        local startnote = note.startnote
-                                        
-                                        if startnote.type == 5 or startnote.type == 6 then
-                                            local r = noteradius * note.radius
-                                            --recalc startnote p if it is loaded later
-                                            local x1, x2 = startnote.p[1], note.p[1]
-                                            --local y1, y2 = y - r, y + r
-                                            local y1, y2 = startnote.p[2], note.p[2]
-
-
-
-
-
-                                            --New code (12/8/22)
-                                            if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
-
-
-
-
-                                                --FINAL: Use atan2!
-                                                note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90)
-
-
-                                                
+                                elseif note.type == 8 then
+                                    local startnote = note.startnote
+                                    
+                                    if startnote.type == 5 or startnote.type == 6 then
+                                        local r = noteradius * note.radius
+                                        --recalc startnote p if it is loaded later
+                                        local x1, x2 = startnote.p[1], note.p[1]
+                                        --local y1, y2 = y - r, y + r
+                                        local y1, y2 = startnote.p[2], note.p[2]
 
 
 
 
 
-                                                --Draw rect + endnote
-                                                --[[
-                                                local twidth = Textures.PlaySong.Notes.drumrollrect.width
-                                                local theight = Textures.PlaySong.Notes.drumrollrect.height
-                                                --]]
-                                                local twidth, theight = tsizex, tsizey
-
-                                                local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-
-                                                local mulx = (x2 - x1) / d
-                                                local muly = (y2 - y1) / d
-                                                local incrementx = twidth * mulx
-                                                local incrementy = twidth * muly
-
-                                                local centeroffx = note.tcentero.x * mulx
-                                                local centeroffy = note.tcentero.y * muly
-
-                                                --modify values
-                                                x2 = x2 - centeroffx
-                                                y2 = y2 - centeroffy
-                                                --d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-                                                d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+                                        --New code (12/8/22)
+                                        if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
 
 
 
 
-                                                --1
-                                                local div = math.floor(d / twidth)
-                                                local mod = d - (div * twidth)
+                                            --FINAL: Use atan2!
+                                            note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90)
+
+
+                                            
 
 
 
 
 
+                                            --Draw rect + endnote
+                                            --[[
+                                            local twidth = Textures.PlaySong.Notes.drumrollrect.width
+                                            local theight = Textures.PlaySong.Notes.drumrollrect.height
+                                            --]]
+                                            local twidth, theight = tsizex, tsizey
 
-                                                local incrementmodx = mod * mulx
-                                                local incrementmody = mod * muly
+                                            local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
+                                            local mulx = (x2 - x1) / d
+                                            local muly = (y2 - y1) / d
+                                            local incrementx = twidth * mulx
+                                            local incrementy = twidth * muly
 
-                                                Textures.PlaySong.Notes.drumrollpr.width = twidth * scale[1]
-                                                Textures.PlaySong.Notes.drumrollpr.height = theight * scale[2]
+                                            local centeroffx = note.tcentero.x * mulx
+                                            local centeroffy = note.tcentero.y * muly
 
-
-
-                                                --Just modify rect in loop
-                                                local x = x1 + offsetx + centeroffx
-                                                local y = y1 + offsety + centeroffy
-                                                local subdiv = 4
-                                                local subdivoff = -0.5
-                                                --print(div)
-                                                for i = 1, div do
-                                                    Textures.PlaySong.Notes.drumrollpr.x = x * scale[1]
-                                                    Textures.PlaySong.Notes.drumrollpr.y = y * scale[2]
-                                                    rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], tsourcerect, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
-
-                                                    --draw drumroll line senote
-                                                    for i = 0, subdiv - 1 do
-                                                        if startnote.senote then
-                                                            startnote.senotepr.x = (x + (incrementx * (i / subdiv + subdivoff))) * scale[1]
-                                                            startnote.senotepr.y = (y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
-                                                            rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
-                                                        end
-                                                    end
-
-                                                    x = x + incrementx
-                                                    y = y + incrementy
-                                                end
-
-                                                Textures.PlaySong.Notes.drumrollpr.width = mod * scale[1]
-                                                
+                                            --modify values
+                                            x2 = x2 - centeroffx
+                                            y2 = y2 - centeroffy
+                                            --d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+                                            d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
 
 
+
+                                            --1
+                                            local div = math.floor(d / twidth)
+                                            local mod = d - (div * twidth)
+
+
+
+
+
+
+                                            local incrementmodx = mod * mulx
+                                            local incrementmody = mod * muly
+
+
+                                            Textures.PlaySong.Notes.drumrollpr.width = twidth * scale[1]
+                                            Textures.PlaySong.Notes.drumrollpr.height = theight * scale[2]
+
+
+
+                                            --Just modify rect in loop
+                                            local x = x1 + offsetx + centeroffx
+                                            local y = y1 + offsety + centeroffy
+                                            local subdiv = 4
+                                            local subdivoff = -0.5
+                                            --print(div)
+                                            for i = 1, div do
                                                 Textures.PlaySong.Notes.drumrollpr.x = x * scale[1]
                                                 Textures.PlaySong.Notes.drumrollpr.y = y * scale[2]
-
-
-                                                Textures.PlaySong.Notes.drumrollpr2.width = mod
-                                                Textures.PlaySong.Notes.drumrollpr2.height = tsizey
-
-                                                --[[
-                                                Textures.PlaySong.Notes.drumrollpr2.x = 0
-                                                Textures.PlaySong.Notes.drumrollpr2.y = 0
-                                                Textures.PlaySong.Notes.drumrollpr2.width = Textures.PlaySong.Notes.drumrollpr.width
-                                                Textures.PlaySong.Notes.drumrollpr2.height = Textures.PlaySong.Notes.drumrollpr.height
-                                                --]]
-                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], Textures.PlaySong.Notes.drumrollpr2, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
+                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], tsourcerect, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
 
                                                 --draw drumroll line senote
-                                                local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / twidth)
-                                                subdivoff = subdivoff + 17/136
-                                                for i = 0, a - 1 do
+                                                for i = 0, subdiv - 1 do
                                                     if startnote.senote then
                                                         startnote.senotepr.x = (x + (incrementx * (i / subdiv + subdivoff))) * scale[1]
                                                         startnote.senotepr.y = (y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
@@ -11686,656 +11651,691 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                     end
                                                 end
 
-                                                startnote.senotepr.x = (x + (incrementx * (a / subdiv + subdivoff))) * scale[1]
-                                                startnote.senotepr.y = (y + (incrementy * (a / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
-                                                rl.DrawTexturePro(Textures.PlaySong.SENotes[10], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
-
-                                                x = x + incrementmodx
-                                                y = y + incrementmody
-
-
-                                                --[[
-                                                    rotation:
-                                                    0 -> 0
-
-                                                    270 -> 270
-                                                    360 -> 180
-
-                                                ]]
-                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
-
-
+                                                x = x + incrementx
+                                                y = y + incrementy
                                             end
 
-                                            --Draw startnote
-                                            rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                            Textures.PlaySong.Notes.drumrollpr.width = mod * scale[1]
+                                            
 
 
 
+                                            Textures.PlaySong.Notes.drumrollpr.x = x * scale[1]
+                                            Textures.PlaySong.Notes.drumrollpr.y = y * scale[2]
 
 
-
-
-
-
-
-
+                                            Textures.PlaySong.Notes.drumrollpr2.width = mod
+                                            Textures.PlaySong.Notes.drumrollpr2.height = tsizey
 
                                             --[[
-                                                BALLOON RENDERING
-
-                                                OpenTaiko:
-
-                                                Saitama 2000 (50)
-                                                49-41 -> 0
-                                                40-31 -> 1
-                                                30-21 -> 2
-                                                20-11 -> 3
-                                                10-1 -> 4
-                                                0 -> 5
-
-                                                (60)
-                                                59-49 -> 0
-                                                48-37 -> 1
-                                                36-25 -> 2
-                                                24-13 -> 3
-                                                12-1 -> 4
-                                                0 -> 5
-
-                                                (57)
-                                                56-45 -> 0
-                                                44-34 -> 1
-                                                33-23 -> 2
-                                                22-12 -> 3
-                                                11-1 -> 4
-                                                0 -> 5
-
-                                                (58)
-                                                57-45 -> 0
-                                                44-34 -> 1
-                                                33-23 -> 2
-                                                22-12 -> 3
-                                                11-1 -> 4
-                                                0 -> 5
-
-
-                                                Consensus:
-                                                (Hits/5) Round down
-                                                Extra gets put in front
-
-                                                source: https://youtu.be/scZs6yBcIEw?t=17
+                                            Textures.PlaySong.Notes.drumrollpr2.x = 0
+                                            Textures.PlaySong.Notes.drumrollpr2.y = 0
+                                            Textures.PlaySong.Notes.drumrollpr2.width = Textures.PlaySong.Notes.drumrollpr.width
+                                            Textures.PlaySong.Notes.drumrollpr2.height = Textures.PlaySong.Notes.drumrollpr.height
                                             --]]
-                                        elseif startnote.type == 7 then
-                                            
-                                            --if startnote.timeshit == nil or startnote.timeshit == 0 then
-                                            if startnote.timeshit == nil then
-                                                --Not hit yet
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], Textures.PlaySong.Notes.drumrollpr2, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
 
-                                                --draw note
-                                                rl.DrawTexturePro(Textures.PlaySong.Notes.balloon, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
-                                                
-                                                --draw balloon
-                                                startnote.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
-                                                rl.DrawTexturePro(Textures.PlaySong.Notes.balloonend, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
-                                            else
-                                                --Hit at least 1 time
-
-                                                --draw donchan
-
-
-
-                                                --how much more hits
-                                                local morehits = startnote.requiredhits - startnote.timeshit
-
-                                                --formula for framen
-                                                local framen = (popanim.framen - 1) - math.ceil(morehits / math.floor(startnote.requiredhits / (popanim.framen - 1)))
-                                                framen = framen < 0 and 0 or framen
-
-                                                if framen == 5 then
-                                                    --Pop
-
-                                                    --assume popanim exists
-                                                    --local popanim = startnote.popanim
-                                                    local difms = ms - popanim.startms
-                                                    local animn = math.floor(difms / skinframems)
-                                                    --local transparency = 255 - (animn / framen * 255)
-                                                    local transparency = popanim.anim[animn]
-
-                                                    if transparency then
-                                                        popanim.color.a = 255 * transparency
-
-                                                        if transparency > 0 then
-                                                            --if visible
-                                                            rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
-                                                        end
-                                                    else
-                                                        startnote.hit = true
-                                                    end
-                                                else
-                                                    --Trying to blow
-
-                                                    --draw balloon at same position as non-hit above donchan
-                                                    Textures.PlaySong.Balloons.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
-                                                    Textures.PlaySong.Balloons.pr.y = startnote.pr.y
-                                                    rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, rl.WHITE)
+                                            --draw drumroll line senote
+                                            local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / twidth)
+                                            subdivoff = subdivoff + 17/136
+                                            for i = 0, a - 1 do
+                                                if startnote.senote then
+                                                    startnote.senotepr.x = (x + (incrementx * (i / subdiv + subdivoff))) * scale[1]
+                                                    startnote.senotepr.y = (y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                    rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
                                                 end
                                             end
 
-                                            
+                                            startnote.senotepr.x = (x + (incrementx * (a / subdiv + subdivoff))) * scale[1]
+                                            startnote.senotepr.y = (y + (incrementy * (a / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                            rl.DrawTexturePro(Textures.PlaySong.SENotes[10], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+
+                                            x = x + incrementmodx
+                                            y = y + incrementmody
+
+
+                                            --[[
+                                                rotation:
+                                                0 -> 0
+
+                                                270 -> 270
+                                                360 -> 180
+
+                                            ]]
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
+
+
                                         end
 
+                                        --Draw startnote
+                                        rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
 
 
+
+
+
+
+
+
+
+
+
+
+                                        --[[
+                                            BALLOON RENDERING
+
+                                            OpenTaiko:
+
+                                            Saitama 2000 (50)
+                                            49-41 -> 0
+                                            40-31 -> 1
+                                            30-21 -> 2
+                                            20-11 -> 3
+                                            10-1 -> 4
+                                            0 -> 5
+
+                                            (60)
+                                            59-49 -> 0
+                                            48-37 -> 1
+                                            36-25 -> 2
+                                            24-13 -> 3
+                                            12-1 -> 4
+                                            0 -> 5
+
+                                            (57)
+                                            56-45 -> 0
+                                            44-34 -> 1
+                                            33-23 -> 2
+                                            22-12 -> 3
+                                            11-1 -> 4
+                                            0 -> 5
+
+                                            (58)
+                                            57-45 -> 0
+                                            44-34 -> 1
+                                            33-23 -> 2
+                                            22-12 -> 3
+                                            11-1 -> 4
+                                            0 -> 5
+
+
+                                            Consensus:
+                                            (Hits/5) Round down
+                                            Extra gets put in front
+
+                                            source: https://youtu.be/scZs6yBcIEw?t=17
+                                        --]]
+                                    elseif startnote.type == 7 then
+                                        
+                                        --if startnote.timeshit == nil or startnote.timeshit == 0 then
+                                        if startnote.timeshit == nil then
+                                            --Not hit yet
+
+                                            --draw note
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes.balloon, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                            
+                                            --draw balloon
+                                            startnote.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes.balloonend, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                        else
+                                            --Hit at least 1 time
+
+                                            --draw donchan
+
+
+
+                                            --how much more hits
+                                            local morehits = startnote.requiredhits - startnote.timeshit
+
+                                            --formula for framen
+                                            local framen = (popanim.framen - 1) - math.ceil(morehits / math.floor(startnote.requiredhits / (popanim.framen - 1)))
+                                            framen = framen < 0 and 0 or framen
+
+                                            if framen == 5 then
+                                                --Pop
+
+                                                --assume popanim exists
+                                                --local popanim = startnote.popanim
+                                                local difms = ms - popanim.startms
+                                                local animn = math.floor(difms / skinframems)
+                                                --local transparency = 255 - (animn / framen * 255)
+                                                local transparency = popanim.anim[animn]
+
+                                                if transparency then
+                                                    popanim.color.a = 255 * transparency
+
+                                                    if transparency > 0 then
+                                                        --if visible
+                                                        rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, popanim.color)
+                                                    end
+                                                else
+                                                    startnote.hit = true
+                                                end
+                                            else
+                                                --Trying to blow
+
+                                                --draw balloon at same position as non-hit above donchan
+                                                Textures.PlaySong.Balloons.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                                Textures.PlaySong.Balloons.pr.y = startnote.pr.y
+                                                rl.DrawTexturePro(Textures.PlaySong.Balloons.Anim[framen], Textures.PlaySong.Balloons.sourcerect, Textures.PlaySong.Balloons.pr, Textures.PlaySong.Balloons.center, startnote.rotationr, rl.WHITE)
+                                            end
+                                        end
+
+                                        
                                     end
-                                else
-                                    error('Invalid note.data')
+
+
+
                                 end
-                            --end
+                            else
+                                error('Invalid note.data')
+                            end
+                        --end
 
-                        end
                     end
+                end
+                
+                
+            end
+
+
+
+
+
+
+            --Render flash above notes
+            if laststatus.explosionanim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.explosionanim[animn]
+                if frame then
+                    --Draw on target
+                    --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                    --scale
+                    rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.explosionanim = nil
+                end
+            end
+
+            --Render explosion (big) above flash
+            if laststatus.explosionbiganim then
+                local difms = ms - laststatus.startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local frame = laststatus.explosionbiganim[animn]
+                if frame then
+                    --Draw on target
+                    --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+
+                    --scale
+                    rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
+                else
+                    --Anim ended, remove status
+                    laststatus.explosionbiganim = nil
+                end
+            end
+
+            --Render judge above all
+            local offseti = 0
+            for i = 1, #judgeanim.startms do
+                local i2 = i + offseti
+                local difms = ms - judgeanim.startms[i2]
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                local p = judgeanim.animp[animn]
+                if p then
+                    local t = judgeanim.animt[animn]
+                    local j = judgeanim.judge[i2]
                     
-                    
+                    --Draw
+                    judgeanim.color.a = 255 * t
+                    Textures.PlaySong.Judges.pr.x = targetpr.x
+                    Textures.PlaySong.Judges.pr.y = targetpr.y - (p/720 * Config.ScreenHeight)
+                    rl.DrawTexturePro(Textures.PlaySong.Judges[j], Textures.PlaySong.Judges.sourcerect, Textures.PlaySong.Judges.pr, Textures.PlaySong.Judges.center, 0, judgeanim.color)
+                else
+                    --Anim ended, remove status
+                    table.remove(judgeanim.startms, i2)
+                    table.remove(judgeanim.judge, i2)
+                    offseti = offseti - 1
                 end
+            end
 
 
 
 
 
 
-                --Render flash above notes
-                if laststatus.explosionanim then
-                    local difms = ms - laststatus.startms
-                    local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    local frame = laststatus.explosionanim[animn]
-                    if frame then
-                        --Draw on target
-                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
 
-                        --scale
-                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
-                    else
-                        --Anim ended, remove status
-                        laststatus.explosionanim = nil
-                    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+            rl.EndDrawing()
+
+
+
+
+
+
+
+            --Handle other special input
+            if rl.WindowShouldClose() then
+                rl.CloseWindow()
+                break
+            end
+
+            --Resizable window
+            --if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
+            if rl.IsWindowResized() and (not Config.Fullscreen) then
+                local sizex, sizey = rl.GetScreenWidth(), rl.GetScreenHeight()
+                if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
+                    --print(Config.ScreenWidth, Config.ScreenHeight, sizex, sizey)
+                    ResizeAll(Textures, sizex / Config.ScreenWidth, sizey / Config.ScreenHeight)
+                    Config.ScreenWidth, Config.ScreenHeight = sizex, sizey
                 end
+            end
 
-                --Render explosion (big) above flash
-                if laststatus.explosionbiganim then
-                    local difms = ms - laststatus.startms
-                    local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    local frame = laststatus.explosionbiganim[animn]
-                    if frame then
-                        --Draw on target
-                        --rl.DrawTexture(frame, Round(target[1] * xmul) + statusoffsetx, Round(target[2] * ymul) + statusoffsety, effectcolor)
+            --Fullscreen
+            if IsKeyPressed(Config.Controls.PlaySong.Fullscreen) then
+                local rx, ry = ToggleFullscreen()
 
-                        --scale
-                        rl.DrawTexturePro(frame, Textures.PlaySong.Effects.Note.sourcerect, targetpr, Textures.PlaySong.Effects.Note.center, 0, effectcolor)
-                    else
-                        --Anim ended, remove status
-                        laststatus.explosionbiganim = nil
-                    end
-                end
+                --RESCALE EVERYTHING
+                ResizeAll(Textures, rx, ry)
+            end
 
-                --Render judge above all
-                local offseti = 0
-                for i = 1, #judgeanim.startms do
-                    local i2 = i + offseti
-                    local difms = ms - judgeanim.startms[i2]
-                    local animn = math.floor(difms / skinframems)
-                    --Anim ended?
-                    local p = judgeanim.animp[animn]
-                    if p then
-                        local t = judgeanim.animt[animn]
-                        local j = judgeanim.judge[i2]
-                        
-                        --Draw
-                        judgeanim.color.a = 255 * t
-                        Textures.PlaySong.Judges.pr.x = targetpr.x
-                        Textures.PlaySong.Judges.pr.y = targetpr.y - (p/720 * Config.ScreenHeight)
-                        rl.DrawTexturePro(Textures.PlaySong.Judges[j], Textures.PlaySong.Judges.sourcerect, Textures.PlaySong.Judges.pr, Textures.PlaySong.Judges.center, 0, judgeanim.color)
-                    else
-                        --Anim ended, remove status
-                        table.remove(judgeanim.startms, i2)
-                        table.remove(judgeanim.judge, i2)
-                        offseti = offseti - 1
-                    end
-                end
+            --Screenshot
+            if IsKeyPressed(Config.Controls.PlaySong.Screenshot) then
+                --[[
+                --might produce a screenshot with black waste parts due to gpu
+                rl.TakeScreenshot(ScreenshotPath)
+                --]]
 
+                -- [[
+                --reliable
+                local image = rl.LoadImageFromScreen()
+                rl.ExportImage(image, GetTimestampFilename(Config.Paths.Screenshots, Config.Formats.Screenshot))
+                rl.UnloadImage(image)
+                --]]
+            end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            --Pause / Command
+            local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
+            if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
+                local before = os.clock()
 
                 rl.EndDrawing()
 
+                local stillimage = rl.LoadImageFromScreen()
+                local stilltexture = rl.LoadTextureFromImage(stillimage)
 
+                --Pause Menu
+                local Selected = 1 --option selected
+                local Options = {
+                    'Back to game',
+                    'Retry',
+                    'Quit',
+                }
 
+                --Command
+                local str, x, y, move, moving, out, consoletext, log, prompt, logtext, textbackground, textbackgroundt, textbackgroundrect, textbackgroundcenter, textbackgroundsourcerect
+                if commandactivated then
+                    str = {
+                        'Console',
+                        '\nS: ', tostring(s),
+                        '\nMs: ', tostring(ms),
+                        '\nGogo: ', tostring(gogo),
+                        '\nLoaded: ', tostring(#loadedrfinal),
+                        '\nFramen: ', framen,
+                        '\nnextnote.loadms: ', tostring(nextnote and nextnote.loadms),
+                        '\nnextnote.n: ', tostring(nextnote and nextnote.n),
+                        '\nballoonstart: ', tostring(balloonstart),
+                        '\nballoonend: ', tostring(balloonend),
+                        '\n\nMemory usage (mb): ', collectgarbage('count') / 1000,
+                        '\nFinished (%): ', ms / (endms) * 100,
+                        '\n\n'
+                    }
+                    strtext = table.concat(str)
+                    x, y = 0, 360/720 * Config.ScreenHeight
+                    move = 1
+                    moving = false
 
+                    out = {}
+                    consoletext = ''
+                    log = {
 
-
-
-                --Handle other special input
-                if rl.WindowShouldClose() then
-                    rl.CloseWindow()
-                    break
+                    }
+                    logtext = ''
+                    prompt = 'Console: '
+                    
+                    textbackground = rl.ImageFromImage(stillimage, rl.new('Rectangle', 0, 0, 1, 1))
+                    rl.ImageDrawPixel(textbackground, 0, 0, rl.new('Color', 0, 0, 0, 255 / 2))
+                    textbackgroundt = rl.LoadTextureFromImage(textbackground)
+                    rl.UnloadImage(textbackground)
+                    textbackgroundsourcerect = rl.new('Rectangle', 0, 0, 1, 1)
+                    textbackgroundrect = rl.new('Rectangle', 0, 0, 1, 1)
+                    textbackgroundcenter = rl.new('Vector2', 0, 0)
                 end
+                
+                rl.UnloadImage(stillimage)
 
-                --Resizable window
-                --if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
-                if rl.IsWindowResized() and (not Config.Fullscreen) then
-                    local sizex, sizey = rl.GetScreenWidth(), rl.GetScreenHeight()
-                    if sizex ~= Config.ScreenWidth or sizey ~= Config.ScreenHeight then
-                        --print(Config.ScreenWidth, Config.ScreenHeight, sizex, sizey)
-                        ResizeAll(Textures, sizex / Config.ScreenWidth, sizey / Config.ScreenHeight)
-                        Config.ScreenWidth, Config.ScreenHeight = sizex, sizey
+
+                --loop for input
+                while true do
+                    rl.BeginDrawing()
+
+                    rl.ClearBackground(rl.RAYWHITE)
+
+                    --draw stilltexture
+                    rl.DrawTexture(stilltexture, 0, 0, rl.WHITE)
+
+                    if commandactivated then
+                        --draw textbackground
+                        local textfinal = strtext .. logtext .. prompt .. consoletext
+                        textbackgroundrect.x, textbackgroundrect.y = x, y
+                        textbackgroundrect.width, textbackgroundrect.height = GetTextSize(textfinal, textsize)
+                        rl.DrawTexturePro(textbackgroundt, textbackgroundsourcerect, textbackgroundrect, textbackgroundcenter, 0, rl.WHITE)
+
+                        --draw text
+                        rl.DrawText(textfinal, x, y, textsize, rl.RAYWHITE)
                     end
-                end
 
-                --Fullscreen
-                if IsKeyPressed(Config.Controls.PlaySong.Fullscreen) then
-                    local rx, ry = ToggleFullscreen()
 
-                    --RESCALE EVERYTHING
-                    ResizeAll(Textures, rx, ry)
-                end
-
-                --Screenshot
-                if IsKeyPressed(Config.Controls.PlaySong.Screenshot) then
-                    --[[
-                    --might produce a screenshot with black waste parts due to gpu
-                    rl.TakeScreenshot(ScreenshotPath)
-                    --]]
-
-                    -- [[
-                    --reliable
-                    local image = rl.LoadImageFromScreen()
-                    rl.ExportImage(image, GetTimestampFilename(Config.Paths.Screenshots, Config.Formats.Screenshot))
-                    rl.UnloadImage(image)
-                    --]]
-                end
-
-                --Pause / Command
-                local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
-                if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
-                    local before = os.clock()
+                    --Draw options
+                    for i = 1, #Options do
+                        rl.DrawText((i == Selected and '> ' or '') .. Options[i], Config.ScreenWidth / 2, Config.ScreenHeight / 2 + (
+                            (
+                                i - --subtract
+                                (#Options + 1) / 2 --get middle of Options
+                            ) * fontsize --multiply
+                        ), fontsize, rl.BLACK)
+                    end
 
                     rl.EndDrawing()
 
-                    local stillimage = rl.LoadImageFromScreen()
-                    local stilltexture = rl.LoadTextureFromImage(stillimage)
-
-                    --Pause Menu
-                    local Selected = 1 --option selected
-                    local Options = {
-                        'Back to game',
-                        'Retry',
-                        'Quit',
-                    }
-
                     --Command
-                    local str, x, y, move, moving, out, consoletext, log, prompt, logtext, textbackground, textbackgroundt, textbackgroundrect, textbackgroundcenter, textbackgroundsourcerect
                     if commandactivated then
-                        str = {
-                            'Console',
-                            '\nS: ', tostring(s),
-                            '\nMs: ', tostring(ms),
-                            '\nGogo: ', tostring(gogo),
-                            '\nLoaded: ', tostring(#loadedrfinal),
-                            '\nFramen: ', framen,
-                            '\nnextnote.loadms: ', tostring(nextnote and nextnote.loadms),
-                            '\nnextnote.n: ', tostring(nextnote and nextnote.n),
-                            '\nballoonstart: ', tostring(balloonstart),
-                            '\nballoonend: ', tostring(balloonend),
-                            '\n\nMemory usage (mb): ', collectgarbage('count') / 1000,
-                            '\nFinished (%): ', ms / (endms) * 100,
-                            '\n\n'
-                        }
-                        strtext = table.concat(str)
-                        x, y = 0, 360/720 * Config.ScreenHeight
-                        move = 1
-                        moving = false
+                        if IsKeyPressed(Config.Controls.PlaySong.Command.Move.Toggle) then
+                            moving = not moving
+                        end
 
-                        out = {}
-                        consoletext = ''
-                        log = {
-
-                        }
-                        logtext = ''
-                        prompt = 'Console: '
-                        
-                        textbackground = rl.ImageFromImage(stillimage, rl.new('Rectangle', 0, 0, 1, 1))
-                        rl.ImageDrawPixel(textbackground, 0, 0, rl.new('Color', 0, 0, 0, 255 / 2))
-                        textbackgroundt = rl.LoadTextureFromImage(textbackground)
-                        rl.UnloadImage(textbackground)
-                        textbackgroundsourcerect = rl.new('Rectangle', 0, 0, 1, 1)
-                        textbackgroundrect = rl.new('Rectangle', 0, 0, 1, 1)
-                        textbackgroundcenter = rl.new('Vector2', 0, 0)
-                    end
-                    
-                    rl.UnloadImage(stillimage)
-
-
-                    --loop for input
-                    while true do
-                        rl.BeginDrawing()
-
-                        rl.ClearBackground(rl.RAYWHITE)
-
-                        --draw stilltexture
-                        rl.DrawTexture(stilltexture, 0, 0, rl.WHITE)
-
-                        if commandactivated then
-                            --draw textbackground
-                            local textfinal = strtext .. logtext .. prompt .. consoletext
-                            textbackgroundrect.x, textbackgroundrect.y = x, y
-                            textbackgroundrect.width, textbackgroundrect.height = GetTextSize(textfinal, textsize)
-                            rl.DrawTexturePro(textbackgroundt, textbackgroundsourcerect, textbackgroundrect, textbackgroundcenter, 0, rl.WHITE)
-
-                            --draw text
-                            rl.DrawText(textfinal, x, y, textsize, rl.RAYWHITE)
+                        if moving then
+                            if IsKeyDown(Config.Controls.PlaySong.Command.Move.Left) then
+                                x = x - move
+                            end
+                            if IsKeyDown(Config.Controls.PlaySong.Command.Move.Right) then
+                                x = x + move
+                            end
+                            if IsKeyDown(Config.Controls.PlaySong.Command.Move.Up) then
+                                y = y - move
+                            end
+                            if IsKeyDown(Config.Controls.PlaySong.Command.Move.Down) then
+                                y = y + move
+                            end
                         end
 
 
-                        --Draw options
-                        for i = 1, #Options do
-                            rl.DrawText((i == Selected and '> ' or '') .. Options[i], Config.ScreenWidth / 2, Config.ScreenHeight / 2 + (
-                                (
-                                    i - --subtract
-                                    (#Options + 1) / 2 --get middle of Options
-                                ) * fontsize --multiply
-                            ), fontsize, rl.BLACK)
-                        end
 
-                        rl.EndDrawing()
-
-                        --Command
-                        if commandactivated then
-                            if IsKeyPressed(Config.Controls.PlaySong.Command.Move.Toggle) then
-                                moving = not moving
-                            end
-
-                            if moving then
-                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Left) then
-                                    x = x - move
-                                end
-                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Right) then
-                                    x = x + move
-                                end
-                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Up) then
-                                    y = y - move
-                                end
-                                if IsKeyDown(Config.Controls.PlaySong.Command.Move.Down) then
-                                    y = y + move
-                                end
-                            end
-
-
-
-                            --Console
-                            while true do
-                                local c = rl.GetCharPressed()
-                                if c == 0 then
-                                    break
-                                else
-                                    out[#out + 1] = c
-                                    --Update display
-                                    consoletext = UnicodeEncode(out)
-                                end
-                            end
-                
-                            --Remember, GetCharPressed doesn't detect special keys
-                            if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
-                                out[#out] = nil
+                        --Console
+                        while true do
+                            local c = rl.GetCharPressed()
+                            if c == 0 then
+                                break
+                            else
+                                out[#out + 1] = c
                                 --Update display
                                 consoletext = UnicodeEncode(out)
                             end
-                            if rl.IsKeyPressed(rl.KEY_ENTER) then
-                                --out = UnicodeEncode(out)
-                            end
-
-
                         end
-                        
+            
+                        --Remember, GetCharPressed doesn't detect special keys
+                        if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                            out[#out] = nil
+                            --Update display
+                            consoletext = UnicodeEncode(out)
+                        end
+                        if rl.IsKeyPressed(rl.KEY_ENTER) then
+                            --out = UnicodeEncode(out)
+                        end
 
 
-                        --Input
-                        if IsKeyPressed(Config.Controls.PlaySong.Pause.Escape) then
+                    end
+                    
+
+
+                    --Input
+                    if IsKeyPressed(Config.Controls.PlaySong.Pause.Escape) then
+                        break
+                    end
+                    if IsKeyPressed(Config.Controls.PlaySong.L) then
+                        Selected = Selected - 1
+                    end
+                    if IsKeyPressed(Config.Controls.PlaySong.R) then
+                        Selected = Selected + 1
+                    end
+                    Selected = ClipN(Selected, 1, #Options)
+                    if IsKeyPressed(Config.Controls.PlaySong.Select) then
+                        if Selected == 1 then
+                            --Back to game
                             break
-                        end
-                        if IsKeyPressed(Config.Controls.PlaySong.L) then
-                            Selected = Selected - 1
-                        end
-                        if IsKeyPressed(Config.Controls.PlaySong.R) then
-                            Selected = Selected + 1
-                        end
-                        Selected = ClipN(Selected, 1, #Options)
-                        if IsKeyPressed(Config.Controls.PlaySong.Select) then
-                            if Selected == 1 then
-                                --Back to game
-                                break
-                            elseif Selected == 2 then
-                                --Retry
-                                return false
-                            elseif Selected == 3 then
-                                --Quit
-                                return nil
-                            else
+                        elseif Selected == 2 then
+                            --Retry
+                            return false
+                        elseif Selected == 3 then
+                            --Quit
+                            return nil
+                        else
 
-                            end
                         end
-
-
-                        
-                        if rl.WindowShouldClose() then
-                            --rl.CloseWindow()
-                            break
-                        end
-                        
                     end
 
-                    rl.EndDrawing()
 
-                    rl.UnloadTexture(stilltexture)
-
-                    forceresync = true --force music resync on next frame
-
-                    startt = startt + (os.clock() - before)
-                end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                --[=====[]
-
-
-
-                --Pause menu
-                if Controls.Escape[key] then
-                    local before = os.clock()
-
-                    Ansi.ClearScreen()
-                    curses.nodelay(window, false)
-                    --Back, Retry, Song Select
-                    local Menu = {'Back', 'Retry', 'Back to Select'}
-                    while true do
-                        Ansi.SetCursor(1, 1)
-                        local o = {}
-                        for i = 1, #Menu do
-                            --Can't Use Select :(
-                            o[i] = ((i == Selected) and (SelectedChar .. string.rep(' ', SelectedPadding - #SelectedChar)) or string.rep(' ', SelectedPadding)) .. Menu[i]
-                        end
-                        print(table.concat(o, MenuConcat))
-
-                        --local input = Input()
-                        local input = curses.getch(window)
-                        local key = curses.getkeyname(input)
-                        if Controls.L[key] then
-                            Selected = Selected == 1 and 1 or Selected - 1
-                        elseif Controls.R[key] then
-                            Selected = Selected == 3 and 3 or Selected + 1
-                        elseif Controls.Select[key] then
-                            --Dirty
-                            if Selected == 1 then
-                                --Back
-                            elseif Selected == 2 then
-                                --Retry
-                                return 'Retry'
-                            elseif Selected == 3 then
-                                --Back to Select
-                                return nil
-                            end
-                            break
-                        elseif Controls.Escape[key] then
-                            break
-                        end
+                    
+                    if rl.WindowShouldClose() then
+                        --rl.CloseWindow()
+                        break
                     end
-                    curses.nodelay(window, true)
-                    startt = startt + (os.clock() - before)
+                    
                 end
 
+                rl.EndDrawing()
 
+                rl.UnloadTexture(stilltexture)
 
+                forceresync = true --force music resync on next frame
 
-
-
-
-
-
-
-
-
-
-
-
-                --Statistics
-
-
-
-
-                if input ~= -1 then
-                    lastinput = {input, key}
-                end
-                --input statistics
-                Statistic('Input (ascii)', lastinput[1])
-                Statistic('Input (key)', lastinput[2])
-
-
-
-
-                --statistics
-
-
-
-
-
-
-                --DEBUG
-                Statistic('S', s)
-                Statistic('Ms', ms)
-                Statistic('Loaded', #loaded)
-                Statistic('Frames Rendered', framen)
-                --Statistic('Last Frame Render (s)', framerenders)
-                Statistic('Last Frame Render (ms)', framerenders * 1000)
-                --Statistic('Frame Render Total (s)', framerenderstotal)
-                Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
-                Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
-                Statistic('FPS (Frame)', framen / s)
-
-                --[=[
-                Statistic('nextloadms', nextnote and nextnote.loadms)
-                Statistic('nextms', nextnote and nextnote.ms)
-                Statistic('nextn', nextnote and nextnote.n)
-                --]=]
-
-
-                --[[ --temp 11/12/2022
-
-                Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
-                Statistic('Finished (%)', ms / (endms) * 100)
-
-
-                Statistic('Nearest1 (ms)', nearest[1])
-                --Statistic('NearestHIT', (nearestnote[1] and ((nearestnote[1].ms > ms) and (not nearestnote[1].hit))))
-                Statistic('Nearest2 (ms)', nearest[2])
-                --]]
-                --Delay
-                Statistic('Stop Start', stopstart or '')
-                Statistic('Stop End', stopend or '')
-                Statistic('Total Delay', totaldelay)
-
-                --]]
-
-
-                --Score
-                Statistic('Score', score)
-                Statistic('Combo', combo)
-                Statistic('Gogo', gogo)
-                
-
-
-
-
-
-                --Drumroll
-                Statistic('Drumroll Start', drumrollstart)
-                Statistic('Drumroll End', drumrollend)
-
-
-
-
-                --GAME
-
-                --[[
-                --Song info
-
-                Statistic('Song Name', Parsed.Metadata.TITLE)
-                Statistic('Difficulty (id)', Parsed.Metadata.COURSE)
-                Statistic('Stars', Parsed.Metadata.LEVEL)
-                
-
-
-                --]]
-
-
-                RenderStatistic()
-                RenderLog()
-                
-                --]=====]
-
-
+                startt = startt + (os.clock() - before)
             end
 
-            --[[
-            profiler.report('profiler.log')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --[=====[]
+
+
+
+            --Pause menu
+            if Controls.Escape[key] then
+                local before = os.clock()
+
+                Ansi.ClearScreen()
+                curses.nodelay(window, false)
+                --Back, Retry, Song Select
+                local Menu = {'Back', 'Retry', 'Back to Select'}
+                while true do
+                    Ansi.SetCursor(1, 1)
+                    local o = {}
+                    for i = 1, #Menu do
+                        --Can't Use Select :(
+                        o[i] = ((i == Selected) and (SelectedChar .. string.rep(' ', SelectedPadding - #SelectedChar)) or string.rep(' ', SelectedPadding)) .. Menu[i]
+                    end
+                    print(table.concat(o, MenuConcat))
+
+                    --local input = Input()
+                    local input = curses.getch(window)
+                    local key = curses.getkeyname(input)
+                    if Controls.L[key] then
+                        Selected = Selected == 1 and 1 or Selected - 1
+                    elseif Controls.R[key] then
+                        Selected = Selected == 3 and 3 or Selected + 1
+                    elseif Controls.Select[key] then
+                        --Dirty
+                        if Selected == 1 then
+                            --Back
+                        elseif Selected == 2 then
+                            --Retry
+                            return 'Retry'
+                        elseif Selected == 3 then
+                            --Back to Select
+                            return nil
+                        end
+                        break
+                    elseif Controls.Escape[key] then
+                        break
+                    end
+                end
+                curses.nodelay(window, true)
+                startt = startt + (os.clock() - before)
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --Statistics
+
+
+
+
+            if input ~= -1 then
+                lastinput = {input, key}
+            end
+            --input statistics
+            Statistic('Input (ascii)', lastinput[1])
+            Statistic('Input (key)', lastinput[2])
+
+
+
+
+            --statistics
+
+
+
+
+
+
+            --DEBUG
+            Statistic('S', s)
+            Statistic('Ms', ms)
+            Statistic('Loaded', #loaded)
+            Statistic('Frames Rendered', framen)
+            --Statistic('Last Frame Render (s)', framerenders)
+            Statistic('Last Frame Render (ms)', framerenders * 1000)
+            --Statistic('Frame Render Total (s)', framerenderstotal)
+            Statistic('Frame Render Total (ms)', framerenderstotal * 1000)
+            Statistic('Frame Render Total (%)', framerenderstotal / s * 100)
+            Statistic('FPS (Frame)', framen / s)
+
+            --[=[
+            Statistic('nextloadms', nextnote and nextnote.loadms)
+            Statistic('nextms', nextnote and nextnote.ms)
+            Statistic('nextn', nextnote and nextnote.n)
+            --]=]
+
+
+            --[[ --temp 11/12/2022
+
+            Statistic('Memory Usage (mb)', collectgarbage('count') / 1000)
+            Statistic('Finished (%)', ms / (endms) * 100)
+
+
+            Statistic('Nearest1 (ms)', nearest[1])
+            --Statistic('NearestHIT', (nearestnote[1] and ((nearestnote[1].ms > ms) and (not nearestnote[1].hit))))
+            Statistic('Nearest2 (ms)', nearest[2])
             --]]
+            --Delay
+            Statistic('Stop Start', stopstart or '')
+            Statistic('Stop End', stopend or '')
+            Statistic('Total Delay', totaldelay)
+
+            --]]
+
+
+            --Score
+            Statistic('Score', score)
+            Statistic('Combo', combo)
+            Statistic('Gogo', gogo)
+            
+
+
+
+
+
+            --Drumroll
+            Statistic('Drumroll Start', drumrollstart)
+            Statistic('Drumroll End', drumrollend)
+
+
+
+
+            --GAME
+
+            --[[
+            --Song info
+
+            Statistic('Song Name', Parsed.Metadata.TITLE)
+            Statistic('Difficulty (id)', Parsed.Metadata.COURSE)
+            Statistic('Stars', Parsed.Metadata.LEVEL)
+            
+
+
+            --]]
+
+
+            RenderStatistic()
+            RenderLog()
+            
+            --]=====]
+
+
+        end
+
+        --[[
+        profiler.report('profiler.log')
+        --]]
 
 
     end
