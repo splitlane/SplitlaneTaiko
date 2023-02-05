@@ -85,6 +85,7 @@ TODO: Add raylib option
     TODO: GIMMICK: sine in scrolls
     TODO: Add errors to PlaySong / SongSelect when invalid tja (popup)
     TODO: Work on pause menu PlaySong
+    TODO: ParseTJA, ParseTJAFile, and SongSelect, handle errors
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5113,17 +5114,21 @@ end
 --Helper Function For Reading TJA and Setting Song Name
 function Taiko.ParseTJAFile(path)
     local file = io.open(path, 'r')
-    local data = file:read('*all')
-    local Parsed = Taiko.ParseTJA(data)
-    local slashp = string.find(string.reverse(path), '[/\\]') --LAST SLASH REVERSED
-    for k, v in pairs(Parsed) do
-        v.Metadata.SONG = (
-            slashp
-            and string.sub(path, 1, #path + 1 - slashp) --Path is in a directory, get directory
-            or '' --Path is not in a directory
-        ) .. v.Metadata.WAVE
+    if file then
+        local data = file:read('*all')
+        local Parsed = Taiko.ParseTJA(data)
+        local slashp = string.find(string.reverse(path), '[/\\]') --LAST SLASH REVERSED
+        for k, v in pairs(Parsed) do
+            v.Metadata.SONG = (
+                slashp
+                and string.sub(path, 1, #path + 1 - slashp) --Path is in a directory, get directory
+                or '' --Path is not in a directory
+            ) .. v.Metadata.WAVE
+        end
+        return Parsed
+    else
+        return nil, 'Unable to open file'
     end
-    return Parsed
 end
 
 
@@ -8794,7 +8799,17 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 local nextdir = CurrentTree[nextname]
                 if type(nextdir) == 'string' then
                     --File
-                    print(nextdir)
+                    --print(nextdir)
+
+                    --Play Song!
+
+                    local Parsed, Error = Taiko.ParseTJAFile(nextdir)
+                    if Parsed then
+                        local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
+                        Taiko.PlaySong(ParsedData)
+                    else
+                        error('SONGSELECT: ', Error)
+                    end
                 else
                     --Folder
                     if Display.Expanded[Selected] then
