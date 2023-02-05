@@ -82,6 +82,9 @@ DO NOT EDIT
             },
             'FastScrollTime' = 1000,
             'FastScrollInterval' = 400,
+            'Select' = {
+                257 = true,
+            },
         },
 	},
 	'ScreenHeight' = 720,

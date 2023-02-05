@@ -6603,7 +6603,7 @@ int MeasureText(const char *text, int fontSize)
     end
 
     local function BuildSongTree(pathtree)
-        local ffi = require('ffi')
+        --local ffi = require('ffi')
 
         local songtree = {}
         for k, v in pairs(pathtree) do
@@ -6612,7 +6612,10 @@ int MeasureText(const char *text, int fontSize)
                 songtree[k] = BuildSongTree(v)
             else
                 --songtree[ffi.string(rl.GetFileNameWithoutExt(v))] = v
-                songtree[GetFileNameWithoutExt(v)] = v
+                if GetFileType(v) == '.tja' then
+                    --Avoid overwriting when different extentions but same name
+                    songtree[GetFileNameWithoutExt(v)] = v
+                end
             end
         end
 
@@ -8471,13 +8474,21 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Only stores displayed ones and a bit of cache
         local Display = {
             Text = {},
+            Name = {},
             Config = {},
+            Expanded = {}, --all nils except expanded dir, which has dir length
+            LoadedCheck = {}, --loaded once already?
+            Path = {}, --path (parent folder)
+            Loaded = {}, --loaded files list in order (displayed) (completely seperate with other)
         }
 
         --Songlist
         local FilesList, PathTree = ScanSongs()
 
         local SongTree = BuildSongTree(PathTree)
+
+        local Path = {} --Path table: empty is root
+        local CurrentTree = SongTree --Cache
 
         local Selected = 1
 
@@ -8493,28 +8504,127 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local FastScrollAdd = nil
         local FastScrollIntervalMod = 0
 
-        --Put root directory into Display
 
+        --Get File/Directory from Path (Songtree)
 
-        --Iterator
-        local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
-        --Priority
-        local function DirectoryPriority(t, a, b)
-            if type(t[a]) == 'string' and type(t[b]) == 'string' then
-                return t[a] < t[b]
-            elseif type(t[a]) == 'string' then
-                return false
-            elseif type(t[b]) == 'string' then
-                return true
-            else
-                return a < b
+        local function GetTree(tree, path)
+            local a = tree
+            for i = 1, #path do
+                a = a[path[i]]
             end
+            return a
         end
 
-        for k, v in spairs(SongTree, DirectoryPriority) do
-            Display.Text[#Display.Text + 1] = k
-            --Display.Config
+        local function CopyPath(path)
+            local out = {}
+            for i = 1, #path do
+                out[i] = path[i]
+            end
+            return out
         end
+
+        local function DisplayPath(path)
+            return table.concat(path, '/')
+        end
+
+
+
+
+        --Directory Expander
+
+        local function ExpandDirectory(songtree, pos, path)
+            --Iterator
+            local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+            --Priority
+            local function DirectoryPriority(t, a, b)
+                if type(t[a]) == 'string' and type(t[b]) == 'string' then
+                    return t[a] < t[b]
+                elseif type(t[a]) == 'string' then
+                    return false
+                elseif type(t[b]) == 'string' then
+                    return true
+                else
+                    return a < b
+                end
+            end
+
+            local i = 0
+            for k, v in spairs(songtree, DirectoryPriority) do
+                --Display.Text[#Display.Text + 1] = k
+                table.insert(Display.Text, pos + i, k)
+                table.insert(Display.Name, pos + i, type(v) == 'string' and GetFileNameWithoutExt(v) or k)
+                table.insert(Display.Path, pos + i, path) --just insert same parent object path
+                i = i + 1
+                --TODO: Display.Config
+            end
+
+            return i --length
+        end
+
+        local function DisplayPosToLoadedPos(displaypos)
+            local pos
+            for i = 1, #Display.Loaded do
+                local a = Display.Loaded[i]
+                if a > displaypos then
+                    pos = i
+                    break
+                end
+            end
+            
+            if pos then
+
+            else
+                if #Display.Loaded == 0 then
+                    pos = 1
+                else
+                    pos = #Display.Loaded + 1
+                end
+            end
+            return pos
+        end
+
+        local function CondenseDirectory(displaypos, length)
+            local pos = DisplayPosToLoadedPos(displaypos - 1)
+
+            for i2 = 1, length do
+                table.remove(Display.Loaded, pos)
+            end
+
+            for k, v in pairs(Display.Loaded) do print(k, v)end
+            for k, v in pairs(Display.Text) do print(k, v )end
+        end
+
+        local function LoadDirectory(displaypos, length)
+            local pos = DisplayPosToLoadedPos(displaypos - 1)
+            --print(pos, displaypos, length, #Display.Loaded)
+
+
+            local i = pos
+            local i3 = displaypos
+
+            print(pos, displaypos, i, i3)
+            for i2 = 1, length do
+                table.insert(Display.Loaded, i, i3)
+                i = i + 1
+                i3 = i3 + 1
+            end
+            for i2 = pos + length, #Display.Loaded do
+                Display.Loaded[i2] = i3
+                i3 = i3 + 1
+            end
+
+            -- [[
+            for k, v in pairs(Display.Loaded) do print(k, v)end
+            for k, v in pairs(Display.Text) do print(k, v )end
+            --]]
+        end
+
+
+        --Put root directory into Display
+        local length = ExpandDirectory(SongTree, 1, CopyPath(Path))
+        LoadDirectory(1, length)
+
+
 
 
         --Main Loop
@@ -8529,18 +8639,37 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
             --Center on Selected
             local i3 = 0
-            for i = Selected - RenderDistance + 1, Selected + RenderDistance + 1 do
+            for i = Selected - RenderDistance, Selected + RenderDistance do
                 --i = Relative position (does not matter)
-
+                --print(i)
 
                 --i2 = Wrapped i for indexing SongTree
-                local i2 = #Display.Text - (i % #Display.Text)
+                --local i2 = #Display.Text - (i % #Display.Text)
+                --local i2 = i > 0 and i % #Display.Text or #Display.Text - (-i % #Display.Text)
+                local i2 = nil
+                if i > #Display.Loaded then
+                    i2 = i % #Display.Loaded
+                    if i2 == 0 then
+                        i2 = #Display.Loaded
+                    end
+                elseif i < 1 then
+                    i2 = #Display.Loaded - (-i % #Display.Loaded)
+                else
+                    i2 = i
+                end
+
+                --print(i, i2, #Display.Text)
+
 
                 --i3 = Order from the top (top = 1)
                 i3 = i3 + 1
 
+                --i4 = Display i (skips hidden)
+                local i4 = Display.Loaded[i2]
+                --print(i4)
+
                 --Draw box
-                rl.DrawText(Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
+                rl.DrawText(i == Selected and '> ' .. Display.Text[i4] or Display.Text[i4], 100, i3 * 50, fontsize, rl.BLACK)
             end
 
 
@@ -8602,6 +8731,72 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 --Reset occured probably
                 FastScrollIntervalMod = 0
             end
+
+            --Wrap
+            --[[
+            --can only handle 1 outofbounds
+            if Selected > #Display.Text then
+                Selected = Selected - #Display.Text
+            elseif Selected < 1 then
+                Selected = #Display.Text - Selected
+            end
+            --]]
+            if Selected > #Display.Loaded then
+                Selected = Selected % #Display.Loaded
+                if Selected == 0 then
+                    Selected = #Display.Loaded
+                end
+            elseif Selected < 1 then
+                Selected = #Display.Loaded - (-Selected % #Display.Loaded)
+            else
+                --Selected = Selected
+            end
+
+            --Update Path
+            Path = Display.Path[Display.Loaded[Selected]]
+            rl.DrawText('Path: ' .. DisplayPath(Path), 100, 0, fontsize, rl.BLACK)
+
+            --Select
+            if IsKeyPressed(Config.Controls.SongSelect.Select) then
+                --Update CurrentTree
+                CurrentTree = GetTree(SongTree, Path)
+                local Selected = Display.Loaded[Selected]
+
+                --if Display.Name[Selected] then
+                local nextname = Display.Name[Selected]
+                print(nextname)
+                local nextdir = CurrentTree[nextname]
+                if type(nextdir) == 'string' then
+                    --File
+                    print(nextdir)
+                else
+                    --Folder
+                    if Display.Expanded[Selected] then
+                        --Expanded, Close
+                        CondenseDirectory(Selected + 1, Display.LoadedCheck[Selected])
+
+                        Display.Expanded[Selected] = nil
+                    else
+                        --Not Expanded, Open
+                        if Display.LoadedCheck[Selected] then
+                            Display.Expanded[Selected] = Display.LoadedCheck[Selected]
+                        else
+                            local path = CopyPath(Path)
+                            path[#path + 1] = nextname
+                            Display.Expanded[Selected] = ExpandDirectory(nextdir, Selected + 1, path)
+                            Display.LoadedCheck[Selected] = Display.Expanded[Selected]
+                        end
+                        
+                        LoadDirectory(Selected + 1, Display.LoadedCheck[Selected])
+                        
+                        
+                    end
+
+
+                    CurrentTree = nextdir
+                end
+            end
+
 
 
         end
