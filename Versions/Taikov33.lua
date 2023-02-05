@@ -86,6 +86,7 @@ TODO: Add raylib option
     TODO: Add errors to PlaySong / SongSelect when invalid tja (popup)
     TODO: Work on pause menu PlaySong
     TODO: ParseTJA, ParseTJAFile, and SongSelect, handle errors
+    TODO: Indenting issues in PlaySong
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -11980,6 +11981,15 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     local stillimage = rl.LoadImageFromScreen()
                     local stilltexture = rl.LoadTextureFromImage(stillimage)
 
+                    --Pause Menu
+                    local Selected = 1 --option selected
+                    local Options = {
+                        'Back to game',
+                        'Retry',
+                        'Quit',
+                    }
+
+                    --Command
                     local str, x, y, move, moving, out, consoletext, log, prompt, logtext, textbackground, textbackgroundt, textbackgroundrect, textbackgroundcenter, textbackgroundsourcerect
                     if commandactivated then
                         str = {
@@ -12042,6 +12052,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             rl.DrawText(textfinal, x, y, textsize, rl.RAYWHITE)
                         end
 
+
+                        --Draw options
+                        for i = 1, #Options do
+                            rl.DrawText((i == Selected and '> ' or '') .. Options[i], Config.ScreenWidth / 2, Config.ScreenHeight / 2 + (
+                                (
+                                    i - --subtract
+                                    (#Options + 1) / 2 --get middle of Options
+                                ) * fontsize --multiply
+                            ), fontsize, rl.BLACK)
+                        end
+
                         rl.EndDrawing()
 
                         --Command
@@ -12098,6 +12119,30 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         if IsKeyPressed(Config.Controls.PlaySong.Pause.Escape) then
                             break
                         end
+                        if IsKeyPressed(Config.Controls.PlaySong.L) then
+                            Selected = Selected - 1
+                        end
+                        if IsKeyPressed(Config.Controls.PlaySong.R) then
+                            Selected = Selected + 1
+                        end
+                        Selected = ClipN(Selected, 1, #Options)
+                        if IsKeyPressed(Config.Controls.PlaySong.Select) then
+                            if Selected == 1 then
+                                --Back to game
+                                break
+                            elseif Selected == 2 then
+                                --Retry
+                                return false
+                            elseif Selected == 3 then
+                                --Quit
+                                return nil
+                            else
+
+                            end
+                        end
+
+
+                        
                         if rl.WindowShouldClose() then
                             --rl.CloseWindow()
                             break
