@@ -1193,8 +1193,16 @@ do
     ]]
 
     Replay = {}
-    Replay.Version = 'beta-1'
+    Replay.Version = 'beta-2'
+    Replay.Notes = {
+        --Not internally used by replay, but by taiko
 
+        --Compatible with 'beta-1' and above
+        ['1'] = {1, false},
+        ['2'] = {2, false},
+        ['3'] = {1, true},
+        ['4'] = {2, true},
+    }
 
 
 
@@ -8803,13 +8811,29 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     --print(nextdir)
 
                     --Play Song!
+                    while true do
+                        local Parsed, Error = Taiko.ParseTJAFile(nextdir)
+                        if Parsed then
+                            local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
+                            local Status, Result = Taiko.PlaySong(ParsedData)
+                            if Status == true then
+                                --Song ended
 
-                    local Parsed, Error = Taiko.ParseTJAFile(nextdir)
-                    if Parsed then
-                        local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
-                        Taiko.PlaySong(ParsedData)
-                    else
-                        error('SONGSELECT: ', Error)
+                                --Show Results
+
+                                break
+                            elseif Status == false then
+                                --Retry
+
+                            elseif Status == nil then
+                                --Quit
+                                break
+                            else
+                                
+                            end
+                        else
+                            error('SONGSELECT: ' .. Error) --TODO
+                        end
                     end
                 else
                     --Folder
@@ -9613,8 +9637,14 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         if recording then
             record = {
-                [1] = {},
-                [2] = {}
+                [1] = {
+                    [false] = {},
+                    [true] = {},
+                },
+                [2] = {
+                    [false] = {},
+                    [true] = {}, 
+                },
             }
         end
         if replaying then
@@ -10272,7 +10302,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             --Record
             if recording then
-                record[v][#record[v] + 1] = ms
+                record[v][side][#record[v][side] + 1] = ms
             end
 
             --Process hit
@@ -10616,9 +10646,15 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --REPLAY
             if replaying and replaynextms and ms >= replaynextms then
                 local t = replay[replaynextms]
+                --[[
                 for i = 1, #t do
                     --TODO: Fix replay side taiko
                     Hit(tonumber(t[i]), false)
+                end
+                --]]
+                for i = 1, #t do
+                    local a = Replay.Notes[t[i]]
+                    Hit(a[1], a[2])
                 end
                 
 
@@ -11970,6 +12006,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 rl.UnloadImage(image)
                 --]]
             end
+            --[[
+            if IsKeyPressed(Config.Controls.PlaySong.R) then
+                s = s + 1
+            end
+            --]]
 
             --Pause / Command
             local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
@@ -12336,6 +12377,30 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         --[[
         profiler.report('profiler.log')
         --]]
+
+
+        --REPLAY
+        if recording then
+            local temp = {}
+            for i = 1, 2 do
+                temp[i] = record[i][false]
+                temp[i + 2] = record[i][false]
+            end
+            record = temp
+            record = Replay.Save(Replay.TranscodeRawKey(record), {
+                '\ntitle ', Parsed.Metadata.TITLE,
+                '\nsubtitle ', '',
+                '\ndifficulty ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
+                '\nstars ', tostring(Parsed.Metadata.LEVEL),
+                '\ntime ', tostring(os.time()),
+            })
+
+
+            Replay.Write(recordfile, record)
+        end
+
+
+        return true
 
 
     end
