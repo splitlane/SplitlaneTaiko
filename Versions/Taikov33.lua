@@ -84,9 +84,11 @@ TODO: Add raylib option
     TODO: parse Config.ini files
     TODO: GIMMICK: sine in scrolls
     TODO: Add errors to PlaySong / SongSelect when invalid tja (popup)
-    TODO: Work on pause menu PlaySong
+    TODO: Work on pause menu PlaySong --DONE
     TODO: ParseTJA, ParseTJAFile, and SongSelect, handle errors
-    TODO: Indenting issues in PlaySong
+    TODO: Indenting issues in PlaySong --DONE
+    TODO: REVAMP Options Mapping
+    TODO: Make Taiko.Game() no arguments --DONE
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -6139,7 +6141,7 @@ end
 
 
 
-function Taiko.Game(Parsed, Window, Settings, Controls)
+function Taiko.Game()
 
     --[[
         Notes about Raylib:
@@ -7223,7 +7225,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-    
+    --[=[
     --SUS
     local Settings = Settings or {}
     local optionsmap = {
@@ -7275,6 +7277,15 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local jposscroll = true
     local bpmchange = true --If it exists
 
+    --]=]
+
+
+
+
+
+
+
+
 
 
     --Controls
@@ -7325,66 +7336,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     --]=]
 
 
-
-    --Everything will be in terms of screenx and screeny
-    --original tracklength: 40 noteradius (160)
-    local tracklength = Config.ScreenWidth --2400 max
-    --raylib use only
-
-
-
-
-    local bufferlength = 1/16 * Config.ScreenWidth
-    local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
-    local endms = 1000 --Added to last note (ms)
-    local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
-    local y = 0 * Config.ScreenWidth
-    local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
-    local tracky = target[2]
+    --PLAYSONG CONFIG
+    local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight}
     local trackstart = 333/1280 * Config.ScreenWidth
-
-    if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
-        --target = {3/40 * Config.ScreenWidth, 0} --(src: taiko-web)
-        target = {1/4 * Config.ScreenWidth, 0}
-    end
-
-    --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
-
-    --[[
-    local statuslength = 200 --Status length (good/ok/bad) (ms)
-    local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
-    local statusanimationmove = 1/40 * Config.ScreenWidth --Status animation move
-    local flashlength = 20 --Flash length (normal/big) (good/ok/bad) (ms)
-
-
-
-    --colors: black, red, green, yellow, blue, magenta, cyan, white
-    local renderconfig = {
-        [1] = {color = 'red'},
-        [2] = {color = 'blue'},
-        [3] = {color = 'red'},
-        [4] = {color = 'blue'},
-        [5] = {color = 'yellow'},
-        [6] = {color = 'yellow'},
-        [7] = {color = 'cyan'},
-    }
-    --]]
-
-
-    local trackend = trackstart + tracklength
-
-
-    local screenrect = {0, -Config.ScreenHeight / 2, Config.ScreenWidth, Config.ScreenHeight / 2}
-    local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
-    local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
-
-    --High loading mod for jposscroll testing
-    --[[
-    local n = 5000
-    loadrect = {screenrect[1] - n, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + n}
-    unloadrect = {screenrect[1] - n + 100, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + n - 100}
-    --]]
-
+    local tracky = target[2]
 
 
 
@@ -8306,6 +8261,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     --SOUND
+    --[[
+    --put stuff in playsong
     local playmusic = Parsed.Metadata.SONG --Is the song valid?
 
     rl.InitAudioDevice()
@@ -8319,6 +8276,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             playmusic = false
         end
     end
+    --]]
+    rl.InitAudioDevice()
 
 
 
@@ -8386,12 +8345,15 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         }
     }
 
+    --[[
+    --put in playsong
     for k, v in pairs(Sounds.PlaySong.Combo) do
         rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
     end
     for k, v in pairs(Sounds.PlaySong.Notes) do
         rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
     end
+    --]]
 
 
 
@@ -8884,6 +8846,38 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+        --INIT
+
+
+
+
+        --ASSETS
+
+
+        --SONG
+        local playmusic = Parsed.Metadata.SONG --Is the song valid?
+
+        --rl.InitAudioDevice() --initted earlier
+        local song
+        local forceresync = false --force resync on next frame
+        if playmusic then
+            if CheckFile(Parsed.Metadata.SONG) then
+                song = LoadSong(Parsed.Metadata.SONG)
+                rl.SetMusicVolume(song, Parsed.Metadata.SONGVOL)
+            else
+                playmusic = false
+            end
+        end
+
+
+
+        --SOUDEFFECTS
+        for k, v in pairs(Sounds.PlaySong.Combo) do
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+        end
+        for k, v in pairs(Sounds.PlaySong.Notes) do
+            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+        end
 
 
 
@@ -8901,6 +8895,133 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+
+
+        --SETTINGS
+        local auto = false --Autoplay
+        local autohitnotes = {
+            [1] = 1,
+            [2] = 2,
+            [3] = 1,
+            [4] = 2,
+        }
+        --[[
+            About AutoPlay:
+            Autoplay now sets the status as good, instead of just emulating the key press. This forces every note hit to be good. However, the timings may not be correct if you are below 60 fps.
+        ]]
+
+
+        --local autoemu = false --Emulate key on auto
+
+        local notespeedmul = 1 --Note Speed multiplier
+        local songspeedmul = 1 --Actual speed multiplier
+
+        --local stopsong = true --Stop song enabled?
+        local stopsong = Parsed.Metadata.STOPSONG
+        local jposscroll = true
+        local bpmchange = true --If it exists
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        --PLAYSONG CONFIG
+
+        --Everything will be in terms of screenx and screeny
+        --original tracklength: 40 noteradius (160)
+        local tracklength = Config.ScreenWidth --2400 max
+        --raylib use only
+
+
+
+
+        local bufferlength = 1/16 * Config.ScreenWidth
+        local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
+        local endms = 1000 --Added to last note (ms)
+        local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
+        local y = 0 * Config.ScreenWidth
+        local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
+        
+        
+
+        if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
+            --target = {3/40 * Config.ScreenWidth, 0} --(src: taiko-web)
+            target = {1/4 * Config.ScreenWidth, 0}
+        end
+
+        --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
+
+        --[[
+        local statuslength = 200 --Status length (good/ok/bad) (ms)
+        local statusanimationlength = statuslength / 4 --Status animation length (ms) --FIX
+        local statusanimationmove = 1/40 * Config.ScreenWidth --Status animation move
+        local flashlength = 20 --Flash length (normal/big) (good/ok/bad) (ms)
+
+
+
+        --colors: black, red, green, yellow, blue, magenta, cyan, white
+        local renderconfig = {
+            [1] = {color = 'red'},
+            [2] = {color = 'blue'},
+            [3] = {color = 'red'},
+            [4] = {color = 'blue'},
+            [5] = {color = 'yellow'},
+            [6] = {color = 'yellow'},
+            [7] = {color = 'cyan'},
+        }
+        --]]
+
+
+        local trackend = trackstart + tracklength
+
+
+        local screenrect = {0, -Config.ScreenHeight / 2, Config.ScreenWidth, Config.ScreenHeight / 2}
+        local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
+        local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+
+        --High loading mod for jposscroll testing
+        --[[
+        local n = 5000
+        loadrect = {screenrect[1] - n, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + n}
+        unloadrect = {screenrect[1] - n + 100, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + n - 100}
+        --]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+        --FUNCTIONS
 
         local function Round(x)
             --nearest integer
