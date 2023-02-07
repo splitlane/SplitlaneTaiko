@@ -91,7 +91,9 @@ TODO: Add raylib option
     TODO: Make Taiko.Game() no arguments --DONE
     TODO: Calculate loadms by doing the jposscrolls --DELAYED
     TODO: Note.CalculatePosition(ms) (custom calculateposition for each note)
-    TODO: parse box.def
+    TODO: parse box.def --DONE
+    TODO: get texture pos for songselect
+    TODO: get position from ini
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -1942,6 +1944,161 @@ end
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+do
+    --[[
+        iniparserv1.lua
+
+        be able to parse INI config files for skins
+    ]]
+
+
+
+
+    IniParser = {}
+
+
+
+
+    function IniParser.Read(file)
+        local f = io.open(file, 'rb')
+        local s = f:read('*all')
+        f:close()
+        return s
+    end
+
+    function IniParser.Write(file, str)
+        local f = io.open(file, 'wb+')
+        f:write(str)
+        f:close()
+    end
+
+
+
+
+
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
+    function IniParser.Save(t)
+        --[[
+            Assumes it is only 1 heirarchy deep
+            (we won't be needing recursion)
+        ]]
+
+        local globalout = {}
+        local out = {}
+
+        for k, v in spairs(t, function(t, a, b)
+            return tostring(a) < tostring(b)
+        end) do
+            if type(v) == 'table' then
+                out[#out + 1] = '['
+                out[#out + 1] = tostring(k)
+                out[#out + 1] = ']\n'
+                for k2, v2 in spairs(v, function(t, a, b)
+                    return tostring(a) < tostring(b)
+                end) do
+                    --key = value
+                    out[#out + 1] = tostring(k2)
+                    out[#out + 1] = ' = '
+                    out[#out + 1] = tostring(v2)
+                    out[#out + 1] = '\n'
+                end
+                out[#out + 1] = '\n'
+            else
+                --key = value
+                globalout[#globalout + 1] = tostring(k)
+                globalout[#globalout + 1] = ' = '
+                globalout[#globalout + 1] = tostring(v)
+                globalout[#globalout + 1] = '\n'
+            end
+        end
+
+        return table.concat(globalout) .. (#out ~= 0 and ('\n\n' .. table.concat(out)) or '')
+    end
+
+    function IniParser.Load(str)
+        local out = {}
+        local currentkey = nil
+        local nextnewlinei = 1
+        while true do
+            --Newline
+            local nextnewline = string.find(str, '\n', nextnewlinei)
+            local cr = string.find(str, '\r\n', nextnewlinei)
+            if cr and cr < nextnewline then
+                nextnewline = cr
+            end
+
+            if not nextnewline then
+                break
+            end
+
+            local s = string.sub(str, nextnewlinei, nextnewline - 1)
+
+            --Bracket
+            local bracketstart = string.find(s, '%[')
+            if bracketstart then
+                local bracketend = string.find(s, '%]')
+                if bracketend then
+                    currentkey = string.sub(s, bracketstart + 1, bracketend - 1)
+                end
+            end
+
+            --Key-Value
+            local equals = string.find(s, '=')
+            if equals then
+                --Trim key right whitespace
+                local i = equals - 1
+                while true do
+                    local s2 = string.sub(s, i, i)
+                    if string.find(s2, '%s') then
+                        i = i - 1
+                    else
+                        break
+                    end
+                end
+
+                --Trim value left whitespace
+                local i2 = equals + 1
+                while true do
+                    local s2 = string.sub(s, i2, i2)
+                    if string.find(s2, '%s') then
+                        i2 = i2 + 1
+                    else
+                        break
+                    end
+                end
+
+                --Push key-value to out
+                local out2 = out
+                if currentkey then
+                    out[currentkey] = out[currentkey] or {}
+                    out2 = out[currentkey]
+                end
+
+                out2[string.sub(s, 1, i)] = string.sub(s, i2, -1)
+            end
+
+            nextnewlinei = nextnewline + (cr and 2 or 1)
+        end
+        return out
+    end
+end
 
 
 
@@ -8378,6 +8535,62 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --SONGSELECT
+    --https://github.com/0auBSQ/OpenTaiko/blob/main/Test/System/SimpleStyle/SongSelectConfig.ini
+
+
+
+
+
+
+    Textures.SongSelect.GenreBar = Resize(Textures.SongSelect.GenreBar)
+
+    Textures.SongSelect.GenreBar = TextureMap.ReplaceWithTexture(Textures.SongSelect.GenreBar)
+
+    Textures.SongSelect.GenreBar.sizex = Textures.SongSelect.GenreBar[0].width
+    Textures.SongSelect.GenreBar.sizey = Textures.SongSelect.GenreBar[0].height
+    Textures.SongSelect.GenreBar.sourcerect = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+    Textures.SongSelect.GenreBar.center = rl.new('Vector2', 0, 0)
+    Textures.SongSelect.GenreBar.pr = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+    
+    --Textures.SongSelect.GenreBar.p
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 
 
@@ -8529,17 +8742,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Directory Expander
 
         local function ExpandDirectory(songtree, pos, path)
-            --box.def
-            local boxdefpath = Config.Paths.Songs .. DisplayPath(path) .. '/box.def'
-            if CheckFile(boxdefpath) then
-                local data = LoadFile(boxdefpath)
-                local parsed = Taiko.ParseBoxDef(data)
-                Display.Config[pos - 1] = parsed
-                require'ppp'(parsed)
-            end
-
-
-
 
             --Iterator
             local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
@@ -8562,6 +8764,20 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 table.insert(Display.Text, pos + i, k)
                 table.insert(Display.Name, pos + i, type(v) == 'string' and GetFileNameWithoutExt(v) or k)
                 table.insert(Display.Path, pos + i, path) --just insert same parent object path
+
+                --box.def
+                if type(v) == 'table' then
+                    local boxdefpath = Config.Paths.Songs .. DisplayPath(path) .. '/' .. k .. '/box.def'
+                    --local boxdefpath = DisplayPath(path) .. '/' .. k .. '/box.def'
+                    --print(boxdefpath)
+                    if CheckFile(boxdefpath) then
+                        local data = LoadFile(boxdefpath)
+                        local parsed = Taiko.ParseBoxDef(data)
+                        Display.Config[pos - 1] = parsed
+                        require'ppp'(parsed)
+                    end
+                end
+
                 i = i + 1
                 --TODO: Display.Config
             end
