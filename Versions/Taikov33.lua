@@ -8946,6 +8946,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+
         --PLAYSONG CONFIG
 
         --Everything will be in terms of screenx and screeny
@@ -9524,13 +9525,14 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     lastnote.loadms = CalculateLoadMs(lastnote, lastnote.ms - lastnote.delay)
                 end
                 --]]
-                if note.stopstart then
-                    stopqueue[#stopqueue + 1] = note
+                if lastnote and lastnote.stopstart then
+                    stopqueue[#stopqueue + 1] = lastnote
                 end
 
 
                 lastnote = note
             end)
+            --print(#stopqueue)
         end
 
 
