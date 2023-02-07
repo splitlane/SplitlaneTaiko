@@ -2732,6 +2732,9 @@ function Taiko.ParseTJA(source)
         Parsed.Flag.PARSER_FORCE_OLD_TARGET = true
     end
 
+    if string.find(source, '$PARSER_FORCE_OLD_BPMCHANGE') then
+        Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE = true
+    end
 
 
 
@@ -4251,7 +4254,9 @@ function Taiko.ParseTJA(source)
                             - In short, the score scrolls according to the current BPM.
                         ]]
                         Parser.disablescroll = true
-                        Parser.attachbpmchange = true
+                        if not Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
+                            Parser.attachbpmchange = true
+                        end
                         --Parser.stopsong = true
                         Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'HBSCROLL' then
@@ -4260,7 +4265,9 @@ function Taiko.ParseTJA(source)
                             - Please describe before #START.
                             - If this instruction is present, the scroll method will include the effect of #SCROLL in BMSCROLL.
                         ]]
-                        Parser.attachbpmchange = true
+                        if not Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
+                            Parser.attachbpmchange = true
+                        end
                         --Parser.stopsong = true
                         Parsed.Metadata.STOPSONG = true
                     elseif match[1] == 'SENOTECHANGE' then
@@ -8898,7 +8905,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
         --SETTINGS
-        local auto = false --Autoplay
+        local auto = true --Autoplay
         local autohitnotes = {
             [1] = 1,
             [2] = 2,
@@ -8920,6 +8927,10 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local stopsong = Parsed.Metadata.STOPSONG
         local jposscroll = true
         local bpmchange = true --If it exists
+
+        if Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
+            bpmchange = false
+        end
 
 
 
