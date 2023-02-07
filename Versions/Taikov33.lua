@@ -8686,7 +8686,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     line = string.sub(line, 1, comment - 1)
                 end
 
-                local match = {string.match(line, '#(%u+):(.*)')}
+                local match = {string.match(line, '#(.+):(.*)')}
                 if match[1] then
                     out[match[1]] = match[2]
                 end
