@@ -7543,7 +7543,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 },
                 Score = {
                     [0] = LoadImage('Graphics/5_Game/6_Taiko/Score.png'),
-                    [1] = LoadImage('Graphics/5_Game/6_Taiko/Score_1P.png'),
+                    [1] = LoadImage('Graphics/5_Game/6_Taiko/Score_1P.png')
                     --[[
                     [2] = LoadImage('Graphics/5_Game/6_Taiko/Score_2P.png')
                     --]]
@@ -7552,9 +7552,19 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             Nameplates = LoadImage('Graphics/NamePlate.png')
         },
         SongSelect = {
+            --[[
             GenreBar = {
                 --INSTEAD OF HARDCODING, PARSE BOX.DEF
+                [0] = LoadImage('Graphics/3_SongSelect/Bar_Genre/Bar_Genre_0.png')
             }
+            --]]
+            --use loadanimseperate
+            GenreBar = LoadAnimSeperate('Graphics/3_SongSelect/Bar_Genre/Bar_Genre_', '.png', 0, 9),
+            BoxCharacter = LoadAnimSeperate('Graphics/3_SongSelect/Box_Chara/Box_Chara_', '.png', 0, 12),
+            Difficulty = {
+                Bar = LoadImage('Graphics/3_SongSelect/Difficulty_Select/Difficulty_Bar.png')
+            },
+            GenreBackground = LoadAnimSeperate('Graphics/3_SongSelect/Genre_Background/GenreBackground_', '.png', 0, 12)
         }
     }
 
@@ -8798,7 +8808,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     while true do
                         local Parsed, Error = Taiko.ParseTJAFile(nextdir)
                         if Parsed then
-                            local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
+                            local ParsedData = Taiko.GetDifficulty(Parsed, 'ura')
                             local Status, Result = Taiko.PlaySong(ParsedData)
                             if Status == true then
                                 --Song ended
