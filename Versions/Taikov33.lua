@@ -41,9 +41,9 @@ TODO: Add raylib option
     Add balloon, guage, donchan
     Make Resizeall function to reduce code repetition --DONE
     TODO: Draw before / after rendering? --DONE
-    TODO: Transition away from loadms and into CalculatePosition + InRectangle
+    TODO: Transition away from loadms and into CalculatePosition + InRectangle --NEVER
     TODO: Sudden
-    TODO: Fix Loadms
+    TODO: Fix Loadms --HALFDONE
     TODO: Fix status for good big --FIXED
     TODO: Fix status calculating for every rendering
     TODO: SongSelect
@@ -54,7 +54,7 @@ TODO: Add raylib option
     TODO: Make a queue for stopms (delay) just like jposscroll --DONE
     TODO: Transition size, sourcerect, center to Textures table --DONE
     TODO: Soul meter, guage, donchan animation, combo sound + combo dialogue, balloon dialogue + counter
-    TODO: Fix replay side taiko anim
+    TODO: Fix replay side taiko anim --DONE
     TODO: SENOTES + GAUGE --DONE
     TODO: Find 1p sign --DOESN'T EXIST
     TODO: Score add effect
@@ -89,6 +89,9 @@ TODO: Add raylib option
     TODO: Indenting issues in PlaySong --DONE
     TODO: REVAMP Options Mapping
     TODO: Make Taiko.Game() no arguments --DONE
+    TODO: Calculate loadms by doing the jposscrolls --DELAYED
+    TODO: Note.CalculatePosition(ms) (custom calculateposition for each note)
+    TODO: parse box.def
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -8458,7 +8461,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local Display = {
             Text = {},
             Name = {},
-            Config = {},
+            Config = {}, --parsed box.def (only root dir selection)
             Expanded = {}, --all nils except expanded dir, which has dir length
             --LoadedCheck = {}, --loaded once already?
             Path = {}, --path (parent folder)
@@ -8516,6 +8519,18 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --Directory Expander
 
         local function ExpandDirectory(songtree, pos, path)
+            --box.def
+            local boxdefpath = Config.Paths.Songs .. DisplayPath(path) .. '/box.def'
+            if CheckFile(boxdefpath) then
+                local data = LoadFile(boxdefpath)
+                local parsed = Taiko.ParseBoxDef(data)
+                Display.Config[pos - 1] = parsed
+                require'ppp'(parsed)
+            end
+
+
+
+
             --Iterator
             local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
             --Priority
@@ -12637,7 +12652,7 @@ end
 
 
 
-
+--[==[
 
 
 
@@ -12723,8 +12738,8 @@ end
 Taiko.Game(Taiko.GetDifficulty(p, 'Oni'), nil, s)error()
 
 
-
-
+--]==]
+Taiko.Game()
 
 
 
