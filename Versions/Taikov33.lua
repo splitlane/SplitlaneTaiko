@@ -2098,6 +2098,48 @@ do
         end
         return out
     end
+
+
+
+    --extras for skins
+
+    function IniParser.ParseCSV(str) --No errors are possible
+        local seperator = ','
+        local escape = '\\'
+        local t = {}
+        local temp = ''
+        local escaped = false
+        for i = 1, #str do
+            local s = string.sub(str, i, i)
+            if escaped then
+                temp = temp .. s
+                escaped = false
+            else
+                if s == seperator then
+                    table.insert(t, temp)
+                    temp = ''
+                elseif s == escape then
+                    escaped = true
+                else
+                    temp = temp .. s
+                end
+            end
+        end
+        table.insert(t, temp)
+        return t
+    end
+    function IniParser.ParseCSVN(str)
+        local t = IniParser.ParseCSV(str)
+        for i = 1, #t do
+            local a = tonumber(t[i])
+            if a then
+                t[i] = a
+            else
+                error('IniParser: csvn value not a number')
+            end
+        end
+        return t
+    end
 end
 
 
