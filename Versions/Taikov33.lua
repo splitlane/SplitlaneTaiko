@@ -8127,7 +8127,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 local a = tostring(v)
                 if string.find(a, 'Image') then
                     --Assume skin is 720p
-                    rl.ImageResize(t, t.width * timesx, t.height * timesy)
+                    --rl.ImageResize(t, t.width * timesx, t.height * timesy)
                 elseif string.find(a, 'Texture') then
                     --no need to resize, just resize rects
                 elseif string.find(a, 'Vector2') then
@@ -9066,7 +9066,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     while true do
                         local Parsed, Error = Taiko.ParseTJAFile(nextdir)
                         if Parsed then
-                            local ParsedData = Taiko.GetDifficulty(Parsed, 'ura')
+                            local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
                             local Status, Result = Taiko.PlaySong(ParsedData)
                             if Status == true then
                                 --Song ended
@@ -11568,8 +11568,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --normal
 
             --scale
+            --[[
             targetpr.x = (Round(target[1] * xmul) + offsetx) * scale[1]
             targetpr.y = (Round(target[2] * ymul) + offsety) * scale[2]
+            --]]
+            targetpr.x = (target[1] * xmul + offsetx) * scale[1]
+            targetpr.y = (target[2] * ymul + offsety) * scale[2]
             targetpr.width = tsizex * scale[1]
             targetpr.height = tsizey * scale[2]
             rl.DrawTexturePro(Textures.PlaySong.Notes.target, tsourcerect, targetpr, tcenter, 0, rl.WHITE)
@@ -11745,12 +11749,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     note.pr.x = Round(note.p[1]) + toffsetx
                     note.pr.y = Round(note.p[2]) + toffsety
                     --]]
-                    -- [[
+                    --[[
                     --rendering using DrawTexturePro
                     note.pr.x = (Round(note.p[1]) + offsetx) * scale[1]
                     note.pr.y = (Round(note.p[2]) + offsety) * scale[2]
                     --]]
-
+                    note.pr.x = (note.p[1] + offsetx) * scale[1]
+                    note.pr.y = (note.p[2] + offsety) * scale[2]
 
 
 
