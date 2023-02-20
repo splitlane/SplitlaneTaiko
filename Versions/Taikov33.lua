@@ -5332,11 +5332,30 @@ end
 
 
 --Helper Function For Reading TJA and Setting Song Name
+--[[
+    Returns:
+
+    If success:
+        Parsed, nil
+    If error:
+        nil, Error
+]]
 function Taiko.ParseTJAFile(path)
     local file = io.open(path, 'r')
     if file then
         local data = file:read('*all')
-        local Parsed = Taiko.ParseTJA(data)
+        --local Parsed = Taiko.ParseTJA(data)
+
+        local Parsed
+        local Success, Error = pcall(function()
+            Parsed = Taiko.ParseTJA(data)
+        end)
+        if Success then
+            --do nothing, go on
+        else
+            return nil, Error
+        end
+
         local slashp = string.find(string.reverse(path), '[/\\]') --LAST SLASH REVERSED
         for k, v in pairs(Parsed) do
             v.Metadata.SONG = (
