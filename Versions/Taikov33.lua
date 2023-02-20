@@ -8210,6 +8210,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Balloons.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
     Textures.PlaySong.Balloons.center = rl.new('Vector2', Textures.PlaySong.Balloons.sizex / 2, Textures.PlaySong.Balloons.sizey / 2)
     Textures.PlaySong.Balloons.pr = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sizex, Textures.PlaySong.Balloons.sizey)
+    Textures.PlaySong.Balloons.pr2 = rl.new('Rectangle', 0, 0, tsizex, tsizey)
 
 
 
@@ -10195,7 +10196,6 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         a.endtype = 'DRUMROLLend'
                     end
                 elseif a.type == 7 then
-                    print(note.senote)
                     --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                 end
             end
@@ -12234,8 +12234,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             rl.DrawTexturePro(Textures.PlaySong.Notes.balloon, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
                                             
                                             --draw balloon
-                                            startnote.pr.x = startnote.pr.x + startnote.pr.width --DIRTY
-                                            rl.DrawTexturePro(Textures.PlaySong.Notes.balloonend, tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                            Textures.PlaySong.Balloons.pr2.x = startnote.pr.x + startnote.pr.width --DIRTY
+                                            Textures.PlaySong.Balloons.pr2.y = startnote.pr.y
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes.balloonend, tsourcerect, Textures.PlaySong.Balloons.pr2, startnote.tcenter, startnote.rotationr, rl.WHITE)
                                         else
                                             --Hit at least 1 time
 
