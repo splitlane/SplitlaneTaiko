@@ -10195,6 +10195,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         a.endtype = 'DRUMROLLend'
                     end
                 elseif a.type == 7 then
+                    print(note.senote)
                     --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                 end
             end
@@ -12246,7 +12247,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             local morehits = startnote.requiredhits - startnote.timeshit
 
                                             --formula for framen
-                                            local framen = (popanim.framen - 1) - math.ceil(morehits / math.floor(startnote.requiredhits / (popanim.framen - 1)))
+                                            --local framen = (popanim.framen - 1) - math.ceil(morehits / math.floor(startnote.requiredhits / (popanim.framen - 1)))
+                                            local framen = (popanim.framen - 1) - math.ceil(morehits / (startnote.requiredhits / (popanim.framen - 1)))
                                             framen = framen < 0 and 0 or framen
 
                                             if framen == 5 then
