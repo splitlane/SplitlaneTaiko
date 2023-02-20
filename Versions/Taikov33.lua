@@ -7355,7 +7355,7 @@ int MeasureText(const char *text, int fontSize)
 
 
     --Convert from ms to s
-    Config.Controls.SongSelect.FastScrollTime = MsToS(Config.Controls.SongSelect.FastScrollTime)
+    Config.Controls.SongSelect.FastScrollTime = MsToS(Config.Controls.SongSelect.FastScrollTime) --http://stereopsis.com/keyrepeat/
     Config.Controls.SongSelect.FastScrollInterval = MsToS(Config.Controls.SongSelect.FastScrollInterval)
 
 

@@ -80,7 +80,7 @@ DO NOT EDIT
                 262 = true,
                 264 = true,
             },
-            'FastScrollTime' = 1000,
+            'FastScrollTime' = 512,
             'FastScrollInterval' = 400,
             'Select' = {
                 257 = true,
