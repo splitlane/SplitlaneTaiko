@@ -9,6 +9,17 @@ DO NOT EDIT
                 'Init' = {
                     256 = true,
                 },
+                'U' = {
+                    263 = true,
+                    265 = true,
+                },
+                'D' = {
+                    262 = true,
+                    264 = true,
+                },
+                'Select' = {
+                    257 = true,
+                },
                 'Escape' = {
                     256 = true,
                 },
@@ -30,17 +41,6 @@ DO NOT EDIT
                     1 = 1,
                     2 = false,
                 },
-            },
-            'L' = {
-                263 = true,
-                265 = true,
-            },
-            'R' = {
-                262 = true,
-                264 = true,
-            },
-            'Select' = {
-                257 = true,
             },
             'Screenshot' = {
                 83 = true,
@@ -84,6 +84,26 @@ DO NOT EDIT
             'FastScrollInterval' = 400,
             'Select' = {
                 257 = true,
+            },
+            'Search' = {
+                'Init' = {
+                    70 = true,
+                },
+                'FirstResult' = {
+
+                },
+                'U' = {
+
+                },
+                'D' = {
+
+                },
+                'Select' = {
+                    257 = true,
+                },
+                'Escape' = {
+                    256 = true,
+                },
             },
         },
 	},

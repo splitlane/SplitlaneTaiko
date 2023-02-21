@@ -93,6 +93,10 @@ TODO: Add raylib option
     TODO: get texture pos for songselect
     TODO: get position from ini
     TODO: fix retrying while screen is resized
+    TODO: CleanUp Raylib function
+    TODO: fix note timings (music late, note early)
+    TODO: Config Edtor
+    TODO: SongSelect Search
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -7234,7 +7238,7 @@ int MeasureText(const char *text, int fontSize)
     rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
 
     rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
-
+    --rl.HideCursor() --Hide cursor
 
 
 
@@ -8992,6 +8996,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             --Handle other special input
             if rl.WindowShouldClose() then
                 rl.CloseWindow()
+                error() --Don't do more draw calls When closing window
                 break
             end
 
@@ -9142,6 +9147,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     CurrentTree = nextdir
                 end
             end
+
+            if IsKeyPressed(Config.Controls.SongSelect.Search.Init)
 
 
 
@@ -12420,6 +12427,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --Handle other special input
             if rl.WindowShouldClose() then
                 rl.CloseWindow()
+                error() --Don't do more draw calls When closing window
                 break
             end
 
@@ -12610,14 +12618,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     if IsKeyPressed(Config.Controls.PlaySong.Pause.Escape) then
                         break
                     end
-                    if IsKeyPressed(Config.Controls.PlaySong.L) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Pause.U) then
                         Selected = Selected - 1
                     end
-                    if IsKeyPressed(Config.Controls.PlaySong.R) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Pause.D) then
                         Selected = Selected + 1
                     end
                     Selected = ClipN(Selected, 1, #Options)
-                    if IsKeyPressed(Config.Controls.PlaySong.Select) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Pause.Select) then
                         if Selected == 1 then
                             --Back to game
                             break
