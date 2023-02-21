@@ -3,12 +3,10 @@
 Taikov33.lua
 
 
-Changes: Taiko.PlaySong improved!
-DEPRACATED and REMOVED Braille! Use previous versions if you still want
-SongSelect
-Delocalized raylib from playsong
-Control mapping changed
 Make into a full simulator
+
+Changes: Taiko.PlaySong improved!
+Added Taiko.SongSelect (base, simple)!
 
 
 
@@ -94,6 +92,7 @@ TODO: Add raylib option
     TODO: parse box.def --DONE
     TODO: get texture pos for songselect
     TODO: get position from ini
+    TODO: fix retrying while screen is resized
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5302,14 +5301,17 @@ Everyone who DL
                     end
                     Parser.measuredone = true
                     Parser.currentmeasure = {}
+                    Parser.zeroopt = zeroopt
+                    Parser.insertbarline = true
                     if nextjposscroll then
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
+                        Parser.zeroopt = false
                     end
                     if nextbpmchange then
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextbpmchange
+                        Parser.zeroopt = false
                     end
-                    Parser.insertbarline = true
-                    Parser.zeroopt = zeroopt
+                    --Parser.zeroopt = zeroopt
                     --io.read()
                 else
                     Parser.measuredone = false
