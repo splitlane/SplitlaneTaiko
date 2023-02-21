@@ -11027,9 +11027,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             --[[
             --debug
-            rl.DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
-            rl.DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
-            rl.DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
+            DrawRectangleLines = function(a, b, c, d, e)
+                rl.DrawRectangleLines(a * 0.5, b * 0.5, c * 0.5, d * 0.5, e)
+            end
+            DrawRectangleLines(screenrect[1] + offsetx, screenrect[2] + offsety, screenrect[3] - screenrect[1], screenrect[4] - screenrect[2], rl.RED)
+            DrawRectangleLines(loadrect[1] + offsetx, loadrect[2] + offsety, loadrect[3] - loadrect[1], loadrect[4] - loadrect[2], rl.GREEN)
+            DrawRectangleLines(unloadrect[1] + offsetx, unloadrect[2] + offsety, unloadrect[3] - unloadrect[1], unloadrect[4] - unloadrect[2], rl.PURPLE)
             --]]
 
 
@@ -11264,8 +11267,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             note.loadms = note.ms - (note.loadms / bpmchangemul)
                             --]]
 
-                            --LAZY, DIRTY
-                            note.loadms = CalculateLoadMs(note, note.ms - note.delay)
+                            --LAZY, DIRTY (DO THIS AFTER SPEEDCHANGE)
+                            --note.loadms = CalculateLoadMs(note, note.ms - note.delay)
 
 
 
@@ -11278,7 +11281,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             note.speed[1] = note.speed[1] * bpmchangemul
                             note.speed[2] = note.speed[2] * bpmchangemul
 
-
+                            --LAZY, DIRTY (DO THIS AFTER SPEEDCHANGE)
+                            note.loadms = CalculateLoadMs(note, note.ms - note.delay)
 
                         end)
                         --print(bpmchangemul)
