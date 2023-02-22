@@ -1,0 +1,213 @@
+--https://github.com/LuaLS/lua-language-server/blob/master/script/encoder/utf16.lua
+--Modified to work in luajit 5.1
+
+--[[
+    https://github.com/pygy/strung.lua
+]]
+
+local bit = require('bit')
+local utf8 = {}
+require('utf8')(utf8)
+--match nulls in 5.1
+local function strmatchnull(s, p, n)
+    --s, "^[\0-\127]", 
+    local a = string.sub(s, n, n):byte()
+    return a >= 0 and a <= 127
+end
+
+
+local error = error
+local strchar = string.char
+local strbyte = string.byte
+local strmatch = string.match
+local utf8char = utf8.char
+local tconcat = table.concat
+
+
+
+local function be_tochar(code)
+    return strchar(bit.band(bit.rshift(code, 8), 0xFF), bit.band(code, 0xFF))
+end
+
+local function be_tobyte(s, i)
+    local h, l = strbyte(s, i, i+1)
+    return bit.bor(bit.lshift(h, 8), l)
+end
+
+local function le_tochar(code)
+    return strchar(bit.band(code, 0xFF), bit.band(bit.rshift(code, 8), 0xFF))
+end
+
+local function le_tobyte(s, i)
+    local l, h = strbyte(s, i, i+1)
+    return bit.bor(bit.lshift(h, 8), l)
+end
+
+local function utf16char(tochar, code)
+    if code < 0x10000 then
+        return tochar(code)
+    else
+        code = code - 0x10000
+        return tochar(0xD800 + bit.rshift(code, 10))..tochar(0xDC00 + bit.band(code, 0x3FF))
+    end
+end
+
+
+
+local function UnicodeDecode(s)
+    local res, seq, val = {}, 0, nil
+    for i = 1, #s do
+        local c = string.byte(s, i)
+        if seq == 0 then
+            table.insert(res, val)
+            seq = c < 0x80 and 1 or c < 0xE0 and 2 or c < 0xF0 and 3 or
+                  c < 0xF8 and 4 or c < 0xFC and 5 or c < 0xFE and 6 or
+                  error("invalid UTF-8 character sequence")
+            val = bit.band(c, 2^(8-seq) - 1)
+        else
+            val = bit.bor(bit.lshift(val, 6), bit.band(c, 0x3F))
+        end
+        seq = seq - 1
+    end
+    table.insert(res, val)
+    --table.insert(res, 0)
+    return res
+end
+
+local t = UnicodeDecode('あいう')
+local a = {'\255\254'}
+for i = 1, #t do
+    print(t[i])
+    a[#a + 1] = utf16char(le_tochar, (t[i]))
+end
+
+print(table.concat(a))
+local s = table.concat(a)
+for i=1,#s do print(s:sub(i, i):byte())end
+
+
+local function utf16next(s, n, tobyte)
+    if n > #s then
+        return
+    end
+    local code1 = tobyte(s, n)
+    if code1 < 0xD800 or code1 >= 0xE000 then
+        return n+2, code1
+    elseif code1 >= 0xD800 and code1 < 0xDC00 then
+        n = n + 2
+        if n > #s then
+            return n --invaild
+        end
+        local code2 = tobyte(s, n)
+        if code2 < 0xDC00 or code2 >= 0xE000 then
+            return n --invaild
+        end
+        local code = 0x10000 + bit.lshift((code1 - 0xD800), 10) + bit.band((code2 - 0xDC00), 0x3FF)
+        return n+2, code
+    else
+        return n+2 --invaild
+    end
+end
+
+local function utf16codes(s, tobyte)
+    return function (_, n)
+        return utf16next(s, n, tobyte)
+    end, s, 1
+end
+
+local _utf8byte = utf8.codes ""
+local function utf8byte(s, n)
+    local _, code = _utf8byte(s, n-1)
+    return code
+end
+
+--[[
+  U+0000..  U+007F 00..7F
+  U+0080..  U+07FF C2..DF 80..BF
+  U+0800..  U+0FFF E0     A0..BF 80..BF
+  U+1000..  U+CFFF E1..EC 80..BF 80..BF
+  U+D000..  U+D7FF ED     80..9F 80..BF
+  U+E000..  U+FFFF EE..EF 80..BF 80..BF
+ U+10000.. U+3FFFF F0     90..BF 80..BF 80..BF
+ U+40000.. U+FFFFF F1..F3 80..BF 80..BF 80..BF
+U+100000..U+10FFFF F4     80..8F 80..BF 80..BF
+]]
+local function utf8next(s, n)
+    if n > #s then
+        return
+    end
+    --if strmatch(s, "^[\0-\127]", n) then
+    if strmatchnull(s, "^[\0-\127]", n) then
+        return n+1, utf8byte(s, n)
+    elseif strmatch(s, "^[\194-\223][\128-\191]", n) then
+        return n+2, utf8byte(s, n)
+    elseif strmatch(s, "^[\224][\160-\191][\128-\191]", n) then
+        return n+3, utf8byte(s, n)
+    elseif strmatch(s, "^[\225-\236][\128-\191][\128-\191]", n) then
+        return n+3, utf8byte(s, n)
+    elseif strmatch(s, "^[\237][\128-\159][\128-\191]", n) then
+        return n+3, utf8byte(s, n)
+    elseif strmatch(s, "^[\238-\239][\128-\191][\128-\191]", n) then
+        return n+3, utf8byte(s, n)
+    elseif strmatch(s, "^[\240][\144-\191][\128-\191][\128-\191]", n) then
+        return n+4, utf8byte(s, n)
+    elseif strmatch(s, "^[\241-\243][\128-\191][\128-\191][\128-\191]", n) then
+        return n+4, utf8byte(s, n)
+    elseif strmatch(s, "^[\244][\128-\143][\128-\191][\128-\191]", n) then
+        return n+4, utf8byte(s, n)
+    else
+        return n+1 --invaild
+    end
+end
+
+local function utf8codes(s)
+    return utf8next, s, 1
+end
+
+return function (what, replace)
+    local tobyte, tochar
+    what = "be"
+    if what == "be" then
+        tobyte = be_tobyte
+        tochar = be_tochar
+    else
+        tobyte = le_tobyte
+        tochar = le_tochar
+    end
+    local utf8replace  = replace and utf8char(replace)
+    local utf16replace = replace and utf16char(tochar, replace)
+    local function toutf8(s)
+        local r = {}
+        for _, code in utf16codes(s, tobyte) do
+            if code == nil then
+                if replace then
+                    r[#r+1] = utf8replace
+                else
+                    error "invalid UTF-16 code"
+                end
+            else
+                r[#r+1] = utf8char(code)
+            end
+        end
+        return tconcat(r)
+    end
+    local function fromutf8(s)
+        local r = {}
+        for _, code in utf8codes(s) do
+            if code == nil then
+                if replace then
+                    r[#r+1] = utf16replace
+                else
+                    error "invalid UTF-8 code"
+                end
+            else
+                r[#r+1] = utf16char(tochar, code)
+            end
+        end
+        return tconcat(r)
+    end
+    return {
+        toutf8 = toutf8,
+        fromutf8 = fromutf8,
+    }
+end

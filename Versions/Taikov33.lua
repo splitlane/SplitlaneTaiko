@@ -6470,8 +6470,9 @@ int MeasureText(const char *text, int fontSize)
         Modified
         + optimized to avoid string concat
     ]]
+    --utf8
 
-    local function longEncode(codepoint)
+    local function utf8longEncode(codepoint)
         local chars = ""
         local trailers = 0
         local ocodepoint = codepoint
@@ -6507,7 +6508,7 @@ int MeasureText(const char *text, int fontSize)
         return string.char(last) .. chars
     end
     
-    local function UnicodeEncode(t,derp,...)
+    local function utf8Encode(t,derp,...)
         if derp ~= nil then
             t = {t,derp,...}
         end
@@ -6530,13 +6531,64 @@ int MeasureText(const char *text, int fontSize)
                 s[#s + 1] = string.char(bit.bor(bit.band(codepoint,0x3F),0x80))
             else
                 -- alpha centauri?!
-                s[#s + 1] = longEncode(codepoint)
+                s[#s + 1] = utf8longEncode(codepoint)
             end
         end
         return table.concat(s)
     end
 
+    local function utf8Decode(s)
+        local res, seq, val = {}, 0, nil
+        for i = 1, #s do
+            local c = string.byte(s, i)
+            if seq == 0 then
+                table.insert(res, val)
+                seq = c < 0x80 and 1 or c < 0xE0 and 2 or c < 0xF0 and 3 or
+                      c < 0xF8 and 4 or c < 0xFC and 5 or c < 0xFE and 6 or
+                      error("invalid UTF-8 character sequence")
+                val = bit.band(c, 2^(8-seq) - 1)
+            else
+                val = bit.bor(bit.lshift(val, 6), bit.band(c, 0x3F))
+            end
+            seq = seq - 1
+        end
+        table.insert(res, val)
+        --table.insert(res, 0)
+        return res
+    end
 
+    --[[
+        --https://github.com/LuaLS/lua-language-server/blob/master/script/encoder/utf16.lua
+        modified to work in lua 5.1
+    ]]
+    --utf16
+
+    local function utf16be_tochar(code)
+        return string.char(bit.band(bit.rshift(code, 8), 0xFF), bit.band(code, 0xFF))
+    end
+    local function utf16le_tochar(code)
+        return string.char(bit.band(code, 0xFF), bit.band(bit.rshift(code, 8), 0xFF))
+    end
+
+    local function utf16char(tochar, code)
+        if code < 0x10000 then
+            return tochar(code)
+        else
+            code = code - 0x10000
+            return tochar(0xD800 + bit.rshift(code, 10))..tochar(0xDC00 + bit.band(code, 0x3FF))
+        end
+    end
+
+    local function utf16Encode(t)
+        --USES LE
+        local out = {
+            '\255\254' --header? bom?
+        }
+        for i = 1, #t do
+            out[#out + 1] = utf16char(utf16le_tochar, t[i])
+        end
+        return table.concat(out)
+    end
 
 
 
@@ -6614,7 +6666,7 @@ int MeasureText(const char *text, int fontSize)
                 else
                     out[#out + 1] = c
                     --Update display
-                    displaytext = str .. UnicodeEncode(out)
+                    displaytext = str .. utf8Encode(out)
                 end
             end
 
@@ -6622,13 +6674,13 @@ int MeasureText(const char *text, int fontSize)
             if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
                 out[#out] = nil
                 --Update display
-                displaytext = str .. UnicodeEncode(out)
+                displaytext = str .. utf8Encode(out)
             end
             if rl.IsKeyPressed(rl.KEY_ENTER) then
                 break
             end
         end
-        out = UnicodeEncode(out)
+        out = utf8Encode(out)
         return out ~= '' and out or nil
     end
     local function GuiMessage(str)
@@ -9256,7 +9308,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         else
                             out[#out + 1] = c
                             --Update display
-                            outs = UnicodeEncode(out)
+                            outs = utf8Encode(out)
                             displaytext = str .. outs .. lastresultscursor
                             max = nil
                         end
@@ -9267,7 +9319,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
                         out[#out] = nil
                         --Update display
-                        outs = UnicodeEncode(out)
+                        outs = utf8Encode(out)
                         displaytext = str .. outs .. lastresultscursor
                         max = nil
                     end
@@ -9396,7 +9448,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
                 
                 --[[
-                out = UnicodeEncode(out)
+                out = utf8Encode(out)
                 return out ~= '' and out or nil
                 --]]
 
@@ -12847,7 +12899,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             else
                                 out[#out + 1] = c
                                 --Update display
-                                consoletext = UnicodeEncode(out)
+                                consoletext = utf8Encode(out)
                             end
                         end
             
@@ -12855,10 +12907,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
                             out[#out] = nil
                             --Update display
-                            consoletext = UnicodeEncode(out)
+                            consoletext = utf8Encode(out)
                         end
                         if rl.IsKeyPressed(rl.KEY_ENTER) then
-                            --out = UnicodeEncode(out)
+                            --out = utf8Encode(out)
                         end
 
 
