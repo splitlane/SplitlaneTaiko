@@ -9196,6 +9196,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     end
                 else
                     --tree = GetTree(SongTree, Path)
+                    CurrentTree = GetTree(SongTree, Path)
                     tree = CurrentTree
                 end
 
