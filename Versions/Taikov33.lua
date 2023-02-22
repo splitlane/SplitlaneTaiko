@@ -594,6 +594,8 @@ do
 
 
 
+
+
     local function Escape(str, sep)
         return string.gsub(string.gsub(str, escapechar, escapechar .. escapechar), sep, escapechar .. sep)
     end
@@ -1113,7 +1115,7 @@ do
 
     Compact.SearchHeader = SearchHeader
     Compact.SearchHeaderAll = SearchHeaderAll
-
+    Compact.Search = search --Export for use with SongSelect
 
 
 
@@ -8806,6 +8808,25 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
+        --Search
+        local function Search(t, str)
+            local out = {
+                {}, --i (sorted)
+                {}, --score (unsorted)
+            }
+            for i = 1, #t do
+                out[1][i] = i
+                out[2][i] = Compact.Search(t[i], str)
+            end
+
+            table.sort(out[1], function(a, b)
+                return out[2][a] > out[2][b]
+            end)
+            return out
+        end
+
+
+
 
         --Directory Expander
 
@@ -8873,6 +8894,24 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 table.remove(Display.Text, pos)
                 table.remove(Display.Name, pos)
                 table.remove(Display.Path, pos)
+            end
+        end
+
+        local function ToggleDirectory(nextname, nextdir)
+            --Folder
+            if Display.Expanded[Selected] then
+                --Expanded, Close
+                --UnloadDirectory(Selected + 1, Display.Expanded[Selected])
+                CondenseDirectory(Selected + 1, Display.Expanded[Selected])
+
+                Display.Expanded[Selected] = nil
+
+            else
+                --Not Expanded, Open
+                local path = CopyPath(Path)
+                path[#path + 1] = nextname
+                Display.Expanded[Selected] = ExpandDirectory(nextdir, Selected + 1, path)
+
             end
         end
 
@@ -9115,6 +9154,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         end
                     end
                 else
+                    --[[
                     --Folder
                     if Display.Expanded[Selected] then
                         --Expanded, Close
@@ -9124,31 +9164,235 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         Display.Expanded[Selected] = nil
                     else
                         --Not Expanded, Open
-                        --[[
-                        if Display.LoadedCheck[Selected] then
-                            Display.Expanded[Selected] = Display.LoadedCheck[Selected]
-                        else
-                            local path = CopyPath(Path)
-                            path[#path + 1] = nextname
-                            Display.Expanded[Selected] = ExpandDirectory(nextdir, Selected + 1, path)
-                            Display.LoadedCheck[Selected] = Display.Expanded[Selected]
-                        end
-                        
-                        LoadDirectory(Selected + 1, Display.LoadedCheck[Selected])
-                        --]]
                         
                         local path = CopyPath(Path)
                         path[#path + 1] = nextname
                         Display.Expanded[Selected] = ExpandDirectory(nextdir, Selected + 1, path)
 
                     end
+                    --]]
+                    ToggleDirectory(nextname, nextdir)
 
 
                     CurrentTree = nextdir
                 end
             end
 
-            if IsKeyPressed(Config.Controls.SongSelect.Search.Init)
+            if IsKeyPressed(Config.Controls.SongSelect.Search.Init) then
+                --Build fileslist from tree
+                local fileslist = {}
+                local pathslist = {}
+                local tree = nil
+
+                if IsKeyDown(Config.Controls.SongSelect.Search.All) then
+                    --All
+                    tree = SongTree
+                    Path = {}
+                    for i = 1, #Display.Path do
+                        if #Display.Path[i] == #Path then
+                            Selected = i
+                            break
+                        end
+                    end
+                else
+                    --tree = GetTree(SongTree, Path)
+                    tree = CurrentTree
+                end
+
+                --[[
+                    --DIRTY
+                    TODO: Remove table creation for paths
+                ]]
+                local function TreeToList(tree, fileslist, pathslist, path)
+                    for k, v in pairs(tree) do
+                        if type(v) == 'table' then
+                            local a = CopyPath(path)
+                            a[#a + 1] = k
+                            TreeToList(v, fileslist, pathslist, a)
+                        else
+                            fileslist[#fileslist + 1] = k
+                            pathslist[#pathslist + 1] = path
+                        end
+                    end
+                    return fileslist, pathslist
+                end
+
+                fileslist, pathslist = TreeToList(tree, fileslist, pathslist, {})
+
+
+                --Start
+                local searchn = 10
+                local results = nil
+                local max = nil
+                local selected = 1
+
+                local lastselected = 1
+                local updatecursor = false
+
+                local str = 'Search:\n'
+                local out = {}
+                local outs = ''
+                local lastresults = '\n'
+                local lastresultscursor = '\n'
+                local displaytext = str
+                while true do
+                    rl.BeginDrawing()
+                    rl.ClearBackground(rl.RAYWHITE)
+                    rl.DrawText(displaytext, 0, 0, fontsize, rl.BLACK)
+                    rl.EndDrawing()
+        
+                    while true do
+                        local c = rl.GetCharPressed()
+                        if c == 0 then
+                            break
+                        else
+                            out[#out + 1] = c
+                            --Update display
+                            outs = UnicodeEncode(out)
+                            displaytext = str .. outs .. lastresultscursor
+                            max = nil
+                        end
+                    end
+
+        
+                    --Remember, GetCharPressed doesn't detect special keys
+                    if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                        out[#out] = nil
+                        --Update display
+                        outs = UnicodeEncode(out)
+                        displaytext = str .. outs .. lastresultscursor
+                        max = nil
+                    end
+                    
+                    if IsKeyPressed(Config.Controls.SongSelect.Search.U) then
+                        selected = selected - 1
+                    end
+                    if IsKeyPressed(Config.Controls.SongSelect.Search.D) then
+                        selected = selected + 1
+                    end
+                    
+
+                    if max == nil and #out > 0 then
+                        results = Search(fileslist, outs)
+
+                        --max
+                        local temp = {'\n'}
+                        max = nil
+                        for i = 1, searchn do
+                            local index = results[1][i]
+                            if not results[2][index] or results[2][index] == -math.huge then
+                                max = i - 1
+                                break
+                            else
+                                --good, build lastresults
+                                temp[#temp + 1] = tostring(i)
+                                temp[#temp + 1] = '. '
+                                temp[#temp + 1] = fileslist[index]
+                                temp[#temp + 1] = '\n'
+                            end
+                        end
+                        max = max or searchn
+
+                        lastresults = table.concat(temp)
+                        --displaytext = str .. outs .. lastresults
+                        updatecursor = true
+                    end
+
+                    if max then
+                        selected = ClipN(selected, 1, max)
+                    end
+
+                    if selected ~= lastselected or updatecursor then
+                        lastresultscursor = string.gsub(lastresults, '\n' .. selected, '\n>')
+                        displaytext = str .. outs .. lastresultscursor
+                        updatecursor = false
+                    end
+                    lastselected = selected
+
+
+                    if IsKeyPressed(Config.Controls.SongSelect.Search.Select) and max and max ~= 0 then
+                        break
+                    end
+
+                    if IsKeyPressed(Config.Controls.SongSelect.Search.Escape) then
+                        break
+                    end
+
+                    if rl.WindowShouldClose() then
+                        rl.CloseWindow()
+                        error() --Don't do more draw calls When closing window
+                    end
+                end
+
+                local index = results[1][selected]
+                local dir = CopyPath(pathslist[index])
+                local file = fileslist[index]
+                dir[#dir + 1] = file
+
+                --print(DisplayPath(dir))
+                
+
+                CurrentTree = tree
+                Path = CopyPath(Path)
+
+
+                --use tree from start
+                for i = 1, #dir do
+                    --find folder from select, and expand
+
+                    --find Selected
+                    local nextname = nil
+                    local nextdir = nil
+                    for i2 = 1, #Display.Text do
+
+                        --print(Display.Name[i2], dir[i])
+                        if Display.Name[i2] == dir[i] and #Path == #Display.Path[i2] then
+                            local pathsame = true
+                            for i3 = 1, #Path do
+                                if Path[i3] ~= Display.Path[i2][i3] then
+                                    pathsame = false
+                                    break
+                                end
+                            end
+
+                            if pathsame then
+                                nextname = Display.Name[i2]
+                                nextdir = CurrentTree[nextname]
+                                if type(nextdir) == 'string' then
+                                    --File
+                                    if i == #dir then
+                                        Selected = i2
+                                        break
+                                    end
+                                else
+                                    --Folder
+                                    Selected = i2
+                                    break
+                                end
+                            end
+                        end
+                    end
+
+                    if i == #dir then
+                        break
+                    end
+
+
+--print(nextname, nextdir)
+                    if not Display.Expanded[Selected] then
+                        ToggleDirectory(nextname, nextdir)
+                    end
+                    CurrentTree = nextdir
+                    Path[#Path + 1] = nextname
+                end
+
+                
+                --[[
+                out = UnicodeEncode(out)
+                return out ~= '' and out or nil
+                --]]
+
+            end
 
 
 

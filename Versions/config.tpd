@@ -93,10 +93,16 @@ DO NOT EDIT
 
                 },
                 'U' = {
-
+                    263 = true,
+                    265 = true,
                 },
                 'D' = {
-
+                    262 = true,
+                    264 = true,
+                },
+                'All' = {
+                    340 = true,
+                    344 = true,
                 },
                 'Select' = {
                     257 = true,
