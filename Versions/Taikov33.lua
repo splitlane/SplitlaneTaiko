@@ -4219,7 +4219,7 @@ function Taiko.ParseTJA(source)
                         Parser.bpm = CheckN(match[1], match[2], 'Invalid bpmchange') or Parser.bpm --UNSAFE
 
                         if Parser.attachbpmchange then
-                            Parser.zeroopt = false
+                            --Parser.zeroopt = false
                             --NO: Attach it to next note
                             table.insert(Parser.currentmeasure, {
                                 --match[1],
@@ -4256,7 +4256,7 @@ function Taiko.ParseTJA(source)
                         --]=]
                         if Parsed.Metadata.STOPSONG then
                             Parser.delay = Parser.delay + a
-                            Parser.zeroopt = false
+                            --Parser.zeroopt = false
                         end
                         table.insert(Parser.currentmeasure, {
                             --match[1],
@@ -4559,7 +4559,7 @@ function Taiko.ParseTJA(source)
                             - Ignored in taiko-web.
                         ]]
 
-                        Parser.zeroopt = false
+                        --Parser.zeroopt = false
                         local valid = false
                         local t = ParseArguments(match[2])
                         
@@ -5148,8 +5148,10 @@ Everyone who DL
                                 end
                                 --]]
                                 nextjposscroll = c[2]
+                                Parser.zeroopt = false
                             elseif c[1] == 'BPMCHANGE' then
                                 nextbpmchange = c[2]
+                                Parser.zeroopt = false
                             else
 
                                 --if it is not air
@@ -5194,6 +5196,11 @@ Everyone who DL
                                     --Put bpmchange on!
                                     c.bpmchange = nextbpmchange
                                     nextbpmchange = false
+                                end
+
+                                --All leading attaches have been resolved
+                                if c.type == 0 then
+                                    Parser.zeroopt = zeroopt
                                 end
 
                                 --[[
