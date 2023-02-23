@@ -9281,6 +9281,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
                 --Start
+                local escape = nil
                 local searchn = 10
                 local results = nil
                 local max = nil
@@ -9375,6 +9376,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     end
 
                     if IsKeyPressed(Config.Controls.SongSelect.Search.Escape) then
+                        escape = true
                         break
                     end
 
@@ -9384,66 +9386,68 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                     end
                 end
 
-                local index = results[1][selected]
-                local dir = CopyPath(pathslist[index])
-                local file = fileslist[index]
-                dir[#dir + 1] = file
+                if not escape then
+                    local index = results[1][selected]
+                    local dir = CopyPath(pathslist[index])
+                    local file = fileslist[index]
+                    dir[#dir + 1] = file
 
-                --print(DisplayPath(dir))
-                
+                    --print(DisplayPath(dir))
+                    
 
-                CurrentTree = tree
-                Path = CopyPath(Path)
+                    CurrentTree = tree
+                    Path = CopyPath(Path)
 
 
-                --use tree from start
-                for i = 1, #dir do
-                    --find folder from select, and expand
+                    --use tree from start
+                    for i = 1, #dir do
+                        --find folder from select, and expand
 
-                    --find Selected
-                    local nextname = nil
-                    local nextdir = nil
-                    for i2 = 1, #Display.Text do
+                        --find Selected
+                        local nextname = nil
+                        local nextdir = nil
+                        for i2 = 1, #Display.Text do
 
-                        --print(Display.Name[i2], dir[i])
-                        if Display.Name[i2] == dir[i] and #Path == #Display.Path[i2] then
-                            local pathsame = true
-                            for i3 = 1, #Path do
-                                if Path[i3] ~= Display.Path[i2][i3] then
-                                    pathsame = false
-                                    break
+                            --print(Display.Name[i2], dir[i])
+                            if Display.Name[i2] == dir[i] and #Path == #Display.Path[i2] then
+                                local pathsame = true
+                                for i3 = 1, #Path do
+                                    if Path[i3] ~= Display.Path[i2][i3] then
+                                        pathsame = false
+                                        break
+                                    end
                                 end
-                            end
 
-                            if pathsame then
-                                nextname = Display.Name[i2]
-                                nextdir = CurrentTree[nextname]
-                                if type(nextdir) == 'string' then
-                                    --File
-                                    if i == #dir then
+                                if pathsame then
+                                    nextname = Display.Name[i2]
+                                    nextdir = CurrentTree[nextname]
+                                    if type(nextdir) == 'string' then
+                                        --File
+                                        if i == #dir then
+                                            Selected = i2
+                                            break
+                                        end
+                                    else
+                                        --Folder
                                         Selected = i2
                                         break
                                     end
-                                else
-                                    --Folder
-                                    Selected = i2
-                                    break
                                 end
                             end
                         end
-                    end
 
-                    if i == #dir then
-                        break
-                    end
+                        if i == #dir then
+                            break
+                        end
 
 
---print(nextname, nextdir)
-                    if not Display.Expanded[Selected] then
-                        ToggleDirectory(nextname, nextdir)
+                        --print(nextname, nextdir)
+                        if not Display.Expanded[Selected] then
+                            ToggleDirectory(nextname, nextdir)
+                        end
+                        CurrentTree = nextdir
+                        Path[#Path + 1] = nextname
                     end
-                    CurrentTree = nextdir
-                    Path[#Path + 1] = nextname
                 end
 
                 
@@ -13366,7 +13370,7 @@ Taiko.Game()
 
 --[======[
 --ParseTJA test
---[[
+-- [[
 local file = './CompactTJA/ESE/ESE.tjac' --ALL ESE
 
 local t, header = Compact.Decompress(Compact.Read(file))
@@ -13374,6 +13378,7 @@ local t, header = Compact.Decompress(Compact.Read(file))
 local errorn = 0
 local successn = 0
 local times = {}
+local errors = {}
 local t1 = os.clock()
 for i = 1, #t do
     print(i)
@@ -13383,6 +13388,7 @@ for i = 1, #t do
         successn = successn + 1
     else
         errorn = errorn + 1
+        errors[#errors + 1] = out
     end
 end
 
@@ -13521,7 +13527,7 @@ Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 
 --Overdead (Ura)
 Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 'Edit'), nil, s)error()
 
-]======]
+--]======]
 
 
 
