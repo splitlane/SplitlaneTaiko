@@ -96,7 +96,10 @@ TODO: Add raylib option
     TODO: CleanUp Raylib function
     TODO: fix note timings (music late, note early)
     TODO: Config Edtor
-    TODO: SongSelect Search
+    TODO: SongSelect Search --DONE
+    TODO: Implement score rounding as a function
+    TODO: gaugeincr
+    TODO: add title, subtitle, genre
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2485,12 +2488,12 @@ Taiko.Data = {
                 --]]
 
 
-                return score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
+                return math.floor((score + (((combo < 200) and (init or 1000) or ((init or 1000) + (diff or 1000))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))) / 10) * 10
             end,
             [1] = function(score, combo, init, diff, status, gogo)
                 --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
                 --INIT + max(0, DIFF * floor((min(COMBO, 100) - 1) / 10))
-                return score + ((init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))
+                return math.floor((score + ((init + math.max(0, diff * math.floor((math.min(combo, 100) - 1) / 10))) * Taiko.Data.RatingMultiplier[status] * (gogo and Taiko.Data.GogoMultiplier or 1))) / 10) * 10
             end,
             [2] = function(score, combo, init, diff, status, gogo)
                 --https://github.com/bui/taiko-web/wiki/TJA-format#scoremode
@@ -6958,31 +6961,81 @@ int MeasureText(const char *text, int fontSize)
         return LoadFile(AssetsPath .. str)
     end
     local function LoadMusicStreamFromMemory(str)
+        --raylib src
         --https://github.com/raysan5/raylib/blob/83ff7b246613c57dd5703d24965b4036332a100f/src/raudio.c#L1272
         --https://github.com/raysan5/raylib/blob/83ff7b246613c57dd5703d24965b4036332a100f/src/raudio.c#L1443
 
+        --raylib lua src compat
+        --https://github.com/TSnake41/raylib-lua/blob/master/src/compat.lua#L25
+        --local f, err = raylua.loadfile(path)
+        local f, err = io.open(str, 'rb')
+        
+        if f then
+            local data = f:read('*all')
+            local ffi = require('ffi')
+
+            --[[
+                crash when UpdateMusicStream is called
+
+                prob caused by this
+                https://github.com/raysan5/raylib/blob/d5a31168ce768ef9c1e11fe4734285770a33aba4/src/raudio.c#L1926
+            ]]
+
+            return rl.LoadMusicStreamFromMemory(ffi.cast('const char *', GetFileType(str)), ffi.cast("const unsigned char *", data), ffi.cast('int', #data))
+        else
+            return nil
+        end
     end
     local function LoadSong(str)
         -- [[
-        return rl.LoadMusicStream(str)
+        --works ig for (only payload)
+        --return rl.LoadMusicStream(str)
         --]]
+
         --[[
         local data = LoadFile(str)
         return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
         --]]
 
-        --[[
+        -- [[
         local a = rl.LoadMusicStream(str)
-        local data = LoadFile(str)
-        local b = rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
-        print(a.frameCount, b.frameCount)
-        print(a.looping, b.looping)
-        print(a.ctxType, b.ctxType)
-        print(a.stream, b.stream)
-        print(a.stream.sampleRate, b.stream.sampleRate)
-        print(a.stream.sampleSize, b.stream.sampleSize)
-        print(a.stream.channels, b.stream.channels)
-        error()
+        --local data = LoadFile(str)
+        local b = LoadMusicStreamFromMemory(str)
+
+        --ITS ctxData
+
+        print(a.ctxData)
+        print(b.ctxData)
+
+        local ffi = require'ffi'
+
+        print(ffi.string(a.ctxData))
+        print(ffi.string(b.ctxData))
+        print(ffi.string(a.ctxData) == ffi.string(b.ctxData))
+
+        print(ffi.sizeof(a.ctxData))
+        print(ffi.sizeof(b.ctxData))
+
+
+
+        b.ctxData = a.ctxData
+        return b
+        --]]
+
+        --[[
+        return LoadMusicStreamFromMemory(str)
+        --]]
+
+        --[[
+        local b = rl.LoadMusicStream(str)
+        
+        local a = rl.new('Music')
+        a.stream = b.stream
+        a.frameCount = b.frameCount
+        a.looping = b.looping
+        a.ctxType = b.ctxType
+        a.ctxData = b.ctxData
+        return a
         --]]
 
     end
@@ -11197,8 +11250,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             --DIRTY
             --local temp1, temp2 = nearest, nearestnote
+            --[[
             nearest[v] = 0
             nearestnote[v] = note
+            --]]
             Hit(v, autoside)
             autoside = not autoside
             --nearest, nearestnote = temp1, temp2
@@ -11252,7 +11307,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         local TextMetadata = table.concat(
             {
                 'Title: ', Parsed.Metadata.TITLE,
-                '\nSubtitle: ', '',
+                '\nSubtitle: ', Parsed.Metadata.SUBTITLE,
                 '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
                 '\nStars: ', tostring(Parsed.Metadata.LEVEL),
                 '\n\nAuto: ', tostring(auto),
@@ -12017,8 +12072,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             --First pass: Calculate
             --for i = loaded.s, loaded.e do
-            local offsetms = ms + Config.Offsets.Timing
-            local offsetmsminus = ms - Config.Offsets.Timing
+            local offsetms = ms - Config.Offsets.Timing
+            --local offsetmsminus = ms + Config.Offsets.Timing --why tf is it different???
             local offseti = 0
             for i = 1, #loaded do
                 local i2 = i + offseti
@@ -12114,7 +12169,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     --Auto
                     --I put this here so that even if note is going to be unloaded on this frame, we can hit it
                     if auto then
-                        if not note.hit and autohitnotes[note.type] and offsetmsminus >= note.ms then
+                        if not note.hit and autohitnotes[note.type] and offsetms >= note.ms then
                             HitAuto(note)
                         end
                     end
