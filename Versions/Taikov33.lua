@@ -100,6 +100,7 @@ TODO: Add raylib option
     TODO: Implement score rounding as a function
     TODO: gaugeincr
     TODO: add title, subtitle, genre
+    TODO: SerializeTJA
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5463,7 +5464,7 @@ error()
 --]]
 
 
-
+--[===[
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
     --[[
@@ -5860,6 +5861,170 @@ function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
     Out = table.concat(Out, '\n\n')
     return Out
 end
+--]===]
+
+
+
+
+
+
+
+--Serialize TJA Parsed into TJA
+function Taiko.SerializeTJA(Parsed)
+    local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n\n'}
+
+    --[[
+        Automatically pushes to out, returns nothing
+        Input: note
+        Output: nothing
+    ]]
+    local function SerializeNote(note)
+        Out[#Out + 1] = tostring(note.type)
+        Out[#Out + 1] = '\n'
+    end
+
+
+    --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
+    local function Gcd(a, b)
+        --negative check
+        --[[
+        if a < 0 or b < 0 then
+            return nil
+        end
+        --]]
+
+        if a < b then
+            return Gcd(b, a)
+        end
+        if math.abs(b) < 0.001 then
+            return a
+        else
+            return Gcd(b, a - math.floor(a / b) * b)
+        end
+    end
+    --[[
+        Input: measure with at least 2 notes
+        Output: subdivision ms
+    ]]
+    local function Subdivide(currentmeasure)
+        local gcd = currentmeasure[1].ms
+        for i = 2, #currentmeasure do
+            gcd = Gcd(gcd, currentmeasure[i].ms)
+        end
+        return gcd
+    end
+
+
+    --Main loop
+    for k, v in pairs(Parsed) do
+        --SerializeTJA for each of these
+        local ParsedData = v.Data
+
+        local currentmeasure = {}
+        local measurestartms = nil
+        local lastsign = nil
+        for i = 1, #ParsedData do
+            --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
+
+            local note = ParsedData[i]
+            local nextnote = ParsedData[i + 1] --CAN BE NIL
+            
+            measurestartms = measurestartms or note.ms
+            print(note.ms)
+
+            --do stuff with notes
+            if (note.data == 'note') then
+                currentmeasure[#currentmeasure + 1] = note
+            end
+
+
+
+
+
+
+            if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) then
+                local divtotalms = note.ms - measurestartms
+                local divms = divtotalms / #currentmeasure
+
+                --Subdivide
+                local gcd = nil
+                if #currentmeasure >= 2 then
+                    gcd = Subdivide(currentmeasure)
+                else
+                    --DIRTY
+                    gcd = note.mspermeasure
+                end
+
+                --Determine total measure ms
+                local measurems = nil
+                if nextnote then
+                    measurems = nextnote.ms - measurestartms
+                else
+                    --Subdivide
+                    measurems = gcd + divtotalms
+                end
+
+                --Place measure
+
+                --Determine measure sign
+                local msperbeat = 60000 / note.bpm
+                local sign = (measurems / msperbeat) / 4
+
+                --dont place measure if no measure change
+                if sign ~= lastsign then
+                    --LAZY --DIRTY (decimal fraction???)
+                    Out[#Out + 1] = '#MEASURE ' .. tostring(sign) .. '/1\n'
+                    lastsign = sign
+                end
+                
+                print(measurems, #currentmeasure, gcd, note.type)
+
+                --Cases
+                if #currentmeasure == 0 then
+                    Out[#Out + 1] = ',\n'
+                elseif #currentmeasure == 1 then
+                    SerializeNote(note)
+                    Out[#Out + 1] = ',\n'
+                else
+                    --Push notes
+                    for i = 1, #currentmeasure do
+                        local note = currentmeasure[i]
+                    end
+                end
+
+
+                --Set measure
+                currentmeasure = {}
+                measurestartms = nil --will be set next
+            end
+
+        end
+
+
+
+
+        return table.concat(Out)
+    end
+
+    return table.concat(Out)
+end
+
+
+-- [[
+local Parsed = Taiko.ParseTJAFile('./Songs/00 Customs/tja/SerializeTest2.tja')
+print(Taiko.SerializeTJA(Parsed))
+error()
+--]]
+
+
+
+
+
+
+
+
+
+
 
 --[[
 --print(Taiko.SerializeTJA(Taiko.ParseTJA(io.open('./tja/SerializeTest.tja','r'):read'*all')))
