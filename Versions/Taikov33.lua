@@ -101,6 +101,10 @@ TODO: Add raylib option
     TODO: gaugeincr
     TODO: add title, subtitle, genre
     TODO: SerializeTJA
+    TODO: songselect difficulty select
+    TODO: songselect textures
+    TODO: songselect settings (auto, 2x speed, etc)
+    TODO: title
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5880,7 +5884,6 @@ function Taiko.SerializeTJA(Parsed)
     ]]
     local function SerializeNote(note)
         Out[#Out + 1] = tostring(note.type)
-        Out[#Out + 1] = '\n'
     end
 
 
@@ -5989,7 +5992,12 @@ function Taiko.SerializeTJA(Parsed)
                     --Push notes
                     for i = 1, #currentmeasure do
                         local note = currentmeasure[i]
+                        SerializeNote(note)
+                        if i ~= #currentmeasure then
+                            Out[#Out + 1] = string.rep('0', (currentmeasure[i + 1].ms - currentmeasure[i].ms) / gcd - 1)
+                        end
                     end
+                    Out[#Out + 1] = string.rep('0', (measurems - currentmeasure[#currentmeasure].ms) / gcd - 1)
                 end
 
 
