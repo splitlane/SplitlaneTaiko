@@ -11250,7 +11250,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             --DIRTY
             --local temp1, temp2 = nearest, nearestnote
-            --[[
+            -- [[
             nearest[v] = 0
             nearestnote[v] = note
             --]]
