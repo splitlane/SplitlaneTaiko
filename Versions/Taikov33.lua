@@ -5888,6 +5888,7 @@ function Taiko.SerializeTJA(Parsed)
 
 
     --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
+    --TODO: Modify tolerance
     local function Gcd(a, b)
         --negative check
         --[[
@@ -5933,7 +5934,7 @@ function Taiko.SerializeTJA(Parsed)
             local nextnote = ParsedData[i + 1] --CAN BE NIL
             
             measurestartms = measurestartms or note.ms
-            print(note.ms)
+            --print(note.ms)
 
             --do stuff with notes
             if (note.data == 'note') then
@@ -5971,16 +5972,16 @@ function Taiko.SerializeTJA(Parsed)
 
                 --Determine measure sign
                 local msperbeat = 60000 / note.bpm
-                local sign = (measurems / msperbeat) / 4
+                local sign = tostring((measurems / msperbeat) / 4)
 
                 --dont place measure if no measure change
                 if sign ~= lastsign then
                     --LAZY --DIRTY (decimal fraction???)
-                    Out[#Out + 1] = '#MEASURE ' .. tostring(sign) .. '/1\n'
+                    Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
                     lastsign = sign
                 end
                 
-                print(measurems, #currentmeasure, gcd, note.type)
+                --print(measurems, #currentmeasure, gcd, note.type)
 
                 --Cases
                 if #currentmeasure == 0 then
@@ -5997,7 +5998,8 @@ function Taiko.SerializeTJA(Parsed)
                             Out[#Out + 1] = string.rep('0', (currentmeasure[i + 1].ms - currentmeasure[i].ms) / gcd - 1)
                         end
                     end
-                    Out[#Out + 1] = string.rep('0', (measurems - currentmeasure[#currentmeasure].ms) / gcd - 1)
+                    Out[#Out + 1] = string.rep('0', (measurems + measurestartms - currentmeasure[#currentmeasure].ms) / gcd - 1)
+                    Out[#Out + 1] = ',\n'
                 end
 
 
@@ -7162,7 +7164,7 @@ int MeasureText(const char *text, int fontSize)
     local function LoadSong(str)
         -- [[
         --works ig for (only payload)
-        --return rl.LoadMusicStream(str)
+        return rl.LoadMusicStream(str)
         --]]
 
         --[[
@@ -7170,7 +7172,7 @@ int MeasureText(const char *text, int fontSize)
         return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
         --]]
 
-        -- [[
+        --[[
         local a = rl.LoadMusicStream(str)
         --local data = LoadFile(str)
         local b = LoadMusicStreamFromMemory(str)
