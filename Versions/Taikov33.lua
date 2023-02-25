@@ -5889,6 +5889,7 @@ function Taiko.SerializeTJA(Parsed)
 
     --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
     --TODO: Modify tolerance
+    local tolerance = 1 --was 0.001
     local function Gcd(a, b)
         --negative check
         --[[
@@ -5900,7 +5901,7 @@ function Taiko.SerializeTJA(Parsed)
         if a < b then
             return Gcd(b, a)
         end
-        if math.abs(b) < 0.001 then
+        if math.abs(b) < tolerance then
             return a
         else
             return Gcd(b, a - math.floor(a / b) * b)
