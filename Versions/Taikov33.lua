@@ -3083,7 +3083,11 @@ function Taiko.ParseTJA(source)
         return string.find(s, '/')
     end
     local function ParseFraction(s)
-        return string.match(s, '(%d+)/(%d+)')
+        --No decimals
+        --return string.match(s, '(%d+)/(%d+)')
+
+        --Yes decimals
+        return string.match(s, '(.+)/(.+)')
     end
     local function ParseNumber(s)
         local sign = nil
@@ -5875,6 +5879,20 @@ end
 
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed)
+    --Config
+    --Multiplier for Metadata, kv pairs
+    local MetadataMul = {
+        OFFSET = 0.001,
+        MOVIEOFFSET = 0.001,
+
+        SONGVOL = 100,
+        SEVOL = 100,
+    }
+
+
+
+
+    
     local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n\n'}
 
     --[[
@@ -5925,6 +5943,28 @@ function Taiko.SerializeTJA(Parsed)
         --SerializeTJA for each of these
         local ParsedData = v.Data
 
+        --METADATA
+        for k2, v2 in pairs(v.Metadata) do
+            if (type(v2) == 'string' or type(v2) == 'number') and k2 ~= 'SONG' then
+                Out[#Out + 1] = tostring(k2)
+                
+                Out[#Out + 1] = ':'
+                if k2 == 'COURSE' then
+                    Out[#Out + 1] = tostring(Taiko.Data.CourseName[v2])
+                elseif MetadataMul[k2] then
+                    Out[#Out + 1] = tostring(v2 * MetadataMul[k2])
+                else
+                    Out[#Out + 1] = tostring(v2)
+                end
+
+                Out[#Out + 1] = '\n'
+            end
+        end
+        Out[#Out + 1] = '\n'
+
+
+        --NOTES
+        Out[#Out + 1] = '#START\n'
         local currentmeasure = {}
         local measurestartms = nil
         local lastsign = nil
@@ -6011,6 +6051,8 @@ function Taiko.SerializeTJA(Parsed)
 
         end
 
+        Out[#Out + 1] = '#END\n'
+
 
 
 
@@ -6024,6 +6066,7 @@ end
 -- [[
 local Parsed = Taiko.ParseTJAFile('./Songs/00 Customs/tja/SerializeTest2.tja')
 print(Taiko.SerializeTJA(Parsed))
+print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
 error()
 --]]
 
