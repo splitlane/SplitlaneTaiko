@@ -3297,7 +3297,7 @@ function Taiko.ParseTJA(source)
             sign = 4/4,
             mpm = 0,
             mspermeasure = 0,
-            scroll = 1, --reversed
+            --scroll = 1, --reversed
             scrollx = -1, --actual
             scrolly = 0, --actual
             measuredone = true,
@@ -3459,7 +3459,7 @@ function Taiko.ParseTJA(source)
                     txt = nil,
                     gogo = Parser.gogo,
                     --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    --scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
                     scrollx = (Parser.scrollx * Parsed.Metadata.HEADSCROLL),
                     scrolly = (Parser.scrolly * Parsed.Metadata.HEADSCROLL),
                     mspermeasure = Parser.mspermeasure,
@@ -3565,7 +3565,7 @@ function Taiko.ParseTJA(source)
                     txt = nil,
                     gogo = Parser.gogo,
                     --speed = (Parser.bpm) / 60 * (Parser.scroll * Parsed.Metadata.HEADSCROLL),
-                    scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
+                    --scroll = (Parser.scroll * Parsed.Metadata.HEADSCROLL),
                     scrollx = (Parser.scrollx * Parsed.Metadata.HEADSCROLL),
                     scrolly = (Parser.scrolly * Parsed.Metadata.HEADSCROLL),
                     mspermeasure = Parser.mspermeasure,
@@ -5912,6 +5912,7 @@ function Taiko.SerializeTJA(Parsed)
         line = true,
         type = true,
         ms = true,
+        scrolly = true,
     }
     local function SerializeNote(note)
         local newline = false
@@ -5926,7 +5927,8 @@ function Taiko.SerializeTJA(Parsed)
                 if k == 'bpm' then
                     Out[#Out + 1] = '#BPMCHANGE '
                     Out[#Out + 1] = tostring(v)
-                elseif k == 'scroll' or k == 'scrollx' then
+                elseif k == 'scrollx' then
+                    --scrollx handles both scrollx and scrolly
 
                 elseif k == '' then
                 else
