@@ -110,6 +110,7 @@ TODO: Add raylib option
     TODO: LYRICS
     TODO: LYRICS TO WEBVTT
     TODO: REVAMP Parsed so JPOSSCROLL AND BPMCHANGE AND STOPSONG AND LYRIC ARE ALL STORED IN BASE TABLE
+    TODO: USE FFI with WFOPEN to open unicode file names?!
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2968,6 +2969,8 @@ function Taiko.ParseTJA(source)
                 }
             }
         ]]
+
+        --KEEP IN MIND THAT PARSED IS CLONED FOR EACH DIFFICULTY, BUT NOT FULL CLONE
     }
 
 
@@ -4242,7 +4245,8 @@ function Taiko.ParseTJA(source)
                             Parsed = {
                                 Flag = Parsed.Flag,
                                 Metadata = Table.Clone(Parsed.OriginalMetadata),
-                                Data = {}
+                                Data = {},
+                                Lyric = {},
                             }
                             --reset parser?
                             Parser = GetParser()
@@ -5280,6 +5284,7 @@ Everyone who DL
                                         lengthms = nil, --nil means indefinite
                                         data = nextlyric
                                     })
+                                    nextlyric = false
                                 end
 
                                 --All leading attaches have been resolved
@@ -5422,6 +5427,25 @@ Everyone who DL
 
         end
     end
+
+
+
+    --Put lyrics for other difficulties if not found
+    local lyric = nil
+    for k, v in pairs(Out) do
+        if #v.Lyric ~= 0 then
+            lyric = v.Lyric
+            break
+        end
+    end
+    if lyric then
+        for k, v in pairs(Out) do
+            if #v.Lyric == 0 then
+                v.Lyric = lyric
+            end
+        end
+    end
+
 
 
 
@@ -9995,8 +10019,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         --local stopsong = true --Stop song enabled?
         local stopsong = Parsed.Metadata.STOPSONG
-        local jposscroll = true
+        local jposscroll = true --If it exists
         local bpmchange = true --If it exists
+        local lyric = true --If it exists
 
         if Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
             bpmchange = false
@@ -10797,8 +10822,16 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --local bpmchangemul = 1
 
 
-
-
+        --Lyric
+        local lyricqueue = {}
+        local currentlyric = nil --Current lyric object
+        for i = 1, #Parsed.Lyric do
+            local lyric = Parsed.Lyric[i]
+            lyric.ms = lyric.oms or lyric.ms
+            lyric.oms = lyric.ms
+            lyric.ms = lyric.ms - startms
+            lyricqueue[#lyricqueue + 1] = lyric
+        end
 
 
 
@@ -12060,6 +12093,27 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
             end
 
+            if lyric then
+                for i = 1, #lyricqueue do
+                    local lyric = lyricqueue[i]
+                    if ms >= lyric.ms then
+                        currentlyric = lyric
+
+                        --Precompute data so we don't have to recompute every frame
+                        currentlyric.x = 0
+                        currentlyric.y = 600
+                        currentlyric.size = 50
+
+                        table.remove(lyricqueue, i)
+                        break
+                    end
+                end
+
+                if currentlyric and (currentlyric.lengthms and ms >= (currentlyric.ms + currentlyric.lengthms)) then
+                    currentlyric = nil
+                end
+            end
+
 
 
 
@@ -12323,6 +12377,21 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             local str = tostring(score)
             local measurex = MeasureTextTexture(str, osx, osy, sx, sy, scale)
             DrawTextTexture(Textures.PlaySong.Fonts.Score[0], str, 160/1280 * Config.ScreenWidth - measurex, 194/720 * Config.ScreenHeight, osx, osy, sx, sy, scale)
+
+
+
+
+            --draw lyric
+            if currentlyric then
+                rl.DrawText(currentlyric.data, currentlyric.x, currentlyric.y, currentlyric.size, rl.BLACK)
+            end
+
+
+
+
+
+
+
 
 
 
