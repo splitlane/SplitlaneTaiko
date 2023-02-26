@@ -2929,7 +2929,7 @@ function Taiko.ParseTJA(source)
             --Rendering / Game
             STOPSONG = false
         },
-        Data = {}
+        Data = {},
         --[[
             Format:
             {
@@ -2940,6 +2940,31 @@ function Taiko.ParseTJA(source)
                     txt = 'don',
                     gogo = false,
                     event = 'enablegogo'
+                }
+            }
+        ]]
+
+        --Timestamp events
+        --[[
+        STOPSONG = {},
+        JPOSSCROLL = {},
+        BPMCHANGE = {},
+        --]]
+        --[[
+            Format:
+            Instead of being attached to the notes, these events will be just inserted into this table
+
+            UPDATE 2/26/2023: I feel like there is no need to implement these event based: only Lyric is really needed to be implemented this way
+        ]]
+
+        Lyric = {},
+        --[[
+            Format:
+            {
+                {
+                    ms = 1000,
+                    lengthms = 1000
+                    data = ''
                 }
             }
         ]]
@@ -4479,7 +4504,11 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - If LYRICS: is defined in the metadata, the command is ignored.
                         ]]
-
+                        table.insert(Parser.currentmeasure, {
+                            --match[1],
+                            'LYRIC',
+                            match[2]
+                        }) --Just like delay
                     elseif match[1] == 'LEVELHOLD' then
                         --[[
                             - The branch that is currently being played is forced until the end of the song.
@@ -5171,6 +5200,7 @@ Everyone who DL
                         --print(firstmspermeasure, increment, notes)
                         local nextjposscroll = false
                         local nextbpmchange = false
+                        local nextlyric = false
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
@@ -5192,6 +5222,9 @@ Everyone who DL
                                 Parser.zeroopt = false
                             elseif c[1] == 'BPMCHANGE' then
                                 nextbpmchange = c[2]
+                                Parser.zeroopt = false
+                            elseif c[1] == 'LYRIC' then
+                                nextlyric = c[2]
                                 Parser.zeroopt = false
                             else
 
@@ -5237,6 +5270,16 @@ Everyone who DL
                                     --Put bpmchange on!
                                     c.bpmchange = nextbpmchange
                                     nextbpmchange = false
+                                end
+                                if nextlyric then
+                                    --Put lyric on!
+
+                                    --Actually, don't put lyric on! put it in Parsed.Lyric, use note.ms
+                                    table.insert(Parsed.Lyric, {
+                                        ms = c.ms,
+                                        lengthms = nil, --nil means indefinite
+                                        data = nextlyric
+                                    })
                                 end
 
                                 --All leading attaches have been resolved
@@ -5359,11 +5402,15 @@ Everyone who DL
                     Parser.insertbarline = true
                     if nextjposscroll then
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
-                        Parser.zeroopt = false
+                        --Parser.zeroopt = false
                     end
                     if nextbpmchange then
                         Parser.currentmeasure[#Parser.currentmeasure + 1] = nextbpmchange
-                        Parser.zeroopt = false
+                        --Parser.zeroopt = false
+                    end
+                    if nextlyric then
+                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextlyric
+                        --Parser.zeroopt = false
                     end
                     --Parser.zeroopt = zeroopt
                     --io.read()
