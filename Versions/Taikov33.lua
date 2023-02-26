@@ -4321,7 +4321,7 @@ function Taiko.ParseTJA(source)
                                 Parser.scrollx = -(CheckN(match[1], match[2], 'Invalid scroll') or -Parser.scrollx) --UNSAFE
                                 Parser.scrolly = 0
                             end
-                            Parser.scroll = -Parser.scrollx
+                            --Parser.scroll = -Parser.scrollx
                             --print(Parser.scroll, Parser.scrolly)
 
                             if Parser.scroll == 0 and Parser.scrollx == 0 and Parser.scrolly == 0 then
@@ -5900,8 +5900,46 @@ function Taiko.SerializeTJA(Parsed)
         Input: note
         Output: nothing
     ]]
+    local lastnote = nil
+    local exclude = {
+        mspermeasure = true,
+        startnote = true,
+        endnote = true,
+        nextnote = true,
+        lengthms = true,
+        onnotepush = true,
+        data = true,
+        line = true,
+        type = true,
+        ms = true,
+    }
     local function SerializeNote(note)
+        local newline = false
+        for k, v in pairs(note) do
+            if (not exclude[k]) and (not lastnote or not note[k] == lastnote[k]) then
+                --Output change
+                if newline == false then
+                    Out[#Out + 1] = '\n'
+                    newline = true
+                end
+                
+                if k == 'bpm' then
+                    Out[#Out + 1] = '#BPMCHANGE '
+                    Out[#Out + 1] = tostring(v)
+                elseif k == 'scroll' or k == 'scrollx' then
+
+                elseif k == '' then
+                else
+                    print('Invalid attribute, ' .. k)
+                end
+
+                Out[#Out + 1] = '\n'
+            end
+        end
+
         Out[#Out + 1] = tostring(note.type)
+
+        lastnote = note
     end
 
 
@@ -5925,6 +5963,27 @@ function Taiko.SerializeTJA(Parsed)
             return Gcd(b, a - math.floor(a / b) * b)
         end
     end
+    local function Round(a)
+        return math.floor(a + 0.5)
+    end
+    local function ToFraction(n)
+        --[[
+        local a = Gcd(n, 1)
+        return Round(n / a) .. '/' .. Round(1 / a)
+        --]]
+
+        --Don't use Gcd, floating point
+        local a, b = n, 1
+        while true do
+            if math.floor(a) == a then
+                break
+            end
+            a = a * 10
+            b = b * 10
+        end
+        return a .. '/' .. b
+    end
+
     --[[
         Input: measure with at least 2 notes
         Output: subdivision ms
@@ -5940,6 +5999,9 @@ function Taiko.SerializeTJA(Parsed)
 
     --Main loop
     for k, v in pairs(Parsed) do
+        --Reset SerializeNote
+        lastnote = nil
+
         --SerializeTJA for each of these
         local ParsedData = v.Data
 
@@ -6013,12 +6075,14 @@ function Taiko.SerializeTJA(Parsed)
 
                 --Determine measure sign
                 local msperbeat = 60000 / note.bpm
-                local sign = tostring((measurems / msperbeat) / 4)
+                local signraw = (measurems / msperbeat) / 4
+                local sign = tostring(signraw)
 
                 --dont place measure if no measure change
                 if sign ~= lastsign then
                     --LAZY --DIRTY (decimal fraction???)
-                    Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                    --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                    Out[#Out + 1] = '#MEASURE ' .. ToFraction(signraw) .. '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     lastsign = sign
                 end
                 
