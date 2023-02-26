@@ -111,6 +111,9 @@ TODO: Add raylib option
     TODO: LYRICS TO WEBVTT
     TODO: REVAMP Parsed so JPOSSCROLL AND BPMCHANGE AND STOPSONG AND LYRIC ARE ALL STORED IN BASE TABLE
     TODO: USE FFI with WFOPEN to open unicode file names?!
+    TODO: Inconsistensies with responsibilities of parsetja and playsong:
+        note offset is calced in playsong
+        lyric offset is calced in parsetja (required cause webvtt no offset, differentiate)
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -4508,6 +4511,7 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - If LYRICS: is defined in the metadata, the command is ignored.
                         ]]
+                        --WebVTT is handled in the Metadata section (before song start)
                         table.insert(Parser.currentmeasure, {
                             --match[1],
                             'LYRIC',
@@ -4551,6 +4555,15 @@ function Taiko.ParseTJA(source)
                         end
                         --Parser.stopsong = true
                         Parsed.Metadata.STOPSONG = true
+                    elseif match[1] == 'NMSCROLL' then
+                        --[[
+                            https://github.com/0auBSQ/OpenTaiko/issues/308
+                            - Additionally, provide a #NMSCROLL command to reset to Normal scrolltype.
+                        ]]
+                        if not Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
+                            Parser.attachbpmchange = false
+                        end
+                        Parsed.Metadata.STOPSONG = false
                     elseif match[1] == 'SENOTECHANGE' then
                         --[[
                             - Force note lyrics with a specific value, which is an integer index for the following lookup table:
@@ -5280,7 +5293,7 @@ Everyone who DL
 
                                     --Actually, don't put lyric on! put it in Parsed.Lyric, use note.ms
                                     table.insert(Parsed.Lyric, {
-                                        ms = c.ms,
+                                        ms = c.ms - Parsed.Metadata.OFFSET,
                                         lengthms = nil, --nil means indefinite
                                         data = nextlyric
                                     })
@@ -10826,11 +10839,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local lyricqueue = {}
         local currentlyric = nil --Current lyric object
         for i = 1, #Parsed.Lyric do
-            local lyric = Parsed.Lyric[i]
-            lyric.ms = lyric.oms or lyric.ms
-            lyric.oms = lyric.ms
-            lyric.ms = lyric.ms - startms
-            lyricqueue[#lyricqueue + 1] = lyric
+            lyricqueue[#lyricqueue + 1] = Parsed.Lyric[i]
         end
 
 
