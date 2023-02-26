@@ -105,6 +105,7 @@ TODO: Add raylib option
     TODO: songselect textures
     TODO: songselect settings (auto, 2x speed, etc)
     TODO: title
+    TODO: serializetja jposscroll, bpmchange
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -5923,6 +5924,8 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = '\n'
                     newline = true
                 end
+
+                local addnewline = true
                 
                 if k == 'bpm' then
                     Out[#Out + 1] = '#BPMCHANGE '
@@ -5930,12 +5933,46 @@ function Taiko.SerializeTJA(Parsed)
                 elseif k == 'scrollx' then
                     --scrollx handles both scrollx and scrolly
 
-                elseif k == '' then
+                    Out[#Out + 1] = '#SCROLL '
+                    Out[#Out + 1] = tostring(-v)
+                    if note.scrolly ~= 0 then
+                        Out[#Out + 1] = '+'
+                        Out[#Out + 1] = tostring(-note.scrolly)
+                        Out[#Out + 1] = 'i'
+                    end
+                elseif k == 'gogo' then
+                    if v then
+                        Out[#Out + 1] = '#GOGOSTART'
+                    else
+                        Out[#Out + 1] = '#GOGOEND'
+                    end
+                elseif k == 'senote' then
+                    --TODO: Make a proper senote sequence decoder
+
+                    addnewline = false
+                elseif k == 'delay' then
+                    if v == 0 then
+                        --Nothing, default
+                        addnewline = false
+                    else
+                        --STOPSONG is on
+                        Out[#Out + 1] = '#DELAY '
+                        Out[#Out + 1] = tostring(MsToS(note.delay - (lastnote and lastnote.delay or 0)))
+                    end
+
+
+                --GIMMICKS
+                elseif k == 'radius' then
+                    Out[#Out + 1] = '#RADIUS '
+                    Out[#Out + 1] = tostring(v)
                 else
                     print('Invalid attribute, ' .. k)
+                    addnewline = false
                 end
 
-                Out[#Out + 1] = '\n'
+                if addnewline then
+                    Out[#Out + 1] = '\n'
+                end
             end
         end
 
@@ -5977,7 +6014,7 @@ function Taiko.SerializeTJA(Parsed)
         --Don't use Gcd, floating point
         local a, b = n, 1
         while true do
-            if math.floor(a) == a then
+            if not string.find(tostring(a), '%.') then
                 break
             end
             a = a * 10
