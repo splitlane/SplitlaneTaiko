@@ -106,6 +106,10 @@ TODO: Add raylib option
     TODO: songselect settings (auto, 2x speed, etc)
     TODO: title
     TODO: serializetja jposscroll, bpmchange
+    TODO: webvtt
+    TODO: LYRICS
+    TODO: LYRICS TO WEBVTT
+    TODO: REVAMP Parsed so JPOSSCROLL AND BPMCHANGE AND STOPSONG AND LYRIC ARE ALL STORED IN BASE TABLE
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -2821,6 +2825,29 @@ end
 
 
 
+--WEBVTT Parser
+
+function Taiko.ParseWebVTT(source)
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4452,6 +4479,7 @@ function Taiko.ParseTJA(source)
                             - Can be placed in the middle of a measure.
                             - If LYRICS: is defined in the metadata, the command is ignored.
                         ]]
+
                     elseif match[1] == 'LEVELHOLD' then
                         --[[
                             - The branch that is currently being played is forced until the end of the song.
@@ -6166,7 +6194,7 @@ function Taiko.SerializeTJA(Parsed)
 end
 
 
--- [[
+--[[
 local Parsed = Taiko.ParseTJAFile('./Songs/00 Customs/tja/SerializeTest2.tja')
 print(Taiko.SerializeTJA(Parsed))
 print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
