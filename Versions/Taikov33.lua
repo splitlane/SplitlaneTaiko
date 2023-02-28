@@ -12926,15 +12926,15 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             local twidth = Textures.PlaySong.Notes.drumrollrect.width
                                             local theight = Textures.PlaySong.Notes.drumrollrect.height
                                             --]]
-                                            local twidth, theight = tsizex, tsizey
+                                            --local twidth, theight = tsizex, tsizey
 
                                             local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
                                             local mulx = (x2 - x1) / d
                                             local muly = (y2 - y1) / d
                                             --mulx, muly = 1, -1
-                                            local incrementx = twidth * mulx
-                                            local incrementy = twidth * muly
+                                            local incrementx = tsizex * mulx
+                                            local incrementy = tsizey * muly
 
                                             local centeroffx = note.tcentero.x * mulx
                                             local centeroffy = note.tcentero.y * muly
@@ -12949,8 +12949,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                                             --1
-                                            local div = math.floor(d / twidth)
-                                            local mod = d - (div * twidth)
+                                            local div = math.floor(d / tsizex)
+                                            local mod = d - (div * tsizex)
 
 
 
@@ -12961,8 +12961,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             local incrementmody = mod * muly
 
 
-                                            Textures.PlaySong.Notes.drumrollpr.width = twidth * scale[1]
-                                            Textures.PlaySong.Notes.drumrollpr.height = theight * scale[2]
+                                            Textures.PlaySong.Notes.drumrollpr.width = tsizex * scale[1]
+                                            Textures.PlaySong.Notes.drumrollpr.height = tsizey * scale[2]
 
 
 
@@ -13011,7 +13011,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], Textures.PlaySong.Notes.drumrollpr2, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
 
                                             --draw drumroll line senote
-                                            local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / twidth)
+                                            local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / tsizex)
                                             subdivoff = subdivoff + 17/136
                                             for i = 0, a - 1 do
                                                 if startnote.senote then
