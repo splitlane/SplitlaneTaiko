@@ -7431,12 +7431,15 @@ int MeasureText(const char *text, int fontSize)
         return rl.LoadMusicStreamFromMemory(GetFileType(str), data, #data)
         --]]
 
-        --[[
+        --[==[
         local a = rl.LoadMusicStream(str)
         --local data = LoadFile(str)
         local b = LoadMusicStreamFromMemory(str)
 
         --ITS ctxData
+        --[[
+            probably not ending with null, etc
+        ]]
 
         print(a.ctxData)
         print(b.ctxData)
@@ -7446,15 +7449,16 @@ int MeasureText(const char *text, int fontSize)
         print(ffi.string(a.ctxData))
         print(ffi.string(b.ctxData))
         print(ffi.string(a.ctxData) == ffi.string(b.ctxData))
+        print(a.ctxData, b.ctxData)
 
         print(ffi.sizeof(a.ctxData))
         print(ffi.sizeof(b.ctxData))
 
 
 
-        b.ctxData = a.ctxData
+        --b.ctxData = a.ctxData
         return b
-        --]]
+        --]==]
 
         --[[
         return LoadMusicStreamFromMemory(str)
@@ -12907,7 +12911,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                                             --FINAL: Use atan2!
-                                            note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90)
+                                            --note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90) --WORKS BUT --DIRTY
+                                            note.rotationr = NormalizeAngle(0 - math.deg(math.atan2((y2 - y1) * ymul / scale[1], (x2 - x1) * xmul / scale[2])))
 
 
                                             
@@ -12927,6 +12932,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                                             local mulx = (x2 - x1) / d
                                             local muly = (y2 - y1) / d
+                                            --mulx, muly = 1, -1
                                             local incrementx = twidth * mulx
                                             local incrementy = twidth * muly
 
