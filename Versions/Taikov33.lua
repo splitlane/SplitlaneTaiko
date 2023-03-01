@@ -10793,6 +10793,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local drumroll = nil
         local drumrollstart = nil
         local drumrollend = nil
+        local drumrollqueue = {} --startnotes
         local drumrollscoref = Taiko.Data.ScoreMode.Drumroll[Parsed.Metadata.SCOREMODE]
 
 
@@ -11027,6 +11028,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                         a.recttype = 'DRUMROLLrect'
                         a.endtype = 'DRUMROLLend'
                     end
+
+                    drumrollqueue[#drumrollqueue + 1] = a
                 elseif a.type == 7 then
                     --note.balloonrect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Balloons.sourcerect.width, Textures.PlaySong.Balloons.sourcerect.height)
                 end
@@ -12127,6 +12130,22 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 end
             end
 
+            for i = 1, #drumrollqueue do
+                local startnote = drumrollqueue[i]
+                if ms >= startnote.ms then
+                    drumroll = startnote
+                    drumrollstart = startnote.ms
+                    drumrollend = startnote.ms + startnote.lengthms
+
+                    table.remove(drumrollqueue, i)
+                    break
+                end
+            end
+
+
+
+
+
 
 
 
@@ -12581,6 +12600,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     if ms > note.ms then
                         --gogo
                         gogo = note.gogo
+
+                        --balloon
                         if note.type == 7 then
                             if balloon then
                                 note.hit = false
@@ -12602,11 +12623,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             balloon = note
                             balloonstart = note.ms
                             balloonend = note.ms + note.lengthms
-                        elseif note.type == 5 or note.type == 6 then
-                            --Drumroll
-                            drumroll = note
-                            drumrollstart = note.ms
-                            drumrollend = note.ms + note.lengthms
                         end
                     end
 
