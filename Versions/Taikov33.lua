@@ -12936,14 +12936,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             local incrementx = tsizex * mulx
                                             local incrementy = tsizey * muly
 
-                                            local centeroffx = note.tcentero.x * mulx
-                                            local centeroffy = note.tcentero.y * muly
+                                            --[[
+                                            local centeroffx = (tsizex / 2 * mulx * scale[1])
+                                            local centeroffy = (tsizey / 2 * muly * scale[2])
 
                                             --modify values
-                                            x2 = x2 - centeroffx
-                                            y2 = y2 - centeroffy
+                                            -- [[
+                                            x2 = x2 + centeroffx
+                                            y2 = y2 + centeroffy
                                             --d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
                                             d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+                                            --]]
 
 
 
@@ -12957,8 +12960,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+                                            --[[
                                             local incrementmodx = mod * mulx
                                             local incrementmody = mod * muly
+                                            --]]
 
 
                                             Textures.PlaySong.Notes.drumrollpr.width = tsizex * scale[1]
@@ -12967,8 +12972,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
                                             --Just modify rect in loop
-                                            local x = x1 + offsetx + centeroffx
-                                            local y = y1 + offsety + centeroffy
+                                            local x = x1 + offsetx + (tsizex / 2 * mulx)
+                                            local y = y1 + offsety + (tsizey / 2 * muly)
                                             local subdiv = 4
                                             local subdivoff = -0.5
                                             --print(div)
@@ -12978,10 +12983,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], tsourcerect, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
 
                                                 --draw drumroll line senote
-                                                for i = 0, subdiv - 1 do
+                                                for i2 = 0, subdiv - 1 do
                                                     if startnote.senote then
-                                                        startnote.senotepr.x = (x + (incrementx * (i / subdiv + subdivoff))) * scale[1]
-                                                        startnote.senotepr.y = (y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                        startnote.senotepr.x = (x + (incrementx * (i2 / subdiv + subdivoff))) * scale[1]
+                                                        startnote.senotepr.y = (y + (incrementy * (i2 / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
                                                         rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
                                                     end
                                                 end
@@ -13013,10 +13018,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             --draw drumroll line senote
                                             local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / tsizex)
                                             subdivoff = subdivoff + 17/136
-                                            for i = 0, a - 1 do
+                                            for i2 = 0, a - 1 do
                                                 if startnote.senote then
-                                                    startnote.senotepr.x = (x + (incrementx * (i / subdiv + subdivoff))) * scale[1]
-                                                    startnote.senotepr.y = (y + (incrementy * (i / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                    startnote.senotepr.x = (x + (incrementx * (i2 / subdiv + subdivoff))) * scale[1]
+                                                    startnote.senotepr.y = (y + (incrementy * (i2 / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
                                                     rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
                                                 end
                                             end
@@ -13025,8 +13030,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                             startnote.senotepr.y = (y + (incrementy * (a / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
                                             rl.DrawTexturePro(Textures.PlaySong.SENotes[10], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
 
+                                            --[[
                                             x = x + incrementmodx
                                             y = y + incrementmody
+                                            --]]
+                                            x = x + mod * mulx
+                                            y = y + mod * muly
 
 
                                             --[[
@@ -13037,6 +13046,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 360 -> 180
 
                                             ]]
+                                            note.pr.x = x
+                                            note.pr.y = y
                                             rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
 
 
