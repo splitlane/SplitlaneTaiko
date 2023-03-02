@@ -5534,6 +5534,7 @@ function Taiko.ParseTJAFile(path)
     local file = io.open(path, 'r')
     if file then
         local data = file:read('*all')
+        file:close()
         --local Parsed = Taiko.ParseTJA(data)
 
         local Parsed
@@ -7456,6 +7457,7 @@ int MeasureText(const char *text, int fontSize)
         
         if f then
             local data = f:read('*all')
+            f:close()
             local ffi = require('ffi')
 
             --[[
