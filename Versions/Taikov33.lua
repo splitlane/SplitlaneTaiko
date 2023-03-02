@@ -2829,10 +2829,27 @@ end
 
 
 
---WEBVTT Parser
 
-function Taiko.ParseWebVTT(source)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Taiko.ReplaceNewline(source)
+    --CRLF to LF
+    return string.gsub(source, '\r\n', '\n')
 end
 
 
@@ -2840,6 +2857,39 @@ end
 
 
 
+
+
+
+
+--WEBVTT Parser
+
+function Taiko.ParseWebVTT(source)
+
+end
+
+function Taiko.SerializeWebVTT(t)
+    --[[
+        t is an unsorted / sorted array of lyrics, just like Parsed.Lyric
+    ]]
+
+    --Sort
+    table.sort(t, function(a, b)
+        return a.ms < b.ms
+    end)
+
+    --Loop
+    for i = 1, #t do
+        local lyric = t[i]
+        
+        --print(t[i].ms)
+    end
+end
+
+--[[
+Taiko.SerializeWebVTT({{ms = 1}, {ms = 100}})
+
+error()
+--]]
 
 
 
@@ -13062,8 +13112,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                                                 360 -> 180
 
                                             ]]
-                                            note.pr.x = x
-                                            note.pr.y = y
+                                            note.pr.x = x * scale[1]
+                                            note.pr.y = y * scale[2]
                                             rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
 
 
