@@ -2863,11 +2863,88 @@ end
 
 --WEBVTT Parser
 
+--[[
+    https://www.w3.org/TR/webvtt1/#file-structure
+    https://www.w3.org/TR/webvtt1/#webvtt-parser
+]]
+
 function Taiko.ParseWebVTT(source)
 
 end
 
-function Taiko.SerializeWebVTT(t)
+
+
+
+local function ToTimestamp(ms)
+    --https://www.w3.org/TR/webvtt1/#webvtt-timestamp
+    local hours = math.floor(ms / (1000 * 60 * 60))
+    local minutes = math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+    local seconds = math.floor((ms % (1000 * 60)) / (1000))
+    local milliseconds = math.floor((ms % (1000)) / (1))
+    
+    local out = {}
+
+    --[[
+    1. Optionally (required if hours is non-zero):
+        1. Two or more ASCII digits, representing the hours as a base ten integer.
+        2. A U+003A COLON character (:)
+    ]]
+    if hours ~= 0 then
+        local a = tostring(hours)
+        if #a >= 2 then
+            --Valid
+        else
+            out[#out + 1] = '0'
+        end
+        out[#out + 1] = a
+        out[#out + 1] = ':'
+    else
+        out[#out + 1] = '00:'
+    end
+
+    --[[
+        2. Two ASCII digits, representing the minutes as a base ten integer in the range 0 ≤ minutes ≤ 59.
+        3. A U+003A COLON character (:)
+    ]]
+    local a = tostring(minutes)
+    if #a >= 2 then
+        --Valid
+    else
+        out[#out + 1] = '0'
+    end
+    out[#out + 1] = a
+    out[#out + 1] = ':'
+
+    --[[
+        4. Two ASCII digits, representing the seconds as a base ten integer in the range 0 ≤ seconds ≤ 59.
+        5. A U+002E FULL STOP character (.).
+    ]]
+    local a = tostring(seconds)
+    if #a >= 2 then
+        --Valid
+    else
+        out[#out + 1] = '0'
+    end
+    out[#out + 1] = a
+    out[#out + 1] = '.'
+
+    --[[
+        6. Three ASCII digits, representing the thousandths of a second seconds-frac as a base ten integer.
+    ]]
+    local a = tostring(milliseconds)
+    if #a == 1 then
+        out[#out + 1] = '00'
+    elseif #a == 2 then
+        out[#out + 1] = '0'
+    else
+        --Valid
+    end
+    out[#out + 1] = a
+
+    return table.concat(out)
+end
+
+function Taiko.SerializeWebVTT(t, songendms)
     --[[
         t is an unsorted / sorted array of lyrics, just like Parsed.Lyric
     ]]
@@ -2877,16 +2954,48 @@ function Taiko.SerializeWebVTT(t)
         return a.ms < b.ms
     end)
 
+
+    local out = {'WEBVTT\n\n'}
+
     --Loop
     for i = 1, #t do
         local lyric = t[i]
         
-        --print(t[i].ms)
+        local ms = lyric.ms
+
+        --Make timestamp
+
+        --[[
+            1. A WebVTT timestamp representing the start time offset of the cue. The time represented by this WebVTT timestamp must be greater than or equal to the start time offsets of all previous cues in the file.
+            2. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+            3. The string "-->" (U+002D HYPHEN-MINUS, U+002D HYPHEN-MINUS, U+003E GREATER-THAN SIGN).
+            4. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+            5. A WebVTT timestamp representing the end time offset of the cue. The time represented by this WebVTT timestamp must be greater than the start time offset of the cue.
+        ]]
+        out[#out + 1] = ToTimestamp(ms)
+        out[#out + 1] = ' --> '
+        
+        local endms = nil
+        if lyric.lengthms then
+            endms = ms + lyric.lengthms
+        elseif i ~= #t then
+            endms = t[i].ms
+        else
+            endms = songendms
+        end
+        out[#out + 1] = ToTimestamp(endms)
+
+
+        --Data
+        out[#out + 1] = lyric.data
+        out[#out + 1] = '\n\n'
     end
+
+    return table.concat(out)
 end
 
---[[
-Taiko.SerializeWebVTT({{ms = 1}, {ms = 100}})
+-- [[
+Taiko.SerializeWebVTT({{ms = 1, data = 'n'}, {ms = 1500, data = 'hi'}}, 1000)
 
 error()
 --]]
