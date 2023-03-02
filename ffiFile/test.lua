@@ -115,39 +115,18 @@ local function readfile(patht)
 
     --Get file size
 
-    local fsize
-    if windows then
-        --https://stackoverflow.com/a/14002993
-        --[[
-        --https://support.sas.com/documentation/onlinedoc/ccompiler/doc700/html/lr1/z2031150.htm
-        SEEK_SET	is the beginning of the file; the value is 0.
-        SEEK_CUR	is the current file offset; the value is 1.
-        SEEK_END	is the end of the file; the value is 2.
-        ]]
+    --https://stackoverflow.com/a/14002993
+    --[[
+    --https://support.sas.com/documentation/onlinedoc/ccompiler/doc700/html/lr1/z2031150.htm
+    SEEK_SET	is the beginning of the file; the value is 0.
+    SEEK_CUR	is the current file offset; the value is 1.
+    SEEK_END	is the end of the file; the value is 2.
+    ]]
 
-        --Get file size
-        ffi.C.fseek(f, 0, 2)
-        fsize = ffi.C.ftell(f)
-        ffi.C.fseek(f, 0, 0)  -- same as rewind(f);
-
-        print(fsize)
-        fsize = 15
-
-
-    else
-        --https://stackoverflow.com/a/14002993
-        --[[
-        --https://support.sas.com/documentation/onlinedoc/ccompiler/doc700/html/lr1/z2031150.htm
-        SEEK_SET	is the beginning of the file; the value is 0.
-        SEEK_CUR	is the current file offset; the value is 1.
-        SEEK_END	is the end of the file; the value is 2.
-        ]]
-
-        --Get file size
-        ffi.C.fseek(f, 0, 2)
-        fsize = ffi.C.ftell(f)
-        ffi.C.fseek(f, 0, 0)  -- same as rewind(f);
-    end
+    --Get file size
+    ffi.C.fseek(f, 0, 2)
+    local fsize = ffi.C.ftell(f)
+    ffi.C.fseek(f, 0, 0)  -- same as rewind(f);
 
     
     if fsize ~= -1 then
@@ -157,7 +136,7 @@ local function readfile(patht)
         ffi.C.fclose(f)
         str[fsize] = 0;
 
-        local lstr = ffi.string(str)
+        local lstr = ffi.string(str, fsize)
         ffi.C.free(str)
 
         return lstr
@@ -198,5 +177,5 @@ end
 print(readfile(utf8Decode'test.txt'))
 print(readfile(utf8Decode'あ.txt'))
 
---io.open('test.txt', 'w+'):write('abcHi\0\0Hello')
+--io.open('test.txt', 'w+'):write('abcHi\0\0Hello\0\0\0\0aaa')
 
