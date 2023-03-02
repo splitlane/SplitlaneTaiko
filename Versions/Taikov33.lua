@@ -2961,41 +2961,44 @@ function Taiko.SerializeWebVTT(t, songendms)
     for i = 1, #t do
         local lyric = t[i]
         
-        local ms = lyric.ms
+        --Nothing, probably just removing lyric
+        if lyric.data ~= '' then
+            local ms = lyric.ms
 
-        --Make timestamp
+            --Make timestamp
 
-        --[[
-            1. A WebVTT timestamp representing the start time offset of the cue. The time represented by this WebVTT timestamp must be greater than or equal to the start time offsets of all previous cues in the file.
-            2. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
-            3. The string "-->" (U+002D HYPHEN-MINUS, U+002D HYPHEN-MINUS, U+003E GREATER-THAN SIGN).
-            4. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
-            5. A WebVTT timestamp representing the end time offset of the cue. The time represented by this WebVTT timestamp must be greater than the start time offset of the cue.
-        ]]
-        out[#out + 1] = ToTimestamp(ms)
-        out[#out + 1] = ' --> '
-        
-        local endms = nil
-        if lyric.lengthms then
-            endms = ms + lyric.lengthms
-        elseif i ~= #t then
-            endms = t[i].ms
-        else
-            endms = songendms
+            --[[
+                1. A WebVTT timestamp representing the start time offset of the cue. The time represented by this WebVTT timestamp must be greater than or equal to the start time offsets of all previous cues in the file.
+                2. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+                3. The string "-->" (U+002D HYPHEN-MINUS, U+002D HYPHEN-MINUS, U+003E GREATER-THAN SIGN).
+                4. One or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+                5. A WebVTT timestamp representing the end time offset of the cue. The time represented by this WebVTT timestamp must be greater than the start time offset of the cue.
+            ]]
+            out[#out + 1] = ToTimestamp(ms)
+            out[#out + 1] = ' --> '
+            
+            local endms = nil
+            if lyric.lengthms then
+                endms = ms + lyric.lengthms
+            elseif i ~= #t then
+                endms = t[i + 1].ms
+            else
+                endms = songendms
+            end
+            out[#out + 1] = ToTimestamp(endms)
+
+
+            --Data
+            out[#out + 1] = lyric.data
+            out[#out + 1] = '\n\n'
         end
-        out[#out + 1] = ToTimestamp(endms)
-
-
-        --Data
-        out[#out + 1] = lyric.data
-        out[#out + 1] = '\n\n'
     end
 
     return table.concat(out)
 end
 
 -- [[
-Taiko.SerializeWebVTT({{ms = 1, data = 'n'}, {ms = 1500, data = 'hi'}}, 1000)
+print(Taiko.SerializeWebVTT({{ms = 1, data = 'n'}, {ms = 1500, data = 'hi'}, {ms = 2000, data = ''}}, 1000))
 
 error()
 --]]
