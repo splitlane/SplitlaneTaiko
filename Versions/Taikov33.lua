@@ -367,10 +367,23 @@ do
     --MAIN!
     local wio = {}
 
-
+    local ioopen = io.open
     function wio.open(path, mode)
         --patht should be like char *, it should be an array of codepoints
         local patht = utf8Decode(path)
+
+
+        --Check if there is any unicode character in filename
+        local unicode = false
+        for i = 1, #patht do
+            if patht[i] > 255 then
+                unicode = true
+                break
+            end
+        end
+        if unicode == false then
+            return ioopen(path, mode)
+        end
 
 
         --https://stackoverflow.com/questions/30585574/write-to-file-using-lua-ffi
@@ -384,11 +397,13 @@ do
         else
             
             --https://stackoverflow.com/a/33485288
+            --[[
             local path = ffi.new("char[?]", #patht + 1)
             for i = 1, #patht do
                 path[i - 1] = patht[i]
             end
             path[#patht] = 0
+            --]]
 
             f = ffi.C.fopen(path, mode)
         end
@@ -484,9 +499,15 @@ do
 
 
     --Modify io. table
+    --[[
     for k, v in pairs(wio) do
         io[k] = v
     end
+    --]]
+
+
+    --Actually, only modify io.open
+    io.open = wio.open
 
 
 
