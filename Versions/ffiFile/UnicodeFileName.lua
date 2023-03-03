@@ -6,6 +6,8 @@
     https://gist.github.com/akopytov/12ef537ac75c65804d8f4ce47fcf3eed
 
     Just treat like any other file handle
+
+    WARNING: UNICODEFILENAME IS INTEGRATED INTO TAIKOV33
 ]]
 
 local ffi = require'ffi'
@@ -142,6 +144,11 @@ function wio.open(path, mode)
     end
 
 
+    --Check if file is null
+    if f == nil then
+        return nil
+    end
+    
 
     --Return file data object
     return setmetatable({
@@ -181,7 +188,7 @@ function wio.read(file, mode)
         --char *string = malloc(fsize + 1);
         local str = ffi.cast('char *', ffi.C.malloc(fsize + 1))
         ffi.C.fread(str, fsize, 1, f)
-        ffi.C.fclose(f)
+        --ffi.C.fclose(f)
         str[fsize] = 0;
 
         local lstr = ffi.string(str, fsize)
@@ -210,6 +217,11 @@ end
 
 
 
+function wio.close(file)
+    local f = file.file
+
+    ffi.C.fclose(f)
+end
 
 
 
@@ -250,9 +262,10 @@ end
 
 
 
-
-
-
+--Modify io. table
+for k, v in pairs(wio) do
+    io[k] = v
+end
 
 
 
