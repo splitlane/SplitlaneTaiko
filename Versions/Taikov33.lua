@@ -7866,7 +7866,7 @@ int MeasureText(const char *text, int fontSize)
                 https://github.com/raysan5/raylib/blob/d5a31168ce768ef9c1e11fe4734285770a33aba4/src/raudio.c#L1926
             ]]
 
-            return rl.LoadMusicStreamFromMemory(ffi.cast('const char *', GetFileType(str)), ffi.cast("const unsigned char *", data), ffi.cast('int', #data))
+            return rl.LoadMusicStreamFromMemory(ffi.cast('const char *', GetFileType(str)), ffi.cast("const unsigned char *", data), ffi.cast('int', #data + 1))
         else
             return nil
         end
@@ -7874,6 +7874,7 @@ int MeasureText(const char *text, int fontSize)
     local function LoadSong(str)
         -- [[
         --works ig for (only payload)
+        --ALSO NO UNICODE SUPPORT!!
         return rl.LoadMusicStream(str)
         --]]
 
@@ -7886,7 +7887,7 @@ int MeasureText(const char *text, int fontSize)
         local a = rl.LoadMusicStream(str)
         --local data = LoadFile(str)
         local b = LoadMusicStreamFromMemory(str)
-
+error()
         --ITS ctxData
         --[[
             probably not ending with null, etc
@@ -7897,14 +7898,24 @@ int MeasureText(const char *text, int fontSize)
 
         local ffi = require'ffi'
 
-        print(ffi.string(a.ctxData))
-        print(ffi.string(b.ctxData))
-        print(ffi.string(a.ctxData) == ffi.string(b.ctxData))
-        print(a.ctxData, b.ctxData)
+        local function inspect(cstr)
+            local length = 0
+            while true do
+                length = length + 1
+                local a = ffi.string(cstr, length)
+                print(a:sub(-1, -1), a:sub(-1, -1):byte())
 
-        print(ffi.sizeof(a.ctxData))
-        print(ffi.sizeof(b.ctxData))
+                io.read()
+            end
+        end
 
+        --inspect(a.ctxData)
+
+        LENGTH = 100
+        local as = ffi.string(a.ctxData, LENGTH)
+        local bs = ffi.string(b.ctxData, LENGTH)
+        io.open('Screenshots/out.txt', 'wb+'):write(as)
+        io.open('Screenshots/outMEMORY.txt', 'wb+'):write(bs)
 
 
         --b.ctxData = a.ctxData
