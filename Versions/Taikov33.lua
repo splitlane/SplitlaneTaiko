@@ -2919,6 +2919,7 @@ Taiko.Data = {
         }
     },
     Timing = {
+        --[[
         GetFunction = function(course)
             return function(framems)
                 --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
@@ -2935,6 +2936,44 @@ Taiko.Data = {
                         bad = 13 / 2 * framems
                     }
                 end
+            end
+        end
+        --]]
+            --[[
+All timing/judge zones (Good, Ok, Bad; in ms) : 
+75, 108, 125　Lv0 
+58, 108, 125　Lv1 
+42, 108, 125　Lv2 (Easy Normal)　
+42, 75, 108　Lv3 
+25, 75, 108　Lv4 (Hard Extreme)　
+25, 58, 108　 Lv5 
+17, 42, 108　Lv6
+
+Timing mods alter the judge zone level by the following :
+Loose : -2
+Lenient : -1
+Normal : 0
+Strict : 1
+Rigorous : 2
+Setting a lower level judge zone gives you a score and coin malus, higher level judge zone a noticeable coin bonus 
+
+--Opentaiko Dev
+--https://discord.com/channels/906882956272992287/925314069236420618/1006074367475732550
+            ]]
+        Level = {
+            [0] = {good = 75, ok = 108, bad = 125},
+            [1] = {good = 58, ok = 108, bad = 125},
+            [2] = {good = 42, ok = 108, bad = 125}, --easy, normal
+            [3] = {good = 42, ok = 75, bad = 108},
+            [4] = {good = 25, ok = 75, bad = 108}, --hard, oni
+            [5] = {good = 25, ok = 58, bad = 108},
+            [6] = {good = 17, ok = 42, bad = 108}
+        },
+        Course = function(course)
+            if course == 0 or course == 1 then
+                return 2
+            else
+                return 4
             end
         end
     },
@@ -4546,7 +4585,8 @@ function Taiko.ParseTJA(source)
                             end
 
                             --Timing Point
-                            Parsed.Metadata.TIMING = Taiko.Data.Timing.GetFunction(Parsed.Metadata.COURSE)
+                            --Parsed.Metadata.TIMING = Taiko.Data.Timing.GetFunction(Parsed.Metadata.COURSE)
+                            Parsed.Metadata.TIMING = Taiko.Data.Timing.Course(Parsed.Metadata.COURSE)
 
 
                             --[[
@@ -10860,7 +10900,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         --https://github.com/bui/taiko-web/blob/ba1a6ab3068af8d5f8d3c5e81380957493ebf86b/public/src/js/gamerules.js
         --local framems = 1000 / (framerate or 60) --don't use framerate
         local framems = 1000 / 60
-        local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
+        --local timing = Parsed.Metadata.TIMING(framems / songspeedmul)
+        local timing = Taiko.Data.Timing.Level[Parsed.Metadata.TIMING]
 
 
 
