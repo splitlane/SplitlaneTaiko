@@ -6181,7 +6181,7 @@ Everyone who DL
                                     table.insert(Parsed.Lyric, {
                                         ms = c.ms - Parsed.Metadata.OFFSET,
                                         lengthms = nil, --nil means indefinite
-                                        data = Romaji.ToHiragana(nextlyric)
+                                        data = nextlyric
                                     })
                                     nextlyric = false
                                 end
@@ -11799,6 +11799,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 lyric.p = rl.new('Vector2', lyric.x, lyric.y)
                 lyric.spacing = 5
                 lyric.size = 50
+
+                --lyric.data = Romaji.ToHiragana(lyric.data)
                 lyric.data = utf8Decode(lyric.data)
                 lyric.datac = ffi.new('int[?]', #lyric.data, lyric.data)
 
