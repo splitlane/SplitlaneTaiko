@@ -40,7 +40,7 @@ end
 
 
 
-local Romaji = {}
+Romaji = {}
 
 
 --[Romaji] = {Hiragana, Katakana}
@@ -257,9 +257,10 @@ Romaji.Data = {
 
 
 
-function Romaji.ToHiragana(str)
+function Romaji.ToHiragana(ostr)
     --Config
     local index = 1 --index for Romaji.Data.To, 1 is hiragana, 2 is katakana
+    local str = string.lower(ostr) --don't use uppercase, for getting indexes from data
 
     local out = {}
     local i = 1
