@@ -2747,7 +2747,7 @@ do
 
 
 
-    function Romaji.ToHiragana(str)
+    function Romaji.ToHiragana(ostr)
         --Config
         local index = 1 --index for Romaji.Data.To, 1 is hiragana, 2 is katakana
         local str = string.lower(ostr) --don't use uppercase, for getting indexes from data
@@ -8403,7 +8403,6 @@ int MeasureText(const char *text, int fontSize)
         if not data then
             return rl.new('Image')
         end
-        --return rl.LoadImageFromMemory('.png', data, #data)
         return rl.LoadImageFromMemory(GetFileType(str), data, #data)
     end
     local function LoadWave(str)
@@ -8451,6 +8450,28 @@ int MeasureText(const char *text, int fontSize)
             i = i + 1
         end
         return i
+    end
+    local function LoadFont(str, fontsize, fontchars, glyphcount)
+        fontsize = fontsize or 32
+        
+        --fontchars={}for i = 12352, 12447 do fontchars[#fontchars + 1] = i end --japanese
+        if not fontchars then
+            fontchars = {}
+            for i = 1, glyphcount do
+                fontchars[#fontchars + 1] = i
+            end
+        end
+
+
+
+        fontchars = fontchars and rl.new('int[?]', #fontchars, fontchars)
+        glyphcount = glyphcount or 0
+
+        local data = LoadAsset(str)
+        if not data then
+            return rl.new('Font')
+        end
+        return rl.LoadFontFromMemory(GetFileType(str), data, #data, fontsize, fontchars, glyphcount)
     end
     --[=[
     local XNAcolor = rl.MAGENTA
@@ -10053,6 +10074,25 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
     end
     --]]
+
+
+
+
+
+    local Fonts = {
+        PlaySong = {
+            Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
+        }
+    }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -11753,9 +11793,11 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
                 local lyric = Parsed.Lyric[i]
 
                 --Precompute data so we don't have to recompute every frame
+                lyric.font = Fonts.PlaySong.Lyric
                 lyric.x = 0
                 lyric.y = 600
                 lyric.p = rl.new('Vector2', lyric.x, lyric.y)
+                lyric.spacing = 5
                 lyric.size = 50
                 lyric.data = utf8Decode(lyric.data)
                 lyric.datac = ffi.new('int[?]', #lyric.data, lyric.data)
@@ -13328,7 +13370,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --draw lyric
             if currentlyric then
                 --rl.DrawText(currentlyric.data, currentlyric.x, currentlyric.y, currentlyric.size, rl.BLACK)
-                rl.DrawTextCodepoints(rl.GetFontDefault(), currentlyric.datac, #currentlyric.data, currentlyric.p, currentlyric.size, 5--[[spacing]], rl.BLACK)
+                rl.DrawTextCodepoints(currentlyric.font, currentlyric.datac, #currentlyric.data, currentlyric.p, currentlyric.size, currentlyric.spacing, rl.BLACK)
+                --rl.DrawTextCodepoint(currentlyric.font, 12354, currentlyric.p, currentlyric.size, rl.BLACK)
             end
 
 
