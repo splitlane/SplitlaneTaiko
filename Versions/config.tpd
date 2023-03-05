@@ -130,4 +130,12 @@ DO NOT EDIT
     'Formats' = {
         'Screenshot' = '.png',
     },
+    'Settings' = {
+        'PlaySong' = {
+            'LyricRomajiToHiragana' = false,
+            'Cheats' = {
+                
+            },
+        },
+    },
 }

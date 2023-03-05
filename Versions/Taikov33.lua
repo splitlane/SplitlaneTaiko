@@ -10081,7 +10081,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local Fonts = {
         PlaySong = {
-            Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
+            --Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
+            Lyric = rl.GetFontDefault(),
         }
     }
 
@@ -11787,25 +11788,26 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local lyricqueue = {}
         local currentlyric = nil --Current lyric object
 
-        do
-            local ffi = require'ffi'
-            for i = 1, #Parsed.Lyric do
-                local lyric = Parsed.Lyric[i]
+        for i = 1, #Parsed.Lyric do
+            local lyric = Parsed.Lyric[i]
 
-                --Precompute data so we don't have to recompute every frame
-                lyric.font = Fonts.PlaySong.Lyric
-                lyric.x = 0
-                lyric.y = 600
-                lyric.p = rl.new('Vector2', lyric.x, lyric.y)
-                lyric.spacing = 5
-                lyric.size = 50
+            --Precompute data so we don't have to recompute every frame
+            lyric.font = Fonts.PlaySong.Lyric
+            lyric.x = 0
+            lyric.y = 600
+            lyric.p = rl.new('Vector2', lyric.x, lyric.y)
+            lyric.spacing = 5
+            lyric.size = 50
 
-                --lyric.data = Romaji.ToHiragana(lyric.data)
-                lyric.data = utf8Decode(lyric.data)
-                lyric.datac = ffi.new('int[?]', #lyric.data, lyric.data)
-
-                lyricqueue[#lyricqueue + 1] = lyric
+            lyric.odata = lyric.odata or lyric.data
+            lyric.data = lyric.odata
+            if Config.Settings.PlaySong.LyricRomajiToHiragana then
+                lyric.data = Romaji.ToHiragana(lyric.data)
             end
+            lyric.data = utf8Decode(lyric.data)
+            lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
+
+            lyricqueue[#lyricqueue + 1] = lyric
         end
 
 
