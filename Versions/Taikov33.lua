@@ -247,7 +247,7 @@ local Persistent = require('Persistent/persistentv1')
 
 
 
-
+require'strict'
 
 do
     --[[
@@ -2889,12 +2889,13 @@ end
 
 --string
 
-Split=function(a,b)local c={}for d,b in a:gmatch("([^"..b.."]*)("..b.."?)")do table.insert(c,d)if b==''then return c end end end
-Trim=function(s)local a=s:gsub("^%s*(.-)%s*$", "%1")return a end
-TrimLeft=function(s)local a=s:gsub("^%s*(.-)$", "%1")return a end
-TrimRight=function(s)local a=s:gsub("^(.-)%s*$", "%1")return a end
-StartsWith=function(a,b)return a:sub(1,#b)==b end
-EndsWith=function(a,b)return a:sub(-#b,-1)==b end
+String = {}
+String.Split=function(a,b)local c={}for d,b in a:gmatch("([^"..b.."]*)("..b.."?)")do table.insert(c,d)if b==''then return c end end end
+String.Trim=function(s)local a=s:gsub("^%s*(.-)%s*$", "%1")return a end
+String.TrimLeft=function(s)local a=s:gsub("^%s*(.-)$", "%1")return a end
+String.TrimRight=function(s)local a=s:gsub("^(.-)%s*$", "%1")return a end
+String.StartsWith=function(a,b)return a:sub(1,#b)==b end
+String.EndsWith=function(a,b)return a:sub(-#b,-1)==b end
 
 
 
@@ -3393,8 +3394,8 @@ Setting a lower level judge zone gives you a score and coin malus, higher level 
     },
     ModeName = {
         [0] = '',
-        P1,
-        P2
+        'P1',
+        'P2'
     },
     Combo = { --Notes that affect combo
         [1] = true,
@@ -3792,8 +3793,6 @@ function Taiko.ParseTJA(source)
             COURSE = 'ONI',
             LEVEL = 0,
             BALLOON = nil,
-            SCOREINIT,
-            SCOREDIFF,
             BALLOONNOR = nil,
             BALLOONEXP = nil,
             BALLOONMAS = nil,
@@ -3808,7 +3807,7 @@ function Taiko.ParseTJA(source)
 
 
 
-            --temprary values
+            --temporary values
             SCOREINIT = 0,
             SCOREDIFF = 0,
 
@@ -4104,10 +4103,10 @@ function Taiko.ParseTJA(source)
     local function ParseComplexNumberSimple(s)
         --Can handle fractions
         --VERY MEMORY INTENSIVE --DIRTY
-        local t = Split(s, '%+')
+        local t = String.Split(s, '%+')
         local newt = {}
         for i = 1, #t do
-            local t2 = Split(t[i], '%-')
+            local t2 = String.Split(t[i], '%-')
             for i = 1, #t2 do
                 if i == 1 then
                     newt[#newt + 1] = t2[i]
@@ -4164,8 +4163,8 @@ function Taiko.ParseTJA(source)
     --print(unpack(ParseComplexNumber(source)))error()
     local function ParseArguments(s)
         --TaikoManyGimmicks Style
-        --return Split(s, ',')
-        return Split(s, ' ')
+        --return String.Split(s, ',')
+        return String.Split(s, ' ')
     end
 
 
@@ -4621,13 +4620,13 @@ function Taiko.ParseTJA(source)
 
 
     --Start
-    local lines = Split(source, '\n')
+    local lines = String.Split(source, '\n')
     for i = 1, #lines do
         LineN = i
 
-        --local line = TrimLeft(lines[i])
-        local line = Trim(lines[i])
-        if StartsWith(line, '//') or line == '' then
+        --local line = String.TrimLeft(lines[i])
+        local line = String.Trim(lines[i])
+        if String.StartsWith(line, '//') or line == '' then
             --Do nothing
         else
             --Check for comments
@@ -4650,16 +4649,16 @@ function Taiko.ParseTJA(source)
             if Parser.songstarted == false and done == false then
                 local match = {string.match(line, '(%u+):(.*)')}
                 if match[1] then
-                    local a = Trim(match[2])
+                    local a = String.Trim(match[2])
                     if a ~= '' then
-                        Parsed.Metadata[Trim(match[1])] = a
+                        Parsed.Metadata[String.Trim(match[1])] = a
                     end
                     
                     done = true
                     --[[
-                    local a = Trim(match[2])
+                    local a = String.Trim(match[2])
                     if a ~= '' then
-                        Parsed.Metadata[Trim(match[1])] = a
+                        Parsed.Metadata[String.Trim(match[1])] = a
                     end
                     done = true
                     ]]
@@ -4667,7 +4666,7 @@ function Taiko.ParseTJA(source)
             end
 
             --Command
-            if (Parser.songstarted or StartsWith(line, '#START') or StartsWith(line, '#BMSCROLL') or StartsWith(line, '#HBSCROLL')) and done == false then
+            if (Parser.songstarted or String.StartsWith(line, '#START') or String.StartsWith(line, '#BMSCROLL') or String.StartsWith(line, '#HBSCROLL') or String.StartsWith(line, '#NMSCROLL')) and done == false then
                 local match = {string.match(line, '#(%u-)%s(.*)')}
                 if not match[1] then
                     match = {string.match(line, '#(%u+)')}
@@ -4809,7 +4808,7 @@ function Taiko.ParseTJA(source)
                             ]]
                             if Parsed.Metadata.MAKER then
                                 Parsed.Metadata.CREATORURLT = {}
-                                Parsed.Metadata.CREATOR = Trim(string.gsub(Parsed.Metadata.MAKER, '(<.->)', function(url)
+                                Parsed.Metadata.CREATOR = String.Trim(string.gsub(Parsed.Metadata.MAKER, '(<.->)', function(url)
                                     table.insert(Parsed.Metadata.CREATORURLT, string.sub(url, 2, -2))
                                     return ''
                                 end))
@@ -6063,7 +6062,7 @@ Everyone who DL
                     end
                 end
 
-                if EndsWith(TrimRight(line), ',') then
+                if String.EndsWith(String.TrimRight(line), ',') then
                     -- [[
                     --Recalculate --FIX
                     Parser.mpm = Parser.bpm * Parser.sign / 4
@@ -6080,9 +6079,19 @@ Everyone who DL
                     --add notes
                     if #Parser.currentmeasure == 0 then
                         Parser.ms = Parser.ms + Parser.mspermeasure
+
+                        Parser.measuredone = true
+                        --Parser.currentmeasure = {}
+                        --Parser.zeroopt = zeroopt
+                        Parser.insertbarline = true
                     elseif #Parser.currentmeasure == 1 and Parser.currentmeasure[1].data == 'event' and Parser.currentmeasure[1].event == 'barline' then
                         Parsed.Data[#Parsed.Data + 1] = Parser.currentmeasure[1]
                         Parser.ms = Parser.ms + Parser.mspermeasure
+
+                        Parser.measuredone = true
+                        Parser.currentmeasure = {}
+                        --Parser.zeroopt = zeroopt
+                        Parser.insertbarline = true
                     else
                         --count notes
                         local notes = 0
@@ -6299,25 +6308,26 @@ Everyone who DL
                                 end
                             end
                         end
+
+                        Parser.measuredone = true
+                        Parser.currentmeasure = {}
+                        Parser.zeroopt = zeroopt
+                        Parser.insertbarline = true
+                        if nextjposscroll then
+                            Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
+                            --Parser.zeroopt = false
+                        end
+                        if nextbpmchange then
+                            Parser.currentmeasure[#Parser.currentmeasure + 1] = nextbpmchange
+                            --Parser.zeroopt = false
+                        end
+                        if nextlyric then
+                            Parser.currentmeasure[#Parser.currentmeasure + 1] = nextlyric
+                            --Parser.zeroopt = false
+                        end
+                        --Parser.zeroopt = zeroopt
+                        --io.read()
                     end
-                    Parser.measuredone = true
-                    Parser.currentmeasure = {}
-                    Parser.zeroopt = zeroopt
-                    Parser.insertbarline = true
-                    if nextjposscroll then
-                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextjposscroll
-                        --Parser.zeroopt = false
-                    end
-                    if nextbpmchange then
-                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextbpmchange
-                        --Parser.zeroopt = false
-                    end
-                    if nextlyric then
-                        Parser.currentmeasure[#Parser.currentmeasure + 1] = nextlyric
-                        --Parser.zeroopt = false
-                    end
-                    --Parser.zeroopt = zeroopt
-                    --io.read()
                 else
                     Parser.measuredone = false
                 end
@@ -8709,7 +8719,7 @@ int MeasureText(const char *text, int fontSize)
     --rl.SetTargetFPS(120)
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
     --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
-    --rl.SetTraceLogLevel(rl.LOG_NONE)
+    rl.SetTraceLogLevel(rl.LOG_NONE)
     rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
 
     rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
@@ -8783,7 +8793,7 @@ int MeasureText(const char *text, int fontSize)
     --Config
 
     --OriginalConfig
-    OriginalConfig = Table.Clone(Config)
+    local OriginalConfig = Table.Clone(Config)
 
 
     --Config.Controls
@@ -10194,9 +10204,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local out = {}
 
         --Start
-        local lines = Split(source, '\n')
+        local lines = String.Split(source, '\n')
         for i = 1, #lines do
-            local line = Trim(lines[i])
+            local line = String.Trim(lines[i])
 
             if string.sub(line, 1, 1) == ';' then
                 --Do nothing
@@ -12636,7 +12646,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) and (not balloon.pop) then
                 --balloon = hit don or ka
                 balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
-                score = balloonscoref(score, balloon.type, notegogo)
+                score = balloonscoref(score, balloon.type, balloon.gogo)
                 if balloon.timeshit >= balloon.requiredhits then
                     balloon.pop = true
                     popanim.startms = ms
@@ -12647,7 +12657,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                 --drumroll = hit don or ka
                 drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
-                score = drumrollscoref(score, drumroll.type, notegogo)
+                score = drumrollscoref(score, drumroll.type, drumroll.gogo)
             end
         end
 
@@ -13819,7 +13829,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     if not note.hit then
 
                         --Break combo if too late
-                        local leniency = ((notetype == 3 or notetype == 4) and Taiko.Data.BigLeniency) or 1
+                        local leniency = ((note.type == 3 or note.type == 4) and Taiko.Data.BigLeniency) or 1
                         if (not note.brokecombo) and (note.type == 1 or note.type == 2 or note.type == 3 or note.type == 4) and ms - note.ms > (timing.bad * leniency) then
                             --bad
                             --status = 0
@@ -16148,7 +16158,7 @@ function Taiko.SongSelectOld(header, data, FilesSources)
                 if file then
                     --local data2 = io.read(file, '*all')
                     local data2 = file:read('*all')
-                    if EndsWith(input, '.tja') then
+                    if String.EndsWith(input, '.tja') then
                         print('Enter a song name')
                         local input2 = StandardInput()
                         local index = #header + 1
@@ -16156,7 +16166,7 @@ function Taiko.SongSelectOld(header, data, FilesSources)
                         data[index] = data2
                         FilesSources[index] = {input}
                         break
-                    elseif EndsWith(input, '.tjac') then
+                    elseif String.EndsWith(input, '.tjac') then
                         local t, h = Compact.Decompress(data2)
                         for i = 1, #t do
                             local index = #header + 1
@@ -16331,7 +16341,7 @@ local exclude = {
 }
 for i = 1, #t do
     local file = t[i]
-    if (not exclude[file]) and EndsWith(file, 'tja') then
+    if (not exclude[file]) and String.EndsWith(file, 'tja') then
         print(file)
         Taiko.ParseTJA(io.open(dir .. '\\'.. file,'r'):read('*all'))
     end
