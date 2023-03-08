@@ -9687,7 +9687,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             tcenter.y = tcenter.y * timesy
 
             --debug
-            textsize = Config.ScreenHeight / 45
+            --textsize = Config.ScreenHeight / 45
+            textsize = textsize * timesy
         end
         --timesx, timesy needs to be provided
         for k, v in pairs(t) do
