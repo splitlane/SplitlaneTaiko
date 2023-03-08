@@ -7,14 +7,22 @@
 
 
 
-setmetatable(_G, {
-    __index = function(t, k)
-        print(t, k)
-        print(debug.traceback())
-        error()
-    end,
-    __newindex = function(t, k, v)
-        rawset(t, k, v)
-        print(t, k, v)
-    end
-})
+local on = false
+
+
+
+
+
+if on then
+    setmetatable(_G, {
+        __index = function(t, k)
+            print(t, k)
+            print(debug.traceback())
+            error()
+        end,
+        __newindex = function(t, k, v)
+            rawset(t, k, v)
+            print(t, k, v)
+        end
+    })
+end
