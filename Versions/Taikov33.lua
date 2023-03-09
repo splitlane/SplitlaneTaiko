@@ -9677,6 +9677,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         if not recursive then
             scale[1] = scale[1] * timesx
             scale[2] = scale[2] * timesy
+            print(unpack(scale))
 
             --[[
             target[1] = (target[1] - offsetx) * timesx + offsetx
@@ -9724,7 +9725,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         end
         return t
     end
-
+    local function ResetResizeAll()
+        --ResizeAll(Textures, 1 / scale[1], 1 / scale[2])
+    end
+    local function SetupResizeAll()
+        --ResizeAll(Textures, Config.ScreenWidth / OriginalConfig.ScreenWidth, Config.ScreenHeight / OriginalConfig.ScreenHeight)
+    end
 
 
 
@@ -10978,13 +10984,340 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-    function Taiko.PlaySong(Parsed)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --popanim
+--[[
+f	transparency
+0	12.5*8
+1	12.5*7
+2	12.5*6
+3	12.5*5
+4	12.5*4
+5	12.5*3
+6	12.5*2
+7	12.5*1
+8	12.5*0
+        ]]
+        local popanim = {
+            startms = nil,
+            framen = CountAnimFrames(Textures.PlaySong.Balloons.Anim),
+            anim = {
+                [0] = 0.125*8,
+                [1] = 0.125*7,
+                [2] = 0.125*6,
+                [3] = 0.125*5,
+                [4] = 0.125*4,
+                [5] = 0.125*3,
+                [6] = 0.125*2,
+                [7] = 0.125*1,
+                [8] = 0.125*0,
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
+
+
+
+
+        --gaugeclearanim
+--[[
+(white -> yellow -> white)
+r, g = 1, 1
+        ]]
+        local gaugeclearanim = {
+            startms = nil,
+            framen = 31,
+            anim = {
+                [0] = 0,
+                [1] = 0,
+                [2] = 0,
+                [3] = 0,
+                [4] = 0,
+                [5] = 0,
+                [6] = 0,
+                [7] = 0,
+                [8] = 0,
+                [9] = 0,
+                [10] = 0,
+                [11] = 0,
+                [12] = 0,
+                [13] = 0,
+                [14] = 0,
+                [15] = 0,
+                [16] = 0,
+                [17] = 0,
+                [18] = 0,
+                [19] = 0,
+                [20] = 0,
+                [21] = 0,
+                [22] = 0,
+                [23] = 0.2,
+                [24] = 0.4,
+                [25] = 0.6,
+                [26] = 0.8,
+                [27] = 1,
+                [28] = 0.8,
+                [29] = 0.6,
+                [30] = 0.4,
+                [31] = 0.2,
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
+
+        local gaugeoverflowanim = {
+            startms = nil,
+            framen = 12,
+            anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
+        }
+
+
+
+
+
+
+
+        --notehitlane
+--[[
+f	transparency
+0	1
+1	1
+2	1
+3	0.75
+4	0.5
+5	0.25
+        ]]
+        local notehitlane = {
+            anim = {
+                [0] = 1,
+                [1] = 1,
+                [2] = 1,
+                [3] = 0.75,
+                [4] = 0.5,
+                [5] = 0.25,
+            },
+            [1] = {
+                startms = nil,
+                color = rl.new('Color', 255, 255, 255, 255)
+            },
+            [2] = {
+                startms = nil,
+                color = rl.new('Color', 255, 255, 255, 255)
+            }
+        }
+
+
+        --judgeanim
+--[[
+f	transparency    p
+0	1
+1	1
+2	1
+3	1
+4	1
+5	1
+6	1
+7	1
+8	1
+9	1
+10	1
+11	1
+12	1
+13	1
+14	1
+15	1
+16	1
+17	1
+18	1
+19	1
+20  1
+21  1
+22  0.75
+23  0.5
+24  0.25
+25  0
+        ]]
+        local judgeanim = {
+            animp = {
+                --Estimated using eye
+                [0] = 98,
+                [1] = 92,
+                [2] = 88,
+                [3] = 84,
+                [4] = 80,
+                [5] = 77,
+                [6] = 75,
+                [7] = 75,
+                [8] = 75,
+                [9] = 75,
+                [10] = 75,
+                [11] = 75,
+                [12] = 75,
+                [13] = 75,
+                [14] = 75,
+                [15] = 75,
+                [16] = 75,
+                [17] = 75,
+                [18] = 75,
+                [19] = 75,
+                [20] = 75,
+                [21] = 75,
+                [22] = 75,
+                [23] = 75,
+                [24] = 75,
+                [25] = 75,
+            },
+            animt = {
+                [0] = 1,
+                [1] = 1,
+                [2] = 1,
+                [3] = 1,
+                [4] = 1,
+                [5] = 1,
+                [6] = 1,
+                [7] = 1,
+                [8] = 1,
+                [9] = 1,
+                [10] = 1,
+                [11] = 1,
+                [12] = 1,
+                [13] = 1,
+                [14] = 1,
+                [15] = 1,
+                [16] = 1,
+                [17] = 1,
+                [18] = 1,
+                [19] = 1,
+                [20] = 1,
+                [21] = 1,
+                [22] = 0.75,
+                [23] = 0.5,
+                [24] = 0.25,
+                [25] = 0,
+            },
+            startms = {
+                --startms
+            },
+            judge = {
+                --judge
+            },
+            color = rl.new('Color', 255, 255, 255, 255)
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        --[[
+f	transparency
+0	100
+1	100
+2	100
+3	100
+4	100
+5	75
+6	50
+7	25
+8	0
+
+sides
+left 0-60 (0-Textures.PlaySong.Backgrounds.Taiko.sizex/2)
+right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
+]]
+
+        local taikoanim = {
+            anim = {
+                [0] = 0.125*8,
+                [1] = 0.125*8,
+                [2] = 0.125*8,
+                [3] = 0.125*8,
+                [4] = 0.125*8,
+                [5] = 0.125*6,
+                [6] = 0.125*4,
+                [7] = 0.125*2,
+                [8] = 0.125*0,
+            },
+            --left
+            [1] = {
+                --don
+                [1] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255),
+                },
+                --ka
+                [2] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                },
+                sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                pr = rl.new('Rectangle', 0, 0, 0, 0),
+                center = rl.new('Vector2', 0, 0)
+            },
+            --right
+            [2] = {
+                --don
+                [1] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255),
+                },
+                --ka
+                [2] = {
+                    startms = nil,
+                    color = rl.new('Color', 255, 255, 255, 255)
+                },
+                sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
+                pr = rl.new('Rectangle', 0, 0, 0, 0),
+                center = rl.new('Vector2', 0, 0)
+            }
+        }
+
+
+
+
+    
+    function Taiko.PlaySong(Parsed)
+        SetupResizeAll()
 
 
 
 
         --INIT
+        local oldscale = {scale[1], scale[2]}
+        ResizeAll(Textures, 1 / scale[1], 1 / scale[2])
 
 
 
@@ -11083,24 +11416,24 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
         --Everything will be in terms of screenx and screeny
         --original tracklength: 40 noteradius (160)
-        local tracklength = Config.ScreenWidth --2400 max
+        local tracklength = OriginalConfig.ScreenWidth --2400 max
         --raylib use only
 
 
 
 
-        local bufferlength = 1/16 * Config.ScreenWidth
-        local unloadbuffer = 5/16 * Config.ScreenWidth --NOT added to bufferlength
+        local bufferlength = 1/16 * OriginalConfig.ScreenWidth
+        local unloadbuffer = 5/16 * OriginalConfig.ScreenWidth --NOT added to bufferlength
         local endms = 1000 --Added to last note (ms)
-        local noteradius = 72/2/1280 * Config.ScreenWidth --Radius of normal (small) notes
-        local y = 0 * Config.ScreenWidth
-        local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight} --(src: taiko-web)
+        local noteradius = 72/2/1280 * OriginalConfig.ScreenWidth --Radius of normal (small) notes
+        local y = 0 * OriginalConfig.ScreenWidth
+        local target = {414/1280 * OriginalConfig.ScreenWidth, -(257/720 - 1/2) * OriginalConfig.ScreenHeight} --(src: taiko-web)
         
         
 
         if Parsed.Flag.PARSER_FORCE_OLD_TARGET then
             --target = {3/40 * Config.ScreenWidth, 0} --(src: taiko-web)
-            target = {1/4 * Config.ScreenWidth, 0}
+            target = {1/4 * OriginalConfig.ScreenWidth, 0}
         end
 
         --REMEMBER, ALL NOTES ARE RELATIVE TO TARGET
@@ -11129,7 +11462,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         local trackend = trackstart + tracklength
 
 
-        local screenrect = {0, -Config.ScreenHeight / 2, Config.ScreenWidth, Config.ScreenHeight / 2}
+        local screenrect = {0, -OriginalConfig.ScreenHeight / 2, OriginalConfig.ScreenWidth, OriginalConfig.ScreenHeight / 2}
         local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
         local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
 
@@ -11457,12 +11790,12 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         if Parsed.Flag.PARSER_FORCE_OLD_SPEED_CALCULATION then
             speedcalcf = Taiko.CalculateSpeed
             if Parsed.Flag.PARSER_FORCE_OLD_NOTERADIUS then
-                noteradius = 1/40 * Config.ScreenWidth
+                noteradius = 1/40 * OriginalConfig.ScreenWidth
             end
             speedcalcarg = noteradius
         else
             speedcalcf = Taiko.CalculateSpeedInterval
-            speedcalcarg = Config.ScreenWidth / 1280
+            speedcalcarg = OriginalConfig.ScreenWidth / 1280
         end
         for k, v in pairs(notetable) do
             --v.oms is original ms
@@ -12117,222 +12450,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
 
-        --popanim
---[[
-f	transparency
-0	12.5*8
-1	12.5*7
-2	12.5*6
-3	12.5*5
-4	12.5*4
-5	12.5*3
-6	12.5*2
-7	12.5*1
-8	12.5*0
-        ]]
-        local popanim = {
-            startms = nil,
-            framen = CountAnimFrames(Textures.PlaySong.Balloons.Anim),
-            anim = {
-                [0] = 0.125*8,
-                [1] = 0.125*7,
-                [2] = 0.125*6,
-                [3] = 0.125*5,
-                [4] = 0.125*4,
-                [5] = 0.125*3,
-                [6] = 0.125*2,
-                [7] = 0.125*1,
-                [8] = 0.125*0,
-            },
-            color = rl.new('Color', 255, 255, 255, 255)
-        }
 
-
-
-
-        --gaugeclearanim
---[[
-(white -> yellow -> white)
-r, g = 1, 1
-        ]]
-        local gaugeclearanim = {
-            startms = nil,
-            framen = 31,
-            anim = {
-                [0] = 0,
-                [1] = 0,
-                [2] = 0,
-                [3] = 0,
-                [4] = 0,
-                [5] = 0,
-                [6] = 0,
-                [7] = 0,
-                [8] = 0,
-                [9] = 0,
-                [10] = 0,
-                [11] = 0,
-                [12] = 0,
-                [13] = 0,
-                [14] = 0,
-                [15] = 0,
-                [16] = 0,
-                [17] = 0,
-                [18] = 0,
-                [19] = 0,
-                [20] = 0,
-                [21] = 0,
-                [22] = 0,
-                [23] = 0.2,
-                [24] = 0.4,
-                [25] = 0.6,
-                [26] = 0.8,
-                [27] = 1,
-                [28] = 0.8,
-                [29] = 0.6,
-                [30] = 0.4,
-                [31] = 0.2,
-            },
-            color = rl.new('Color', 255, 255, 255, 255)
-        }
-
-        local gaugeoverflowanim = {
-            startms = nil,
-            framen = 12,
-            anim = Textures.PlaySong.Gauges.Meter.rainbow.Anim
-        }
-
-
-
-
-
-
-
-        --notehitlane
---[[
-f	transparency
-0	1
-1	1
-2	1
-3	0.75
-4	0.5
-5	0.25
-        ]]
-        local notehitlane = {
-            anim = {
-                [0] = 1,
-                [1] = 1,
-                [2] = 1,
-                [3] = 0.75,
-                [4] = 0.5,
-                [5] = 0.25,
-            },
-            [1] = {
-                startms = nil,
-                color = rl.new('Color', 255, 255, 255, 255)
-            },
-            [2] = {
-                startms = nil,
-                color = rl.new('Color', 255, 255, 255, 255)
-            }
-        }
-
-
-        --judgeanim
---[[
-f	transparency    p
-0	1
-1	1
-2	1
-3	1
-4	1
-5	1
-6	1
-7	1
-8	1
-9	1
-10	1
-11	1
-12	1
-13	1
-14	1
-15	1
-16	1
-17	1
-18	1
-19	1
-20  1
-21  1
-22  0.75
-23  0.5
-24  0.25
-25  0
-        ]]
-        local judgeanim = {
-            animp = {
-                --Estimated using eye
-                [0] = 98,
-                [1] = 92,
-                [2] = 88,
-                [3] = 84,
-                [4] = 80,
-                [5] = 77,
-                [6] = 75,
-                [7] = 75,
-                [8] = 75,
-                [9] = 75,
-                [10] = 75,
-                [11] = 75,
-                [12] = 75,
-                [13] = 75,
-                [14] = 75,
-                [15] = 75,
-                [16] = 75,
-                [17] = 75,
-                [18] = 75,
-                [19] = 75,
-                [20] = 75,
-                [21] = 75,
-                [22] = 75,
-                [23] = 75,
-                [24] = 75,
-                [25] = 75,
-            },
-            animt = {
-                [0] = 1,
-                [1] = 1,
-                [2] = 1,
-                [3] = 1,
-                [4] = 1,
-                [5] = 1,
-                [6] = 1,
-                [7] = 1,
-                [8] = 1,
-                [9] = 1,
-                [10] = 1,
-                [11] = 1,
-                [12] = 1,
-                [13] = 1,
-                [14] = 1,
-                [15] = 1,
-                [16] = 1,
-                [17] = 1,
-                [18] = 1,
-                [19] = 1,
-                [20] = 1,
-                [21] = 1,
-                [22] = 0.75,
-                [23] = 0.5,
-                [24] = 0.25,
-                [25] = 0,
-            },
-            startms = {
-                --startms
-            },
-            judge = {
-                --judge
-            },
-            color = rl.new('Color', 255, 255, 255, 255)
-        }
 
 
 
@@ -12514,70 +12632,7 @@ CalculateNoteHitGauge(defaulttarget)
 
 
 
---[[
-f	transparency
-0	100
-1	100
-2	100
-3	100
-4	100
-5	75
-6	50
-7	25
-8	0
 
-sides
-left 0-60 (0-Textures.PlaySong.Backgrounds.Taiko.sizex/2)
-right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
-]]
-
-        local taikoanim = {
-            anim = {
-                [0] = 0.125*8,
-                [1] = 0.125*8,
-                [2] = 0.125*8,
-                [3] = 0.125*8,
-                [4] = 0.125*8,
-                [5] = 0.125*6,
-                [6] = 0.125*4,
-                [7] = 0.125*2,
-                [8] = 0.125*0,
-            },
-            --left
-            [1] = {
-                --don
-                [1] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255),
-                },
-                --ka
-                [2] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255)
-                },
-                sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                pr = rl.new('Rectangle', 0, 0, 0, 0),
-                center = rl.new('Vector2', 0, 0)
-            },
-            --right
-            [2] = {
-                --don
-                [1] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255),
-                },
-                --ka
-                [2] = {
-                    startms = nil,
-                    color = rl.new('Color', 255, 255, 255, 255)
-                },
-                sourcerect = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.sizex / 2, 0, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                opr = rl.new('Rectangle', Textures.PlaySong.Backgrounds.Taiko.pr.x + Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.pr.y, Textures.PlaySong.Backgrounds.Taiko.sizex / 2, Textures.PlaySong.Backgrounds.Taiko.sizey),
-                pr = rl.new('Rectangle', 0, 0, 0, 0),
-                center = rl.new('Vector2', 0, 0)
-            }
-        }
         local function Hit(v, side)
             --Play Sound
             rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
@@ -12779,7 +12834,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
+        ResizeAll(Textures, oldscale[1], oldscale[2])
 
 
 
@@ -14538,9 +14593,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                             break
                         elseif Selected == 2 then
                             --Retry
+                            ResetResizeAll()
                             return false
                         elseif Selected == 3 then
                             --Quit
+                            ResetResizeAll()
                             return nil
                         else
 
@@ -14765,6 +14822,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         end
 
 
+        ResetResizeAll()
         return true
 
 
