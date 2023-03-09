@@ -9122,8 +9122,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     --PLAYSONG CONFIG
-    local target = {414/1280 * Config.ScreenWidth, -(257/720 - 1/2) * Config.ScreenHeight}
-    local trackstart = 333/1280 * Config.ScreenWidth
+    local target = {414/1280 * OriginalConfig.ScreenWidth, -(257/720 - 1/2) * OriginalConfig.ScreenHeight}
+    local trackstart = 333/1280 * OriginalConfig.ScreenWidth
     local tracky = target[2]
 
 
@@ -9169,7 +9169,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
 
     --Config Options
-    local offsetx, offsety = 0, Config.ScreenHeight / 2 --Added to rendering
+    local offsetx, offsety = 0, OriginalConfig.ScreenHeight / 2 --Added to rendering
 
     --[[
     --uses texture
@@ -9186,7 +9186,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     }
     local unloadrectchanged = {}
 
-    local textsize = Config.ScreenHeight / 45
+    local textsize = OriginalConfig.ScreenHeight / 45
     --print(textsize)
 
     local desynctime = 0.1 --Acceptable time for desync until correction (seconds)
@@ -9645,7 +9645,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             end
         else
             --Assume skin is 720p
-            rl.ImageResize(t, (Config.ScreenWidth / 1280) * t.width * timesx, (Config.ScreenHeight / 720) * t.height * timesy)
+            rl.ImageResize(t, (OriginalConfig.ScreenWidth / 1280) * t.width * timesx, (OriginalConfig.ScreenHeight / 720) * t.height * timesy)
         end
         return t
     end
@@ -9677,7 +9677,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
         if not recursive then
             scale[1] = scale[1] * timesx
             scale[2] = scale[2] * timesy
-            print(unpack(scale))
+            --print(unpack(scale))
 
             --[[
             target[1] = (target[1] - offsetx) * timesx + offsetx
@@ -9768,7 +9768,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.SENotes.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
     Textures.PlaySong.SENotes.center = rl.new('Vector2', Textures.PlaySong.SENotes.sizex / 2, Textures.PlaySong.SENotes.sizey / 2)
 
-    Textures.PlaySong.SENotes.offsety = 80/720 * Config.ScreenHeight
+    Textures.PlaySong.SENotes.offsety = 80/720 * OriginalConfig.ScreenHeight
 
 
     --Barlines
@@ -9838,8 +9838,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Effects.Note.sizey = Textures.PlaySong.Effects.Note.Hit[1].Anim[0].height
 
     --In case base didn't load
-    Textures.PlaySong.Effects.Note.sizex = Textures.PlaySong.Effects.Note.sizex == 0 and 260/1280 * Config.ScreenWidth or Textures.PlaySong.Effects.Note.sizex
-    Textures.PlaySong.Effects.Note.sizey = Textures.PlaySong.Effects.sizey == 0 and 260/720 * Config.ScreenHeight or Textures.PlaySong.Effects.Note.sizey
+    Textures.PlaySong.Effects.Note.sizex = Textures.PlaySong.Effects.Note.sizex == 0 and 260/1280 * OriginalConfig.ScreenWidth or Textures.PlaySong.Effects.Note.sizex
+    Textures.PlaySong.Effects.Note.sizey = Textures.PlaySong.Effects.sizey == 0 and 260/720 * OriginalConfig.ScreenHeight or Textures.PlaySong.Effects.Note.sizey
 
     Textures.PlaySong.Effects.Note.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Effects.Note.sizex, Textures.PlaySong.Effects.Note.sizey)
     Textures.PlaySong.Effects.Note.center = rl.new('Vector2', Textures.PlaySong.Effects.Note.sizex / 2, Textures.PlaySong.Effects.Note.sizey / 2)
@@ -9897,7 +9897,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Lanes.ssourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
     Textures.PlaySong.Lanes.scenter = rl.new('Vector2', 0, 0)
     --Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, (tracky - Textures.PlaySong.Lanes.sizey / 2) * ymul + offsety, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
-    Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, 325/720 * Config.ScreenHeight, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
+    Textures.PlaySong.Lanes.spr = rl.new('Rectangle', trackstart * xmul + offsetx, 325/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Lanes.ssizex, Textures.PlaySong.Lanes.ssizey)
 
 
 
@@ -9912,21 +9912,21 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Backgrounds.Frame.sizey = Textures.PlaySong.Backgrounds.Frame[1].height
     Textures.PlaySong.Backgrounds.Frame.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
     Textures.PlaySong.Backgrounds.Frame.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Backgrounds.Frame.pr = rl.new('Rectangle', 332/1280 * Config.ScreenWidth, 136/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
+    Textures.PlaySong.Backgrounds.Frame.pr = rl.new('Rectangle', 332/1280 * OriginalConfig.ScreenWidth, 136/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Frame.sizex, Textures.PlaySong.Backgrounds.Frame.sizey)
 
     --Taiko
     Textures.PlaySong.Backgrounds.Taiko.sizex = Textures.PlaySong.Backgrounds.Taiko.base.width
     Textures.PlaySong.Backgrounds.Taiko.sizey = Textures.PlaySong.Backgrounds.Taiko.base.height
     Textures.PlaySong.Backgrounds.Taiko.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
     Textures.PlaySong.Backgrounds.Taiko.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 210/1280 * Config.ScreenWidth, 206/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
+    Textures.PlaySong.Backgrounds.Taiko.pr = rl.new('Rectangle', 210/1280 * OriginalConfig.ScreenWidth, 206/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Taiko.sizex, Textures.PlaySong.Backgrounds.Taiko.sizey)
 
     --ComboText (goes with Fonts.Combo)
     Textures.PlaySong.Backgrounds.ComboText.sizex = Textures.PlaySong.Backgrounds.ComboText[0].width
     Textures.PlaySong.Backgrounds.ComboText.sizey = Textures.PlaySong.Backgrounds.ComboText[0].height
     Textures.PlaySong.Backgrounds.ComboText.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.ComboText.sizex, Textures.PlaySong.Backgrounds.ComboText.sizey)
     Textures.PlaySong.Backgrounds.ComboText.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Backgrounds.ComboText.pr = rl.new('Rectangle', 220/1280 * Config.ScreenWidth, 198/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.ComboText.sizex, Textures.PlaySong.Backgrounds.ComboText.sizey)
+    Textures.PlaySong.Backgrounds.ComboText.pr = rl.new('Rectangle', 220/1280 * OriginalConfig.ScreenWidth, 198/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.ComboText.sizex, Textures.PlaySong.Backgrounds.ComboText.sizey)
 
     --Background
 
@@ -9943,7 +9943,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Backgrounds.Background.InfoBar.sizey = Textures.PlaySong.Backgrounds.Background.InfoBar[0].height
     Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
     Textures.PlaySong.Backgrounds.Background.InfoBar.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Backgrounds.Background.InfoBar.pr = rl.new('Rectangle', 0/1280 * Config.ScreenWidth, 184/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
+    Textures.PlaySong.Backgrounds.Background.InfoBar.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 184/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.InfoBar.sizex, Textures.PlaySong.Backgrounds.Background.InfoBar.sizey)
 
     --CourseSymbol
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex = Textures.PlaySong.Backgrounds.Background.CourseSymbol[0].width
@@ -9951,9 +9951,9 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
     Textures.PlaySong.Backgrounds.Background.CourseSymbol.center = rl.new('Vector2', 0, 0)
     --(arcade)
-    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 58/1280 * Config.ScreenWidth, 230/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 58/1280 * OriginalConfig.ScreenWidth, 230/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
     --(opentaiko)
-    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 18/1280 * Config.ScreenWidth, 230/720 * Config.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
+    Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr = rl.new('Rectangle', 18/1280 * OriginalConfig.ScreenWidth, 230/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizex, Textures.PlaySong.Backgrounds.Background.CourseSymbol.sizey)
 
 
 
@@ -10006,25 +10006,25 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Gauges.Meter.sizey = Textures.PlaySong.Gauges.Meter.base.height
     Textures.PlaySong.Gauges.Meter.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
     Textures.PlaySong.Gauges.Meter.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Gauges.Meter.pr = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
+    Textures.PlaySong.Gauges.Meter.pr = rl.new('Rectangle', 494/1280 * OriginalConfig.ScreenWidth, 144/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
     
     --Meter (fill)
     Textures.PlaySong.Gauges.Meter.sourcerect2 = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
-    Textures.PlaySong.Gauges.Meter.pr2 = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
+    Textures.PlaySong.Gauges.Meter.pr2 = rl.new('Rectangle', 494/1280 * OriginalConfig.ScreenWidth, 144/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Gauges.Meter.sizex, Textures.PlaySong.Gauges.Meter.sizey)
 
     --Clear
     Textures.PlaySong.Gauges.Clear.sizex = Textures.PlaySong.Gauges.Clear[true].width
     Textures.PlaySong.Gauges.Clear.sizey = Textures.PlaySong.Gauges.Clear[true].height
     Textures.PlaySong.Gauges.Clear.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
     Textures.PlaySong.Gauges.Clear.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Gauges.Clear.pr = rl.new('Rectangle', 1038/1280 * Config.ScreenWidth, 143/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
+    Textures.PlaySong.Gauges.Clear.pr = rl.new('Rectangle', 1038/1280 * OriginalConfig.ScreenWidth, 143/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Gauges.Clear.sizex, Textures.PlaySong.Gauges.Clear.sizey)
 
     --Meter (gaugeoverflow)
     Textures.PlaySong.Gauges.Meter.rainbow.sizex = Textures.PlaySong.Gauges.Meter.rainbow.Anim[0].width
     Textures.PlaySong.Gauges.Meter.rainbow.sizey = Textures.PlaySong.Gauges.Meter.rainbow.Anim[0].height
     Textures.PlaySong.Gauges.Meter.rainbow.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Gauges.Meter.rainbow.sizex, Textures.PlaySong.Gauges.Meter.rainbow.sizey)
     Textures.PlaySong.Gauges.Meter.rainbow.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Gauges.Meter.rainbow.pr = rl.new('Rectangle', 494/1280 * Config.ScreenWidth, 144/720 * Config.ScreenHeight, Textures.PlaySong.Gauges.Meter.rainbow.sizex, Textures.PlaySong.Gauges.Meter.rainbow.sizey)
+    Textures.PlaySong.Gauges.Meter.rainbow.pr = rl.new('Rectangle', 494/1280 * OriginalConfig.ScreenWidth, 144/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Gauges.Meter.rainbow.sizex, Textures.PlaySong.Gauges.Meter.rainbow.sizey)
 
 
     --FONTS (individual)
@@ -10054,7 +10054,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.Nameplates.sizey = Textures.PlaySong.Nameplates.base.height
     Textures.PlaySong.Nameplates.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Nameplates.sizex, Textures.PlaySong.Nameplates.sizey)
     Textures.PlaySong.Nameplates.center = rl.new('Vector2', 0, 0)
-    Textures.PlaySong.Nameplates.pr = rl.new('Rectangle', -5/1280 * Config.ScreenWidth, 296/720 * Config.ScreenHeight, Textures.PlaySong.Nameplates.sizex, Textures.PlaySong.Nameplates.sizey)
+    Textures.PlaySong.Nameplates.pr = rl.new('Rectangle', -5/1280 * OriginalConfig.ScreenWidth, 296/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Nameplates.sizex, Textures.PlaySong.Nameplates.sizey)
 
 
 
@@ -12560,10 +12560,10 @@ do
         --]]
         
         local animPos = {
-            x1 = target[1] + (14 / 1280 * (Config.ScreenWidth / scale[1])),
-            y1 = target[2] - (29 / 720 * (Config.ScreenHeight / scale[2])),
-            x2 = (Config.ScreenWidth / scale[1]) - (55 / 1280 * (Config.ScreenWidth / scale[1])),
-            y2 = frameTop + (165 / 720 * (Config.ScreenHeight / scale[2]))
+            x1 = target[1] + (14 / 1280 * (OriginalConfig.ScreenWidth / scale[1])),
+            y1 = target[2] - (29 / 720 * (OriginalConfig.ScreenHeight / scale[2])),
+            x2 = (OriginalConfig.ScreenWidth / scale[1]) - (55 / 1280 * (OriginalConfig.ScreenWidth / scale[1])),
+            y2 = frameTop + (165 / 720 * (OriginalConfig.ScreenHeight / scale[2]))
         }
 
 
@@ -12575,7 +12575,7 @@ do
 
         --don't let height change
         --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
-        animPos.h = (63 / 720 * (Config.ScreenHeight / scale[2]))
+        animPos.h = (63 / 720 * (OriginalConfig.ScreenHeight / scale[2]))
 
         local animateBezier = {{
             -- 427, 228
