@@ -196,4 +196,5 @@ ppp(parser.Load(parser.Save(parser.Load(parser.Save(parser.Load(parser.Save(t)))
 
 --]]
 
-ppp(parser.Load(io.open('test.ini', 'rb'):read'*all'))
+--ppp(parser.LoadFile('test.ini'))
+ppp(parser.LoadFile([[C:\Users\User\OneDrive\code\Taiko\Versions\INIParser\test.ini]]))

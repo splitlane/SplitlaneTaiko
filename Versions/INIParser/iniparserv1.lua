@@ -70,9 +70,11 @@ function IniParser.Save(t)
     return table.concat(globalout) .. (#out ~= 0 and ('\n\n' .. table.concat(out)) or '')
 end
 
-function IniParser.Load(str)
+--pass in t to keep adding to that table
+function IniParser.Load(str, out, include)
     str = str .. '\n'
-    local out = {}
+    local out = out or {}
+    local include = include or {}
     local currentkey = nil
     local nextnewlinei = 1
     while true do
@@ -91,60 +93,86 @@ function IniParser.Load(str)
 
         if string.sub(s, 1, 1) ~= ';' then
 
-            --Bracket
-            local bracketstart = string.find(s, '%[')
-            if bracketstart then
-                local bracketend = string.find(s, '%]')
-                if bracketend then
-                    currentkey = string.sub(s, bracketstart + 1, bracketend - 1)
-                    out[currentkey] = out[currentkey] or {}
-                end
-            end
+            if string.sub(s, 1, 8) == '#include' then
+                include[#include + 1] = string.sub(s, 10, -1)
+            else
 
-            --Key-Value
-            local equals = string.find(s, '=')
-            if equals then
-                --Trim key right whitespace
-                local i = equals - 1
-                while true do
-                    local s2 = string.sub(s, i, i)
-                    if string.find(s2, '%s') then
-                        i = i - 1
-                    else
-                        break
+                --Bracket
+                local bracketstart = string.find(s, '%[')
+                if bracketstart then
+                    local bracketend = string.find(s, '%]')
+                    if bracketend then
+                        currentkey = string.sub(s, bracketstart + 1, bracketend - 1)
+                        out[currentkey] = out[currentkey] or {}
                     end
                 end
 
-                --Trim value left whitespace
-                local i2 = equals + 1
-                while true do
-                    local s2 = string.sub(s, i2, i2)
-                    if string.find(s2, '%s') then
-                        i2 = i2 + 1
-                    else
-                        break
+                --Key-Value
+                local equals = string.find(s, '=')
+                if equals then
+                    --Trim key right whitespace
+                    local i = equals - 1
+                    while true do
+                        local s2 = string.sub(s, i, i)
+                        if string.find(s2, '%s') then
+                            i = i - 1
+                        else
+                            break
+                        end
                     end
-                end
 
-                --Push key-value to out
-                local out2 = out
-                if currentkey then
-                    --out[currentkey] = out[currentkey] or {}
-                    out2 = out[currentkey]
-                else
-                    out2 = out
-                end
+                    --Trim value left whitespace
+                    local i2 = equals + 1
+                    while true do
+                        local s2 = string.sub(s, i2, i2)
+                        if string.find(s2, '%s') then
+                            i2 = i2 + 1
+                        else
+                            break
+                        end
+                    end
 
-                out2[string.sub(s, 1, i)] = string.sub(s, i2, -1)
+                    --Push key-value to out
+                    local out2 = out
+                    if currentkey then
+                        --out[currentkey] = out[currentkey] or {}
+                        out2 = out[currentkey]
+                    else
+                        out2 = out
+                    end
+
+                    out2[string.sub(s, 1, i)] = string.sub(s, i2, -1)
+                end
             end
         end
 
         nextnewlinei = nextnewline + (cr and 2 or 1)
     end
-    return out
+    return out, include
 end
 
+function IniParser.LoadFile(path)
+    local slashp = string.find(string.reverse(path), '[/\\]') --LAST SLASH REVERSED
 
+    local dir = slashp and string.sub(path, 1, #path + 1 - slashp) or ''
+    local out = {}
+    local include = {slashp and string.sub(path, #path + 2 - slashp) or path}
+    while true do
+        local path = dir .. include[#include]
+        include[#include] = nil
+        local f = io.open(path, 'rb')
+        if f then
+            local data = f:read('*all')
+            out, include = IniParser.Load(data, out, include)
+            if #include == 0 then
+                break
+            end
+        else
+            return nil, 'Unable to open file.'
+        end
+    end
+    return out
+end
 
 
 return IniParser
