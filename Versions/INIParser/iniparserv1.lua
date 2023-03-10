@@ -71,6 +71,7 @@ function IniParser.Save(t)
 end
 
 function IniParser.Load(str)
+    str = str .. '\n'
     local out = {}
     local currentkey = nil
     local nextnewlinei = 1
@@ -88,48 +89,54 @@ function IniParser.Load(str)
 
         local s = string.sub(str, nextnewlinei, nextnewline - 1)
 
-        --Bracket
-        local bracketstart = string.find(s, '%[')
-        if bracketstart then
-            local bracketend = string.find(s, '%]')
-            if bracketend then
-                currentkey = string.sub(s, bracketstart + 1, bracketend - 1)
-            end
-        end
+        if string.sub(s, 1, 1) ~= ';' then
 
-        --Key-Value
-        local equals = string.find(s, '=')
-        if equals then
-            --Trim key right whitespace
-            local i = equals - 1
-            while true do
-                local s2 = string.sub(s, i, i)
-                if string.find(s2, '%s') then
-                    i = i - 1
-                else
-                    break
+            --Bracket
+            local bracketstart = string.find(s, '%[')
+            if bracketstart then
+                local bracketend = string.find(s, '%]')
+                if bracketend then
+                    currentkey = string.sub(s, bracketstart + 1, bracketend - 1)
+                    out[currentkey] = out[currentkey] or {}
                 end
             end
 
-            --Trim value left whitespace
-            local i2 = equals + 1
-            while true do
-                local s2 = string.sub(s, i2, i2)
-                if string.find(s2, '%s') then
-                    i2 = i2 + 1
-                else
-                    break
+            --Key-Value
+            local equals = string.find(s, '=')
+            if equals then
+                --Trim key right whitespace
+                local i = equals - 1
+                while true do
+                    local s2 = string.sub(s, i, i)
+                    if string.find(s2, '%s') then
+                        i = i - 1
+                    else
+                        break
+                    end
                 end
-            end
 
-            --Push key-value to out
-            local out2 = out
-            if currentkey then
-                out[currentkey] = out[currentkey] or {}
-                out2 = out[currentkey]
-            end
+                --Trim value left whitespace
+                local i2 = equals + 1
+                while true do
+                    local s2 = string.sub(s, i2, i2)
+                    if string.find(s2, '%s') then
+                        i2 = i2 + 1
+                    else
+                        break
+                    end
+                end
 
-            out2[string.sub(s, 1, i)] = string.sub(s, i2, -1)
+                --Push key-value to out
+                local out2 = out
+                if currentkey then
+                    --out[currentkey] = out[currentkey] or {}
+                    out2 = out[currentkey]
+                else
+                    out2 = out
+                end
+
+                out2[string.sub(s, 1, i)] = string.sub(s, i2, -1)
+            end
         end
 
         nextnewlinei = nextnewline + (cr and 2 or 1)

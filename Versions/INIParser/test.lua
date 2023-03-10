@@ -180,6 +180,7 @@ local y=r(s)>1;local z=string.rep('    ',w)local A="{"..(y and'\n'or'')if Minify
 --]]
 ppp = printplusplus
 
+--[[
 local t = {
     A = 1,
     B = 'B',
@@ -192,3 +193,7 @@ local t = {
 print(parser.Save(t))
 
 ppp(parser.Load(parser.Save(parser.Load(parser.Save(parser.Load(parser.Save(t)))))))
+
+--]]
+
+ppp(parser.Load(io.open('test.ini', 'rb'):read'*all'))
