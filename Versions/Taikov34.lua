@@ -9233,10 +9233,46 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     local desynctime = 0.1 --Acceptable time for desync until correction (seconds)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --SKIN
+
+
+
+
+
+
     local skinresolution = {1280, 720} --Resolution for opentaiko skin
     local skinfps = 60 --Fps for opentaiko skin
     local skinframems = 1000 / skinfps --Ms per frame for opentaiko skin
 
+    --Load skin config
+    local SkinConfig = IniParser.LoadFile(AssetsPath .. 'SkinConfig.ini')
 
     --TEXTURES
 
@@ -10266,15 +10302,13 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.SongSelect.GenreBar.center = rl.new('Vector2', 0, 0)
     Textures.SongSelect.GenreBar.pr = {}
     --rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
-    --[[
     Textures.SongSelect.GenreBar.p = {
-        x = IniParser.ParseCSVN(),
-        y = IniParser.ParseCSVN()
+        x = IniParser.ParseCSVN(SkinConfig.SongSelect_Bar_X),
+        y = IniParser.ParseCSVN(SkinConfig.SongSelect_Bar_Y)
     }
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
         Textures.SongSelect.GenreBar.pr[#Textures.SongSelect.GenreBar.pr + 1] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     end
-    --]]
 
 
 
