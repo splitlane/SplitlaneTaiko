@@ -119,7 +119,7 @@ TODO: Add raylib option
     TODO: STOP HARDCODING positions, parse from ini
     TODO: implement 1080p and other resolutions, dont hardcode
         keep in mind that .ini positions are absolute, and are not multiplied by anything
-    TODO: SongSelect textures, then INI configs
+    TODO: SongSelect textures, then INI configs, then resolutions
     
 
 TODO: Taiko.Game
