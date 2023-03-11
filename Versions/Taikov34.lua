@@ -119,6 +119,7 @@ TODO: Add raylib option
     TODO: STOP HARDCODING positions, parse from ini
     TODO: implement 1080p and other resolutions, dont hardcode
         keep in mind that .ini positions are absolute, and are not multiplied by anything
+    TODO: SongSelect textures, then INI configs
     
 
 TODO: Taiko.Game
@@ -9375,6 +9376,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
             }
             --]]
             --use loadanimseperate
+            --keep in mind that these tables will be added to with sizex, sizey, pr, etc
             GenreBar = LoadAnimSeperate('Graphics/3_SongSelect/Bar_Genre/Bar_Genre_', '.png', 0, 9),
             BoxCharacter = LoadAnimSeperate('Graphics/3_SongSelect/Box_Chara/Box_Chara_', '.png', 0, 12),
             Difficulty = {
@@ -10262,9 +10264,17 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.SongSelect.GenreBar.sizey = Textures.SongSelect.GenreBar[0].height
     Textures.SongSelect.GenreBar.sourcerect = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     Textures.SongSelect.GenreBar.center = rl.new('Vector2', 0, 0)
-    Textures.SongSelect.GenreBar.pr = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
-    
-    --Textures.SongSelect.GenreBar.p
+    Textures.SongSelect.GenreBar.pr = {}
+    --rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+    --[[
+    Textures.SongSelect.GenreBar.p = {
+        x = IniParser.ParseCSVN(),
+        y = IniParser.ParseCSVN()
+    }
+    for i = 1, #Textures.SongSelect.GenreBar.p.x do
+        Textures.SongSelect.GenreBar.pr[#Textures.SongSelect.GenreBar.pr + 1] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+    end
+    --]]
 
 
 
