@@ -9273,7 +9273,23 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     --Load skin config
     local SkinConfig = IniParser.LoadFile(AssetsPath .. 'SkinConfig.ini')
-
+    for k, v in pairs(SkinConfig) do
+        --SkinConfig[k] = IniParser.ParseCSVN(v)
+        local t = IniParser.ParseCSV(v)
+        local valid = true
+        for i = 1, #t do
+            local a = tonumber(t[i])
+            if a then
+                t[i] = a
+            else
+                valid = false
+                break
+            end
+        end
+        if valid then
+            SkinConfig[k] = t
+        end
+    end
     --TEXTURES
 
 
@@ -9847,7 +9863,7 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.PlaySong.SENotes.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.SENotes.sizex, Textures.PlaySong.SENotes.sizey)
     Textures.PlaySong.SENotes.center = rl.new('Vector2', Textures.PlaySong.SENotes.sizex / 2, Textures.PlaySong.SENotes.sizey / 2)
 
-    Textures.PlaySong.SENotes.offsety = 80/720 * OriginalConfig.ScreenHeight
+    Textures.PlaySong.SENotes.offsety = 80/720 * OriginalConfig.ScreenHeight --TODO:Config
 
 
     --Barlines
@@ -10303,8 +10319,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     Textures.SongSelect.GenreBar.pr = {}
     --rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     Textures.SongSelect.GenreBar.p = {
-        x = IniParser.ParseCSVN(SkinConfig.SongSelect_Bar_X),
-        y = IniParser.ParseCSVN(SkinConfig.SongSelect_Bar_Y)
+        x = SkinConfig.SongSelect_Bar_X,
+        y = SkinConfig.SongSelect_Bar_Y
     }
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
         Textures.SongSelect.GenreBar.pr[#Textures.SongSelect.GenreBar.pr + 1] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
