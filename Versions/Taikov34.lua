@@ -12593,6 +12593,14 @@ local notehitgauge = {
         
     }
 }
+
+local drumrollhitnote = {
+    type = 1,
+    pr = rl.new('Rectangle', 0, 0, 0, 0),
+    tcentero = rl.new('Vector2', tsizex / 2, tsizey / 2),
+    tcenter = rl.new('Vector2', 0, 0),
+    rotationr = 0 --TODO: determine it from drumroll rotation?
+}
 --[[
     TODO:
     Reduce table creation
@@ -12881,6 +12889,19 @@ CalculateNoteHitGauge(defaulttarget)
                 --drumroll = hit don or ka
                 drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
                 score = drumrollscoref(score, drumroll.type, drumroll.gogo)
+
+                --notehitgauge animation
+                local i = #notehitgauge.notes + 1
+                notehitgauge.notes[i] = drumrollhitnote
+                notehitgauge.startms[i] = ms
+                notehitgauge.currenttarget[1][i] = target[1]
+                notehitgauge.currenttarget[2][i] = target[2]
+                if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
+                    --target already calced
+                else
+                    --target needs to be calced
+                    CalculateNoteHitGauge(target)
+                end
             end
         end
 
