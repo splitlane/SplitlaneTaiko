@@ -4005,6 +4005,7 @@ function Taiko.ParseTJA(source)
             PARSER_FORCE_OLD_SPEED_CALCULATION = false,
             PARSER_FORCE_OLD_NOTERADIUS = false,
             PARSER_FORCE_OLD_TARGET = false,
+            PARSER_FORCE_OLD_BPMCHANGE = false,
         },
         Metadata = {
             SUBTITLE = '', --not required --taiko-web
@@ -4114,8 +4115,6 @@ function Taiko.ParseTJA(source)
 
     if string.find(source, '$PARSER_FORCE_OLD_NOTERADIUS') then
         Parsed.Flag.PARSER_FORCE_OLD_NOTERADIUS = true
-    else
-
     end
 
     if string.find(source, '$PARSER_FORCE_OLD_TARGET') then
