@@ -9020,7 +9020,10 @@ int MeasureText(const char *text, int fontSize)
 
     rl.DrawText([[
 Taiko v34
-Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
+Loading assets and config...
+
+WARNING: Sound is very loud, so turn it all
+the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     rl.EndDrawing()
     --]]
@@ -10325,6 +10328,58 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
         Textures.SongSelect.GenreBar.pr[#Textures.SongSelect.GenreBar.pr + 1] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --Display Sound Warning
+    --Wait for start
+    while not rl.WindowShouldClose() do
+        rl.BeginDrawing()
+        rl.ClearBackground(rl.RAYWHITE)
+        rl.DrawText([[
+WARNING: Sound is very loud, so turn it all
+the way down and work your way up.
+
+Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl.RED)
+        rl.EndDrawing()
+        if rl.IsKeyPressed(rl.KEY_ENTER) then
+            break
+        end
+    end
+
+
+
+    --End of Taiko.Game init
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
