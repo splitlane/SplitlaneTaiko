@@ -9019,7 +9019,7 @@ int MeasureText(const char *text, int fontSize)
     rl.ClearBackground(rl.RAYWHITE)
 
     rl.DrawText([[
-Taiko v33
+Taiko v34
 Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
 
     rl.EndDrawing()
