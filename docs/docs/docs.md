@@ -15,6 +15,7 @@
   - [Taiko.ExtractBranch](#taikoextractbranch)
   - [Taiko.ConnectAll](#taikoconnectall)
   - [Taiko.CalculateSpeed](#taikocalculatespeed)
+  - [Taiko.CalculateSpeedInterval](#taikocalculatespeedinterval)
   - [Taiko.RenderScale (DEPRACATED)](#taikorenderscale-depracated)
   - [Taiko.PlaySong](#taikoplaysong)
   - [Taiko.SongSelect](#taikosongselect)
@@ -143,6 +144,11 @@ Be sure to use pcall to catch the errors.
 
 ## Taiko.CalculateSpeed
 
+Use Taiko.CalculateSpeedInterval for more accuracy.
+
+
+## Taiko.CalculateSpeedInterval
+
 
 
 
@@ -153,6 +159,47 @@ For testing purposes only.
 
 ## Taiko.PlaySong
 
+Plays a song, just pass in a Parsed Difficulty object (One of the difficulties). It is the main part of the game, and has been highly developed and tested.  
+  
+How it works:
+
+1. Add extra data to notes / reset notes
+2. Apply stopsong, jposscroll, bpmchange
+3. Precalculate rotation, TODO
+1. Game loop
+   2. Calculate note positions and check for closest note
+   3. If Auto:
+      1. Hit if note is just past after target
+   4. Sort notes by ms, and render the biggest ms
+   5. Start rendering (biggest ms -> smallest ms)
+      1. Draw note texture
+      2. Draw senote texture
+   6. Draw effects
+   7. If Auto:
+       1. Hit if drumroll or balloon
+   8. Check for input
+       1. If Hit:
+           1. Calculate status for hit and apply effects
+       2. If Pause or Command:
+           1. If Command:
+              1. Init command overlay
+           2. Pause and Loop
+              1. Draw still frame
+              2. If Command:
+                 1. Accept commands
+                 2. Draw overlay
+              3. If Unpause:
+                 1. Break out of loop
+              4. If Retry:
+                 1. Return false to caller
+              5. If Quit:
+                  1. Return nil to caller
+2. Return true to caller
+  
+Returns:  
+false if retry  
+nil if quit  
+true, result if ended successfully
 
 
 
@@ -162,3 +209,11 @@ For testing purposes only.
 
 
 ## Taiko.Game
+
+This function should only be called once, when the game starts. It loads all of the textures (may take ~5 seconds).
+
+
+
+
+
+

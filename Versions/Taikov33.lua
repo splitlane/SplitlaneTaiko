@@ -11326,6 +11326,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+
+
+
+        --RESULTS
+        local Results = {}
+
+
+
+
+
+
+
+
+
         --ASSETS
 
 
@@ -14827,7 +14841,7 @@ CalculateNoteHitGauge(defaulttarget)
 
 
         ResetResizeAll()
-        return true
+        return true, Results
 
 
     end
