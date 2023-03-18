@@ -8554,6 +8554,40 @@ int MeasureText(const char *text, int fontSize)
         end
         return rl.LoadFontFromMemory(GetFileType(str), data, #data, fontsize, fontchars, glyphcount)
     end
+    local dynamicfontcache = {}
+    local function LoadFontDynamic(str, fontsize, unused_fontchars, unused_glyphcount)
+        --basically creates a wrapper function that can be called to load a set of codepoints
+        --the fonts are cached
+
+        return function(fontchars, tmp)
+            --tmp is dictionary form of fontchars
+            if not tmp then
+                tmp = {}
+                for i = 1, #fontchars do
+                    tmp[fontchars[i]] = true
+                end
+            end
+
+            for k, v in pairs(dynamicfontcache) do
+                if #k == #fontchars then
+                    local a = true
+                    for i = 1, #k do
+                        if not tmp[k[i]] then
+                            a = false
+                            break
+                        end
+                    end
+                    if a then
+                        return v
+                    end
+                end
+            end
+
+            --generate
+            dynamicfontcache[fontchars] = LoadFont(str, fontsize, fontchars, #fontchars)
+            return dynamicfontcache[fontchars]
+        end
+    end
     --[=[
     local XNAcolor = rl.MAGENTA
     local function GridImage(image, nx, ny)
@@ -10170,7 +10204,8 @@ Loading assets and config...]], 0, Config.ScreenHeight / 2, fontsize, rl.BLACK)
     local Fonts = {
         PlaySong = {
             --Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
-            Lyric = rl.GetFontDefault(),
+            --Lyric = rl.GetFontDefault(),
+            Lyric = LoadFontDynamic('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
         }
     }
 
@@ -12215,13 +12250,14 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         --Lyric
         local lyricqueue = {}
+        local lyriccodepointsd = {} --every codepoint that is used for lyrics (dictionary)
         local currentlyric = nil --Current lyric object
 
         for i = 1, #Parsed.Lyric do
             local lyric = Parsed.Lyric[i]
 
             --Precompute data so we don't have to recompute every frame
-            lyric.font = Fonts.PlaySong.Lyric
+            --lyric.font = Fonts.PlaySong.Lyric
             lyric.x = 0
             lyric.y = 600
             lyric.p = rl.new('Vector2', lyric.x, lyric.y)
@@ -12235,6 +12271,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     lyric.data = Romaji.ToHiragana(lyric.data)
                 end
                 lyric.data = utf8Decode(lyric.data)
+
+                --add codepoint to lyriccodepointsd so it can be loaded in the font
+                for i = 1, #lyric.data do
+                    lyriccodepointsd[lyric.data[i]] = true
+                end
+
+                --encode to c int codepoint array
                 lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
             else
                 lyric.data = nil
@@ -12244,7 +12287,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             lyricqueue[#lyricqueue + 1] = lyric
         end
 
+        --generate lyriccodepoints (array)
+        local lyriccodepoints = {}
+        for k, v in pairs(lyriccodepointsd) do
+            lyriccodepoints[#lyriccodepoints + 1] = k
+            --print(k, k<256 and string.char(k) or '')
+        end
 
+        --Dynamic font
+        local tempfont = Fonts.PlaySong.Lyric(lyriccodepoints, lyriccodepointsd)
+        for i = 1, #Parsed.Lyric do
+            Parsed.Lyric[i].font = tempfont
+        end
 
 
 
