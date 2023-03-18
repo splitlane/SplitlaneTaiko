@@ -10372,8 +10372,10 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
         x = SkinConfig.SongSelect_Bar_X,
         y = SkinConfig.SongSelect_Bar_Y
     }
+    local middle = math.floor((SkinConfig.SongSelect_Bar_Count[1] + 1) / 2)
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
-        Textures.SongSelect.GenreBar.pr[#Textures.SongSelect.GenreBar.pr + 1] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+        --print(i, middle, i - middle)
+        Textures.SongSelect.GenreBar.pr[i - middle] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     end
 
 
@@ -10550,7 +10552,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         local Selected = 1
 
-        local RenderDistance = 5
+        --local RenderDistance = 5
 
         --FastScroll
         --[[
@@ -10775,8 +10777,10 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
             --Center on Selected
             local i3 = 0
-            for i = Selected - RenderDistance, Selected + RenderDistance do
+            --for i = Selected - RenderDistance, Selected + RenderDistance do
+            for index, v in pairs(Textures.SongSelect.GenreBar.pr) do
                 --i = Relative position (does not matter)
+                local i = index + Selected
                 --print(i)
 
                 --i2 = Wrapped i for indexing SongTree
@@ -10805,7 +10809,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 --print(i4)
 
                 --Draw box
-                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
+                --rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
+                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], v.x, v.y, fontsize, rl.BLACK)
             end
 
 
