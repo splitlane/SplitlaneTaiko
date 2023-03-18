@@ -8825,7 +8825,7 @@ int MeasureText(const char *text, int fontSize)
         about limiting frame rate:
 
         vsync causes massive cpu usage for some reason
-        settargetfps isn't vsynced and doesn't use that much cpu (probably)
+        settargetfps isn't vsynced and doesn't use that much cpu (probably) (may possibly cause screen tearing, but ive never seen that before)
 
         both of them use around the same amount of gpu, but vsync uses massive cpu
         use targetfps!!!

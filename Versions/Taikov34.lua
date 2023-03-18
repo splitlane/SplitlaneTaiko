@@ -288,12 +288,12 @@ require'strict'
 local function utf8longEncode(codepoint)
     local chars = ""
     local trailers = 0
-    local ocodepoint = codepoint
+    --local ocodepoint = codepoint
 
     -- feckin backwards compatability
     if codepoint < 0x80 then return string.char(codepoint) end
 
-    topspace = 0x20 -- we lose a bit of space left on the top every time
+    local topspace = 0x20 -- we lose a bit of space left on the top every time
 
     -- even if the codepoint is <0x40 and will fit inside 10xxxxxx, 
     -- we add a 11100000  byte in front, because it won't fit inside
@@ -487,7 +487,7 @@ do
     --fuck windows (paths are utf16)
     local windows = ffi.os == 'Windows'
     local codepointstostring
-    local wmode
+    --local wmode
     if windows then
         --https://github.com/taocpp/PEGTL/issues/78
         --https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex?redirectedfrom=MSDN
@@ -1336,7 +1336,7 @@ do
 
     local headerchar = '\n'
     local headersepchar = ','
-    local searchcase = true --case sensitive: true = not matter
+    --local searchcase = true --case sensitive: true = not matter
 
     local function EncodeHeader(t)
         local titles = {}
