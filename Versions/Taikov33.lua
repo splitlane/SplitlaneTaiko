@@ -13303,6 +13303,11 @@ CalculateNoteHitGauge(defaulttarget)
                     if ms >= lyric.ms then
                         currentlyric = lyric
 
+                        --check for empty lyric
+                        if not lyric.data then
+                            currentlyric = nil
+                        end
+
                         table.remove(lyricqueue, i)
                         break
                     end
