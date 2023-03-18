@@ -119,6 +119,7 @@ TODO: Add raylib option
     TODO: STOP HARDCODING positions, parse from ini
     TODO: implement 1080p and other resolutions, dont hardcode
         keep in mind that .ini positions are absolute, and are not multiplied by anything
+    TODO: Results
     
 
 TODO: Taiko.Game
@@ -6324,13 +6325,13 @@ Everyone who DL
                                     nextjposscroll = c
                                 end
                                 --]]
-                                nextjposscroll = c[2]
+                                nextjposscroll = c
                                 Parser.zeroopt = false
                             elseif c[1] == 'BPMCHANGE' then
-                                nextbpmchange = c[2]
+                                nextbpmchange = c
                                 Parser.zeroopt = false
                             elseif c[1] == 'LYRIC' then
-                                nextlyric = c[2]
+                                nextlyric = c
                                 Parser.zeroopt = false
                             else
 
@@ -6368,13 +6369,13 @@ Everyone who DL
 
                                 if nextjposscroll then
                                     --Put jposscroll on!
-                                    c.jposscroll = nextjposscroll
+                                    c.jposscroll = nextjposscroll[2]
                                     --c.jposscroll.startms = c.ms --no need, just use note.ms
                                     nextjposscroll = false
                                 end
                                 if nextbpmchange then
                                     --Put bpmchange on!
-                                    c.bpmchange = nextbpmchange
+                                    c.bpmchange = nextbpmchange[2]
                                     nextbpmchange = false
                                 end
                                 if nextlyric then
@@ -6384,7 +6385,7 @@ Everyone who DL
                                     table.insert(Parsed.Lyric, {
                                         ms = c.ms - Parsed.Metadata.OFFSET,
                                         lengthms = nil, --nil means indefinite
-                                        data = nextlyric
+                                        data = nextlyric[2]
                                     })
                                     nextlyric = false
                                 end
@@ -11330,7 +11331,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         --RESULTS
-        local Results = {}
+        local Results = {} --TODO
 
 
 
@@ -12229,11 +12230,16 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             lyric.odata = lyric.odata or lyric.data
             lyric.data = lyric.odata
-            if Config.Settings.PlaySong.LyricRomajiToHiragana then
-                lyric.data = Romaji.ToHiragana(lyric.data)
+            if lyric.data then
+                if Config.Settings.PlaySong.LyricRomajiToHiragana then
+                    lyric.data = Romaji.ToHiragana(lyric.data)
+                end
+                lyric.data = utf8Decode(lyric.data)
+                lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
+            else
+                lyric.data = nil
+                lyric.datac = nil
             end
-            lyric.data = utf8Decode(lyric.data)
-            lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
 
             lyricqueue[#lyricqueue + 1] = lyric
         end
