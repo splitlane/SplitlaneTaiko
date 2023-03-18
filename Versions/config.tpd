@@ -132,7 +132,7 @@ DO NOT EDIT
     },
     'Settings' = {
         'PlaySong' = {
-            'LyricRomajiToHiragana' = false,
+            'LyricRomajiToHiragana' = true,
             'Cheats' = {
                 
             },

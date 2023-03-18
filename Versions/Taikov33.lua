@@ -8820,8 +8820,20 @@ int MeasureText(const char *text, int fontSize)
 
 
     --INIT RAYLIB
-    rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+
+    --[[
+        about limiting frame rate:
+
+        vsync causes massive cpu usage for some reason
+        settargetfps isn't vsynced and doesn't use that much cpu (probably)
+
+        both of them use around the same amount of gpu, but vsync uses massive cpu
+        use targetfps!!!
+    ]]
+
+    --rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
     --rl.SetTargetFPS(120)
+    rl.SetTargetFPS(60)
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
     --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
     rl.SetTraceLogLevel(rl.LOG_NONE)
@@ -12264,6 +12276,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             lyric.spacing = 5
             lyric.size = 50
 
+            --scale lyric
+            lyric.p2 = rl.new('Vector2', 0, 0)
+
             lyric.odata = lyric.odata or lyric.data
             lyric.data = lyric.odata
             if lyric.data then
@@ -13584,7 +13599,10 @@ CalculateNoteHitGauge(defaulttarget)
             --draw lyric
             if currentlyric then
                 --rl.DrawText(currentlyric.data, currentlyric.x, currentlyric.y, currentlyric.size, rl.BLACK)
-                rl.DrawTextCodepoints(currentlyric.font, currentlyric.datac, #currentlyric.data, currentlyric.p, currentlyric.size, currentlyric.spacing, rl.BLACK)
+                currentlyric.p2.x = currentlyric.p.x * scale[1]
+                currentlyric.p2.y = currentlyric.p.y * scale[2]
+
+                rl.DrawTextCodepoints(currentlyric.font, currentlyric.datac, #currentlyric.data, currentlyric.p2, currentlyric.size * scale[2], currentlyric.spacing, rl.BLACK)
                 --rl.DrawTextCodepoint(currentlyric.font, 12354, currentlyric.p, currentlyric.size, rl.BLACK)
             end
 
