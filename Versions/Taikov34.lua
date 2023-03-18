@@ -120,6 +120,7 @@ TODO: Add raylib option
     TODO: implement 1080p and other resolutions, dont hardcode
         keep in mind that .ini positions are absolute, and are not multiplied by anything
     TODO: SongSelect textures, then INI configs, then resolutions
+    TODO: Results
     
 
 TODO: Taiko.Game
@@ -6361,13 +6362,13 @@ Everyone who DL
                                     nextjposscroll = c
                                 end
                                 --]]
-                                nextjposscroll = c[2]
+                                nextjposscroll = c
                                 Parser.zeroopt = false
                             elseif c[1] == 'BPMCHANGE' then
-                                nextbpmchange = c[2]
+                                nextbpmchange = c
                                 Parser.zeroopt = false
                             elseif c[1] == 'LYRIC' then
-                                nextlyric = c[2]
+                                nextlyric = c
                                 Parser.zeroopt = false
                             else
 
@@ -6405,13 +6406,13 @@ Everyone who DL
 
                                 if nextjposscroll then
                                     --Put jposscroll on!
-                                    c.jposscroll = nextjposscroll
+                                    c.jposscroll = nextjposscroll[2]
                                     --c.jposscroll.startms = c.ms --no need, just use note.ms
                                     nextjposscroll = false
                                 end
                                 if nextbpmchange then
                                     --Put bpmchange on!
-                                    c.bpmchange = nextbpmchange
+                                    c.bpmchange = nextbpmchange[2]
                                     nextbpmchange = false
                                 end
                                 if nextlyric then
@@ -6421,7 +6422,7 @@ Everyone who DL
                                     table.insert(Parsed.Lyric, {
                                         ms = c.ms - Parsed.Metadata.OFFSET,
                                         lengthms = nil, --nil means indefinite
-                                        data = nextlyric
+                                        data = nextlyric[2]
                                     })
                                     nextlyric = false
                                 end
@@ -8590,6 +8591,40 @@ int MeasureText(const char *text, int fontSize)
         end
         return rl.LoadFontFromMemory(GetFileType(str), data, #data, fontsize, fontchars, glyphcount)
     end
+    local dynamicfontcache = {}
+    local function LoadFontDynamic(str, fontsize, unused_fontchars, unused_glyphcount)
+        --basically creates a wrapper function that can be called to load a set of codepoints
+        --the fonts are cached
+
+        return function(fontchars, tmp)
+            --tmp is dictionary form of fontchars
+            if not tmp then
+                tmp = {}
+                for i = 1, #fontchars do
+                    tmp[fontchars[i]] = true
+                end
+            end
+
+            for k, v in pairs(dynamicfontcache) do
+                if #k == #fontchars then
+                    local a = true
+                    for i = 1, #k do
+                        if not tmp[k[i]] then
+                            a = false
+                            break
+                        end
+                    end
+                    if a then
+                        return v
+                    end
+                end
+            end
+
+            --generate
+            dynamicfontcache[fontchars] = LoadFont(str, fontsize, fontchars, #fontchars)
+            return dynamicfontcache[fontchars]
+        end
+    end
     --[=[
     local XNAcolor = rl.MAGENTA
     local function GridImage(image, nx, ny)
@@ -8822,8 +8857,20 @@ int MeasureText(const char *text, int fontSize)
 
 
     --INIT RAYLIB
-    rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+
+    --[[
+        about limiting frame rate:
+
+        vsync causes massive cpu usage for some reason
+        settargetfps isn't vsynced and doesn't use that much cpu (probably) (may possibly cause screen tearing, but ive never seen that before)
+
+        both of them use around the same amount of gpu, but vsync uses massive cpu
+        use targetfps!!!
+    ]]
+
+    --rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
     --rl.SetTargetFPS(120)
+    rl.SetTargetFPS(60)
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
     --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
     rl.SetTraceLogLevel(rl.LOG_NONE)
@@ -10262,7 +10309,8 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
     local Fonts = {
         PlaySong = {
             --Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
-            Lyric = rl.GetFontDefault(),
+            --Lyric = rl.GetFontDefault(),
+            Lyric = LoadFontDynamic('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
         }
     }
 
@@ -11477,6 +11525,20 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+
+
+
+        --RESULTS
+        local Results = {} --TODO
+
+
+
+
+
+
+
+
+
         --ASSETS
 
 
@@ -12351,31 +12413,58 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         --Lyric
         local lyricqueue = {}
+        local lyriccodepointsd = {} --every codepoint that is used for lyrics (dictionary)
         local currentlyric = nil --Current lyric object
 
         for i = 1, #Parsed.Lyric do
             local lyric = Parsed.Lyric[i]
 
             --Precompute data so we don't have to recompute every frame
-            lyric.font = Fonts.PlaySong.Lyric
+            --lyric.font = Fonts.PlaySong.Lyric
             lyric.x = 0
             lyric.y = 600
             lyric.p = rl.new('Vector2', lyric.x, lyric.y)
             lyric.spacing = 5
             lyric.size = 50
 
+            --scale lyric
+            lyric.p2 = rl.new('Vector2', 0, 0)
+
             lyric.odata = lyric.odata or lyric.data
             lyric.data = lyric.odata
-            if Config.Settings.PlaySong.LyricRomajiToHiragana then
-                lyric.data = Romaji.ToHiragana(lyric.data)
+            if lyric.data then
+                if Config.Settings.PlaySong.LyricRomajiToHiragana then
+                    lyric.data = Romaji.ToHiragana(lyric.data)
+                end
+                lyric.data = utf8Decode(lyric.data)
+
+                --add codepoint to lyriccodepointsd so it can be loaded in the font
+                for i = 1, #lyric.data do
+                    lyriccodepointsd[lyric.data[i]] = true
+                end
+
+                --encode to c int codepoint array
+                lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
+            else
+                lyric.data = nil
+                lyric.datac = nil
             end
-            lyric.data = utf8Decode(lyric.data)
-            lyric.datac = rl.new('int[?]', #lyric.data, lyric.data)
 
             lyricqueue[#lyricqueue + 1] = lyric
         end
 
+        --generate lyriccodepoints (array)
+        local lyriccodepoints = {}
+        for k, v in pairs(lyriccodepointsd) do
+            lyriccodepoints[#lyriccodepoints + 1] = k
+            --print(k, k<256 and string.char(k) or '')
+        end
 
+        --Dynamic font
+        local tempfont = Fonts.PlaySong.Lyric(lyriccodepoints, lyriccodepointsd)
+        for i = 1, #Parsed.Lyric do
+            Parsed.Lyric[i].font = tempfont
+        end
 
 
 
@@ -13386,6 +13475,11 @@ CalculateNoteHitGauge(defaulttarget)
                     if ms >= lyric.ms then
                         currentlyric = lyric
 
+                        --check for empty lyric
+                        if not lyric.data then
+                            currentlyric = nil
+                        end
+
                         table.remove(lyricqueue, i)
                         break
                     end
@@ -13682,7 +13776,10 @@ CalculateNoteHitGauge(defaulttarget)
             --draw lyric
             if currentlyric then
                 --rl.DrawText(currentlyric.data, currentlyric.x, currentlyric.y, currentlyric.size, rl.BLACK)
-                rl.DrawTextCodepoints(currentlyric.font, currentlyric.datac, #currentlyric.data, currentlyric.p, currentlyric.size, currentlyric.spacing, rl.BLACK)
+                currentlyric.p2.x = currentlyric.p.x * scale[1]
+                currentlyric.p2.y = currentlyric.p.y * scale[2]
+
+                rl.DrawTextCodepoints(currentlyric.font, currentlyric.datac, #currentlyric.data, currentlyric.p2, currentlyric.size * scale[2], currentlyric.spacing, rl.BLACK)
                 --rl.DrawTextCodepoint(currentlyric.font, 12354, currentlyric.p, currentlyric.size, rl.BLACK)
             end
 
@@ -14999,7 +15096,7 @@ CalculateNoteHitGauge(defaulttarget)
 
 
         ResetResizeAll()
-        return true
+        return true, Results
 
 
     end
