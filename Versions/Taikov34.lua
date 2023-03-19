@@ -10399,6 +10399,21 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
 
 
 
+    Textures.SongSelect.GenreBackground = Resize(Textures.SongSelect.GenreBackground)
+
+    Textures.SongSelect.GenreBackground = TextureMap.ReplaceWithTexture(Textures.SongSelect.GenreBackground)
+
+    Textures.SongSelect.GenreBackground.sizex = Textures.SongSelect.GenreBackground[0].width
+    Textures.SongSelect.GenreBackground.sizey = Textures.SongSelect.GenreBackground[0].height
+    Textures.SongSelect.GenreBackground.sourcerect = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBackground.sizex, Textures.SongSelect.GenreBackground.sizey)
+    Textures.SongSelect.GenreBackground.center = rl.new('Vector2', 0, 0)
+    Textures.SongSelect.GenreBackground.pr = rl.new('Rectangle', 0, 0, Textures.SongSelect.GenreBackground.sizex, Textures.SongSelect.GenreBackground.sizey)
+
+
+
+
+
+
 
 
 
@@ -10525,7 +10540,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
         out.FORECOLOR = {HexToRGB(out.FORECOLOR or '#000000')}
         out.BACKCOLOR = {HexToRGB(out.BACKCOLOR or '#000000')}
         out.BOXCOLOR = {HexToRGB(out.BOXCOLOR or '#FFFFFF')}
-        out.BGCOLOR = {HexToRGB(out.BGCOLOR or '#000000')}
+        out.BGCOLOR = {HexToRGB(out.BGCOLOR or '#FFFFFF')}
 
         --raylib colors
         local a = 255 --transparency
@@ -10575,6 +10590,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
         local CurrentTree = SongTree --Cache
 
         local Selected = 1
+
+        local SelectedConfig = nil
 
         --local RenderDistance = 5
 
@@ -10811,6 +10828,15 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
             rl.ClearBackground(rl.RAYWHITE)
 
+
+            --BACKGROUND
+            if SelectedConfig then
+                rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
+            end
+
+
+
+
             rl.DrawFPS(10, 10)
 
             --Center on Selected
@@ -10942,6 +10968,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             --Path = Display.Path[Display.Loaded[Selected]]
             Path = Display.Path[Selected]
             rl.DrawText('Path: ' .. DisplayPath(Path), 100, 0, fontsize, rl.BLACK)
+            SelectedConfig = Display.Config[Selected]
 
             --Select
             if IsKeyPressed(Config.Controls.SongSelect.Select) then
