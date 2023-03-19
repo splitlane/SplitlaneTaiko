@@ -110,7 +110,7 @@ TODO: Add raylib option
     TODO: LYRICS
     TODO: LYRICS TO WEBVTT
     TODO: REVAMP Parsed so JPOSSCROLL AND BPMCHANGE AND STOPSONG AND LYRIC ARE ALL STORED IN BASE TABLE
-    TODO: USE FFI with WFOPEN to open unicode file names?!
+    TODO: USE FFI with WFOPEN to open unicode file names?! --DONE
     TODO: Inconsistensies with responsibilities of parsetja and playsong:
         note offset is calced in playsong
         lyric offset is calced in parsetja (required cause webvtt no offset, differentiate)
@@ -121,6 +121,9 @@ TODO: Add raylib option
         keep in mind that .ini positions are absolute, and are not multiplied by anything
     TODO: SongSelect textures, then INI configs, then resolutions
     TODO: Results
+    TODO: Moving Background
+    TODO: Fix LoadSongFromMemory
+    TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain
     
 
 TODO: Taiko.Game
@@ -10705,6 +10708,34 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 i = i + 1
                 --TODO: Display.Config
             end
+            local length = i
+
+            --Add to all parent directories
+            for i = 1, #path - 1 do
+                local ep = path[i - 1]
+                for i2 = pos - 1, 1, -1 do
+                    if Display.Expanded[i2] then
+                        local p = Display.Path[i2]
+                        if p[#p] == ep and #p == i - 1 then
+                            local check = true
+                            for i = 1, #p do
+                                if p[i] ~= path[i] then
+                                    check = false
+                                    break
+                                end
+                            end
+                            if check then
+                                --[[
+                                print(i2)
+                                require'ppp'(Display.Expanded)
+                                --]]
+                                Display.Expanded[i2] = Display.Expanded[i2] + length
+                                break
+                            end
+                        end
+                    end
+                end
+            end
 
             for k, v in pairs(Display.Expanded) do
                 if k >= pos then
@@ -10718,9 +10749,34 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
 
         local function CondenseDirectory(pos, length)
+            --[[
+            --NO: Just add on ExpandDirectory
+
+            --Recalculate Display.Expanded
+            --pos - 1 = Selected
+            --modify length
+            local i = Display.Expanded[pos - 1]
+            local i2 = pos
+            while true do
+                if i == 0 then
+                    break
+                end
+
+                if Display.Expanded[i2] then
+                    length = length + Display.Expanded[i2]
+                end
+                i2 = i2 + 1
+
+                i = i - 1
+            end
+            --]]
+
+            --Actual Work
             for k, v in pairs(Display.Expanded) do
-                if k >= pos then
+                if k >= pos + length then
                     Display.Expanded[k - length] = v
+                    Display.Expanded[k] = nil
+                elseif k >= pos then
                     Display.Expanded[k] = nil
                 end
             end
