@@ -3243,9 +3243,11 @@ function HexToRGB(hex)
     ]]
     hex = string.gsub(hex, '#', '')
     if #hex == 3 then
-        return (tonumber('0x' .. string.sub(hex, 1, 1)) * 17), (tonumber('0x' .. string.sub(hex, 2, 2)) * 17), (tonumber('0x' .. string.sub(hex, 3, 3)) * 17)
+        --return (tonumber('0x' .. string.sub(hex, 1, 1)) * 17), (tonumber('0x' .. string.sub(hex, 2, 2)) * 17), (tonumber('0x' .. string.sub(hex, 3, 3)) * 17)
+        return (tonumber(string.sub(hex, 1, 1), 16) * 17), (tonumber(string.sub(hex, 2, 2), 16) * 17), (tonumber(string.sub(hex, 3, 3), 16) * 17)
     else
-        return (tonumber('0x' .. string.sub(hex, 1, 2))), (tonumber('0x' .. string.sub(hex, 3, 4))), (tonumber('0x' .. string.sub(hex, 5, 6)))
+        --return (tonumber('0x' .. string.sub(hex, 1, 2))), (tonumber('0x' .. string.sub(hex, 3, 4))), (tonumber('0x' .. string.sub(hex, 5, 6)))
+        return (tonumber(string.sub(hex, 1, 2), 16)), (tonumber(string.sub(hex, 3, 4), 16)), (tonumber(string.sub(hex, 5, 6), 16))
     end
 end
 
@@ -10517,16 +10519,25 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         --Convert / Default
 
-        out.TITLE = tostring(out.TITLE)
-        out.GENRE = tostring(out.GENRE)
+        out.TITLE = tostring(out.TITLE or '')
+        out.GENRE = tostring(out.GENRE or '')
         out.FONTCOLOR = {HexToRGB(out.FONTCOLOR or '#000000')}
         out.FORECOLOR = {HexToRGB(out.FORECOLOR or '#000000')}
         out.BACKCOLOR = {HexToRGB(out.BACKCOLOR or '#000000')}
-        out.BOXCOLOR = {HexToRGB(out.BOXCOLOR or '#000000')}
+        out.BOXCOLOR = {HexToRGB(out.BOXCOLOR or '#FFFFFF')}
         out.BGCOLOR = {HexToRGB(out.BGCOLOR or '#000000')}
-        out.BGTYPE = out.BGTYPE or 0
-        out.BOXTYPE = out.BOXTYPE or 0
-        out.BOXCHARA = out.BOXCHARA or 0
+
+        --raylib colors
+        local a = 255 --transparency
+        out.FONTCOLOR = rl.new('Color', out.FONTCOLOR[1], out.FONTCOLOR[2], out.FONTCOLOR[3], a)
+        out.FORECOLOR = rl.new('Color', out.FORECOLOR[1], out.FORECOLOR[2], out.FORECOLOR[3], a)
+        out.BACKCOLOR = rl.new('Color', out.BACKCOLOR[1], out.BACKCOLOR[2], out.BACKCOLOR[3], a)
+        out.BOXCOLOR = rl.new('Color', out.BOXCOLOR[1], out.BOXCOLOR[2], out.BOXCOLOR[3], a)
+        out.BGCOLOR = rl.new('Color', out.BGCOLOR[1], out.BGCOLOR[2], out.BGCOLOR[3], a)
+
+        out.BGTYPE = tonumber(out.BGTYPE) or 0
+        out.BOXTYPE = tonumber(out.BOXTYPE) or 0
+        out.BOXCHARA = tonumber(out.BOXCHARA) or 0
 
         local i = 1
         out.BOXEXPLANATION = {}
@@ -10656,8 +10667,14 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                     if CheckFile(boxdefpath) then
                         local data = LoadFile(boxdefpath)
                         local parsed = Taiko.ParseBoxDef(data)
-                        Display.Config[pos - 1] = parsed
-                        require'ppp'(parsed)
+                        --Display.Config[pos - 1] = parsed --parent
+                        table.insert(Display.Config, pos + i, parsed)
+                        --require'ppp'(parsed)
+                    else
+                        table.insert(Display.Config, pos + i,
+                            Display.Config[pos - 1] --parent
+                            or Taiko.ParseBoxDef('') --default
+                        )
                     end
                 end
 
@@ -10688,6 +10705,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 table.remove(Display.Text, pos)
                 table.remove(Display.Name, pos)
                 table.remove(Display.Path, pos)
+                table.remove(Display.Config, pos)
             end
         end
 
@@ -10822,8 +10840,12 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 --print(i4)
 
                 --Draw box
+                local config = Display.Config[i2]
+                rl.DrawTexturePro(Textures.SongSelect.GenreBar[config.BOXTYPE], Textures.SongSelect.GenreBar.sourcerect, v, Textures.SongSelect.GenreBar.center, 0, config.BOXCOLOR)
+
+                --Draw text
                 --rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
-                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], v.x, v.y, fontsize, rl.BLACK)
+                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], v.x, v.y + v.height / 2, fontsize, rl.BLACK)
             end
 
 
