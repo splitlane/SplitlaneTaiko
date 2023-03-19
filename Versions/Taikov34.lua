@@ -10671,11 +10671,18 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                         table.insert(Display.Config, pos + i, parsed)
                         --require'ppp'(parsed)
                     else
+                        --default
                         table.insert(Display.Config, pos + i,
                             Display.Config[pos - 1] --parent
                             or Taiko.ParseBoxDef('') --default
                         )
                     end
+                else
+                    --default
+                    table.insert(Display.Config, pos + i,
+                        Display.Config[pos - 1] --parent
+                        or Taiko.ParseBoxDef('') --default
+                    )
                 end
 
                 i = i + 1
@@ -10845,7 +10852,9 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
                 --Draw text
                 --rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], 100, i3 * 50, fontsize, rl.BLACK)
-                rl.DrawText(i == Selected and '> ' .. Display.Text[i2] or Display.Text[i2], v.x, v.y + v.height / 2, fontsize, rl.BLACK)
+                local str = Display.Text[i2]
+                local sizex, sizey = GetTextSize(str, fontsize)
+                rl.DrawText(str, v.x + v.width / 2 - sizex / 2, v.y + v.height / 2 - sizey / 2, fontsize, rl.BLACK)
             end
 
 
