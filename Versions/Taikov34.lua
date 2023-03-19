@@ -5080,7 +5080,7 @@ function Taiko.ParseTJA(source)
                                 - Default is 100.
                                 - Ignored in taiko-web.
                             ]]
-                            Parsed.Metadata.SEVOL = CheckN(match[1], Parsed.Metadata.SEVOL, 'Invalid sevol') / 100 / 2
+                            Parsed.Metadata.SEVOL = CheckN(match[1], Parsed.Metadata.SEVOL, 'Invalid sevol') / 100
                             --[[
                             SIDE: (?)
                                 - Value can be either:
@@ -7137,6 +7137,15 @@ function Taiko.SerializeTJA(Parsed)
     
     local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n\n'}
 
+
+
+
+
+    --Functions
+
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
     --[[
         Automatically pushes to out, returns nothing
         Input: note
@@ -7158,7 +7167,9 @@ function Taiko.SerializeTJA(Parsed)
     }
     local function SerializeNote(note)
         local newline = false
-        for k, v in pairs(note) do
+        for k, v in spairs(note, function(t, a, b)
+            return a < b
+        end) do
             if (not exclude[k]) and (not lastnote or not note[k] == lastnote[k]) then
                 --Output change
                 if newline == false then
@@ -7286,7 +7297,9 @@ function Taiko.SerializeTJA(Parsed)
         local ParsedData = v.Data
 
         --METADATA
-        for k2, v2 in pairs(v.Metadata) do
+        for k2, v2 in spairs(v.Metadata, function(t, a, b)
+            return a < b
+        end) do
             if (type(v2) == 'string' or type(v2) == 'number') and k2 ~= 'SONG' then
                 Out[#Out + 1] = tostring(k2)
                 
@@ -10372,10 +10385,10 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
         x = SkinConfig.SongSelect_Bar_X,
         y = SkinConfig.SongSelect_Bar_Y
     }
-    local middle = math.floor((SkinConfig.SongSelect_Bar_Count[1] + 1) / 2)
+    local center = math.floor((SkinConfig.SongSelect_Bar_Count[1] + 1) / 2)
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
         --print(i, middle, i - middle)
-        Textures.SongSelect.GenreBar.pr[i - middle] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+        Textures.SongSelect.GenreBar.pr[i - center] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     end
 
 
@@ -11556,7 +11569,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         if playmusic then
             if CheckFile(Parsed.Metadata.SONG) then
                 song = LoadSong(Parsed.Metadata.SONG)
-                rl.SetMusicVolume(song, Parsed.Metadata.SONGVOL)
+                local SONGVOL = Parsed.Metadata.SONGVOL * Config.Settings.PlaySong.SONGVOLMultiplier
+                rl.SetMusicVolume(song, SONGVOL)
             else
                 playmusic = false
             end
@@ -11565,11 +11579,12 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         --SOUDEFFECTS
+        local SEVOL = Parsed.Metadata.SEVOL * Config.Settings.PlaySong.SEVOLMultiplier
         for k, v in pairs(Sounds.PlaySong.Combo) do
-            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+            rl.SetSoundVolume(v, SEVOL)
         end
         for k, v in pairs(Sounds.PlaySong.Notes) do
-            rl.SetSoundVolume(v, Parsed.Metadata.SEVOL)
+            rl.SetSoundVolume(v, SEVOL)
         end
 
 
