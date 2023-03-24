@@ -10928,6 +10928,24 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 --local i4 = Display.Text[i2]
                 --print(i4)
 
+                --center bar special
+                if i == Selected then
+                    --[[
+                        easy = 0,
+                        normal = 1,
+                        hard = 2,
+                        oni = 3,
+                        edit = 4,
+                        tower = 5,
+                        dan = 6,
+                        ura = 4
+                    ]]
+
+                    --TEMPORARY --TODO
+                    rl.DrawText('Press enter to play song', v.x, v.y + 80/720 * Config.ScreenHeight, fontsize, rl.BLACK)
+                end
+
+
                 --Draw box
                 local config = Display.Config[i2]
                 rl.DrawTexturePro(Textures.SongSelect.GenreBar[config.BOXTYPE], Textures.SongSelect.GenreBar.sourcerect, v, Textures.SongSelect.GenreBar.center, 0, config.BOXCOLOR)
@@ -11039,11 +11057,41 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                     --File
                     --print(nextdir)
 
+                    local SelectedDifficulty = nil
+
+                    --TEMPORARY --TODO
+                    --choose difficulty
+                    local str = ''
+                    while not rl.WindowShouldClose() do
+                        rl.BeginDrawing()
+                        rl.ClearBackground(rl.RAYWHITE)
+                        rl.DrawText('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra\n> ' .. str, 0, 0, fontsize, rl.BLACK)
+                        rl.EndDrawing()
+                        --print(str)
+                        if rl.IsKeyPressed(rl.KEY_ENTER) then
+                            local found = nil
+                            for k, v in pairs(Taiko.Data.CourseId) do
+                                if string.lower(string.sub(k, 1, #str)) == string.lower(str) then
+                                    found = k
+                                    break
+                                end
+                            end
+                            if found then
+                                SelectedDifficulty = found
+                                break
+                            end
+                        end
+                        local a = rl.GetCharPressed()
+                        if a ~= 0 then
+                            str = str .. string.char(a)
+                        end
+                    end
+
                     --Play Song!
                     while true do
                         local Parsed, Error = Taiko.ParseTJAFile(nextdir)
                         if Parsed then
-                            local ParsedData = Taiko.GetDifficulty(Parsed, 'oni')
+                            local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
                             local Status, Result = Taiko.PlaySong(ParsedData)
                             if Status == true then
                                 --Song ended
