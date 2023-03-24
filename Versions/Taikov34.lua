@@ -11061,6 +11061,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
                     --TEMPORARY --TODO
                     --choose difficulty
+                    SelectedDifficulty = GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra')
+                    --[[
                     local str = ''
                     while not rl.WindowShouldClose() do
                         rl.BeginDrawing()
@@ -11086,6 +11088,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                             str = str .. string.char(a)
                         end
                     end
+                    --]]
+
 
                     --Play Song!
                     while true do
