@@ -10771,6 +10771,36 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             end
             --]]
 
+            --path = folder name
+            local path = CopyPath(Display.Path[pos - 1])
+            path[#path + 1] = Display.Name[pos - 1]
+            --Add to all parent directories
+            for i = 1, #path - 1 do
+                local ep = path[i - 1]
+                for i2 = pos - 1, 1, -1 do
+                    if Display.Expanded[i2] then
+                        local p = Display.Path[i2]
+                        if p[#p] == ep and #p == i - 1 then
+                            local check = true
+                            for i = 1, #p do
+                                if p[i] ~= path[i] then
+                                    check = false
+                                    break
+                                end
+                            end
+                            if check then
+                                --[[
+                                print(i2)
+                                require'ppp'(Display.Expanded)
+                                --]]
+                                Display.Expanded[i2] = Display.Expanded[i2] - length
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+
             --Actual Work
             for k, v in pairs(Display.Expanded) do
                 if k >= pos + length then
@@ -11061,7 +11091,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
                     --TEMPORARY --TODO
                     --choose difficulty
-                    SelectedDifficulty = GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra')
+                    SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra'))
                     --[[
                     local str = ''
                     while not rl.WindowShouldClose() do
