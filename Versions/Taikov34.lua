@@ -10596,6 +10596,10 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         local SelectedConfig = nil
 
+        --Background scrolling position
+        local BackgroundPosition = 0 --in skinresolution, scaled on render
+        local BackgroundScrollSpeed = 40 --in skinresolution, scaled on render / per second (deltatime)
+
         --local RenderDistance = 5
 
         --FastScroll
@@ -10909,6 +10913,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
         --Main Loop
         while true do
 
+            local deltatime = rl.GetFrameTime() --seconds
+
             --Make canvas
             rl.BeginDrawing()
 
@@ -10917,7 +10923,19 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
             --BACKGROUND
             if SelectedConfig then
+                --LAZIEST SOLUTION EVER: Just render another one
+                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + (BackgroundPosition >= 0 and -skinresolution[1] or skinresolution[1])
                 rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
+
+                --Now render center (main)
+                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1]
+                rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
+
+                BackgroundPosition = BackgroundPosition + BackgroundScrollSpeed * (deltatime)
+                --times 2 added to make room for lag (NVM FILL SCREEN)
+                if BackgroundPosition >= skinresolution[1] then
+                    BackgroundPosition = BackgroundPosition - skinresolution[1]
+                end
             end
 
 
