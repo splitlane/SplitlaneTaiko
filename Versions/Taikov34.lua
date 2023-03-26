@@ -10393,7 +10393,7 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
     local center = math.floor((SkinConfig.SongSelect_Bar_Count[1] + 1) / 2)
     for i = 1, #Textures.SongSelect.GenreBar.p.x do
         --print(i, middle, i - middle)
-        Textures.SongSelect.GenreBar.pr[i - center] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i], Textures.SongSelect.GenreBar.p.y[i], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
+        Textures.SongSelect.GenreBar.pr[i - center] = rl.new('Rectangle', Textures.SongSelect.GenreBar.p.x[i] * OriginalConfig.ScreenWidth / skinresolution[1], Textures.SongSelect.GenreBar.p.y[i] * OriginalConfig.ScreenHeight / skinresolution[2], Textures.SongSelect.GenreBar.sizex, Textures.SongSelect.GenreBar.sizey)
     end
 
 
