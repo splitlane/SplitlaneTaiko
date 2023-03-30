@@ -3823,11 +3823,54 @@ end
 --[[
     https://www.w3.org/TR/webvtt1/#file-structure
     https://www.w3.org/TR/webvtt1/#webvtt-parser
+    
+    For the parser, the bare minimum is implemented
 ]]
 
-function Taiko.ParseWebVTT(source)
+local function FromTimestamp(timestamp)
+    --The most non-conforming timestamp parser ever
+    local h, m, s, ms = string.match(timestamp, '(..)%:(..)%:(..)%.(...)')
 
+    if not h then
+        h = '00'
+        m, s, ms = string.match(timestamp, '(..)%:(..)%.(...)')
+    end
+
+    h, m, s, ms = tonumber(h), tonumber(m), tonumber(s), tonumber(ms)
+
+    return h * 60 * 60 * 1000 + m * 60 * 1000 + s * 1000 + ms
 end
+
+function Taiko.ParseWebVTT(source)
+    --[[
+        NON-CONFORMING, BARE MINIMUM
+    ]]
+    local Lyric = {}
+
+    source = source .. '\n\n'
+    string.gsub(source, '\n([%d%:%.]+)[ \t]-%-%-%>[ \t]-([%d%:%.]+)\n(.-)\n', function(starttime, endtime, data)
+        --print(starttime, endtime, data)
+        local s, e = FromTimestamp(starttime), FromTimestamp(endtime)
+        Lyric[#Lyric + 1] = {
+            ms = s,
+            lengthms = e,
+            data = data
+        }
+    end)
+
+    return Lyric
+end
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3947,6 +3990,7 @@ function Taiko.SerializeWebVTT(t, songendms)
 
 
             --Data
+            out[#out + 1] = '\n'
             out[#out + 1] = lyric.data
             out[#out + 1] = '\n\n'
         end
@@ -3965,6 +4009,14 @@ print(Taiko.SerializeWebVTT({{ms = 1, data = 'n'}, {ms = 1500, data = 'hi'}, {ms
 error()
 --]]
 
+
+--[[
+local a = Taiko.SerializeWebVTT({{ms = 1, data = 'n'}, {ms = 1500, data = 'hi'}, {ms = 2000, data = 'b'}}, 1000)
+print(a)
+require'ppp'(Taiko.ParseWebVTT(a))
+
+error()
+--]]
 
 
 
