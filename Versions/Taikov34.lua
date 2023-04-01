@@ -123,7 +123,8 @@ TODO: Add raylib option
     TODO: Results
     TODO: Moving Background
     TODO: Fix LoadSongFromMemory
-    TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain
+    TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain --DONE
+    TODO: Push note attach to currentmeasure instead of setting a parser flag (section, suddenappear?, suddenmove?)
     
 
 TODO: Taiko.Game
@@ -4501,7 +4502,7 @@ function Taiko.ParseTJA(source)
                 },
                 --constant
                 directionweight = {
-                    --In polar degrees
+                    --In polar degrees (degrees from positive x-axis, going counterclockwise)
                     --NOT IN OPENTAIKO OR ANY OTHER!
                     R = 0,      --From right
                     U = 90,     --From up
@@ -5427,9 +5428,13 @@ function Taiko.ParseTJA(source)
                             }
                             --reset parser?
                             Parser = GetParser()
+
+                            --No need to do this, Parser is reset completely and created
+                            --[[
                             --reset parser?
                             Parser.songstarted = false
                             Parser.measurepushto = Parsed.Data --Very important
+                            --]]
                         else
                             ParseError(match[1], 'Song has already ended')
                         end
@@ -6254,6 +6259,11 @@ Everyone who DL
                                 Returns the effects of all commands to their initial values
                             ]]
                             --Just reset parser?
+
+                            --yes i guess
+                            --reset parser?
+                            Parser = GetParser()
+                            Parser.SongStarted = true
                         end
 
 
