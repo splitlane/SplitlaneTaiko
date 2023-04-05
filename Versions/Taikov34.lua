@@ -125,6 +125,20 @@ TODO: Add raylib option
     TODO: Fix LoadSongFromMemory
     TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain --DONE
     TODO: Push note attach to currentmeasure instead of setting a parser flag (section, suddenappear?, suddenmove?)
+    TODO: SUDDEN
+        how to implement
+        
+        for each note
+            if ms < note.appearancems then
+                --hide note
+            else
+                --show note
+            end
+            if ms < note.movems then
+                --place note into precalculated static position
+            else
+                --calc position and move it
+            end
     
 
 TODO: Taiko.Game
@@ -6263,7 +6277,7 @@ Everyone who DL
                             --yes i guess
                             --reset parser?
                             Parser = GetParser()
-                            Parser.SongStarted = true
+                            Parser.songstarted = true
                         end
 
 
