@@ -8946,29 +8946,18 @@ int MeasureText(const char *text, int fontSize)
 
     Config.ScreenWidth = Config and Config.ScreenWidth or 1600 --1600
     Config.ScreenHeight = Config and Config.ScreenHeight or Config.ScreenWidth / 16 * 9 --900
+    Config.WindowName = Config.WindowName or 'Taiko'
 
 
 
 
     --INIT RAYLIB
 
-    --[[
-        about limiting frame rate:
-
-        vsync causes massive cpu usage for some reason
-        settargetfps isn't vsynced and doesn't use that much cpu (probably) (may possibly cause screen tearing, but ive never seen that before)
-
-        both of them use around the same amount of gpu, but vsync uses massive cpu
-        use targetfps!!!
-    ]]
-
-    --rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
-    --rl.SetTargetFPS(120)
-    rl.SetTargetFPS(60)
+    rl.SetTargetFPS(60) --will be set to settings later
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
     --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
     rl.SetTraceLogLevel(rl.LOG_NONE)
-    rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Taiko')
+    rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
 
     rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
     --rl.HideCursor() --Hide cursor
@@ -9091,32 +9080,70 @@ int MeasureText(const char *text, int fontSize)
     end
 
 
-    --[[
-        Config.Offsets
-
-        About offsets:
-
-        Config.Offsets.Timing = 50 means 50 ms later is good
-        Config.Offsets.Timing = 50 means 50 ms later is music play
-    ]]
-    --Config.Offsets.Music
-    Config.Offsets.Music = MsToS(Config.Offsets.Music)
 
 
-    --[[
-        Config.Paths
-
-        Defined above
-    ]]
-    AssetsPath = Config.Paths.Assets --'Assets/'
-    ConfigPath = Config.Paths.Config --'config.tpd'
 
 
-    --Convert from ms to s
-    Config.Controls.SongSelect.FastScrollTime = MsToS(Config.Controls.SongSelect.FastScrollTime) --http://stereopsis.com/keyrepeat/
-    Config.Controls.SongSelect.FastScrollInterval = MsToS(Config.Controls.SongSelect.FastScrollInterval)
+
+    local lastconfigupdate = {
+        vsync = false
+    }
+    function Taiko.UpdateConfig()
+        --[[
+            Config.Offsets
+
+            About offsets:
+
+            Config.Offsets.Timing = 50 means 50 ms later is good
+            Config.Offsets.Timing = 50 means 50 ms later is music play
+        ]]
+        --Config.Offsets.Music
+        Config.Offsets.Music = MsToS(Config.Offsets.Music)
 
 
+        --[[
+            Config.Paths
+
+            Defined above
+        ]]
+        AssetsPath = Config.Paths.Assets --'Assets/'
+        ConfigPath = Config.Paths.Config --'config.tpd'
+
+
+        --Convert from ms to s
+        Config.Controls.SongSelect.FastScrollTime = MsToS(Config.Controls.SongSelect.FastScrollTime) --http://stereopsis.com/keyrepeat/
+        Config.Controls.SongSelect.FastScrollInterval = MsToS(Config.Controls.SongSelect.FastScrollInterval)
+
+
+        --SETTINGS
+
+
+
+        --[[
+            FPS
+        ]]
+        --[[
+            about limiting frame rate:
+
+            vsync causes massive cpu usage for some reason
+            settargetfps isn't vsynced and doesn't use that much cpu (probably) (may possibly cause screen tearing, but ive never seen that before) (IT MAY CAUSE LAG)
+
+            both of them use around the same amount of gpu, but vsync uses massive cpu
+            use targetfps!!!
+        ]]
+
+        if lastconfigupdate.vsync ~= Config.Settings.VSync then
+            rl.CloseWindow()
+            if Config.Settings.VSync then
+                rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+            end
+            rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
+            lastconfigupdate.vsync = Config.Settings.VSync
+        end
+
+        rl.SetTargetFPS(Config.Settings.FPS)
+    end
+    Taiko.UpdateConfig()
 
 
 
