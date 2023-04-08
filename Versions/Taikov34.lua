@@ -121,7 +121,7 @@ TODO: Add raylib option
         keep in mind that .ini positions are absolute, and are not multiplied by anything
     TODO: SongSelect textures, then INI configs, then resolutions
     TODO: Results
-    TODO: Moving Background
+    TODO: Moving Background --DONE, CONFIG DELAYED
     TODO: Fix LoadSongFromMemory
     TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain --DONE
     TODO: Push note attach to currentmeasure instead of setting a parser flag (section, suddenappear?, suddenmove?)
@@ -139,6 +139,7 @@ TODO: Add raylib option
             else
                 --calc position and move it
             end
+    TODO: Rename note.delay to note.delayms?
     
 
 TODO: Taiko.Game
@@ -4721,7 +4722,7 @@ function Taiko.ParseTJA(source)
                     text = nil,
                     delay = Parser.delay,
                     senote = nil,
-                    --Sudden: absolute ms
+                    --Sudden: relative ms
                     appearancems = Parser.suddenappear,
                     movems = Parser.suddenmove,
 
@@ -4823,7 +4824,7 @@ function Taiko.ParseTJA(source)
                     delay = Parser.delay,
 
                     --outdated
-                    --Sudden: absolute ms
+                    --Sudden: relative ms
                     appearancems = Parser.suddenappear,
                     movems = Parser.suddenmove,
 
@@ -6458,8 +6459,10 @@ Everyone who DL
                                     c.ms = Parser.ms
 
                                     --sudden?
+                                    --[[
                                     c.appearancems = c.appearancems and (c.ms - (c.appearancems))
                                     c.movems = c.movems and (c.ms - (c.movems))
+                                    --]]
                                     --c.measuredensity = notes
                                     local lastnote = Parser.measurepushto[#Parser.measurepushto] or Parsed.Data[#Parsed.Data]
                                     if lastnote then
