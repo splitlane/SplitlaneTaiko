@@ -124,7 +124,7 @@ TODO: Add raylib option
     TODO: Moving Background --DONE, CONFIG DELAYED
     TODO: Fix LoadSongFromMemory
     TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain --DONE
-    TODO: Push note attach to currentmeasure instead of setting a parser flag (section, suddenappear?, suddenmove?)
+    TODO: Push note attach to currentmeasure instead of setting a parser flag (section, NO: suddenappear?, NO: suddenmove?)
     TODO: SUDDEN
         how to implement
         
