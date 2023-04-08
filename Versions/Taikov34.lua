@@ -5825,8 +5825,8 @@ function Taiko.ParseTJA(source)
                         ]]
                         local t = ParseArguments(match[2])
                         --Both are relative to note ms
-                        Parser.suddenappear = SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and MsToS(Parser.suddenappear) or 0))
-                        Parser.suddenmove = SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and MsToS(Parser.suddenmove) or 0))
+                        Parser.suddenappear = -SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and -MsToS(Parser.suddenappear) or 0))
+                        Parser.suddenmove = -SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and -MsToS(Parser.suddenmove) or 0))
 
                         
                     elseif match[1] == 'JPOSSCROLL' then
