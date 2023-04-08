@@ -140,6 +140,7 @@ TODO: Add raylib option
                 --calc position and move it
             end
     TODO: Rename note.delay to note.delayms?
+    TODO: JPOSSCROLL + LOADMS FIX
     
 
 TODO: Taiko.Game
