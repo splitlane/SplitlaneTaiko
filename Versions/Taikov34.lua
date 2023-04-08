@@ -11949,6 +11949,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         local jposscroll = true --If it exists
         local bpmchange = true --If it exists
         local lyric = true --If it exists
+        local sudden = true --If it exists
 
         if Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE then
             bpmchange = false
@@ -12460,6 +12461,36 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         end
 
 
+
+
+        if sudden then
+            --[[
+            how to implement
+        
+            for each note
+                if ms < note.appearancemsa then
+                    --hide note
+                else
+                    --show note
+                end
+                if ms < note.movemsa then
+                    --NO: place note into precalculated static position
+                    --YES: calc position using note.movemsa
+                else
+                    --calc position and move it
+                end
+            ]]
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                if note.appearancems then
+                    --if ms < note.appearancemsa then hide else show end
+                    note.appearancemsa = note.ms + note.appearancems
+                end
+                if note.movems then
+                    --uses this ms instead of current ms
+                    note.movemsa = note.ms + note.movems
+                end
+            end)
+        end
 
 
         local bpmchangequeue = {}
@@ -14294,7 +14325,8 @@ CalculateNoteHitGauge(defaulttarget)
                     end
 
 
-                    local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
+                    --local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
+                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
                     note.p[1] = px * xmul
                     note.p[2] = py * ymul
 
@@ -14561,6 +14593,7 @@ CalculateNoteHitGauge(defaulttarget)
                 if note then
                     --Draw note on canvas
 
+                    --if not note.hit and not (note.appearancemsa and (ms < note.appearancemsa)) then
                     if not note.hit then
 
                         --Break combo if too late
@@ -14574,6 +14607,7 @@ CalculateNoteHitGauge(defaulttarget)
                         end
 
                         --if dorender then
+                        if not (note.appearancemsa and (ms < note.appearancemsa)) then
                             if note.data == 'event' then
                                 if note.event == 'barline' then
                                     --scale
@@ -14898,7 +14932,7 @@ CalculateNoteHitGauge(defaulttarget)
                             else
                                 error('Invalid note.data')
                             end
-                        --end
+                        end
 
                     end
                 end
