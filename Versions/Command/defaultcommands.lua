@@ -35,8 +35,8 @@ return {
             end
         else
             local str = ''
-            for i = 1, #Data do
-                str = str .. Data[i].Name .. ' // ' .. Data[i].Description .. '\n'
+            for k, v in pairs(Command.Data) do
+                str = str .. v.Name .. ' // ' .. v.Description .. '\n'
             end
             Command.Output(str)
         end

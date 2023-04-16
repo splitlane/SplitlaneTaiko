@@ -134,7 +134,7 @@ Command.LastAutoComplete = {
             }
         --]]
     },
-
+    Error = nil, --Error message here if it errors
 }
 
 --Up-to-date strings that have been concatted
@@ -184,6 +184,51 @@ function Command.MakeCommand(t)
     end
 end
 
+
+
+--Search algorithm for autocomplete
+function Command.AutoCompleteSearch(str, t)
+
+    --Lower the score the better
+    --firstmatch algorithm
+    local function search(str1, str2)
+        --Assumes #str1 < #str2
+        if string.sub(str2, 1, #str1) == str1 then
+            return #str2 - #str1
+        else
+            return nil
+        end
+    end
+
+    --str is probably smaller than any of the strings in t
+    local scores = {}
+    for i = 1, #t do
+        local str2 = t[i]
+        scores[str2] = search(str, str2)
+    end
+
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
+    local out = {}
+    for k, v in spairs(scores, function(t, a, b)
+        return t[a] < t[b]
+    end) do
+        --k is str, v is score
+        out[#out + 1] = k
+    end
+
+    return out
+end
+function Command.AutoCompleteSearchD(str, d)
+    --convert dictionary to table (assumes k is str2)
+    local t = {}
+    for k, v in pairs(d) do
+        t[#t + 1] = k
+    end
+    return Command.AutoCompleteSearch(str, t)
+end
+
 --[[
     Updates:
 
@@ -200,19 +245,27 @@ function Command.AutoComplete(str)
             --No arguments, suggest commands
             if out[1] == '' then
                 --No input, blank
-                Command.LastAutoComplete = {}
+                Command.LastAutoComplete = {
+                    Data = {},
+                    Error = nil
+                }
             else
                 --Input, suggest command
-
+                Command.LastAutoComplete = {
+                    Data = Command.AutoCompleteSearchD(out[1], Command.Data),
+                    Error = nil
+                }
             end
         else
             --Yes arguments, suggest arguments
 
         end
-        Command.Strings.LastAutoComplete = table.concat(Command.AutoComplete)
     else
         --Error message
-        Command.Strings.LastAutoComplete = 'AutoComplete: Parsing failed: ' .. out
+        Command.LastAutoComplete = {
+            Data = {},
+            Error = 'AutoComplete: Parsing failed: ' .. out
+        }
     end
 end
 
@@ -395,7 +448,7 @@ function Command.Init()
     local prefix = '> '
 
     --Update display
-    local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
+    local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
 
     --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
@@ -412,7 +465,7 @@ function Command.Init()
                 out[#out + 1] = c
                 --Update display
                 Command.AutoComplete(utf8Encode(out))
-                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
+                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
             end
         end
 
@@ -422,7 +475,7 @@ function Command.Init()
 
             --Update display
             Command.AutoComplete(utf8Encode(out))
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
+            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
         end
         if rl.IsKeyPressed(rl.KEY_ENTER) then
             --Add command to log
@@ -436,7 +489,7 @@ function Command.Init()
             out = {}
             --Update display
             Command.AutoComplete(utf8Encode(out))
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
+            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
             return nil
