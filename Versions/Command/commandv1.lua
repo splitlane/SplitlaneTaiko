@@ -12,7 +12,8 @@
 
 
 --SETTINGS (--TODO MOVE TO CONFIG)
-local fontsize = 50
+local fontsize = 50 --Used to render text (font size)
+local lineheight = fontsize + 25 --Used for scrolling
 
 
 
@@ -446,6 +447,7 @@ function Command.Init()
     --local sx, sy = GetTextSize(str, fontsize)
     local out = {}
     local prefix = '> '
+    local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
 
     --Update display
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
@@ -454,7 +456,7 @@ function Command.Init()
     while not rl.WindowShouldClose() do
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
-        rl.DrawText(displaytext, 0, 0, fontsize, rl.BLACK)
+        rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
         rl.EndDrawing()
 
         while true do
@@ -493,6 +495,22 @@ function Command.Init()
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
             return nil
+        end
+
+        --scroll
+        if rl.IsKeyPressed(rl.KEY_UP) then
+            scroll = scroll - lineheight
+        end
+        if rl.IsKeyPressed(rl.KEY_DOWN) then
+            scroll = scroll + lineheight
+        end
+        if rl.IsKeyPressed(rl.KEY_PAGE_UP) then
+            scroll = 0
+        end
+        if rl.IsKeyPressed(rl.KEY_PAGE_DOWN) then
+            local _, count = string.gsub(displaytext, '\n', '\n')
+            
+            scroll = lineheight * (count + 1) - Config.ScreenHeight
         end
     end
     --[[
