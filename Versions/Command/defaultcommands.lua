@@ -2,11 +2,12 @@ return {
 {
     Name = 'help',
     Alias = {'h'},
+    Type = 'Default',
     Description = 'Displays a list of commands, or inspects one.',
     Args = {
         {
             Name = 'Command',
-            Type = 'command',
+            Type = 'Command',
             Description = 'The command to inspect.',
             Optional = true
         }
@@ -44,6 +45,7 @@ return {
 {
     Name = 'version',
     Alias = {'v'},
+    Type = 'Default',
     Description = 'Displays the current lua version',
     Args = {},
     Run = function()
@@ -53,11 +55,12 @@ return {
 {
     Name = 'print',
     Alias = {'p', 'echo'},
+    Type = 'Default',
     Description = 'Prints the argument.',
     Args = {
         {
             Name = 'String',
-            Type = 'string',
+            Type = 'String',
             Description = 'The string to print',
             Optional = false
         }
@@ -69,11 +72,12 @@ return {
 {
     Name = 'error',
     Alias = {},
+    Type = 'Default',
     Description = 'Errors the argument.',
     Args = {
         {
             Name = 'String',
-            Type = 'string',
+            Type = 'String',
             Description = 'The string to error',
             Optional = false
         }
@@ -85,11 +89,12 @@ return {
 {
     Name = 'length',
     Alias = {'len'},
+    Type = 'Default',
     Description = 'Returns the length of a string.',
     Args = {
         {
             Name = 'String',
-            Type = 'string',
+            Type = 'String',
             Description = 'String',
             Optional = false
         }
@@ -101,17 +106,18 @@ return {
 {
     Name = 'bind',
     Alias = {'b'},
+    Type = 'Default',
     Description = 'Binds a string to a command.',
     Args = {
         {
             Name = 'String',
-            Type = 'string',
+            Type = 'String',
             Description = 'The string to bind the command on.',
             Optional = false
         },
         {
             Name = 'Command',
-            Type = 'command',
+            Type = 'Command',
             Description = 'The command that will be binded.',
             Optional = false
         }
@@ -128,17 +134,18 @@ return {
 {
     Name = 'unbind',
     Alias = {'ub'},
+    Type = 'Default',
     Description = 'Unbinds a string to a command.',
     Args = {
         {
             Name = 'String',
-            Type = 'string',
+            Type = 'String',
             Description = 'The string to bind the command on.',
             Optional = false
         },
         {
             Name = 'Command',
-            Type = 'string',
+            Type = 'String',
             Description = 'The command that will be binded.',
             Optional = false
         }
@@ -159,11 +166,12 @@ return {
 {
     Name = 'history',
     Alias = {},
+    Type = 'Default',
     Description = 'Displays previous commands from history.',
     Args = {
         {
             Name = 'Line Number',
-            Type = 'number',
+            Type = 'Number',
             Description = 'The line number to display',
             Optional = true
         }
@@ -182,17 +190,18 @@ return {
 {
     Name = 'random',
     Alias = {'rand'},
+    Type = 'Default',
     Description = 'Picks a random value between start and end.',
     Args = {
         {
             Name = 'Start',
-            Type = 'number',
+            Type = 'Number',
             Description = 'Start',
             Optional = false
         },
         {
             Name = 'End',
-            Type = 'number',
+            Type = 'Number',
             Description = 'End',
             Optional = false
         }
@@ -204,11 +213,12 @@ return {
 {
     Name = 'brainfuck',
     Alias = {'bf'},
+    Type = 'Default',
     Description = 'Executes brainfuck code.',
     Args = {
         {
             Name = 'Brainfuck',
-            Type = 'string',
+            Type = 'String',
             Description = 'Code to execute.',
             Optional = false
         }
@@ -223,11 +233,12 @@ Command.Print(Brainfuck(code))
 {
     Name = 'math',
     Alias = {'m'},
+    Type = 'Default',
     Description = 'Executes a math expression.',
     Args = {
         {
             Name = 'Expression',
-            Type = 'string',
+            Type = 'String',
             Description = 'Expression to execute.',
             Optional = false
         }
@@ -251,11 +262,12 @@ Command.Print(tostring(Math(expr)))
 {
     Name = 'lua',
     Alias = {'luai', 'interactive', 'loadstring'},
+    Type = 'Default',
     Description = 'Enters an interactive lua session.',
     Args = {
         {
             Name = 'Code',
-            Type = 'string',
+            Type = 'String',
             Description = 'Code to execute.',
             Optional = true
         }

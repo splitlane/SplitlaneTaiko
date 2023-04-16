@@ -112,16 +112,34 @@ Command.Log = {}
 Command.History = {}
 
 --Last AutoComplete results only
-Command.LastAutoComplete = {}
+Command.LastAutoComplete = {
+    Data = {
+        --[[
+            --If it is suggesting arguments:
 
---Last AutoComplete data (title, description, etc)
-Command.LastAutoCompleteData = {}
+            [Rank (higher the better, starts at 1)] = {
+                Name = 'Name',
+                Type = 'Type',
+                Description = 'Description',
+                Optional = 'Optional',
+            }
 
+            --If it is suggesting arguments:
+
+            [Rank (higher the better, starts at 1)] = {
+                Name = 'Name',
+                Alias = 'Alias'
+                Type = 'Type', --Not used for anything important, just display
+                Description = 'Description',
+            }
+        --]]
+    },
+
+}
 
 --Up-to-date strings that have been concatted
 Command.Strings = {
     Log = '',
-    LastAutoComplete = ''
 }
 
 
