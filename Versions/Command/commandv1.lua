@@ -4,6 +4,10 @@
     to provide commands for the pause menu
 
     a rewritten version of Commandv5.lua
+
+
+    References:
+    https://eryn.io/Cmdr/
 ]]
 
 
@@ -107,11 +111,17 @@ Command.Log = {}
 --History of all commands
 Command.History = {}
 
+--Last AutoComplete results only
+Command.LastAutoComplete = {}
+
+--Last AutoComplete data (title, description, etc)
+Command.LastAutoCompleteData = {}
+
 
 --Up-to-date strings that have been concatted
 Command.Strings = {
     Log = '',
-    AutoComplete = ''
+    LastAutoComplete = ''
 }
 
 
@@ -130,6 +140,25 @@ function Command.MakeCommand(t)
     for i = 1, #t do
         local command = t[i]
 
+        --Validate
+
+        --Duplicate Check
+        if Command.Data[command.Name] then
+            error('Command.MakeCommand: Command ' .. command.Name .. ' already exists')
+        end
+
+
+        --Optional Arg Check
+        for i = 1, #command.Args do
+            local arg = command.Args[i]
+            if arg.Optional and i ~= #command.Args then
+                error('Command.MakeCommand: Command ' .. command.Name .. ' has an optional argument that is not at the end')
+            end
+        end
+
+
+
+        --Make
         Command.Data[command.Name] = command
         for i = 1, #command.Alias do
             Command.Data[command.Alias[i]] = command
@@ -137,9 +166,36 @@ function Command.MakeCommand(t)
     end
 end
 
+--[[
+    Updates:
 
-function Command.AutoComplete()
+    Command.LastAutoComplete
+    Command.Strings.LastAutoComplete
 
+    How it works: Replace argument that is selected with selected autocomplete
+]]
+function Command.AutoComplete(str)
+    local success, out = Command.Parse(str)
+
+    if success then
+        if #out == 1 then
+            --No arguments, suggest commands
+            if out[1] == '' then
+                --No input, blank
+                Command.LastAutoComplete = {}
+            else
+                --Input, suggest command
+
+            end
+        else
+            --Yes arguments, suggest arguments
+
+        end
+        Command.Strings.LastAutoComplete = table.concat(Command.AutoComplete)
+    else
+        --Error message
+        Command.Strings.LastAutoComplete = 'AutoComplete: Parsing failed: ' .. out
+    end
 end
 
 --Returns the list of arguments (ALSO INCLUDES command)
@@ -198,7 +254,7 @@ function Command.Parse(str)
                     out[#out + 1] = table.concat(out2)
 
                 else
-                    error('this should never happen')
+                    return false, 'Quote starts in the middle of an argument'
                 end
             end
         else
@@ -225,9 +281,11 @@ function Command.Run(str)
             command.Run(select(2, unpack(out)))
         else
             --Error message
+            Command.Error('Unable to find command ' .. out[1])
         end
     else
         --Error message
+        Command.Error('Parsing failed: ' .. out)
     end
 end
 
@@ -307,6 +365,9 @@ function Command.Print(out)
     
     Command.Strings.Log = table.concat(Command.Log)
 end
+function Command.Error(out)
+    Command.Print('Error: ' .. out)
+end
 
 
 --Init command raylib loop
@@ -316,7 +377,7 @@ function Command.Init()
     local prefix = '> '
 
     --Update display
-    local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+    local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
 
     --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
@@ -332,15 +393,18 @@ function Command.Init()
             else
                 out[#out + 1] = c
                 --Update display
-                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                Command.AutoComplete(utf8Encode(out))
+                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
             end
         end
 
         --Remember, GetCharPressed doesn't detect special keys
         if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
             out[#out] = nil
+
             --Update display
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            Command.AutoComplete(utf8Encode(out))
+            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
         end
         if rl.IsKeyPressed(rl.KEY_ENTER) then
             --Add command to log
@@ -353,7 +417,8 @@ function Command.Init()
 
             out = {}
             --Update display
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            Command.AutoComplete(utf8Encode(out))
+            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out) .. '\n' .. Command.Strings.LastAutoComplete
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
             return nil
