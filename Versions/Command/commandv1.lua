@@ -215,11 +215,9 @@ Command.Strings = {
 }
 
 --Event hooks that are set when we need the Command.Init loop to do something
---[[
---NOPE, not needed
+-- [[
 Command.Events = {
-    Clear = nil,
-    Input = nil,
+    Exit = nil,
 }
 --]]
 
@@ -533,7 +531,7 @@ function Command.Input()
     local spacingbetweenlines = fontsize * 0.5
 
     --local displaytext = prefix .. ''
-    while not rl.WindowShouldClose() do
+    while not (rl.WindowShouldClose() or Command.Events.Exit) do
         mouseposition = rl.GetMousePosition()
 
         rl.BeginDrawing()
@@ -692,6 +690,9 @@ end
 function Command.ClearHistory()
     Command.History = {}
 end
+function Command.Exit()
+    Command.Events.Exit = true
+end
 
 
 --Init command raylib loop
@@ -723,7 +724,7 @@ function Command.Init()
     local spacingbetweenlines = fontsize * 0.5
 
     --local displaytext = prefix .. ''
-    while not rl.WindowShouldClose() do
+    while not (rl.WindowShouldClose() or Command.Events.Exit) do
         mouseposition = rl.GetMousePosition()
 
         rl.BeginDrawing()
