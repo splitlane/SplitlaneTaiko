@@ -329,5 +329,15 @@ end
     Run = function()
         Command.ClearHistory()
     end
+},
+{
+    Name = 'exit',
+    Alias = {'stop'},
+    Type = 'Default',
+    Description = 'Exits',
+    Args = {},
+    Run = function()
+        Command.Exit()
+    end
 }
 }

@@ -714,9 +714,16 @@ function Command.Init()
     local autocompleteresults = nil
     local autocompletelastselected = -1
 
+    --History
+    local historyselected = -1
+    local historylastselected = -1
+
     --Update display
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
     local sx, sy = GetTextSize(displaytext, fontsize)
+
+    --Catchup Scroll
+    local lastsy = sy
 
     --https://github.com/raysan5/raylib/blob/e2da32e2daf2cf4de86cc1128a7b3ba66a1bab1c/src/rtext.c#L1078
     --local _, lineheight = GetTextSize('', fontsize)
@@ -824,6 +831,10 @@ function Command.Init()
             --Add command to history
             Command.History[#Command.History + 1] = utf8Encode(out)
 
+            --Reset selected history
+            historyselected = -1
+
+            --Run command
             Command.Run(utf8Encode(out))
 
             out = {}
@@ -906,6 +917,9 @@ function Command.Init()
 
         --autocomplete
         if autocompleterender then
+            historyselected = -1
+            historylastselected = -1
+
             if rl.IsKeyPressed(rl.KEY_UP) then
                 autocompleteselected = autocompleteselected - 1
             end
@@ -993,7 +1007,70 @@ function Command.Init()
             end
         else
             autocompletelastselected = -1
+
+            if rl.IsKeyPressed(rl.KEY_UP) then
+                if historyselected == -1 then
+                    historyselected = #Command.History
+                else
+                    historyselected = historyselected - 1
+                end
+            end
+            if rl.IsKeyPressed(rl.KEY_DOWN) then
+                if historyselected == -1 then
+
+                else
+                    historyselected = historyselected + 1
+                end
+            end
+
+            --Clip
+            if historyselected == -1 then
+
+            else
+                if historyselected > #Command.History then
+                    historyselected = #Command.History
+                end
+                if historyselected < 1 then
+                    historyselected = 1
+                end
+
+                if historyselected ~= historylastselected then
+                    out = utf8Decode(Command.History[historyselected])
+
+                    --Update display
+                    Command.AutoComplete(utf8Encode(out))
+                    displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                    sx, sy = GetTextSize(displaytext, fontsize)
+                end
+            end
+
+            historylastselected = historyselected
         end
+
+
+        
+
+
+
+        --Catchup scroll
+        --Check if text is going below screen
+        --print(sy - Command.Scroll > Config.ScreenHeight)
+
+        if sy ~= lastsy then
+            local offscreen1 = (lastsy - Command.Scroll) - Config.ScreenHeight
+
+            --Was not offscreen before
+            if offscreen1 <= 0 then
+                local offscreen2 = (sy - Command.Scroll) - Config.ScreenHeight
+
+                --Now it is offscreen
+                if offscreen2 > 0 then
+                    Command.Scroll = Command.Scroll + offscreen2
+                end
+            end
+        end
+
+        lastsy = sy
 
     end
     --[[
