@@ -223,6 +223,8 @@ Command.Events = {
 }
 --]]
 
+--Scroll that is shared with Command.Init and Command.Input
+Command.Scroll = 0
 
 
 
@@ -514,7 +516,6 @@ function Command.Input()
     --local sx, sy = GetTextSize(str, fontsize)
     local out = {}
     local prefix = ''
-    local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
 
     local mouseposition = nil
     local lastframemove = false
@@ -531,8 +532,6 @@ function Command.Input()
     local lineheight = fontsize * 1.5
     local spacingbetweenlines = fontsize * 0.5
 
-    scroll = sy
-
     --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
         mouseposition = rl.GetMousePosition()
@@ -541,7 +540,7 @@ function Command.Input()
         rl.ClearBackground(rl.RAYWHITE)
 
         --displaytext
-        rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
+        rl.DrawText(displaytext, 0, -Command.Scroll, fontsize, rl.BLACK)
 
         --autocomplete
 
@@ -549,7 +548,7 @@ function Command.Input()
         rl.DrawRectangleRec(scrollbarbackgroundrect, scrollbarbackgroundcolor)
         scrollbarrect.height = (Config.ScreenHeight / ((sy - fontsize) + Config.ScreenHeight)) * Config.ScreenHeight
         --scroll == 0 -> sy - lineheight == 0?
-        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
+        scrollbarrect.y = Command.Scroll == 0 and 0 or ((Command.Scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
         if lastframemove then
             scrollbarcolor = scrollbarcolormove
             lastframemove = false
@@ -603,7 +602,7 @@ function Command.Input()
         --scroll
         local scrollwheel = rl.GetMouseWheelMoveV()
         if scrollwheel.y ~= 0 then
-            scroll = scroll - (scrollwheel.y * scrollwheelmul)
+            Command.Scroll = Command.Scroll - (scrollwheel.y * scrollwheelmul)
         end
         --[[
         if rl.IsKeyPressed(rl.KEY_UP) then
@@ -614,7 +613,7 @@ function Command.Input()
         end
         --]]
         if rl.IsKeyPressed(rl.KEY_PAGE_UP) then
-            scroll = 0
+            Command.Scroll = 0
         end
         if rl.IsKeyPressed(rl.KEY_PAGE_DOWN) then
             --[[
@@ -626,7 +625,7 @@ function Command.Input()
 
             --NOW: Calculate with GetTextSize
             --scroll = sy - Config.ScreenHeight
-            scroll = sy
+            Command.Scroll = sy
         end
         
         if rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
@@ -644,7 +643,7 @@ function Command.Input()
 
             --Reverse! scrollbarpos -> scroll
             --scrollbarrect.y = (scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height)
-            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
+            Command.Scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
 
             lastframemove = true
         else
@@ -653,12 +652,12 @@ function Command.Input()
         --lastmouseposition = mouseposition
 
         --limit scroll
-        if scroll < 0 then
-            scroll = 0
+        if Command.Scroll < 0 then
+            Command.Scroll = 0
         end
         --print(scroll, sy - lineheight, sy)
-        if scroll > sy - fontsize then
-            scroll = sy - fontsize
+        if Command.Scroll > sy - fontsize then
+            Command.Scroll = sy - fontsize
         end
 
     end
@@ -700,7 +699,9 @@ function Command.Init()
     --local sx, sy = GetTextSize(str, fontsize)
     local out = {}
     local prefix = '> '
-    local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
+
+    --NOPE: moved to Command.Scroll
+    --local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
 
     local mouseposition = nil
     local lastframemove = false
@@ -729,10 +730,10 @@ function Command.Init()
         rl.ClearBackground(rl.RAYWHITE)
 
         --displaytext
-        rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
+        rl.DrawText(displaytext, 0, -Command.Scroll, fontsize, rl.BLACK)
 
         --autocomplete
-        local autocompletey = sy - scroll + spacingbetweenlines
+        local autocompletey = sy - Command.Scroll + spacingbetweenlines
         if Command.LastAutoComplete.Error then
             --Error message
             rl.DrawText(Command.LastAutoComplete.Error, 0, autocompletey, fontsize, rl.RED)
@@ -776,7 +777,7 @@ function Command.Init()
         rl.DrawRectangleRec(scrollbarbackgroundrect, scrollbarbackgroundcolor)
         scrollbarrect.height = (Config.ScreenHeight / ((sy - fontsize) + Config.ScreenHeight)) * Config.ScreenHeight
         --scroll == 0 -> sy - lineheight == 0?
-        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
+        scrollbarrect.y = Command.Scroll == 0 and 0 or ((Command.Scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
         if lastframemove then
             scrollbarcolor = scrollbarcolormove
             lastframemove = false
@@ -841,7 +842,7 @@ function Command.Init()
         --scroll
         local scrollwheel = rl.GetMouseWheelMoveV()
         if scrollwheel.y ~= 0 then
-            scroll = scroll - (scrollwheel.y * scrollwheelmul)
+            Command.Scroll = Command.Scroll - (scrollwheel.y * scrollwheelmul)
         end
         --[[
         if rl.IsKeyPressed(rl.KEY_UP) then
@@ -852,7 +853,7 @@ function Command.Init()
         end
         --]]
         if rl.IsKeyPressed(rl.KEY_PAGE_UP) then
-            scroll = 0
+            Command.Scroll = 0
         end
         if rl.IsKeyPressed(rl.KEY_PAGE_DOWN) then
             --[[
@@ -864,7 +865,7 @@ function Command.Init()
 
             --NOW: Calculate with GetTextSize
             --scroll = sy - Config.ScreenHeight
-            scroll = sy
+            Command.Scroll = sy
         end
         
         if rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
@@ -882,7 +883,7 @@ function Command.Init()
 
             --Reverse! scrollbarpos -> scroll
             --scrollbarrect.y = (scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height)
-            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
+            Command.Scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
 
             lastframemove = true
         else
@@ -891,12 +892,12 @@ function Command.Init()
         --lastmouseposition = mouseposition
 
         --limit scroll
-        if scroll < 0 then
-            scroll = 0
+        if Command.Scroll < 0 then
+            Command.Scroll = 0
         end
         --print(scroll, sy - lineheight, sy)
-        if scroll > sy - fontsize then
-            scroll = sy - fontsize
+        if Command.Scroll > sy - fontsize then
+            Command.Scroll = sy - fontsize
         end
 
 

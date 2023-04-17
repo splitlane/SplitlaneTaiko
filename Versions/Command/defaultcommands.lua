@@ -306,7 +306,7 @@ if str then
         Command.Print(err)
     end
 else
-    Lua({exit = Exit})
+    Lua({exit = {'exit', 'stop'}})
 end
 end
 },
