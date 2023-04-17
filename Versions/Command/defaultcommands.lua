@@ -309,5 +309,25 @@ else
     Lua({exit = Exit})
 end
 end
+},
+{
+    Name = 'clear',
+    Alias = {'c'},
+    Type = 'Default',
+    Description = 'Clears the log',
+    Args = {},
+    Run = function()
+        Command.Clear()
+    end
+},
+{
+    Name = 'clearhistory',
+    Alias = {'ch'},
+    Type = 'Default',
+    Description = 'Clears the history',
+    Args = {},
+    Run = function()
+        Command.ClearHistory()
+    end
 }
 }

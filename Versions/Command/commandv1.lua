@@ -215,10 +215,13 @@ Command.Strings = {
 }
 
 --Event hooks that are set when we need the Command.Init loop to do something
+--[[
+--NOPE, not needed
 Command.Events = {
     Clear = nil,
     Input = nil,
 }
+--]]
 
 
 
@@ -503,19 +506,64 @@ end
 
 
 --Utilities used by commands
-function Command.Input(out)
+function Command.Input()
+    --Either replicate Command.Init or coroutines?
+
+    --Replicate Command.Init it is!
+
     --local sx, sy = GetTextSize(str, fontsize)
     local out = {}
-    --local prefix = 'Input> '
-    local prefix = '' --No prefix to allow more customisability
+    local prefix = ''
+    local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
+
+    local mouseposition = nil
+    local lastframemove = false
+    local mousemovestartoffset = nil
+
+    --Autocomplete
 
     --Update display
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+    local sx, sy = GetTextSize(displaytext, fontsize)
 
+    --https://github.com/raysan5/raylib/blob/e2da32e2daf2cf4de86cc1128a7b3ba66a1bab1c/src/rtext.c#L1078
+    --local _, lineheight = GetTextSize('', fontsize)
+    local lineheight = fontsize * 1.5
+    local spacingbetweenlines = fontsize * 0.5
+
+    scroll = sy
+
+    --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
+        mouseposition = rl.GetMousePosition()
+
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
-        rl.DrawText(displaytext, 0, 0, fontsize, rl.BLACK)
+
+        --displaytext
+        rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
+
+        --autocomplete
+
+        --scrollbar
+        rl.DrawRectangleRec(scrollbarbackgroundrect, scrollbarbackgroundcolor)
+        scrollbarrect.height = (Config.ScreenHeight / ((sy - fontsize) + Config.ScreenHeight)) * Config.ScreenHeight
+        --scroll == 0 -> sy - lineheight == 0?
+        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
+        if lastframemove then
+            scrollbarcolor = scrollbarcolormove
+            lastframemove = false
+        else
+            if IsVectorInRectangle(mouseposition, scrollbarrect) then
+                scrollbarcolor = scrollbarcolorhover
+            else
+                scrollbarcolor = scrollbarcoloridle
+            end
+        end
+        rl.DrawRectangleRec(scrollbarrect, scrollbarcolor)
+        rl.DrawRectangleLinesEx(scrollbarbackgroundrect, 1, rl.WHITE)
+
+
         rl.EndDrawing()
 
         while true do
@@ -526,30 +574,93 @@ function Command.Input(out)
                 out[#out + 1] = c
                 --Update display
                 displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                sx, sy = GetTextSize(displaytext, fontsize)
             end
         end
 
         --Remember, GetCharPressed doesn't detect special keys
         if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
             out[#out] = nil
+
             --Update display
             displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            sx, sy = GetTextSize(displaytext, fontsize)
         end
         if rl.IsKeyPressed(rl.KEY_ENTER) then
-            --Add newline
-            Command.Log[#Command.Log + 1] = '\n'
+            --Add command to log
+            Command.Print(prefix .. utf8Encode(out))
 
+            
             return utf8Encode(out)
 
-            --[[
-            out = {}
-            --Update display
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
-            --]]
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
             return nil
         end
+
+
+
+        --scroll
+        local scrollwheel = rl.GetMouseWheelMoveV()
+        if scrollwheel.y ~= 0 then
+            scroll = scroll - (scrollwheel.y * scrollwheelmul)
+        end
+        --[[
+        if rl.IsKeyPressed(rl.KEY_UP) then
+            scroll = scroll - lineheight
+        end
+        if rl.IsKeyPressed(rl.KEY_DOWN) then
+            scroll = scroll + lineheight
+        end
+        --]]
+        if rl.IsKeyPressed(rl.KEY_PAGE_UP) then
+            scroll = 0
+        end
+        if rl.IsKeyPressed(rl.KEY_PAGE_DOWN) then
+            --[[
+            --LEGACY: Calculated with default font and brute force testing
+            local _, count = string.gsub(displaytext, '\n', '\n')
+            
+            scroll = lineheight * (count + 1) - Config.ScreenHeight
+            --]]
+
+            --NOW: Calculate with GetTextSize
+            --scroll = sy - Config.ScreenHeight
+            scroll = sy
+        end
+        
+        if rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
+            mousemovestartoffset = mouseposition.y - scrollbarrect.y
+        end
+        --if rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
+        if rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT) and mousemovestartoffset then
+            --[[
+            --LEGACY: Skips some distance for imprecision
+            print((mouseposition.y - lastmouseposition.y))
+            scroll = scroll + (mouseposition.y - lastmouseposition.y)
+            --]]
+
+            scrollbarrect.y = mouseposition.y - mousemovestartoffset
+
+            --Reverse! scrollbarpos -> scroll
+            --scrollbarrect.y = (scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height)
+            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
+
+            lastframemove = true
+        else
+            mousemovestartoffset = nil
+        end
+        --lastmouseposition = mouseposition
+
+        --limit scroll
+        if scroll < 0 then
+            scroll = 0
+        end
+        --print(scroll, sy - lineheight, sy)
+        if scroll > sy - fontsize then
+            scroll = sy - fontsize
+        end
+
     end
 end
 
@@ -573,6 +684,14 @@ function Command.Print(out)
 end
 function Command.Error(out)
     Command.Print('Error: ' .. out)
+end
+function Command.Clear()
+    Command.Log = {}
+    
+    Command.Strings.Log = table.concat(Command.Log)
+end
+function Command.ClearHistory()
+    Command.History = {}
 end
 
 
