@@ -8,6 +8,12 @@
 
     References:
     https://eryn.io/Cmdr/
+    https://devforum.roblox.com/t/cmdr-a-fully-extensible-and-type-safe-command-console-for-roblox-developers/182815/18
+
+    TODO:
+    Wrap text
+    Autocomplete better GUI
+    Command.Input
 ]]
 
 
@@ -30,7 +36,12 @@ local scrollbarcolormove = rl.new('Color', 96, 96, 96, 255) --Scrollbar color (m
 
 local scrollbarcolor = scrollbarcoloridle
 
-
+--AUTOCOMPLETE
+local autocompletetitlecolor = rl.new('Color', 20, 20, 20, 255)
+local autocompletedescriptioncolor = rl.new('Color', 80, 80, 80, 255)
+local autocompletetypecolor = rl.new('Color', 60, 60, 60, 255)
+local autocompleteresultscolor = rl.new('Color', 130, 130, 130, 255)
+local autocompleteselectedcolor = rl.new('Color', 0, 0, 0, 255)
 
 
 
@@ -87,6 +98,27 @@ local function utf8Encode(t,derp,...)
     return table.concat(s)
 end
 
+local function utf8Decode(s)
+    local res, seq, val = {}, 0, nil
+    for i = 1, #s do
+        local c = string.byte(s, i)
+        if seq == 0 then
+            table.insert(res, val)
+            seq = c < 0x80 and 1 or c < 0xE0 and 2 or c < 0xF0 and 3 or
+                c < 0xF8 and 4 or c < 0xFC and 5 or c < 0xFE and 6 or
+                error("invalid UTF-8 character sequence")
+            val = bit.band(c, 2^(8-seq) - 1)
+        else
+            val = bit.bor(bit.lshift(val, 6), bit.band(c, 0x3F))
+        end
+        seq = seq - 1
+    end
+    table.insert(res, val)
+    --table.insert(res, 0)
+    return res
+end
+
+
 --Taikov34.lua function
 local function GetTextSize(str, fontsize)
     --[[
@@ -105,11 +137,14 @@ local function GetTextSize(str, fontsize)
     --]]
 end
 
---Original function
+--Original functions
 local function IsVectorInRectangle(v, r)
     return r.x <= v.x and v.x <= r.x + r.width and r.y <= v.y and v.y <= r.y + r.height
 end
+local function WrapText(text, sx)
+    --Brute forcer
 
+end
 
 
 
@@ -152,7 +187,7 @@ Command.History = {}
 Command.LastAutoComplete = {
     Data = {
         --[[
-            --If it is suggesting arguments:
+            --If it is suggesting arguments: (this is just standard command data)
 
             [Rank (higher the better, starts at 1)] = {
                 Name = 'Name',
@@ -161,7 +196,7 @@ Command.LastAutoComplete = {
                 Optional = 'Optional',
             }
 
-            --If it is suggesting arguments:
+            --If it is suggesting arguments: (this is just standard arg data)
 
             [Rank (higher the better, starts at 1)] = {
                 Name = 'Name',
@@ -177,6 +212,12 @@ Command.LastAutoComplete = {
 --Up-to-date strings that have been concatted
 Command.Strings = {
     Log = '',
+}
+
+--Event hooks that are set when we need the Command.Init loop to do something
+Command.Events = {
+    Clear = nil,
+    Input = nil,
 }
 
 
@@ -241,7 +282,7 @@ function Command.AutoCompleteSearch(str, t)
     local scores = {}
     for i = 1, #t do
         local str2 = t[i]
-        scores[str2] = search(str, str2)
+        scores[str2] = search(str, str2.Name)
     end
 
     --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
@@ -261,7 +302,7 @@ function Command.AutoCompleteSearchD(str, d)
     --convert dictionary to table (assumes k is str2)
     local t = {}
     for k, v in pairs(d) do
-        t[#t + 1] = k
+        t[#t + 1] = v
     end
     return Command.AutoCompleteSearch(str, t)
 end
@@ -295,7 +336,10 @@ function Command.AutoComplete(str)
             end
         else
             --Yes arguments, suggest arguments
-
+            Command.LastAutoComplete = {
+                Data = {},
+                Error = nil
+            }
         end
     else
         --Error message
@@ -321,7 +365,7 @@ function Command.Parse(str)
                 out[#out + 1] = string.sub(str, currentp, specialp - 1)
                 currentp = specialp + 1
                 seekingp = specialp + 1
-            elseif special == '"' then
+            elseif special == '"' or special == '\'' then
                 --print(specialp, currentp)
                 if specialp == currentp then
                     --start quote
@@ -331,6 +375,14 @@ function Command.Parse(str)
                     local out2 = {}
                     while true do
                         seekingp = seekingp + 1
+
+                        --print(seekingp, #str)
+                        if seekingp > #str then
+                            --ignore?
+                            --break
+
+                            return false, 'Quote does not have an end'
+                        end
 
                         local s = string.sub(str, seekingp, seekingp)
                         --print('s: ', s)
@@ -342,7 +394,7 @@ function Command.Parse(str)
                                 --starting backslash
                                 backslash = true
                             end
-                        elseif s == '"' then
+                        elseif s == special then
                             if backslash then
                                 --backslashed quote
                                 out2[#out2 + 1] = s
@@ -362,6 +414,9 @@ function Command.Parse(str)
                     out[#out + 1] = table.concat(out2)
 
                 else
+                    --ignore?
+                    --seekingp = specialp + 1
+                    
                     return false, 'Quote starts in the middle of an argument'
                 end
             end
@@ -371,6 +426,49 @@ function Command.Parse(str)
         end
     end
     return true, out
+end
+
+--Serializes an str from a table of args
+function Command.Serialize(t)
+    local specialpattern = '["\' ]'
+    local escapedata = {
+        ['\\'] = '\\\\',
+        ['\"'] = '\\\"'
+    }
+    local out = {}
+
+    for i = 1, #t do
+        local arg = t[i]
+
+        if string.find(arg, specialpattern) then
+            out[#out + 1] = '"'
+
+            out[#out + 1] = string.gsub(arg, '(.)', function(s)
+                return escapedata[s]
+            end)
+
+            out[#out + 1] = '"'
+        else
+            out[#out + 1] = arg
+        end
+
+        if i ~= #t then
+            out[#out + 1] = ' '
+        end
+    end
+
+    return table.concat(out)
+end
+
+function Command.EscapeArgument(str)
+    local escapedata = {
+        ['\\'] = '\\\\',
+        ['\"'] = '\\\"'
+    }
+    local out = string.gsub(str, '(.)', function(s)
+        return escapedata[s]
+    end)
+    return out
 end
 
 function Command.Run(str)
@@ -489,11 +587,20 @@ function Command.Init()
     local lastframemove = false
     local mousemovestartoffset = nil
 
+    --Autocomplete
+    local autocompleteselected = 1
+    local autocompleterender = false
+    local autocompleteresults = nil
+    local autocompletelastselected = -1
+
     --Update display
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
     local sx, sy = GetTextSize(displaytext, fontsize)
 
-    local _, lineheight = GetTextSize('', fontsize)
+    --https://github.com/raysan5/raylib/blob/e2da32e2daf2cf4de86cc1128a7b3ba66a1bab1c/src/rtext.c#L1078
+    --local _, lineheight = GetTextSize('', fontsize)
+    local lineheight = fontsize * 1.5
+    local spacingbetweenlines = fontsize * 0.5
 
     --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
@@ -501,13 +608,56 @@ function Command.Init()
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
+
+        --displaytext
         rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
+
+        --autocomplete
+        local autocompletey = sy - scroll + spacingbetweenlines
+        if Command.LastAutoComplete.Error then
+            --Error message
+            rl.DrawText(Command.LastAutoComplete.Error, 0, autocompletey, fontsize, rl.RED)
+        elseif autocompleterender then
+            local y = autocompletey
+
+            --Top Result
+
+            --Title
+            local selected = Command.LastAutoComplete.Data[autocompleteselected] --focusing on
+            rl.DrawText(selected.Name, 0, y, fontsize, autocompletetitlecolor)
+            --y = y + lineheight
+            local x, _ = GetTextSize(selected.Name, fontsize)
+            x = x + fontsize / 5
+
+            --Type
+            y = y + fontsize * 0.4
+            rl.DrawText(': ' .. selected.Type, x, y, fontsize * 0.6, autocompletetypecolor)
+            y = y - fontsize * 0.4
+            y = y + lineheight
+
+            --Description
+            rl.DrawText(selected.Description, 0, y, fontsize * 0.8, autocompletedescriptioncolor)
+            local _, count = string.gsub(selected.Description, '\n', '\n')
+            y = y + lineheight * 0.8 * (count + 1)
+
+            --Results list
+            for i = 1, #Command.LastAutoComplete.Data do
+                local a = Command.LastAutoComplete.Data[i]
+
+                if i == autocompleteselected then
+                    rl.DrawText(a.Name, 0, y, fontsize, autocompleteselectedcolor)
+                else
+                    rl.DrawText(a.Name, 0, y, fontsize, autocompleteresultscolor)
+                end
+                y = y + lineheight
+            end
+        end
 
         --scrollbar
         rl.DrawRectangleRec(scrollbarbackgroundrect, scrollbarbackgroundcolor)
-        scrollbarrect.height = (Config.ScreenHeight / ((sy - lineheight) + Config.ScreenHeight)) * Config.ScreenHeight
+        scrollbarrect.height = (Config.ScreenHeight / ((sy - fontsize) + Config.ScreenHeight)) * Config.ScreenHeight
         --scroll == 0 -> sy - lineheight == 0?
-        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height))
+        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - fontsize)) * (Config.ScreenHeight - scrollbarrect.height))
         if lastframemove then
             scrollbarcolor = scrollbarcolormove
             lastframemove = false
@@ -565,6 +715,10 @@ function Command.Init()
             return nil
         end
 
+        autocompleterender = #Command.LastAutoComplete.Data > 0
+
+
+
         --scroll
         local scrollwheel = rl.GetMouseWheelMoveV()
         if scrollwheel.y ~= 0 then
@@ -609,7 +763,7 @@ function Command.Init()
 
             --Reverse! scrollbarpos -> scroll
             --scrollbarrect.y = (scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height)
-            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - lineheight)
+            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - fontsize)
 
             lastframemove = true
         else
@@ -622,8 +776,102 @@ function Command.Init()
             scroll = 0
         end
         --print(scroll, sy - lineheight, sy)
-        if scroll > sy - lineheight then
-            scroll = sy - lineheight
+        if scroll > sy - fontsize then
+            scroll = sy - fontsize
+        end
+
+
+
+
+        --autocomplete
+        if autocompleterender then
+            if rl.IsKeyPressed(rl.KEY_UP) then
+                autocompleteselected = autocompleteselected - 1
+            end
+            if rl.IsKeyPressed(rl.KEY_DOWN) then
+                autocompleteselected = autocompleteselected + 1
+            end
+
+            --Clip
+            if autocompleteselected > #Command.LastAutoComplete.Data then
+                autocompleteselected = #Command.LastAutoComplete.Data
+            end
+            if autocompleteselected < 1 then
+                autocompleteselected = 1
+            end
+
+
+            if autocompleteselected ~= autocompletelastselected then
+                --NOPE, it is recomputed each frame
+            end
+            autocompletelastselected = autocompleteselected
+
+            if rl.IsKeyPressed(rl.KEY_TAB) then
+
+                local selected = Command.LastAutoComplete.Data[autocompleteselected]
+
+                if selected then
+                    --Erase last argument
+                    local i = #out
+                    while true do
+                        if i < 1 then
+                            break
+                        end
+
+                        --check for space
+                        if out[i] == 32 then
+                            break
+                        else
+                            out[i] = nil
+                        end
+
+                        i = i - 1
+                    end
+                    i = i + 1
+                    --i is where the argument starts (after the space)
+
+                    local out2 = utf8Decode(Command.EscapeArgument(selected.Name))
+
+                    for i = 1, #out2 do
+                        out[#out + 1] = out2[i]
+                    end
+
+                    --Add space if it is not the last argument
+                    local success, parsedout = Command.Parse(utf8Encode(out))
+                    if success then
+                        local command = Command.Data[parsedout[1]]
+                        if command then
+                            if #parsedout[1] == #command.Args + 1 then
+                                --Do nothing
+                            else
+                                --Add space
+                                out[#out + 1] = 32
+                            end
+                        else
+                            --Do nothing
+                        end
+                    else
+                        --Do nothing
+                    end
+
+                    --Update display
+                    Command.AutoComplete(utf8Encode(out))
+                    displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                    sx, sy = GetTextSize(displaytext, fontsize)
+
+                    autocompleterender = #Command.LastAutoComplete.Data > 0
+
+                    --Clip
+                    if autocompleteselected > #Command.LastAutoComplete.Data then
+                        autocompleteselected = #Command.LastAutoComplete.Data
+                    end
+                    if autocompleteselected < 1 then
+                        autocompleteselected = 1
+                    end
+                end
+            end
+        else
+            autocompletelastselected = -1
         end
 
     end

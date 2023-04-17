@@ -36,7 +36,23 @@ return {
         else
             local str = ''
             for k, v in pairs(Command.Data) do
-                str = str .. v.Name .. ' // ' .. v.Description .. '\n'
+                local check = true
+
+                for i = 1, #v.Alias do
+                    if v.Alias[i] == k then
+                        check = false
+                        break
+                    end
+                end
+
+                if check then
+                    local names = k
+                    if #v.Alias > 0 then
+                        names = names .. ', ' .. table.concat(v.Alias, ', ')
+                    end
+                    --print(k, names)
+                    str = str .. names .. ' // ' .. v.Description .. '\n'
+                end
             end
             Command.Output(str)
         end
