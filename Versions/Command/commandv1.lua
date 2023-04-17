@@ -13,8 +13,22 @@
 
 --SETTINGS (--TODO MOVE TO CONFIG)
 local fontsize = 50 --Used to render text (font size)
-local lineheight = fontsize + 25 --Used for scrolling
+--local lineheight = fontsize + 25 --Used for scrolling --NOPE: Calculed using GetTextSize
+local scrollwheelmul = 20 --Multiplier for scroll wheel
 
+--SCROLLBAR
+local scrollbarwidth = 34 --Scrollbar width in pixels
+
+local scrollbarbackgroundrect = rl.new('Rectangle', Config.ScreenWidth - scrollbarwidth, 0, scrollbarwidth, Config.ScreenHeight) --Rectangle for the background of scrollbar (will be outlined (overlapping the rect) with a white 1px)
+local scrollbarrect = rl.new('Rectangle', Config.ScreenWidth - scrollbarwidth, 0, scrollbarwidth, Config.ScreenHeight) --Rectangle for the scrollbar (will be outlined (overlapping the rect) with a white 1px)
+
+--Copied straight from command prompt colors (windows 10)
+local scrollbarbackgroundcolor = rl.new('Color', 240, 240, 240, 255) --Scrollbar background color
+local scrollbarcoloridle = rl.new('Color', 205, 205, 205, 255) --Scrollbar color
+local scrollbarcolorhover = rl.new('Color', 166, 166, 166, 255) --Scrollbar color (hovering)
+local scrollbarcolormove = rl.new('Color', 96, 96, 96, 255) --Scrollbar color (moving)
+
+local scrollbarcolor = scrollbarcoloridle
 
 
 
@@ -73,6 +87,28 @@ local function utf8Encode(t,derp,...)
     return table.concat(s)
 end
 
+--Taikov34.lua function
+local function GetTextSize(str, fontsize)
+    --[[
+    return rl.MeasureText(str, fontsize) --only x
+    --]]
+
+    -- [[
+    local defaultfontsize = 10
+    if fontsize < defaultfontsize then
+        fontsize = defaultfontsize
+    end
+    local spacing = fontsize / defaultfontsize
+
+    local v = rl.MeasureTextEx(rl.GetFontDefault(), str, fontsize, spacing)
+    return math.floor(v.x), math.floor(v.y)
+    --]]
+end
+
+--Original function
+local function IsVectorInRectangle(v, r)
+    return r.x <= v.x and v.x <= r.x + r.width and r.y <= v.y and v.y <= r.y + r.height
+end
 
 
 
@@ -449,14 +485,43 @@ function Command.Init()
     local prefix = '> '
     local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
 
+    local mouseposition = nil
+    local lastframemove = false
+    local mousemovestartoffset = nil
+
     --Update display
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+    local sx, sy = GetTextSize(displaytext, fontsize)
+
+    local _, lineheight = GetTextSize('', fontsize)
 
     --local displaytext = prefix .. ''
     while not rl.WindowShouldClose() do
+        mouseposition = rl.GetMousePosition()
+
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
         rl.DrawText(displaytext, 0, -scroll, fontsize, rl.BLACK)
+
+        --scrollbar
+        rl.DrawRectangleRec(scrollbarbackgroundrect, scrollbarbackgroundcolor)
+        scrollbarrect.height = (Config.ScreenHeight / ((sy - lineheight) + Config.ScreenHeight)) * Config.ScreenHeight
+        --scroll == 0 -> sy - lineheight == 0?
+        scrollbarrect.y = scroll == 0 and 0 or ((scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height))
+        if lastframemove then
+            scrollbarcolor = scrollbarcolormove
+            lastframemove = false
+        else
+            if IsVectorInRectangle(mouseposition, scrollbarrect) then
+                scrollbarcolor = scrollbarcolorhover
+            else
+                scrollbarcolor = scrollbarcoloridle
+            end
+        end
+        rl.DrawRectangleRec(scrollbarrect, scrollbarcolor)
+        rl.DrawRectangleLinesEx(scrollbarbackgroundrect, 1, rl.WHITE)
+
+
         rl.EndDrawing()
 
         while true do
@@ -468,6 +533,7 @@ function Command.Init()
                 --Update display
                 Command.AutoComplete(utf8Encode(out))
                 displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                sx, sy = GetTextSize(displaytext, fontsize)
             end
         end
 
@@ -478,6 +544,7 @@ function Command.Init()
             --Update display
             Command.AutoComplete(utf8Encode(out))
             displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            sx, sy = GetTextSize(displaytext, fontsize)
         end
         if rl.IsKeyPressed(rl.KEY_ENTER) then
             --Add command to log
@@ -492,26 +559,73 @@ function Command.Init()
             --Update display
             Command.AutoComplete(utf8Encode(out))
             displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            sx, sy = GetTextSize(displaytext, fontsize)
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
             return nil
         end
 
         --scroll
+        local scrollwheel = rl.GetMouseWheelMoveV()
+        if scrollwheel.y ~= 0 then
+            scroll = scroll - (scrollwheel.y * scrollwheelmul)
+        end
+        --[[
         if rl.IsKeyPressed(rl.KEY_UP) then
             scroll = scroll - lineheight
         end
         if rl.IsKeyPressed(rl.KEY_DOWN) then
             scroll = scroll + lineheight
         end
+        --]]
         if rl.IsKeyPressed(rl.KEY_PAGE_UP) then
             scroll = 0
         end
         if rl.IsKeyPressed(rl.KEY_PAGE_DOWN) then
+            --[[
+            --LEGACY: Calculated with default font and brute force testing
             local _, count = string.gsub(displaytext, '\n', '\n')
             
             scroll = lineheight * (count + 1) - Config.ScreenHeight
+            --]]
+
+            --NOW: Calculate with GetTextSize
+            --scroll = sy - Config.ScreenHeight
+            scroll = sy
         end
+        
+        if rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
+            mousemovestartoffset = mouseposition.y - scrollbarrect.y
+        end
+        --if rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT) and IsVectorInRectangle(mouseposition, scrollbarrect) then
+        if rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT) and mousemovestartoffset then
+            --[[
+            --LEGACY: Skips some distance for imprecision
+            print((mouseposition.y - lastmouseposition.y))
+            scroll = scroll + (mouseposition.y - lastmouseposition.y)
+            --]]
+
+            scrollbarrect.y = mouseposition.y - mousemovestartoffset
+
+            --Reverse! scrollbarpos -> scroll
+            --scrollbarrect.y = (scroll / (sy - lineheight)) * (Config.ScreenHeight - scrollbarrect.height)
+            scroll = scrollbarrect.y / (Config.ScreenHeight - scrollbarrect.height) * (sy - lineheight)
+
+            lastframemove = true
+        else
+            mousemovestartoffset = nil
+        end
+        --lastmouseposition = mouseposition
+
+        --limit scroll
+        if scroll < 0 then
+            scroll = 0
+        end
+        --print(scroll, sy - lineheight, sy)
+        if scroll > sy - lineheight then
+            scroll = sy - lineheight
+        end
+
     end
     --[[
     out = utf8Encode(out)

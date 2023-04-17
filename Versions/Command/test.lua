@@ -1,6 +1,5 @@
 #!..\raylua_s.exe 
 
-require('commandv1')
 
 
 rl.SetTargetFPS(60) --will be set to settings later
@@ -13,6 +12,9 @@ Config = {
 }
 
 rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, 'Command Test')
+
+require('commandv1')
+
 
 --rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
 
