@@ -285,7 +285,7 @@ function Command.AutoCompleteSearch(str, t)
     local scores = {}
     for i = 1, #t do
         local str2 = t[i]
-        scores[str2] = search(str, str2.Name)
+        scores[str2] = search(str, str2)
     end
 
     --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
@@ -301,13 +301,39 @@ function Command.AutoCompleteSearch(str, t)
 
     return out
 end
+--Dictionary version
 function Command.AutoCompleteSearchD(str, d)
-    --convert dictionary to table (assumes k is str2)
-    local t = {}
-    for k, v in pairs(d) do
-        t[#t + 1] = v
+
+    --Lower the score the better
+    --firstmatch algorithm
+    local function search(str1, str2)
+        --Assumes #str1 < #str2
+        if string.sub(str2, 1, #str1) == str1 then
+            return #str2 - #str1
+        else
+            return nil
+        end
     end
-    return Command.AutoCompleteSearch(str, t)
+
+    --str is probably smaller than any of the strings in t
+    local scores = {}
+    for k, v in pairs(d) do
+        --change the v to the k if you want key
+        scores[v] = search(str, k)
+    end
+
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
+    local out = {}
+    for k, v in spairs(scores, function(t, a, b)
+        return t[a] < t[b]
+    end) do
+        --k is str, v is score
+        out[#out + 1] = k
+    end
+
+    return out
 end
 
 --[[
