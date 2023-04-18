@@ -884,9 +884,15 @@ function Command.Init()
             end
             
             
-            rl.DrawText(selected.Name, 0, y, fontsize, autocompletetitlecolor)
+            local nametext = nil
+            if selected.Optional then
+                nametext = selected.Name .. '?'
+            else
+                nametext = selected.Name
+            end
+            rl.DrawText(nametext, 0, y, fontsize, autocompletetitlecolor)
             --y = y + lineheight
-            local x, _ = GetTextSize(selected.Name, fontsize)
+            local x, _ = GetTextSize(nametext, fontsize)
             x = x + fontsize / 5
 
             --Type
