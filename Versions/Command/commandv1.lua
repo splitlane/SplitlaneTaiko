@@ -19,6 +19,8 @@
     Type validation
     Type parsing (no need to manually check if number)
     Add default to args
+    Compute display results once so it doesn't have to be recomputed each time
+    Compute autocompleterender in Command.AutoComplete
 
     NOTE:
     Autocomplete results also include aliases
@@ -430,6 +432,7 @@ function Command.AutoComplete(str)
                         --Type has no autocomplete, blank
                         Command.LastAutoComplete = {
                             Data = {},
+                            Arg = arg,
                             Error = nil
                         }
                     end
@@ -1004,7 +1007,7 @@ function Command.Init()
             return nil
         end
 
-        autocompleterender = #Command.LastAutoComplete.Data > 0
+        autocompleterender = #Command.LastAutoComplete.Data > 0 or Command.LastAutoComplete.Arg
         --for k,v in pairs(Command.LastAutoComplete.Data)do print(k,v)end
 
 
@@ -1152,7 +1155,7 @@ function Command.Init()
                     displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
                     sx, sy = GetTextSize(displaytext, fontsize)
 
-                    autocompleterender = #Command.LastAutoComplete.Data > 0
+                    autocompleterender = #Command.LastAutoComplete.Data > 0 or Command.LastAutoComplete.Arg
 
                     --Clip
                     if autocompleteselected > #Command.LastAutoComplete.Data then
