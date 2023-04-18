@@ -525,6 +525,8 @@ function Command.Input()
     local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
     local sx, sy = GetTextSize(displaytext, fontsize)
 
+    local lastsy = 0
+
     --https://github.com/raysan5/raylib/blob/e2da32e2daf2cf4de86cc1128a7b3ba66a1bab1c/src/rtext.c#L1078
     --local _, lineheight = GetTextSize('', fontsize)
     local lineheight = fontsize * 1.5
@@ -658,6 +660,23 @@ function Command.Input()
             Command.Scroll = sy - fontsize
         end
 
+
+        if sy ~= lastsy then
+            local offscreen1 = (lastsy - Command.Scroll) - Config.ScreenHeight
+
+            --Was not offscreen before
+            if offscreen1 <= 0 then
+                local offscreen2 = (sy - Command.Scroll) - Config.ScreenHeight
+
+                --Now it is offscreen
+                if offscreen2 > 0 then
+                    Command.Scroll = Command.Scroll + offscreen2
+                end
+            end
+        end
+
+        lastsy = sy
+
     end
 end
 
@@ -723,7 +742,7 @@ function Command.Init()
     local sx, sy = GetTextSize(displaytext, fontsize)
 
     --Catchup Scroll
-    local lastsy = sy
+    local lastsy = 0
 
     --https://github.com/raysan5/raylib/blob/e2da32e2daf2cf4de86cc1128a7b3ba66a1bab1c/src/rtext.c#L1078
     --local _, lineheight = GetTextSize('', fontsize)
