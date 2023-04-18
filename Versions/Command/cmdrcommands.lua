@@ -4,7 +4,7 @@ return {
     Name = '!',
     Alias = {},
     Type = 'Default: Cmdr',
-    Description = 'Reruns some previous command',
+    Description = 'Reruns a previous command.',
     Args = {
         {
             Name = 'History Number',

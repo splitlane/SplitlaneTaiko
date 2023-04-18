@@ -9,6 +9,7 @@
     References:
     https://eryn.io/Cmdr/
     https://devforum.roblox.com/t/cmdr-a-fully-extensible-and-type-safe-command-console-for-roblox-developers/182815/18
+    https://github.com/evaera/Cmdr/releases
 
     TODO:
     Wrap text
@@ -17,6 +18,7 @@
     Validation on str so commands don't error when passed with incorrect arguments
     Type validation
     Type parsing (no need to manually check if number)
+    Add default to args
 
     NOTE:
     Autocomplete results also include aliases
@@ -220,6 +222,7 @@ Command.LastAutoComplete = {
             }
         --]]
     },
+    Arg = nil, --Nil unless Data is not empty and the has arg data
     Error = nil, --Error message here if it errors
 }
 
@@ -420,6 +423,7 @@ function Command.AutoComplete(str)
                     if autocomplete then
                         Command.LastAutoComplete = {
                             Data = Command.AutoCompleteSearchD(out[#out], autocomplete()),
+                            Arg = arg,
                             Error = nil
                         }
                     else
@@ -450,6 +454,10 @@ function Command.AutoComplete(str)
             Data = {},
             Error = 'AutoComplete: Parsing failed: ' .. out
         }
+    end
+
+    if Command.LastAutoComplete.Data then
+        Command.LastAutoComplete.DataType = type(Command.LastAutoComplete.Data[1]) == 'string' and 'String' or 'Data'
     end
 end
 
@@ -867,7 +875,15 @@ function Command.Init()
             --Top Result
 
             --Title
-            local selected = Command.LastAutoComplete.Data[autocompleteselected] --focusing on
+            local selected = nil
+            
+            if Command.LastAutoComplete.Arg then
+                selected = Command.LastAutoComplete.Arg
+            else
+                selected = Command.LastAutoComplete.Data[autocompleteselected] --focusing on
+            end
+            
+            
             rl.DrawText(selected.Name, 0, y, fontsize, autocompletetitlecolor)
             --y = y + lineheight
             local x, _ = GetTextSize(selected.Name, fontsize)
@@ -884,18 +900,22 @@ function Command.Init()
             local _, count = string.gsub(selected.Description, '\n', '\n')
             y = y + lineheight * 0.8 * (count + 1)
 
+
+
+
             --Results list
             for i = 1, #Command.LastAutoComplete.Data do
                 local a = Command.LastAutoComplete.Data[i]
+                local name = Command.LastAutoComplete.DataType == 'String' and a or a.Name
 
                 if i == autocompleteselected then
-                    rl.DrawText(a.Name, 0, y, fontsize, autocompleteselectedcolor)
+                    rl.DrawText(name, 0, y, fontsize, autocompleteselectedcolor)
                     --Draw progress / current
                     local success, out = Command.Parse(utf8Encode(out))
                     if success then
                         --Check if first letters are the same
                         local last = out[#out]
-                        if string.sub(a.Name, 1, #last) == last then
+                        if string.sub(name, 1, #last) == last then
                             --Draw
                             rl.DrawText(out[#out], 0, y, fontsize, autocompleteselectedprogresscolor)
                         else
@@ -906,7 +926,7 @@ function Command.Init()
                         --This should never happen, ignore
                     end
                 else
-                    rl.DrawText(a.Name, 0, y, fontsize, autocompleteresultscolor)
+                    rl.DrawText(name, 0, y, fontsize, autocompleteresultscolor)
                 end
                 y = y + lineheight
             end

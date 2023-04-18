@@ -8,7 +8,7 @@ return {
         {
             Name = 'Command',
             Type = 'Command',
-            Description = 'The command to inspect.',
+            Description = 'The command to inspect',
             Optional = true
         }
     },
@@ -62,7 +62,7 @@ return {
     Name = 'version',
     Alias = {'v'},
     Type = 'Default',
-    Description = 'Displays the current lua version',
+    Description = 'Displays the current lua version.',
     Args = {},
     Run = function()
         Command.Print(_VERSION)
@@ -128,13 +128,13 @@ return {
         {
             Name = 'String',
             Type = 'String',
-            Description = 'The string to bind the command on.',
+            Description = 'The string to bind the command on',
             Optional = false
         },
         {
             Name = 'Command',
             Type = 'Command',
-            Description = 'The command that will be binded.',
+            Description = 'The command that will be binded',
             Optional = false
         }
     },
@@ -156,13 +156,13 @@ return {
         {
             Name = 'String',
             Type = 'String',
-            Description = 'The string to bind the command on.',
+            Description = 'The string to unbind the command on',
             Optional = false
         },
         {
             Name = 'Command',
             Type = 'String',
-            Description = 'The command that will be binded.',
+            Description = 'The command that will be unbinded',
             Optional = false
         }
     },
@@ -235,7 +235,7 @@ return {
         {
             Name = 'Brainfuck',
             Type = 'String',
-            Description = 'Code to execute.',
+            Description = 'Code to execute',
             Optional = false
         }
     },
@@ -255,7 +255,7 @@ Command.Print(Brainfuck(code))
         {
             Name = 'Expression',
             Type = 'String',
-            Description = 'Expression to execute.',
+            Description = 'Expression to execute',
             Optional = false
         }
     },
@@ -284,7 +284,7 @@ Command.Print(tostring(Math(expr)))
         {
             Name = 'Code',
             Type = 'String',
-            Description = 'Code to execute.',
+            Description = 'Code to execute',
             Optional = true
         }
     },
@@ -314,7 +314,7 @@ end
     Name = 'clear',
     Alias = {'c'},
     Type = 'Default',
-    Description = 'Clears the log',
+    Description = 'Clears the log.',
     Args = {},
     Run = function()
         Command.Clear()
@@ -324,7 +324,7 @@ end
     Name = 'clearhistory',
     Alias = {'ch'},
     Type = 'Default',
-    Description = 'Clears the history',
+    Description = 'Clears the history.',
     Args = {},
     Run = function()
         Command.ClearHistory()
@@ -334,7 +334,7 @@ end
     Name = 'exit',
     Alias = {'stop'},
     Type = 'Default',
-    Description = 'Exits',
+    Description = 'Exits.',
     Args = {},
     Run = function()
         Command.Exit()
