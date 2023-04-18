@@ -21,6 +21,9 @@
     Add default to args
     Compute display results once so it doesn't have to be recomputed each time
     Compute autocompleterender in Command.AutoComplete
+    FileSystem
+        commands
+        prompt
 
     NOTE:
     Autocomplete results also include aliases
@@ -1269,4 +1272,8 @@ end
 
 Command.MakeCommand(require('defaultcommands'))
 Command.MakeCommand(require('cmdrcommands'))
+--[[
+Command.MakeCommand(require('raylibcommands'))
+Command.MakeCommand(require('filesystemcommands'))
+--]]
 Command.MakeType(require('defaulttypes'))

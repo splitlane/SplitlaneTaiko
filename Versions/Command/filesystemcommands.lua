@@ -2,7 +2,7 @@ return {
 {
     Name = '',
     Alias = {},
-    Type = 'Default: Raylib',
+    Type = 'Default: FileSystem',
     Description = 'Exits.',
     Args = {},
     Run = function()
