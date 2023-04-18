@@ -15,6 +15,8 @@
     Autocomplete better GUI
     Command.Input
     Validation on str so commands don't error when passed with incorrect arguments
+    Type validation
+    Type parsing (no need to manually check if number)
 
     NOTE:
     Autocomplete results also include aliases
@@ -451,9 +453,15 @@ function Command.AutoComplete(str)
     end
 end
 
+
+local specialpattern = '["\' ]'
+local escapedata = {
+    ['\\'] = '\\\\',
+    ['\"'] = '\\\"'
+}
+
 --Returns the list of arguments (ALSO INCLUDES command)
 function Command.Parse(str)
-    local specialpattern = '["\' ]'
     local currentp = 1 --pos of last arg start
     local seekingp = 1 --start finding from this pos, special + 1
     local out = {}
@@ -531,11 +539,6 @@ end
 
 --Serializes an str from a table of args
 function Command.Serialize(t)
-    local specialpattern = '["\' ]'
-    local escapedata = {
-        ['\\'] = '\\\\',
-        ['\"'] = '\\\"'
-    }
     local out = {}
 
     for i = 1, #t do
@@ -562,10 +565,6 @@ function Command.Serialize(t)
 end
 
 function Command.EscapeArgument(str)
-    local escapedata = {
-        ['\\'] = '\\\\',
-        ['\"'] = '\\\"'
-    }
     local out = string.gsub(str, '(.)', function(s)
         return escapedata[s]
     end)
@@ -1240,4 +1239,5 @@ end
 
 
 Command.MakeCommand(require('defaultcommands'))
+Command.MakeCommand(require('cmdrcommands'))
 Command.MakeType(require('defaulttypes'))
