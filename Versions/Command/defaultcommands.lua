@@ -35,7 +35,7 @@ return {
             end
         else
             local str = ''
-            for k, v in pairs(Command.Data) do
+            for k, v in pairs(Command.Data.Command) do
                 local check = true
 
                 for i = 1, #v.Alias do

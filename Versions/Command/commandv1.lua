@@ -14,6 +14,10 @@
     Wrap text
     Autocomplete better GUI
     Command.Input
+    Validation on str so commands don't error when passed with incorrect arguments
+
+    NOTE:
+    Autocomplete results also include aliases
 ]]
 
 
@@ -42,6 +46,7 @@ local autocompletedescriptioncolor = rl.new('Color', 80, 80, 80, 255)
 local autocompletetypecolor = rl.new('Color', 60, 60, 60, 255)
 local autocompleteresultscolor = rl.new('Color', 130, 130, 130, 255)
 local autocompleteselectedcolor = rl.new('Color', 0, 0, 0, 255)
+local autocompleteselectedprogresscolor = rl.new('Color', 66, 135, 245, 255)
 
 
 
@@ -174,8 +179,15 @@ end
 
 Command = {}
 
---Key value table of commands, key is name, value is command
-Command.Data = {}
+--Key value table of commands / types, key is name, value is command / types
+Command.Data = {
+    Command = {
+
+    },
+    Type = {
+
+    }
+}
 
 --Log of all output
 Command.Log = {}
@@ -231,8 +243,26 @@ Command.Scroll = 0
 
 
 
+function Command.GetType(typename)
+    return Command.Data.Type[typename]
+end
+
+function Command.MakeType(t)
+    for i = 1, #t do
+        local argtype = t[i]
+
+        --Validate
+
+
+
+
+        --Make
+        Command.Data.Type[argtype.Type] = argtype
+    end
+end
+
 function Command.GetCommand(commandname)
-    return Command.Data[commandname]
+    return Command.Data.Command[commandname]
 end
 
 function Command.MakeCommand(t)
@@ -242,7 +272,7 @@ function Command.MakeCommand(t)
         --Validate
 
         --Duplicate Check
-        if Command.Data[command.Name] then
+        if Command.Data.Command[command.Name] then
             error('Command.MakeCommand: Command ' .. command.Name .. ' already exists')
         end
 
@@ -258,9 +288,9 @@ function Command.MakeCommand(t)
 
 
         --Make
-        Command.Data[command.Name] = command
+        Command.Data.Command[command.Name] = command
         for i = 1, #command.Alias do
-            Command.Data[command.Alias[i]] = command
+            Command.Data.Command[command.Alias[i]] = command
         end
     end
 end
@@ -318,8 +348,8 @@ function Command.AutoCompleteSearchD(str, d)
     --str is probably smaller than any of the strings in t
     local scores = {}
     for k, v in pairs(d) do
-        --change the v to the k if you want key
-        scores[v] = search(str, k)
+        --WARNING: if it is scores[v] then alias will overwrite!
+        scores[k] = search(str, k)
     end
 
     --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
@@ -330,7 +360,9 @@ function Command.AutoCompleteSearchD(str, d)
         return t[a] < t[b]
     end) do
         --k is str, v is score
-        out[#out + 1] = k
+
+        --d[k] -> value, k -> key
+        out[#out + 1] = d[k]
     end
 
     return out
@@ -359,16 +391,56 @@ function Command.AutoComplete(str)
             else
                 --Input, suggest command
                 Command.LastAutoComplete = {
-                    Data = Command.AutoCompleteSearchD(out[1], Command.Data),
+                    Data = Command.AutoCompleteSearchD(out[1], Command.Data.Command),
                     Error = nil
                 }
             end
         else
             --Yes arguments, suggest arguments
-            Command.LastAutoComplete = {
-                Data = {},
-                Error = nil
-            }
+            local autocomplete = nil
+
+            local command = Command.GetCommand(out[1])
+
+            if command then
+                --Get argument type
+                local argn = #out - 1
+                local arg = command.Args[argn]
+
+                if arg then
+                    --Get argument type
+                    local argtypename = arg.Type
+                    local argtype = Command.GetType(argtypename)
+                    --print(argtypename, argtype)
+
+                    --Get type autocomplete
+                    local autocomplete = argtype.AutoComplete
+
+                    if autocomplete then
+                        Command.LastAutoComplete = {
+                            Data = Command.AutoCompleteSearchD(out[#out], autocomplete()),
+                            Error = nil
+                        }
+                    else
+                        --Type has no autocomplete, blank
+                        Command.LastAutoComplete = {
+                            Data = {},
+                            Error = nil
+                        }
+                    end
+                else
+                    --Error message
+                    Command.LastAutoComplete = {
+                        Data = {},
+                        Error = 'AutoComplete: Unable to find arg ' .. argn
+                    }
+                end
+            else
+                --Error message
+                Command.LastAutoComplete = {
+                    Data = {},
+                    Error = 'AutoComplete: Unable to find command ' .. out[1]
+                }
+            end
         end
     else
         --Error message
@@ -819,6 +891,21 @@ function Command.Init()
 
                 if i == autocompleteselected then
                     rl.DrawText(a.Name, 0, y, fontsize, autocompleteselectedcolor)
+                    --Draw progress / current
+                    local success, out = Command.Parse(utf8Encode(out))
+                    if success then
+                        --Check if first letters are the same
+                        local last = out[#out]
+                        if string.sub(a.Name, 1, #last) == last then
+                            --Draw
+                            rl.DrawText(out[#out], 0, y, fontsize, autocompleteselectedprogresscolor)
+                        else
+                            --Don't draw
+                        end
+                    else
+                        --Couldn't parse???
+                        --This should never happen, ignore
+                    end
                 else
                     rl.DrawText(a.Name, 0, y, fontsize, autocompleteresultscolor)
                 end
@@ -893,6 +980,7 @@ function Command.Init()
         end
 
         autocompleterender = #Command.LastAutoComplete.Data > 0
+        --for k,v in pairs(Command.LastAutoComplete.Data)do print(k,v)end
 
 
 
@@ -1019,9 +1107,9 @@ function Command.Init()
                     --Add space if it is not the last argument
                     local success, parsedout = Command.Parse(utf8Encode(out))
                     if success then
-                        local command = Command.Data[parsedout[1]]
+                        local command = Command.Data.Command[parsedout[1]]
                         if command then
-                            if #parsedout[1] == #command.Args + 1 then
+                            if #parsedout == #command.Args + 1 then
                                 --Do nothing
                             else
                                 --Add space
@@ -1083,7 +1171,7 @@ function Command.Init()
                     out = utf8Decode(Command.History[historyselected])
 
                     --Update display
-                    Command.AutoComplete(utf8Encode(out))
+                    --Command.AutoComplete(utf8Encode(out)) --DON'T UPDATE AUTOCOMPLETE SINCE IT DISABLES HISTORY SCROLLING
                     displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
                     sx, sy = GetTextSize(displaytext, fontsize)
                 end
@@ -1152,3 +1240,4 @@ end
 
 
 Command.MakeCommand(require('defaultcommands'))
+Command.MakeType(require('defaulttypes'))
