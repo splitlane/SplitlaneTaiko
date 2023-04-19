@@ -250,8 +250,110 @@ Command.Scroll = 0
 
 
 
+--Util
+--[[
+    WARNING: Command by itself trusts loadstring and all the commands
+
+    Error wrapped loadstring
+]]
+function Command.Loadstring(str)
+    local f, err = loadstring(str)
+    if f then
+        local success, out = pcall(f)
+        if out then
+            Command.Print(out)
+        end
+        return out
+    else
+        Command.Print(err)
+    end
+end
+
+function Command.LoadstringExpression(str)
+    return Command.Loadstring('return ' .. str)
+end
 
 
+--[[
+    Local manipulating functions
+]]
+local defaultstacklevel = 2 --Default: Function that called Command
+function Command.GetLocal(name, stacklevel)
+    stacklevel = (stacklevel or defaultstacklevel) + 1
+
+    local i = 1
+    while true do
+        local n, v = debug.getlocal(stacklevel, i)
+        if n then
+            if n == name then
+                return v
+            end
+        else
+            --Unable to find local
+            return nil
+        end
+        i = i + 1
+    end
+end
+
+function Command.SetLocal(name, value, stacklevel)
+    stacklevel = (stacklevel or defaultstacklevel) + 1
+
+    local i = 1
+    while true do
+        local n, v = debug.getlocal(stacklevel, i)
+        if n then
+            if n == name then
+                debug.setlocal(stacklevel, i, value)
+                return true
+            end
+        else
+            --Unable to find local
+            return nil
+        end
+        i = i + 1
+    end
+end
+
+--[[
+    Get a table like _G where you can just modify / get values
+    WARNING: SLOW
+]]
+function Command.GetLocalTable(stacklevel)
+    stacklevel = (stacklevel or defaultstacklevel) + 1
+
+    --NOPE: newindex needs A NEW INDEX!
+    --[[
+    local t = {}
+
+    local i = 1
+    while true do
+        local n, v = debug.getlocal(stacklevel, i)
+        if n then
+            t[n] = v
+        else
+            --Unable to find local
+            break
+        end
+        i = i + 1
+    end
+    --]]
+
+    local t = {}
+
+    return setmetatable(t, {
+        __index = function(t, k)
+            return Command.GetLocal(k, stacklevel - 1) --TAIL CALL, so stacklevel-1
+        end,
+        __newindex = function(t, k, v)
+            return Command.SetLocal(k, v, stacklevel - 1) --TAIL CALL, so stacklevel-1
+        end
+    })
+end
+
+
+
+--Getters / Setters
 
 function Command.GetType(typename)
     return Command.Data.Type[typename]
@@ -300,6 +402,11 @@ function Command.MakeCommand(t)
         --Make
         Command.Data.Command[command.Name] = command
         for i = 1, #command.Alias do
+            --Duplicate Check
+            if Command.Data.Command[command.Alias[i]] then
+                error('Command.MakeCommand: Command Alias ' .. command.Name .. ' already exists')
+            end
+
             Command.Data.Command[command.Alias[i]] = command
         end
     end
@@ -1278,3 +1385,6 @@ Command.MakeCommand(require('filesystemcommands'))
 Command.MakeCommand(require('debugcommands'))
 --]]
 Command.MakeType(require('defaulttypes'))
+
+
+Command.MakeCommand({require('debugcommands')[1], require('debugcommands')[2]})

@@ -293,18 +293,7 @@ local function Lua(a)local a=a or{}local b=a.env;local c=a.exit;local d=a.args;l
 
 
 if str then
-    local f, err = loadstring(str)
-    if f then
-        local out = nil
-        local sucess, err = pcall(function()
-            out = f()
-        end)
-        if out then
-            Command.Print(out)
-        end
-    else
-        Command.Print(err)
-    end
+    Command.Loadstring(str)
 else
     Lua({exit = {'exit', 'stop'}})
 end
