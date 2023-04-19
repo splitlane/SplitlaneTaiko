@@ -1275,5 +1275,6 @@ Command.MakeCommand(require('cmdrcommands'))
 --[[
 Command.MakeCommand(require('raylibcommands'))
 Command.MakeCommand(require('filesystemcommands'))
+Command.MakeCommand(require('debugcommands'))
 --]]
 Command.MakeType(require('defaulttypes'))
