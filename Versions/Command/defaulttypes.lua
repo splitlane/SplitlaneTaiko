@@ -1,3 +1,8 @@
+--[[
+    defaulttypes.lua
+
+    default types shipped with command
+]]
 return {
 {
     Type = 'Command',

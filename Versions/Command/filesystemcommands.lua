@@ -1,3 +1,8 @@
+--[[
+    filesystemcommands.lua
+
+    linux-like filesystem commands
+]]
 return {
 {
     Name = '',

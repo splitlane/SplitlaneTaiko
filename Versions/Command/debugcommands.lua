@@ -1,3 +1,10 @@
+--[[
+    debugcommands.lua
+
+    commands to debug code
+
+    http://lua-users.org/wiki/DebugLibraryTutorial
+]]
 return {
 {
     Name = 'setlocal',

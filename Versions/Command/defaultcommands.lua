@@ -1,3 +1,8 @@
+--[[
+    defaultcommands.lua
+
+    default commands shipped with command
+]]
 return {
 {
     Name = 'help',
