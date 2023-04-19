@@ -256,19 +256,56 @@ Command.Scroll = 0
 
     Error wrapped loadstring
 ]]
-function Command.Loadstring(str)
+
+--[[
+    Returns:
+    1. success
+    2. function
+--]]
+function Command.LoadstringF(str)
     local f, err = loadstring(str)
     if f then
-        local success, out = pcall(f)
-        if out then
-            Command.Print(out)
-        end
-        return out
+        return true, f
     else
         Command.Print(err)
+        return nil, err
     end
 end
 
+--[[
+    Returns:
+    1. success
+    2. output of run code
+--]]
+function Command.Loadstring(str)
+    local success, f = Command.LoadstringF(str)
+    if success then
+        local success, out = pcall(f)
+        Command.Print(out)
+        if success then
+            return true, out
+        else
+            return true, out
+        end
+    else
+        return nil, f
+    end
+end
+
+--[[
+    Returns:
+    1. success
+    2. function that, when called, returns an expression
+--]]
+function Command.LoadstringExpressionF(str)
+    return Command.LoadstringF('return ' .. str)
+end
+
+--[[
+    Returns:
+    1. success
+    2. expression
+--]]
 function Command.LoadstringExpression(str)
     return Command.Loadstring('return ' .. str)
 end
@@ -1362,7 +1399,7 @@ function Command.Init()
                     historyselected = 1
                 end
 
-                if historyselected ~= historylastselected then
+                if historyselected ~= historylastselected and Command.History[historyselected] then
                     out = utf8Decode(Command.History[historyselected])
 
                     --Update display

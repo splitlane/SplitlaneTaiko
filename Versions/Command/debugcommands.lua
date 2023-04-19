@@ -19,13 +19,15 @@ return {
         }
     },
     Run = function(name, str)
-        local v = Command.LoadstringExpression(str)
-        local l = Command.SetLocal(name, v)
-        if l then
-            Command.Print(v)
-        else
-            Command.Error('Unable to find local ' .. name)
-            Command.Error('Note that locals need to be declared to be set')
+        local success, v = Command.LoadstringExpression(str)
+        if success then
+            local l = Command.SetLocal(name, v)
+            if l then
+                Command.Print(v)
+            else
+                Command.Error('Unable to find local ' .. name)
+                Command.Error('Note that locals need to be declared to be set')
+            end
         end
     end
 },
@@ -85,8 +87,10 @@ return {
         }
     },
     Run = function(name, str)
-        local v = Command.LoadstringExpression(str)
-        _G[name] = v
+        local success, v = Command.LoadstringExpression(str)
+        if success then
+            _G[name] = v
+        end
     end
 },
 {
@@ -123,13 +127,41 @@ return {
     Alias = {'global hook'},
     Type = 'Default: Debug',
     Description = 'Runs code when an event happens to a global.',
-    Args = {},
-    Run = function()
-        Command.Exit()
+    Args = {
+        {
+            Name = 'Metamethod',
+            Type = 'String',
+            Description = 'Metatable key to hook onto',
+            Optional = false
+        },
+        {
+            Name = 'Expression',
+            Type = 'String',
+            Description = 'Expression to set the value',
+            Optional = false
+        }
+    },
+    Run = function(key, str)
+        local success, f = Command.LoadstringExpression(str)
+        if success then
+            local mt = getmetatable(_G) or {}
+            if mt[key] then
+                --Wrap preexisting function with another function
+                --"Splitter"
+                local oldf = mt[key]
+                mt[key] = function(...)
+                    oldf(...)
+                    return f(...)
+                end
+            else
+                mt[key] = f
+            end
+            setmetatable(_G, mt)
+        end
     end
 },
 {
-    Name = '',
+    Name = 'debug',
     Alias = {},
     Type = 'Default: Debug',
     Description = 'Exits.',
