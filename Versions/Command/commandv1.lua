@@ -1241,39 +1241,39 @@ function Command.Init()
                     for i = 1, #out2 do
                         out[#out + 1] = out2[i]
                     end
+                end
 
-                    --Add space if it is not the last argument
-                    local success, parsedout = Command.Parse(utf8Encode(out))
-                    if success then
-                        local command = Command.Data.Command[parsedout[1]]
-                        if command then
-                            if #parsedout == #command.Args + 1 then
-                                --Do nothing
-                            else
-                                --Add space
-                                out[#out + 1] = 32
-                            end
-                        else
+                --Add space if it is not the last argument
+                local success, parsedout = Command.Parse(utf8Encode(out))
+                if success then
+                    local command = Command.Data.Command[parsedout[1]]
+                    if command then
+                        if #parsedout == #command.Args + 1 then
                             --Do nothing
+                        else
+                            --Add space
+                            out[#out + 1] = 32
                         end
                     else
                         --Do nothing
                     end
+                else
+                    --Do nothing
+                end
 
-                    --Update display
-                    Command.AutoComplete(utf8Encode(out))
-                    displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
-                    sx, sy = GetTextSize(displaytext, fontsize)
+                --Update display
+                Command.AutoComplete(utf8Encode(out))
+                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                sx, sy = GetTextSize(displaytext, fontsize)
 
-                    autocompleterender = #Command.LastAutoComplete.Data > 0 or Command.LastAutoComplete.Arg
+                autocompleterender = #Command.LastAutoComplete.Data > 0 or Command.LastAutoComplete.Arg
 
-                    --Clip
-                    if autocompleteselected > #Command.LastAutoComplete.Data then
-                        autocompleteselected = #Command.LastAutoComplete.Data
-                    end
-                    if autocompleteselected < 1 then
-                        autocompleteselected = 1
-                    end
+                --Clip
+                if autocompleteselected > #Command.LastAutoComplete.Data then
+                    autocompleteselected = #Command.LastAutoComplete.Data
+                end
+                if autocompleteselected < 1 then
+                    autocompleteselected = 1
                 end
             end
         else
