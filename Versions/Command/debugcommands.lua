@@ -4,6 +4,8 @@
     commands to debug code
 
     http://lua-users.org/wiki/DebugLibraryTutorial
+
+    TODO: interactive debugger (stats + GUI)
 ]]
 return {
 {
@@ -168,13 +170,39 @@ return {
     end
 },
 {
+    Name = 'hook',
+    Alias = {},
+    Type = 'Default: Debug',
+    Description = 'Hook onto an event.',
+    Args = {
+        {
+            Name = 'Event',
+            Type = 'String',
+            Description = 'Event for debug.sethook',
+            Optional = false
+        },
+        {
+            Name = 'Expression',
+            Type = 'String',
+            Description = 'Expression to set the value',
+            Optional = false
+        }
+    },
+    Run = function(event, str)
+        local success, f = Command.LoadstringExpression(str)
+        if success then
+            debug.sethook(f, event)
+        end
+    end
+},
+{
     Name = 'debug',
     Alias = {},
     Type = 'Default: Debug',
-    Description = 'Exits.',
+    Description = 'Interactive lua debugger.',
     Args = {},
     Run = function()
-        Command.Exit()
+        
     end
 }
 }
