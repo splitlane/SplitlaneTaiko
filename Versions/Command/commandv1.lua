@@ -668,7 +668,21 @@ function Command.Parse(str)
                         end
                     end
 
-                    out[#out + 1] = table.concat(out2)
+                    seekingp = seekingp + 1
+
+                    if string.sub(str, seekingp, seekingp) == ' ' then
+                        out[#out + 1] = table.concat(out2)
+                        currentp = seekingp + 1
+                        seekingp = seekingp + 1
+                    elseif seekingp > #str then
+                        out[#out + 1] = table.concat(out2)
+                        break
+                    else
+                        --ignore?
+                        --NO EASY SOLUTION TO IGNORE THIS
+
+                        return false, 'Quote ends in the middle of an argument'
+                    end
 
                 else
                     --ignore?
@@ -1245,7 +1259,15 @@ function Command.Init()
 
                 if selected then
                     --Erase last argument
+
+                    --ASSUMES STANDARD CONFORMITY (If it doesn't error on parser, it shouldn't here)
                     local i = #out
+
+                    local quoted = out[i] == string.byte('\'') or out[i] == string.byte('\"')
+                    if quoted then
+                        quoted = out[i]
+                    end
+
                     while true do
                         if i < 1 then
                             break
@@ -1253,7 +1275,15 @@ function Command.Init()
 
                         --check for space
                         if out[i] == 32 then
-                            break
+                            if quoted then
+                                if out[i + 1] == quoted then
+                                    break
+                                else
+                                    out[i] = nil
+                                end
+                            else
+                                break
+                            end
                         else
                             out[i] = nil
                         end

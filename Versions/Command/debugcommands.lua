@@ -119,10 +119,10 @@ return {
     end
 },
 {
-    Name = '',
-    Alias = {},
+    Name = 'hookglobal',
+    Alias = {'global hook'},
     Type = 'Default: Debug',
-    Description = 'Exits.',
+    Description = 'Runs code when an event happens to a global.',
     Args = {},
     Run = function()
         Command.Exit()
