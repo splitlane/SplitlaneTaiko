@@ -277,7 +277,7 @@ end
 --[[
     Local manipulating functions
 ]]
-local defaultstacklevel = 2 --Default: Function that called Command
+local defaultstacklevel = 4 --Default: Function / env that called Command.Init
 function Command.GetLocal(name, stacklevel)
     stacklevel = (stacklevel or defaultstacklevel) + 1
 
@@ -286,7 +286,7 @@ function Command.GetLocal(name, stacklevel)
         local n, v = debug.getlocal(stacklevel, i)
         if n then
             if n == name then
-                return v
+                return {v}
             end
         else
             --Unable to find local
@@ -296,6 +296,7 @@ function Command.GetLocal(name, stacklevel)
     end
 end
 
+--You can only set a value of an existing local
 function Command.SetLocal(name, value, stacklevel)
     stacklevel = (stacklevel or defaultstacklevel) + 1
 
@@ -315,11 +316,34 @@ function Command.SetLocal(name, value, stacklevel)
     end
 end
 
+function Command.GetLocalTable(stacklevel)
+    stacklevel = (stacklevel or defaultstacklevel) + 1
+
+    local t = {}
+
+    local i = 1
+    while true do
+        local n, v = debug.getlocal(stacklevel, i)
+        if n then
+            --Be able to store nils
+            --t[n] = {v}
+            --OR
+            t[#t + 1] = {n, v}
+        else
+            --Unable to find local
+            break
+        end
+        i = i + 1
+    end
+
+    return t
+end
+
 --[[
     Get a table like _G where you can just modify / get values
     WARNING: SLOW
 ]]
-function Command.GetLocalTable(stacklevel)
+function Command.GetDynamicLocalTable(stacklevel)
     stacklevel = (stacklevel or defaultstacklevel) + 1
 
     --NOPE: newindex needs A NEW INDEX!
@@ -381,33 +405,36 @@ function Command.MakeCommand(t)
     for i = 1, #t do
         local command = t[i]
 
-        --Validate
+        --Debug / Validation
+        if command.Name ~= '' then
+            --Validate
 
-        --Duplicate Check
-        if Command.Data.Command[command.Name] then
-            error('Command.MakeCommand: Command ' .. command.Name .. ' already exists')
-        end
-
-
-        --Optional Arg Check
-        for i = 1, #command.Args do
-            local arg = command.Args[i]
-            if arg.Optional and i ~= #command.Args then
-                error('Command.MakeCommand: Command ' .. command.Name .. ' has an optional argument that is not at the end')
-            end
-        end
-
-
-
-        --Make
-        Command.Data.Command[command.Name] = command
-        for i = 1, #command.Alias do
             --Duplicate Check
-            if Command.Data.Command[command.Alias[i]] then
-                error('Command.MakeCommand: Command Alias ' .. command.Name .. ' already exists')
+            if Command.Data.Command[command.Name] then
+                error('Command.MakeCommand: Command ' .. command.Name .. ' already exists')
             end
 
-            Command.Data.Command[command.Alias[i]] = command
+
+            --Optional Arg Check
+            for i = 1, #command.Args do
+                local arg = command.Args[i]
+                if arg.Optional and i ~= #command.Args then
+                    error('Command.MakeCommand: Command ' .. command.Name .. ' has an optional argument that is not at the end')
+                end
+            end
+
+
+
+            --Make
+            Command.Data.Command[command.Name] = command
+            for i = 1, #command.Alias do
+                --Duplicate Check
+                if Command.Data.Command[command.Alias[i]] then
+                    error('Command.MakeCommand: Command Alias ' .. command.Name .. ' already exists')
+                end
+
+                Command.Data.Command[command.Alias[i]] = command
+            end
         end
     end
 end
@@ -1379,12 +1406,8 @@ end
 
 Command.MakeCommand(require('defaultcommands'))
 Command.MakeCommand(require('cmdrcommands'))
---[[
 Command.MakeCommand(require('raylibcommands'))
 Command.MakeCommand(require('filesystemcommands'))
 Command.MakeCommand(require('debugcommands'))
---]]
 Command.MakeType(require('defaulttypes'))
 
-
-Command.MakeCommand({require('debugcommands')[1], require('debugcommands')[2]})
