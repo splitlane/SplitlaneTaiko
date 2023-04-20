@@ -4438,16 +4438,21 @@ function Taiko.ParseTJA(source)
                     t[i] = string.gsub(t[i], 'i', '')
                 end
                 if CheckFraction(t[i]) then
+                    --WARNING: Negative is handled by ParseFraction
+                    --[[
                     local negative = false
                     if string.find(t[i], '%-') then
                         negative = true
                     end
+                    --]]
                     local a, b = ParseFraction(t[i])
                     t[i] = (a/b) --UNSAFE
                     fracdata[imaginary and 2 or 1] = true
+                    --[[
                     if negative then
                         t[i] = -t[i]
                     end
+                    --]]
                 else
                     t[i] = tonumber(t[i]) --UNSAFE
                 end
@@ -5930,7 +5935,7 @@ This is used when you want to return the judgment frame to its original position
                                 --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
-                                --print(unpack(complex))print(unpack(fracdata))error()
+                                --print(LineN, complex[1], complex[2])
                                 ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
                                 ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
                                 valid = true
