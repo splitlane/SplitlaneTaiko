@@ -8947,24 +8947,38 @@ int MeasureText(const char *text, int fontSize)
 
 
 
+    --Default config so game can start up
+    Config = Config or {}
 
-    Config.ScreenWidth = Config and Config.ScreenWidth or 1600 --1600
-    Config.ScreenHeight = Config and Config.ScreenHeight or Config.ScreenWidth / 16 * 9 --900
+    Config.ScreenWidth = Config.ScreenWidth or 1600 --1600
+    Config.ScreenHeight = Config.ScreenHeight or Config.ScreenWidth / 16 * 9 --900
     Config.WindowName = Config.WindowName or 'Taiko'
+
+    Config.Settings = Config.Settings or {}
+    Config.Settings.FPS = Config.Settings.FPS or 60
+    Config.Settings.VSync = Config.Settings.VSync == nil and true or Config.Settings.VSync --"or" breaks when it may be false
+
 
 
 
 
     --INIT RAYLIB
 
-    rl.SetTargetFPS(60) --will be set to settings later
-    rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
-    --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
-    rl.SetTraceLogLevel(rl.LOG_NONE)
-    rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
+    local function InitWindow()
+        if Config.Settings.VSync then
+            rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
+        end
+        rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE)
+        --https://github.com/raysan5/raylib/wiki/Frequently-Asked-Questions#how-do-i-remove-the-log
+        rl.SetTraceLogLevel(rl.LOG_NONE)
+        rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
+    
+        rl.SetTargetFPS(Config.Settings.FPS)
+        rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
+        --rl.HideCursor() --Hide cursor
+    end
 
-    rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
-    --rl.HideCursor() --Hide cursor
+    InitWindow()
 
 
 
@@ -9090,7 +9104,7 @@ int MeasureText(const char *text, int fontSize)
 
 
     local lastconfigupdate = {
-        vsync = false
+        vsync = OriginalConfig.Settings.VSync
     }
     function Taiko.UpdateConfig()
         --[[
@@ -9138,14 +9152,11 @@ int MeasureText(const char *text, int fontSize)
 
         if lastconfigupdate.vsync ~= Config.Settings.VSync then
             rl.CloseWindow()
-            if Config.Settings.VSync then
-                rl.SetConfigFlags(rl.FLAG_VSYNC_HINT) --limit fps
-            end
-            rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
+            InitWindow()
             lastconfigupdate.vsync = Config.Settings.VSync
+        else
+            rl.SetTargetFPS(Config.Settings.FPS)
         end
-
-        rl.SetTargetFPS(Config.Settings.FPS)
     end
     Taiko.UpdateConfig()
 

@@ -133,7 +133,7 @@ DO NOT EDIT
     },
     'Settings' = {
         'FPS' = 60,
-        'VSync' = false,
+        'VSync' = true,
         'PlaySong' = {
             'SONGVOLMultiplier' = 1,
             'SEVOLMultiplier' = 0.5,
