@@ -13150,7 +13150,11 @@ do
     local animFrames = 25 * (skinfps / 60)
 
 
-    CalculateNoteHitGauge = function(rawtarget)
+    --PASS IN AN UNSCALED TARGET tx, ty
+    CalculateNoteHitGauge = function(txr, tyr)
+        print(txr, tyr)
+        local tx, ty = txr * xmul + offsetx, tyr * ymul + offsety
+
         local function calcBezierPoint(t, data, dest)
             local at = 1 - t
             --for k, v in pairs(data) do dest[k] = {v[1], v[2]} end--data2 --data = data.slice() --copy array
@@ -13173,9 +13177,6 @@ do
 
         local frameTop = 0
         
-        local target = {
-            rawtarget[1] * xmul + offsetx, rawtarget[2] * ymul + offsety
-        }
         --[[
         local target = {
             [1] = 413,
@@ -13195,10 +13196,10 @@ do
         --]]
         
         local animPos = {
-            x1 = target[1] + (14 / 1280 * (OriginalConfig.ScreenWidth / scale[1])),
-            y1 = target[2] - (29 / 720 * (OriginalConfig.ScreenHeight / scale[2])),
-            x2 = (OriginalConfig.ScreenWidth / scale[1]) - (55 / 1280 * (OriginalConfig.ScreenWidth / scale[1])),
-            y2 = frameTop + (165 / 720 * (OriginalConfig.ScreenHeight / scale[2]))
+            x1 = tx + (14 / 1280 * (OriginalConfig.ScreenWidth)),
+            y1 = ty - (29 / 720 * (OriginalConfig.ScreenHeight)),
+            x2 = (OriginalConfig.ScreenWidth) - (55 / 1280 * (OriginalConfig.ScreenWidth)),
+            y2 = frameTop + (165 / 720 * (OriginalConfig.ScreenHeight))
         }
 
 
@@ -13210,7 +13211,7 @@ do
 
         --don't let height change
         --animPos.h = ((defaulttarget[2] * ymul + offsety) - 29) - (animPos.y2) --CONSTANT
-        animPos.h = (63 / 720 * (OriginalConfig.ScreenHeight / scale[2]))
+        animPos.h = (63 / 720 * (OriginalConfig.ScreenHeight))
 
         local animateBezier = {{
             -- 427, 228
@@ -13234,9 +13235,9 @@ do
 
 
         
-        notehitgauge.anim[rawtarget[1]] = notehitgauge.anim[rawtarget[1]] or {}
-        notehitgauge.anim[rawtarget[1]][rawtarget[2]] = {}
-        local anim = notehitgauge.anim[rawtarget[1]][rawtarget[2]]
+        notehitgauge.anim[txr] = notehitgauge.anim[txr] or {}
+        notehitgauge.anim[txr][tyr] = {}
+        local anim = notehitgauge.anim[txr][tyr]
         anim[0] = {nil, nil}
         for i = 1, animFrames do
             local animPoint = (i - 1) / (animFrames - 1)
@@ -13246,7 +13247,7 @@ do
     end
 end
 
-CalculateNoteHitGauge(defaulttarget)
+CalculateNoteHitGauge(target[1], target[2])
 
 
 
@@ -13378,13 +13379,14 @@ CalculateNoteHitGauge(defaulttarget)
                     local i = #notehitgauge.notes + 1
                     notehitgauge.notes[i] = nearestnote[v]
                     notehitgauge.startms[i] = ms
-                    notehitgauge.currenttarget[1][i] = target[1]
-                    notehitgauge.currenttarget[2][i] = target[2]
-                    if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
+                    local t1, t2 = target[1], target[2]
+                    notehitgauge.currenttarget[1][i] = t1
+                    notehitgauge.currenttarget[2][i] = t2
+                    if notehitgauge.anim[t1] and notehitgauge.anim[t1][t2] then
                         --target already calced
                     else
                         --target needs to be calced
-                        CalculateNoteHitGauge(target)
+                        CalculateNoteHitGauge(t1, t2)
                     end
 
                     --judgeanim
@@ -13420,13 +13422,14 @@ CalculateNoteHitGauge(defaulttarget)
                 local i = #notehitgauge.notes + 1
                 notehitgauge.notes[i] = drumrollhitnote
                 notehitgauge.startms[i] = ms
-                notehitgauge.currenttarget[1][i] = target[1]
-                notehitgauge.currenttarget[2][i] = target[2]
-                if notehitgauge.anim[target[1]] and notehitgauge.anim[target[1]][target[2]] then
+                local t1, t2 = target[1], target[2]
+                notehitgauge.currenttarget[1][i] = t1
+                notehitgauge.currenttarget[2][i] = t2
+                if notehitgauge.anim[t1] and notehitgauge.anim[t1][t2] then
                     --target already calced
                 else
                     --target needs to be calced
-                    CalculateNoteHitGauge(target)
+                    CalculateNoteHitGauge(t1, t2)
                 end
             end
         end
