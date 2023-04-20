@@ -13116,7 +13116,10 @@ local notehitgauge = {
         [2] = {}
     },
     anim = {
-        
+        --Anim references are inserted into here, with same index
+    },
+    animcache = {
+        --Cache of all anims
     }
 }
 
@@ -13152,7 +13155,7 @@ do
 
     --PASS IN AN UNSCALED TARGET tx, ty
     CalculateNoteHitGauge = function(txr, tyr)
-        print(txr, tyr)
+        --print(txr, tyr)
         local tx, ty = txr * xmul + offsetx, tyr * ymul + offsety
 
         local function calcBezierPoint(t, data, dest)
@@ -13168,7 +13171,7 @@ do
                     
                 end
             end
-            return {dest[1][1], dest[1][2]} --copy opt
+            return dest[1][1], dest[1][2] --copy opt
         end
         local function easeOut(pos)
             return math.sin(math.pi / 2 * pos)
@@ -13235,14 +13238,17 @@ do
 
 
         
-        notehitgauge.anim[txr] = notehitgauge.anim[txr] or {}
-        notehitgauge.anim[txr][tyr] = {}
-        local anim = notehitgauge.anim[txr][tyr]
-        anim[0] = {nil, nil}
+        notehitgauge.animcache[txr] = notehitgauge.animcache[txr] or {}
+        notehitgauge.animcache[txr][tyr] = {}
+        local anim = notehitgauge.animcache[txr][tyr]
+        --anim[0] = {nil, nil}
+        anim[1] = {false}
+        anim[2] = {false}
         for i = 1, animFrames do
             local animPoint = (i - 1) / (animFrames - 1)
-            local bezierPoint = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
-            anim[i] = bezierPoint
+            local bezierPointx, bezierPointy = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
+            anim[1][i] = bezierPointx
+            anim[2][i] = bezierPointy
         end
     end
 end
@@ -13382,12 +13388,13 @@ CalculateNoteHitGauge(target[1], target[2])
                     local t1, t2 = target[1], target[2]
                     notehitgauge.currenttarget[1][i] = t1
                     notehitgauge.currenttarget[2][i] = t2
-                    if notehitgauge.anim[t1] and notehitgauge.anim[t1][t2] then
+                    if notehitgauge.animcache[t1] and notehitgauge.animcache[t1][t2] then
                         --target already calced
                     else
                         --target needs to be calced
                         CalculateNoteHitGauge(t1, t2)
                     end
+                    notehitgauge.anim[i] = notehitgauge.animcache[t1][t2]
 
                     --judgeanim
                     judgeanim.startms[#judgeanim.startms + 1] = ms
@@ -13425,12 +13432,13 @@ CalculateNoteHitGauge(target[1], target[2])
                 local t1, t2 = target[1], target[2]
                 notehitgauge.currenttarget[1][i] = t1
                 notehitgauge.currenttarget[2][i] = t2
-                if notehitgauge.anim[t1] and notehitgauge.anim[t1][t2] then
+                if notehitgauge.animcache[t1] and notehitgauge.animcache[t1][t2] then
                     --target already calced
                 else
                     --target needs to be calced
                     CalculateNoteHitGauge(t1, t2)
                 end
+                notehitgauge.anim[i] = notehitgauge.animcache[t1][t2]
             end
         end
 
@@ -14239,11 +14247,12 @@ CalculateNoteHitGauge(target[1], target[2])
                 local difms = ms - startms
                 local animn = math.floor(difms / skinframems)
                 --Anim ended?
-                --local frame = notehitgauge.anim[animn]
+                --local frame = notehitgauge.animcache[animn]
                 local currenttarget = notehitgauge.currenttarget
-                local frame = notehitgauge.anim[currenttarget[1][i2]][currenttarget[2][i2]][animn]
-                if frame then
-                    if frame[1] then
+                --local frame = notehitgauge.animcache[currenttarget[1][i2]][currenttarget[2][i2]][animn] --LEGACY --DIRTY
+                local frame = notehitgauge.anim[i2]
+                if frame[1][animn] ~= nil then
+                    if frame[1][animn] then
                         --scale
                         note.pr.width = tsizex * scale[1]
                         note.pr.height = tsizey * scale[2]
@@ -14251,8 +14260,8 @@ CalculateNoteHitGauge(target[1], target[2])
                         note.tcenter.y = note.tcentero.y * scale[2]
 
                         --draw note
-                        note.pr.x = frame[1] * scale[1]
-                        note.pr.y = frame[2] * scale[2]
+                        note.pr.x = frame[1][animn] * scale[1]
+                        note.pr.y = frame[2][animn] * scale[2]
                         rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
                     else
                         --invis
@@ -14263,6 +14272,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     table.remove(notehitgauge.startms, i2)
                     table.remove(notehitgauge.currenttarget[1], i2)
                     table.remove(notehitgauge.currenttarget[2], i2)
+                    table.remove(notehitgauge.anim, i2)
                     offseti = offseti - 1
                 end
             end
