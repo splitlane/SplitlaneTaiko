@@ -1,3 +1,4 @@
+#!..\raylua_s.exe .\test.lua
 --[[
     commandv1.lua
 
@@ -24,6 +25,7 @@
     FileSystem
         commands
         prompt
+    Alias replaces itself with the one name
 
     NOTE:
     Autocomplete results also include aliases
@@ -208,25 +210,10 @@ Command.History = {}
 Command.LastAutoComplete = {
     Data = {
         --[[
-            --If it is suggesting arguments: (this is just standard command data)
-
-            [Rank (higher the better, starts at 1)] = {
-                Name = 'Name',
-                Type = 'Type',
-                Description = 'Description',
-                Optional = 'Optional',
-            }
-
-            --If it is suggesting arguments: (this is just standard arg data)
-
-            [Rank (higher the better, starts at 1)] = {
-                Name = 'Name',
-                Alias = 'Alias'
-                Type = 'Type', --Not used for anything important, just display
-                Description = 'Description',
-            }
+            [Rank (higher the better, starts at 1)] = string or Command / Arg data table
         --]]
     },
+    DataType = nil, --Type of data ('String' or nil if DataTable)
     Arg = nil, --Nil unless Data is not empty and the has arg data
     Error = nil, --Error message here if it errors
 }
