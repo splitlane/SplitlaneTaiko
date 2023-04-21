@@ -191,6 +191,9 @@ return {
             debug.sethook(f, event)
         end
     end
+    Data = {
+
+    }
 },
 {
     Name = 'debug',

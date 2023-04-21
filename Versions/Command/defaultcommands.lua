@@ -5,6 +5,34 @@
 ]]
 return {
 {
+    Name = 'example', --Name: command name, displayed at title of autocomplete
+    Alias = {'example2', 'example3'}, --Alias: aliases for this command
+    Type = 'Default', --Type: needed for autocomplete
+    Description = 'Example command.', --Description: displayed at description of autocomplete
+    Args = {
+        {
+            Name = 'Command', --Name: displayed at title of autocomplete
+            Type = 'Command', --Type: needed for autocomplete, type validation
+            Description = 'The command to inspect', --Description: displayed at description of autocomplete
+            Optional = true --Optional: whether it is optional or not (HAS TO BE THE LAST ARGUMENT)
+        }
+    },
+    --[[
+        Run: function that is called with the arguments when command is called
+        
+        It does type validation and conversion / parsing for you
+    --]]
+    Run = function(arg1, arg2)
+
+    end,
+    --[[
+        Data: the global Data is set in the global environment (basically DIY setfenv), and it is for persistent data across many command calls
+
+        OPTIONAL! if it is nil, Data is not set
+    ]]
+    Data = {}
+}
+{
     Name = 'help',
     Alias = {'h'},
     Type = 'Default',

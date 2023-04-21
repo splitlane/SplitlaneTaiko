@@ -775,6 +775,20 @@ function Command.EscapeArgument(str)
     return out
 end
 
+function Command.RunCommand(command, out)
+    --TODO: Type validation (actually not validation since the command shouldn't even be sent), parsing
+
+    --ENV (Persistent command.Data)
+    local oldData = Data
+    Data = command.Data
+
+    command.Run(select(2, unpack(out)))
+
+    --ENV (Persistent command.Data)
+    command.Data = Data
+    Data = oldData
+end
+
 function Command.Run(str)
     local success, out = Command.Parse(str)
 
@@ -788,7 +802,8 @@ function Command.Run(str)
         
         if command then
             --Run
-            command.Run(select(2, unpack(out)))
+            --command.Run(select(2, unpack(out)))
+            Command.RunCommand(command, out)
         else
             --Error message
             Command.Error('Unable to find command ' .. out[1])
