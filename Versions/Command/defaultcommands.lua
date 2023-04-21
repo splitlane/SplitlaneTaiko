@@ -31,7 +31,7 @@ return {
         OPTIONAL! if it is nil, Data is not set
     ]]
     Data = {}
-}
+},
 {
     Name = 'help',
     Alias = {'h'},
