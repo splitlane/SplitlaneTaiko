@@ -12,6 +12,9 @@
     https://devforum.roblox.com/t/cmdr-a-fully-extensible-and-type-safe-command-console-for-roblox-developers/182815/18
     https://github.com/evaera/Cmdr/releases
 
+    FS: https://github.com/evaera/Cmdr/issues/78
+
+
     TODO:
     Wrap text
     Autocomplete better GUI
@@ -221,6 +224,8 @@ Command.LastAutoComplete = {
 --Up-to-date strings that have been concatted
 Command.Strings = {
     Log = '',
+    Path = '',
+    Prefix = '',
 }
 
 --Event hooks that are set when we need the Command.Init loop to do something
@@ -233,11 +238,24 @@ Command.Events = {
 --Scroll that is shared with Command.Init and Command.Input
 Command.Scroll = 0
 
+--FileSystem
+Command.Path = {}
+Command.User = 'mc08'
 
 
 
 
 --Util
+--[[
+    Wraps a function. f1 is run first, then f2 is run, then the result of f2 is returned
+]]
+function Command.MergeFunction(f1, f2)
+    return function(...)
+        f1(...)
+        return f2(...)
+    end
+end
+
 --[[
     WARNING: Command by itself trusts loadstring and all the commands
 
@@ -962,7 +980,6 @@ function Command.Input()
 
     end
 end
-
 function Command.Output(out)
     --equal to io.write in lua
     local str = tostring(out)
@@ -996,12 +1013,43 @@ function Command.Exit()
     Command.Events.Exit = true
 end
 
+--Command FileSystem
+function Command.UpdatePrefix()
+    Command.Strings.Prefix = Command.User .. '@' .. Command.DisplayPath(Command.Path) .. '$ '
+end
+
+function Command.DisplayPath(path)
+    return table.concat(path, '/')
+end
+function Command.CopyPath(path)
+    local out = {}
+    for i = 1, #path do
+        out[i] = path[i]
+    end
+    return out
+end
+function Command.SetCurrentPath(path)
+    Command.Path = path
+    Command.Strings.Path = Command.DisplayPath(Command.Path)
+
+    Command.UpdatePrefix()
+end
+
+function Command.SetCurrentUser(user)
+    Command.User = user
+    
+    Command.UpdatePrefix()
+end
+
+
 
 --Init command raylib loop
 function Command.Init()
     --local sx, sy = GetTextSize(str, fontsize)
     local out = {}
-    local prefix = '> '
+    --local prefix = '> '
+    Command.UpdatePrefix()
+    local prefix = Command.Strings.Prefix
 
     --NOPE: moved to Command.Scroll
     --local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
@@ -1034,6 +1082,7 @@ function Command.Init()
 
     --local displaytext = prefix .. ''
     while not (rl.WindowShouldClose() or Command.Events.Exit) do
+        prefix = Command.Strings.Prefix
         mouseposition = rl.GetMousePosition()
 
         rl.BeginDrawing()

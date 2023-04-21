@@ -158,10 +158,7 @@ return {
                 --Wrap preexisting function with another function
                 --"Splitter"
                 local oldf = mt[key]
-                mt[key] = function(...)
-                    oldf(...)
-                    return f(...)
-                end
+                mt[key] = Command.MergeFunction(oldf, f)
             else
                 mt[key] = f
             end
