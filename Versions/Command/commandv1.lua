@@ -71,22 +71,7 @@ local autocompleteselectedprogresscolor = rl.new('Color', 66, 135, 245, 255)
 
 
 
-local function GetTextSize(str, fontsize)
-    --[[
-    return rl.MeasureText(str, fontsize) --only x
-    --]]
 
-    -- [[
-    local defaultfontsize = 10
-    if fontsize < defaultfontsize then
-        fontsize = defaultfontsize
-    end
-    local spacing = fontsize / defaultfontsize
-
-    local v = rl.MeasureTextEx(rl.GetFontDefault(), str, fontsize, spacing)
-    return math.floor(v.x), math.floor(v.y)
-    --]]
-end
 
 local function utf8Encode(t,derp,...)
     if derp ~= nil then
@@ -160,14 +145,123 @@ end
 local function IsVectorInRectangle(v, r)
     return r.x <= v.x and v.x <= r.x + r.width and r.y <= v.y and v.y <= r.y + r.height
 end
-local function WrapText(text, sx)
-    --Brute forcer
 
+--[[
+    https://www.raylib.com/examples/text/loader.html?name=text_rectangle_bounds
+    
+    Implemented my own algorithm after all.
+    It is efficient, and returns a table of table of codepoints
+--]]
+local function WrapText(text, font, fontsize, sx, spacing, wordwrapon)
+    --local text = utf8Decode(rawtext)
+    --text is codepoint array
+
+    --config
+    local textoffsety = 0 --when newline
+    local textoffsetx = 0
+    local scalefactor = fontsize / font.baseSize
+
+
+    --out
+    local out = {
+        --list of list of codepoints
+    }
+    local previousseeki = 1
+    local previousi = 1
+    local cx = 0
+    local newlineflag = nil
+    
+    for i = 1, #text do
+        local codepoint = text[i]
+
+        local index = rl.GetGlyphIndex(font, codepoint)
+
+
+        if codepoint == 10 then --\n
+            newlineflag = true
+        else
+            cx = cx + ((font.glyphs[index].advanceX == 0) and (font.recs[index].width * scalefactor) or (font.glyphs[index].advanceX * scalefactor))
+            if i < #text then
+                cx = cx + spacing
+            end
+
+            if not wordwrapon then
+                if cx >= sx then
+                    newlineflag = true
+                    --use last previousseeki
+                else
+                    previousseeki = i
+                end
+            end
+        end
+        --print(i, string.char(codepoint), cx)
+        if wordwrapon and codepoint == 32 then --space
+            --[[
+            if cx >= sx or (previousi == previousseeki + 1) then
+                --print(cx, sx)
+                --one word longer than entire line
+                if previousi == previousseeki then
+                    previousseeki = i
+                elseif previousi == previousseeki + 1 then
+                    previousseeki = i
+                end
+                newlineflag = true
+                --use last previousseeki
+                --print('G', previousi, previousseeki, rawtext:sub(previousi, previousseeki))
+            --]]
+            if cx >= sx then
+                newlineflag = true
+                --use last previousseeki
+            else
+                previousseeki = i
+                --print('B', previousi, previousseeki, rawtext:sub(previousseeki, previousi))
+            end
+        end
+
+        if newlineflag then
+            local t = {}
+            for i2 = previousi, previousseeki do
+                t[#t + 1] = text[i2]
+            end
+            out[#out + 1] = t
+            previousi = previousseeki + 1
+            cx = 0
+
+            newlineflag = nil
+        end
+    end
+
+    --put remaining
+    local t = {}
+    for i2 = previousi, #text do
+        t[#t + 1] = text[i2]
+    end
+    out[#out + 1] = t
+
+    return out
 end
 
+--[[
+a = WrapText('hsdamogusamogusamogusamogusamogus hsdamogusamogusamogusamogusamogus a hsdamogusamogusamogusamogusamogus a hsdamogusamogusamogusamogusamogus a hsdamogusamogusamogusamogusamogus a hsdamogusamogusamogusamogusamogus a', rl.GetFontDefault(), 10, 200, 5, true)
+for i = 1, #a do
+    print(utf8Encode(a[i]))
+end
+error()
+--]]
 
 
+--[[
+    Easy helper function for wrapping display text.
 
+    Inefficient + lazy but works
+]]
+local function WrapStringConcat(str, fontsize, sx, spacing, wordwrapon)
+    local out = WrapText(utf8Decode(str), rl.GetFontDefault(), fontsize, sx, spacing, wordwrapon)
+    for i = 1, #out do
+        out[i] = utf8Encode(out[i])
+    end
+    return table.concat(out, '\n')
+end
 
 
 
@@ -1066,6 +1160,18 @@ function Command.Init()
     Command.UpdatePrefix()
     local prefix = Command.Strings.Prefix
 
+    --Text wrap for the command log
+    local textwrapwidth = Config.ScreenWidth
+    local wordwrapon = true
+    --taken from GetTextSize
+    local defaultfontsize = 10
+    if fontsize < defaultfontsize then
+        fontsize = defaultfontsize
+    end
+    local spacing = fontsize / defaultfontsize
+
+
+
     --NOPE: moved to Command.Scroll
     --local scroll = 0 --0 is aligned to top (this is subtracted fron fontposy)
 
@@ -1084,7 +1190,7 @@ function Command.Init()
     local historylastselected = -1
 
     --Update display
-    local displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+    local displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
     local sx, sy = GetTextSize(displaytext, fontsize)
 
     --Catchup Scroll
@@ -1209,7 +1315,7 @@ function Command.Init()
                 out[#out + 1] = c
                 --Update display
                 Command.AutoComplete(utf8Encode(out))
-                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
                 sx, sy = GetTextSize(displaytext, fontsize)
             end
         end
@@ -1220,7 +1326,7 @@ function Command.Init()
 
             --Update display
             Command.AutoComplete(utf8Encode(out))
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
             sx, sy = GetTextSize(displaytext, fontsize)
         end
         if rl.IsKeyPressed(rl.KEY_ENTER) then
@@ -1239,7 +1345,7 @@ function Command.Init()
             out = {}
             --Update display
             Command.AutoComplete(utf8Encode(out))
-            displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+            displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
             sx, sy = GetTextSize(displaytext, fontsize)
         end
         if rl.IsKeyPressed(rl.KEY_ESCAPE) then
@@ -1408,7 +1514,7 @@ function Command.Init()
 
                 --Update display
                 Command.AutoComplete(utf8Encode(out))
-                displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
                 sx, sy = GetTextSize(displaytext, fontsize)
 
                 autocompleterender = #Command.LastAutoComplete.Data > 0 or Command.LastAutoComplete.Arg
@@ -1455,7 +1561,7 @@ function Command.Init()
 
                     --Update display
                     --Command.AutoComplete(utf8Encode(out)) --DON'T UPDATE AUTOCOMPLETE SINCE IT DISABLES HISTORY SCROLLING
-                    displaytext = Command.Strings.Log .. prefix .. utf8Encode(out)
+                    displaytext = WrapStringConcat(Command.Strings.Log .. prefix .. utf8Encode(out), fontsize, textwrapwidth, spacing, wordwrapon)
                     sx, sy = GetTextSize(displaytext, fontsize)
                 end
             end

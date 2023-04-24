@@ -190,7 +190,7 @@ return {
         if success then
             debug.sethook(f, event)
         end
-    end
+    end,
     Data = {
         set = false
     }

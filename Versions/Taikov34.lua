@@ -124,7 +124,7 @@ TODO: Add raylib option
     TODO: Moving Background --DONE, CONFIG DELAYED
     TODO: Fix LoadSongFromMemory
     TODO: Fix opening a/ and then a/b/ and then closing a/ causes the last few items of a/ to remain --DONE
-    TODO: Push note attach to currentmeasure instead of setting a parser flag (section, NO: suddenappear?, NO: suddenmove?)
+    TODO: Push note attach to currentmeasure instead of setting a parser flag (section, NO: suddenappear?, NO: suddenmove?) --DONE
     TODO: SUDDEN
         how to implement
         
@@ -138,9 +138,14 @@ TODO: Add raylib option
                 --place note into precalculated static position
             else
                 --calc position and move it
-            end
+            end --DONE
     TODO: Rename note.delay to note.delayms?
     TODO: JPOSSCROLL + LOADMS FIX
+    TODO: #Section
+    TODO: Branches
+    TODO: Playsong branches
+    TODO: Lyrics
+    TODO: SongSelect Difficulties
     
 
 TODO: Taiko.Game
@@ -12813,7 +12818,19 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             lyric.y = 600
             lyric.p = rl.new('Vector2', lyric.x, lyric.y)
             lyric.spacing = 5
-            lyric.size = 50
+            lyric.size = 45 --https://discord.com/channels/722513061419810946/960330807459868743/1077990340398686328
+
+            --wrap text / split it into multiple lines
+
+            --TODO
+
+            --centering
+            lyric.textrect = rl.new('Rectangle',
+            0 + ((Config.ScreenWidth - 1280/720 * Config.ScreenHeight) / 2 + 100 * scale[1]),
+            0,
+            Config.ScreenWidth - 2 * ((Config.ScreenWidth - 1280/720 * Config.ScreenHeight) / 2 + 100 * scale[1]),
+            0
+            )
 
             --scale lyric
             lyric.p2 = rl.new('Vector2', 0, 0)
