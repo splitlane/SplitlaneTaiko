@@ -11,6 +11,7 @@ return {
     Description = 'Exits.',
     Args = {},
     Run = function()
+        --TODO
         Command.Exit()
     end
 },
@@ -21,6 +22,7 @@ return {
     Description = 'Exits.',
     Args = {},
     Run = function()
+        --TODO
         Command.Exit()
     end
 },
@@ -31,6 +33,7 @@ return {
     Description = 'Exits.',
     Args = {},
     Run = function()
+        --TODO
         Command.Exit()
     end
 },
@@ -41,6 +44,7 @@ return {
     Description = 'Interactive filesystem.',
     Args = {},
     Run = function()
+        --TODO
         Command.Exit()
     end
 }

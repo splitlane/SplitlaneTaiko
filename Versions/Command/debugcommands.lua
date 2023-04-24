@@ -202,7 +202,8 @@ return {
     Description = 'Interactive lua debugger.',
     Args = {},
     Run = function()
-        
+        --TODO
+        Command.Exit()
     end
 }
 }
