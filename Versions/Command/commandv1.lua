@@ -161,6 +161,12 @@ local function WrapText(text, font, fontsize, sx, spacing, wordwrapon)
     local textoffsetx = 0
     local scalefactor = fontsize / font.baseSize
 
+    local insertdash = true --insert dash to signify word continuance
+    if wordwrapon then
+        insertdash = false
+    end
+    local dashchar = string.byte('-')
+
 
     --out
     local out = {
@@ -170,7 +176,10 @@ local function WrapText(text, font, fontsize, sx, spacing, wordwrapon)
     local previousi = 1
     local cx = 0
     local newlineflag = nil
-    
+    local dontinsertthiscodepointflag = nil --Avoid duplicating newlines
+    local dontinsertdashflag = true --Avoid inserting dash when intentional newline (NOTE: turned on at start since we don't want dash at start)
+    local insertdashnextflag = nil --Dashhes are inserted next
+
     for i = 1, #text do
         local codepoint = text[i]
 
@@ -178,6 +187,9 @@ local function WrapText(text, font, fontsize, sx, spacing, wordwrapon)
 
 
         if codepoint == 10 then --\n
+            previousseeki = i
+            dontinsertdashflag = true
+            dontinsertthiscodepointflag = true
             newlineflag = true
         else
             cx = cx + ((font.glyphs[index].advanceX == 0) and (font.recs[index].width * scalefactor) or (font.glyphs[index].advanceX * scalefactor))
@@ -220,14 +232,30 @@ local function WrapText(text, font, fontsize, sx, spacing, wordwrapon)
 
         if newlineflag then
             local t = {}
-            for i2 = previousi, previousseeki do
+
+            if insertdashnextflag then
+                t[#t + 1] = dashchar
+                insertdashnextflag = nil
+            end
+            if insertdash and (not dontinsertdashflag) then
+                insertdashnextflag = true
+            end
+
+            for i2 = previousi, previousseeki - 1 do
                 t[#t + 1] = text[i2]
             end
+
+            if not dontinsertthiscodepointflag then
+                t[#t + 1] = text[previousseeki]
+            end
+
             out[#out + 1] = t
             previousi = previousseeki + 1
             cx = 0
 
             newlineflag = nil
+            dontinsertthiscodepointflag = nil
+            dontinsertdashflag = nil
         end
     end
 
@@ -1161,8 +1189,8 @@ function Command.Init()
     local prefix = Command.Strings.Prefix
 
     --Text wrap for the command log
-    local textwrapwidth = Config.ScreenWidth
-    local wordwrapon = true
+    local textwrapwidth = Config.ScreenWidth - scrollbarrect.width
+    local wordwrapon = false
     --taken from GetTextSize
     local defaultfontsize = 10
     if fontsize < defaultfontsize then
