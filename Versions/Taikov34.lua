@@ -7221,6 +7221,7 @@ function Taiko.SerializeTJA(Parsed)
     local MetadataMul = {
         OFFSET = 0.001,
         MOVIEOFFSET = 0.001,
+        DEMOSTART = 0.001,
 
         SONGVOL = 100,
         SEVOL = 100,
@@ -7261,16 +7262,23 @@ function Taiko.SerializeTJA(Parsed)
         scrolly = true,
     }
     local function SerializeNote(note)
-        local newline = false
+        local delayaddms = 0
+        local addfirstnewline = true
+
         for k, v in spairs(note, function(t, a, b)
             return a < b
         end) do
-            if (not exclude[k]) and (not lastnote or not note[k] == lastnote[k]) then
+            if (not exclude[k]) and (not lastnote or not (note[k] == lastnote[k])) then
+                --[[
+                --TODO: Only output when addnewline is true
                 --Output change
                 if newline == false then
                     Out[#Out + 1] = '\n'
                     newline = true
                 end
+                --]]
+                --DIRTY --TODO: some memory and cpu is wasted since we are adding it later using table.insert
+                local beforenewline = #Out + 1
 
                 local addnewline = true
                 
@@ -7304,7 +7312,10 @@ function Taiko.SerializeTJA(Parsed)
                     else
                         --STOPSONG is on
                         Out[#Out + 1] = '#DELAY '
-                        Out[#Out + 1] = tostring(MsToS(note.delay - (lastnote and lastnote.delay or 0)))
+                        local changems = note.delay - (lastnote and lastnote.delay or 0)
+                        Out[#Out + 1] = tostring(MsToS(changems))
+
+                        delayaddms = delayaddms + changems
                     end
 
 
@@ -7318,6 +7329,10 @@ function Taiko.SerializeTJA(Parsed)
                 end
 
                 if addnewline then
+                    if addfirstnewline then
+                        table.insert(Out, beforenewline, '\n')
+                        addfirstnewline = false
+                    end
                     Out[#Out + 1] = '\n'
                 end
             end
@@ -7326,6 +7341,8 @@ function Taiko.SerializeTJA(Parsed)
         Out[#Out + 1] = tostring(note.type)
 
         lastnote = note
+
+        return delayaddms --the ms that delay removed
     end
 
 
@@ -7413,6 +7430,17 @@ function Taiko.SerializeTJA(Parsed)
         Out[#Out + 1] = '\n'
 
 
+        --NMSCROLL / HBSCROLL / BMSCROLL
+        --[[
+            NOTE: there is no bmscroll since it is just hbscroll with scrolls disabled
+            you cannot find from metadata
+        ]]
+        if v.Metadata.STOPSONG then
+            Out[#Out + 1] = '\n#HBSCROLL\n'
+        else
+            Out[#Out + 1] = '\n#NMSCROLL\n'
+        end
+
         --NOTES
         Out[#Out + 1] = '#START\n'
         local currentmeasure = {}
@@ -7454,6 +7482,8 @@ function Taiko.SerializeTJA(Parsed)
                 local measurems = nil
                 if nextnote then
                     measurems = nextnote.ms - measurestartms
+                    --Subtract delay dif from total measure ms
+                    measurems = measurems - (nextnote.delay - (currentmeasure[1] and currentmeasure[1].delay or nextnote.delay))
                 else
                     --Subdivide
                     measurems = gcd + divtotalms
@@ -7470,7 +7500,9 @@ function Taiko.SerializeTJA(Parsed)
                 if sign ~= lastsign then
                     --LAZY --DIRTY (decimal fraction???)
                     --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
-                    Out[#Out + 1] = '#MEASURE ' .. ToFraction(signraw) .. '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                    Out[#Out + 1] = '#MEASURE '
+                    Out[#Out + 1] = ToFraction(signraw)
+                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     lastsign = sign
                 end
                 
@@ -7480,18 +7512,23 @@ function Taiko.SerializeTJA(Parsed)
                 if #currentmeasure == 0 then
                     Out[#Out + 1] = ',\n'
                 elseif #currentmeasure == 1 then
-                    SerializeNote(note)
+                    local delayaddms = SerializeNote(note)
                     Out[#Out + 1] = ',\n'
                 else
                     --Push notes
                     for i = 1, #currentmeasure do
                         local note = currentmeasure[i]
-                        SerializeNote(note)
+                        local delayaddms = SerializeNote(note)
+                        
+                        local futuredelayaddms = (currentmeasure[i + 1] and currentmeasure[i + 1].delay or (nextnote and nextnote.delay or note.delay)) - note.delay
+                        --futuredelayaddms = 0
+
                         if i ~= #currentmeasure then
-                            Out[#Out + 1] = string.rep('0', (currentmeasure[i + 1].ms - currentmeasure[i].ms) / gcd - 1)
+                            Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms) - futuredelayaddms) / gcd - 1)
+                        else
+                            Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)
                         end
                     end
-                    Out[#Out + 1] = string.rep('0', (measurems + measurestartms - currentmeasure[#currentmeasure].ms) / gcd - 1)
                     Out[#Out + 1] = ',\n'
                 end
 
@@ -7513,6 +7550,27 @@ function Taiko.SerializeTJA(Parsed)
 
     return table.concat(Out)
 end
+
+
+-- [[
+local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/delay.tja')
+local ParsedData = Parsed[1]
+for i = 1, #ParsedData.Data do
+    local note = ParsedData.Data[i]
+    --print(note.delay)
+end
+
+local out = Taiko.SerializeTJA(Parsed)
+print(out)
+io.open('./Songs/00 Customs/tja/neta/ekiben/delayserialized.tja', 'wb+'):write(out)
+--print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
+--error()
+--]]
+
+
+
+
+
 
 
 --[[
