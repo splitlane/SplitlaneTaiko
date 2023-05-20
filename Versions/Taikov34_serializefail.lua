@@ -1,7 +1,7 @@
 #!.\raylua_s.exe 
 --[[
-Taikov34.lua
-
+Taikov34serializefail.lua
+    WARN: Taiko.SerializeTJA attempt resulted in shitty code, so this is before revert
 
 Make into a full simulator
 
@@ -7273,6 +7273,7 @@ function Taiko.SerializeTJA(Parsed)
         ms = true,
         scrolly = true,
     }
+    --Barlines are also accepted
     local function SerializeNote(note)
         local delayaddms = 0
         local addfirstnewline = true
@@ -7350,7 +7351,11 @@ function Taiko.SerializeTJA(Parsed)
             end
         end
 
-        Out[#Out + 1] = tostring(note.type)
+        if note.type then --Could be barline
+            Out[#Out + 1] = tostring(note.type)
+        else
+            Out[#Out + 1] = '// DEBUG: barline\n'
+        end
 
         lastnote = note
 
@@ -7454,7 +7459,8 @@ function Taiko.SerializeTJA(Parsed)
         end
 
         --NOTES
-        Out[#Out + 1] = '#START\n'
+        Out[#Out + 1] = '#START'
+        Out[#Out + 1] = '\n' --Seperated for barline override
         local currentmeasure = {}
         local measurestartms = nil
         local lastsign = nil
@@ -7468,7 +7474,7 @@ function Taiko.SerializeTJA(Parsed)
             --print(note.ms)
 
             --do stuff with notes
-            if (note.data == 'note') then
+            if (note.data == 'note') or (note.data == 'event' and note.event == 'barline') then
                 currentmeasure[#currentmeasure + 1] = note
             end
 
@@ -7478,12 +7484,14 @@ function Taiko.SerializeTJA(Parsed)
 
 
             if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) then
+                local noten = #currentmeasure
+
                 local divtotalms = note.ms - measurestartms
-                local divms = divtotalms / #currentmeasure
+                local divms = divtotalms / noten
 
                 --Subdivide
                 local gcd = nil
-                if #currentmeasure >= 2 then
+                if noten >= 2 then
                     gcd = Subdivide(currentmeasure)
                 else
                     --DIRTY
@@ -7495,6 +7503,8 @@ function Taiko.SerializeTJA(Parsed)
                 if nextnote then
                     measurems = nextnote.ms - measurestartms
                     --Subtract delay dif from total measure ms
+
+                    --INFO: Changed nextnote to currentmeasure[#currentmeasure] --REVERTED
                     measurems = measurems - (nextnote.delay - (currentmeasure[1] and currentmeasure[1].delay or nextnote.delay))
                 else
                     --Subdivide
@@ -7509,6 +7519,9 @@ function Taiko.SerializeTJA(Parsed)
                 local sign = tostring(signraw)
 
                 --dont place measure if no measure change
+                --[[
+                --ALWAYS add after barline comma
+
                 if sign ~= lastsign then
                     --LAZY --DIRTY (decimal fraction???)
                     --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
@@ -7517,6 +7530,8 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     lastsign = sign
                 end
+
+                --]]
                 
                 --print(measurems, #currentmeasure, gcd, note.type)
 
@@ -7524,13 +7539,89 @@ function Taiko.SerializeTJA(Parsed)
                 if #currentmeasure == 0 then
                     Out[#Out + 1] = ',\n'
                 elseif #currentmeasure == 1 then
-                    local delayaddms = SerializeNote(note)
-                    Out[#Out + 1] = ',\n'
+                    if (note.data == 'event' and note.event == 'barline') then
+                        --Add / rewrite barline properties
+                        local temp = Out[#Out]
+                        Out[#Out] = nil
+
+                        local delayaddms = SerializeNote(note)
+                        
+                        Out[#Out + 1] = temp
+
+
+                        if sign ~= lastsign then
+                            --LAZY --DIRTY (decimal fraction???)
+                            --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                            Out[#Out + 1] = '#MEASURE '
+                            Out[#Out + 1] = ToFraction(signraw)
+                            Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                            lastsign = sign
+                        end
+
+
+                        Out[#Out + 1] = ',\n'
+                    else
+
+
+                        if sign ~= lastsign then
+                            --LAZY --DIRTY (decimal fraction???)
+                            --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                            Out[#Out + 1] = '#MEASURE '
+                            Out[#Out + 1] = ToFraction(signraw)
+                            Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                            lastsign = sign
+                        end
+
+
+                        local delayaddms = SerializeNote(note)
+                        Out[#Out + 1] = ',\n'
+                    end
                 else
                     --Push notes
                     for i = 1, #currentmeasure do
                         local note = currentmeasure[i]
-                        local delayaddms = SerializeNote(note)
+
+                        if i == 1 then
+                            --First note, can be a barline or note
+                            if (note.data == 'event' and note.event == 'barline') then
+                                --Add / rewrite barline properties
+                                local temp = Out[#Out]
+                                Out[#Out] = nil
+
+                                local delayaddms = SerializeNote(note)
+
+                                Out[#Out + 1] = temp
+
+
+                                if sign ~= lastsign then
+                                    --LAZY --DIRTY (decimal fraction???)
+                                    --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                                    Out[#Out + 1] = '#MEASURE '
+                                    Out[#Out + 1] = ToFraction(signraw)
+                                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                                    lastsign = sign
+                                end
+
+
+                                --Out[#Out + 1] = ',\n'
+                            else
+
+
+                                if sign ~= lastsign then
+                                    --LAZY --DIRTY (decimal fraction???)
+                                    --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                                    Out[#Out + 1] = '#MEASURE '
+                                    Out[#Out + 1] = ToFraction(signraw)
+                                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                                    lastsign = sign
+                                end
+
+
+                                local delayaddms = SerializeNote(note)
+                            end
+                        else
+                            local delayaddms = SerializeNote(note)
+                        end
                         
                         local futuredelayaddms = (currentmeasure[i + 1] and currentmeasure[i + 1].delay or (nextnote and nextnote.delay or note.delay)) - note.delay
                         --futuredelayaddms = 0
@@ -7579,8 +7670,19 @@ io.open('./Songs/00 Customs/tja/neta/ekiben/delayserialized.tja', 'wb+'):write(o
 --error()
 --]]
 
+--local Parsed2, Error2 = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/delayserialized.tja') --doesn't work wtf
+local Parsed2, Error2 = Taiko.ParseTJA(out)
+print(#Parsed2, Error2)
+local ParsedData2 = Parsed2[1]
 
-
+for i = 1, #ParsedData.Data do
+    local n1, n2 = ParsedData.Data[i], ParsedData2.Data[i]
+    print(n1.ms, n2.ms)
+    if math.abs(n1.ms - n2.ms) >= 0.01 then
+        print(i, n1.line, n2.line)error()
+    end
+end
+error()
 
 
 
