@@ -7507,13 +7507,22 @@ function Taiko.SerializeTJA(Parsed)
 
                         local a = (((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1
 
+                        --Brute force guessing: don't question how I got these values
                         if delayedgecase then
-                            measurems = measurems - gcd * delayedgecase
+                            if math.floor(math.abs(a)) == 0 then
+                                measurems = measurems - gcd * delayedgecase
 
-                            delayedgecase = nil
+                                delayedgecase = nil
+                                --delayedgecase = -a
+                            else
+                                --measurems = measurems - gcd * delayedgecase
+
+                                --delayedgecase = nil
+                                delayedgecase = -a
+                            end
                         else
-                            if Round(a) == 0 then
-
+                            if math.floor(math.abs(a)) == 0 then
+                                delayedgecase = nil
                             else
                                 --print(a)io.read()
                                 measurems = measurems - gcd * a
