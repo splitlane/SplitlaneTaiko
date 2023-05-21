@@ -14835,11 +14835,10 @@ CalculateNoteHitGauge(target[1], target[2])
                                             --LEGACY START
 
 
-                                            
+
                                             local r = noteradius * note.radius
                                             --recalc startnote p if it is loaded later
                                             local x1, x2 = startnote.p[1], note.p[1]
-                                            --local y1, y2 = y - r, y + r
                                             local y1, y2 = startnote.p[2], note.p[2]
 
 
@@ -14864,11 +14863,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                                                 --Draw rect + endnote
-                                                --[[
-                                                local twidth = Textures.PlaySong.Notes.drumrollrect.width
-                                                local theight = Textures.PlaySong.Notes.drumrollrect.height
-                                                --]]
-                                                --local twidth, theight = tsizex, tsizey
+
 
                                                 local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
@@ -14878,17 +14873,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                                 local incrementx = tsizex * mulx
                                                 local incrementy = tsizey * muly
 
-                                                --[[
-                                                local centeroffx = (tsizex / 2 * mulx * scale[1])
-                                                local centeroffy = (tsizey / 2 * muly * scale[2])
 
-                                                --modify values
-                                                -- [[
-                                                x2 = x2 + centeroffx
-                                                y2 = y2 + centeroffy
-                                                --d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-                                                d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
-                                                --]]
 
 
 
@@ -14902,10 +14887,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-                                                --[[
-                                                local incrementmodx = mod * mulx
-                                                local incrementmody = mod * muly
-                                                --]]
+
 
 
                                                 Textures.PlaySong.Notes.drumrollpr.width = tsizex * scale[1]
@@ -14949,12 +14931,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                                 Textures.PlaySong.Notes.drumrollpr2.width = mod
                                                 Textures.PlaySong.Notes.drumrollpr2.height = tsizey
 
-                                                --[[
-                                                Textures.PlaySong.Notes.drumrollpr2.x = 0
-                                                Textures.PlaySong.Notes.drumrollpr2.y = 0
-                                                Textures.PlaySong.Notes.drumrollpr2.width = Textures.PlaySong.Notes.drumrollpr.width
-                                                Textures.PlaySong.Notes.drumrollpr2.height = Textures.PlaySong.Notes.drumrollpr.height
-                                                --]]
+
                                                 rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], Textures.PlaySong.Notes.drumrollpr2, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
 
                                                 --draw drumroll line senote
