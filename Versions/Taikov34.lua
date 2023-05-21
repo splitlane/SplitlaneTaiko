@@ -7459,6 +7459,7 @@ function Taiko.SerializeTJA(Parsed)
         local currentmeasure = {}
         local measurestartms = nil
         local lastsign = nil
+        local delayedgecase = nil
         for i = 1, #ParsedData do
             --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
 
@@ -7504,7 +7505,24 @@ function Taiko.SerializeTJA(Parsed)
 
                         --print((((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)io.read()
 
-                        measurems = measurems - gcd * ((((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)
+                        local a = (((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1
+
+                        if delayedgecase then
+                            measurems = measurems - gcd * delayedgecase
+
+                            delayedgecase = nil
+                        else
+                            if Round(a) == 0 then
+
+                            else
+                                --print(a)io.read()
+                                measurems = measurems - gcd * a
+
+                                delayedgecase = -a
+                            end
+                        end
+                    else
+                        delayedgecase = nil
                     end
                 else
                     --Subdivide
