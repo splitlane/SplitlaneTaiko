@@ -148,6 +148,7 @@ TODO: Add raylib option
     TODO: SongSelect Difficulties
     TODO: Cursed drumrolls (scrolls using 0)
     TODO: Serialize barline for SerializeTJA
+    TODO: Fix some delay edge case glitchiness with SerializeTJA
     
 
 TODO: Taiko.Game
@@ -7602,7 +7603,7 @@ function Taiko.SerializeTJA(Parsed)
 end
 
 
--- [[
+--[[
 local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/delay.tja')
 local ParsedData = Parsed[1]
 for i = 1, #ParsedData.Data do
