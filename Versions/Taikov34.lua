@@ -10022,6 +10022,8 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
 
     local xymul = {130, 130}
 
+    local m = Map.PlaySong.Notes.drumrollend
+    local _ = rl.ImageFromImage(Textures.PlaySong.Notes, rl.new('Rectangle', m[1] * defaultsize[1] - 5, m[2] * defaultsize[2], defaultsize[1], defaultsize[2]))
 
     Textures.PlaySong.Notes = TextureMap.SplitUsingMap(Textures.PlaySong.Notes, Map.PlaySong.Notes, defaultsize, xymul)
     --Textures.PlaySong.ChipEffect = TextureMap.SplitUsingMap(Textures.PlaySong.ChipEffect, Map.Notes, defaultsize, xymul)
@@ -10039,6 +10041,40 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
     Textures.PlaySong.ChipEffect.DRUMROLLstart = rl.ImageCopy(Textures.PlaySong.ChipEffect.DRUMROLLend)
     rl.ImageFlipHorizontal(Textures.PlaySong.ChipEffect.DRUMROLLstart)
     --]]
+
+    --drumrollbend?
+    --[[
+    local b = rl.ImageFromImage(Textures.PlaySong.Notes.drumrollend, rl.new('Rectangle', 0, 0, Textures.PlaySong.Notes.drumrollend.width / 2, Textures.PlaySong.Notes.drumrollend.height))
+    local a = rl.ImageCopy(b)
+    rl.ImageFlipHorizontal(a)
+    rl.ImageDraw(a, b, rl.new('Rectangle', 0, 0, b.width, b.height), rl.new('Rectangle', 0, 0, b.width, b.height), rl.WHITE)
+    --]]
+
+    --[[
+    local a = rl.ImageCopy(Textures.PlaySong.Notes.drumrollend)
+    local t = Textures.PlaySong.Notes.drumrollend
+    rl.ImageDraw(a, Textures.PlaySong.Notes.drumrollend, rl.new('Rectangle', 0, 0, t.width / 2, t.height), rl.new('Rectangle', t.width / 2, 0, t.width / 2, t.height), rl.WHITE)
+    rl.ImageDraw(a, Textures.PlaySong.Notes.drumrollstart, rl.new('Rectangle', t.width / 2, 0, t.width / 2, t.height), rl.new('Rectangle', 0, 0, t.width / 2, t.height), rl.WHITE)
+    --]]
+
+    -- [[
+    local t = Textures.PlaySong.Notes.drumrollend
+    --_ computed above
+    local _2 = rl.ImageCopy(_)
+    rl.ImageFlipHorizontal(_2)
+    local a = rl.ImageFromImage(_2, rl.new('Rectangle', t.width / 2, 0, t.width / 2, t.height))
+    rl.ImageResizeCanvas(a, t.width, t.height, 0, 0, rl.WHITE)
+    rl.ImageDraw(a, _, rl.new('Rectangle', 0, 0, t.width / 2, t.height), rl.new('Rectangle', t.width / 2, 0, t.width / 2, t.height), rl.WHITE)
+    --]]
+
+    --a = rl.ImageCopy(Textures.PlaySong.Notes.drumrollend)
+
+    --rl.ImageDrawRectangleLines(a, rl.new('Rectangle', 0, 0, a.width, a.height), 2, rl.RED)
+
+    Textures.PlaySong.Notes.drumrollbend = a
+
+    rl.UnloadImage(_)
+    rl.UnloadImage(_2)
 
     --Old noteradius resizer
     --local resizefactor = (noteradius * 2) / (bignoteradius * 2 / bignotemul)
@@ -12549,6 +12585,16 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --Assume start is before end
             if v.type == 8 and (v.startnote.type == 5 or v.startnote.type == 6) then
                 v.loadms = CalculateLoadMsDrumroll(v, v.startnote.loadms < v.loadms and v.startnote.loadms or v.loadms)
+
+                local drumrollbend = v.startnote.drumrollbend
+                for i = 1, #drumrollbend do
+                    local a = drumrollbend[i]
+                    a.ms = (v.ms - v.startnote.ms) / (#drumrollbend + 1) * i + v.startnote.ms
+
+                    a.speed = speedcalcf(a, speedcalcarg)
+
+                    a.p = {}
+                end
             end
             --[[
             v.newloadms = v.loadms
@@ -13181,6 +13227,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                         a.notetype = 'DRUMROLLnote'
                         a.recttype = 'DRUMROLLrect'
                         a.endtype = 'DRUMROLLend'
+                    end
+
+                    --drumrollbend?
+                    for i = 1, #a.drumrollbend do
+                        a.drumrollbend[i].pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
                     end
 
                     drumrollqueue[#drumrollqueue + 1] = a
@@ -14978,8 +15029,269 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                                             --LEGACY END
-                                        else
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        else
+                                            --NEW / IMPLEMENTED DRUMROLLBEND (WORKS PROBABLY)
+
+
+                                            --NEW START
+
+                                            local endnote = note
+                                            local drumrollbend = endnote.startnote.drumrollbend
+
+                                            for i = 1, #drumrollbend + 1 do
+                                                local startnote, note
+
+                                                --NOTE: Position calculation formulas taken from Calculate phase
+                                                if i == 1 then
+                                                    startnote = endnote.startnote
+                                                    note = drumrollbend[i]
+
+                                                    --Positions
+                                                    --calculate note
+                                                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
+                                                    note.p[1] = px * xmul
+                                                    note.p[2] = py * ymul
+                                                    
+                                                    note.pr.x = (note.p[1] + offsetx) * scale[1]
+                                                    note.pr.y = (note.p[2] + offsety) * scale[2]
+                                                elseif i == #drumrollbend + 1 then
+                                                    startnote = drumrollbend[i - 1]
+                                                    note = endnote
+
+                                                    --Positions
+                                                    --calculate startnote
+                                                    local px, py = CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay))
+                                                    startnote.p[1] = px * xmul
+                                                    startnote.p[2] = py * ymul
+
+                                                    startnote.pr.x = (startnote.p[1] + offsetx) * scale[1]
+                                                    startnote.pr.y = (startnote.p[2] + offsety) * scale[2]
+                                                else
+                                                    startnote = drumrollbend[i - 1]
+                                                    note = drumrollbend[i]
+
+                                                    --Positions
+                                                    --calculate startnote, note
+                                                    local px, py = CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay))
+                                                    startnote.p[1] = px * xmul
+                                                    startnote.p[2] = py * ymul
+
+                                                    startnote.pr.x = (startnote.p[1] + offsetx) * scale[1]
+                                                    startnote.pr.y = (startnote.p[2] + offsety) * scale[2]
+
+
+                                                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
+                                                    note.p[1] = px * xmul
+                                                    note.p[2] = py * ymul
+
+                                                    note.pr.x = (note.p[1] + offsetx) * scale[1]
+                                                    note.pr.y = (note.p[2] + offsety) * scale[2]
+                                                end
+
+
+
+
+                                                local r = noteradius * note.radius
+                                                --recalc startnote p if it is loaded later
+                                                local x1, x2 = startnote.p[1], note.p[1]
+                                                local y1, y2 = startnote.p[2], note.p[2]
+
+
+
+
+
+                                                --New code (12/8/22)
+                                                if Round(x2 - x1) ~= 0 or Round(y2 - y1) ~= 0 then
+
+
+
+
+                                                    --FINAL: Use atan2!
+                                                    --note.rotationr = NormalizeAngle(math.deg(math.atan2(x2 - x1, y1 - y2)) - 90) --WORKS BUT --DIRTY
+                                                    note.rotationr = NormalizeAngle(0 - math.deg(math.atan2((y2 - y1) * ymul / scale[1], (x2 - x1) * xmul / scale[2])))
+
+                                                    --copying some attributes over
+                                                    if i == 1 then
+                                                        --startnote.notetype = endnote.startnote.notetype
+                                                        --should be normal startnote
+                                                    else
+                                                        startnote.notetype = 'drumrollbend'
+                                                    end
+                                                    startnote.recttype = endnote.startnote.recttype
+                                                    startnote.endtype = endnote.startnote.endtype
+                                                    startnote.senotepr = endnote.startnote.senotepr
+                                                    note.tcenter = endnote.tcenter --DIRTY
+
+
+                                                    
+
+
+
+
+
+                                                    --Draw rect + endnote
+
+
+                                                    local d = math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+
+                                                    local mulx = (x2 - x1) / d
+                                                    local muly = (y2 - y1) / d
+                                                    --mulx, muly = 1, -1
+                                                    local incrementx = tsizex * mulx
+                                                    local incrementy = tsizey * muly
+
+
+
+
+
+
+                                                    --1
+                                                    local div = math.floor(d / tsizex)
+                                                    local mod = d - (div * tsizex)
+
+
+
+
+
+
+
+
+
+                                                    Textures.PlaySong.Notes.drumrollpr.width = tsizex * scale[1]
+                                                    Textures.PlaySong.Notes.drumrollpr.height = tsizey * scale[2]
+
+
+
+                                                    --Just modify rect in loop
+                                                    local x = x1 + offsetx + (tsizex / 2 * mulx)
+                                                    local y = y1 + offsety + (tsizey / 2 * muly)
+                                                    local subdiv = 4
+                                                    local subdivoff = -0.5
+                                                    --print(div)
+                                                    for i = 1, div do
+                                                        Textures.PlaySong.Notes.drumrollpr.x = x * scale[1]
+                                                        Textures.PlaySong.Notes.drumrollpr.y = y * scale[2]
+                                                        rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], tsourcerect, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
+
+                                                        --draw drumroll line senote
+                                                        for i2 = 0, subdiv - 1 do
+                                                            if startnote.senote then
+                                                                startnote.senotepr.x = (x + (incrementx * (i2 / subdiv + subdivoff))) * scale[1]
+                                                                startnote.senotepr.y = (y + (incrementy * (i2 / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                                rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                                            end
+                                                        end
+
+                                                        x = x + incrementx
+                                                        y = y + incrementy
+                                                    end
+
+                                                    Textures.PlaySong.Notes.drumrollpr.width = mod * scale[1]
+                                                    
+
+
+
+                                                    Textures.PlaySong.Notes.drumrollpr.x = x * scale[1]
+                                                    Textures.PlaySong.Notes.drumrollpr.y = y * scale[2]
+
+
+                                                    Textures.PlaySong.Notes.drumrollpr2.width = mod
+                                                    Textures.PlaySong.Notes.drumrollpr2.height = tsizey
+
+
+                                                    rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.recttype], Textures.PlaySong.Notes.drumrollpr2, Textures.PlaySong.Notes.drumrollpr, note.tcenter, note.rotationr, rl.WHITE)
+
+                                                    --draw drumroll line senote
+                                                    local a = math.floor(Textures.PlaySong.Notes.drumrollpr.width / tsizex)
+                                                    subdivoff = subdivoff + 17/136
+                                                    for i2 = 0, a - 1 do
+                                                        if startnote.senote then
+                                                            startnote.senotepr.x = (x + (incrementx * (i2 / subdiv + subdivoff))) * scale[1]
+                                                            startnote.senotepr.y = (y + (incrementy * (i2 / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                            rl.DrawTexturePro(Textures.PlaySong.SENotes[9], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+                                                        end
+                                                    end
+
+                                                    startnote.senotepr.x = (x + (incrementx * (a / subdiv + subdivoff))) * scale[1]
+                                                    startnote.senotepr.y = (y + (incrementy * (a / subdiv + subdivoff)) + Textures.PlaySong.SENotes.offsety) * scale[2]
+                                                    rl.DrawTexturePro(Textures.PlaySong.SENotes[10], Textures.PlaySong.SENotes.sourcerect, startnote.senotepr, Textures.PlaySong.SENotes.center, 0, rl.WHITE)
+
+                                                    --[[
+                                                    x = x + incrementmodx
+                                                    y = y + incrementmody
+                                                    --]]
+                                                    x = x + mod * mulx
+                                                    y = y + mod * muly
+
+
+                                                    --[[
+                                                        rotation:
+                                                        0 -> 0
+
+                                                        270 -> 270
+                                                        360 -> 180
+
+                                                    ]]
+                                                    note.pr.x = x * scale[1]
+                                                    note.pr.y = y * scale[2]
+                                                    rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.endtype], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE)
+
+
+                                                end
+
+                                                --Draw startnote
+                                                --rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                                --draw after all is done
+                                            end
+
+                                            --Draw startnote
+                                            rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                            for i = 1, #drumrollbend do
+                                                local startnote = drumrollbend[i]
+
+                                                --Draw startnote
+                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+
+                                                --test if circle drawing properly
+                                                --[[
+                                                startnote.pr.x = Config.ScreenWidth / 2
+                                                startnote.pr.y = Config.ScreenHeight / 2
+                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, 0, rl.WHITE)
+                                                --]]
+                                            end
+                                        
+
+
+                                            --NEW END
                                         end
 
 
