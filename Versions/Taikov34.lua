@@ -147,6 +147,7 @@ TODO: Add raylib option
     TODO: Lyrics
     TODO: SongSelect Difficulties
     TODO: Cursed drumrolls (scrolls using 0)
+    TODO: Serialize barline for SerializeTJA
     
 
 TODO: Taiko.Game
@@ -7496,6 +7497,15 @@ function Taiko.SerializeTJA(Parsed)
                     measurems = nextnote.ms - measurestartms
                     --Subtract delay dif from total measure ms
                     measurems = measurems - (nextnote.delay - (currentmeasure[1] and currentmeasure[1].delay or nextnote.delay))
+
+                    --Edge case
+                    if #currentmeasure > 0 then
+                        local futuredelayaddms = nextnote.delay - currentmeasure[#currentmeasure].delay
+
+                        --print((((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)io.read()
+
+                        measurems = measurems - gcd * ((((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)
+                    end
                 else
                     --Subdivide
                     measurems = gcd + divtotalms
@@ -7512,7 +7522,7 @@ function Taiko.SerializeTJA(Parsed)
                 if sign ~= lastsign then
                     --LAZY --DIRTY (decimal fraction???)
                     --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
-                    Out[#Out + 1] = '#MEASURE '
+                    Out[#Out + 1] = '\n#MEASURE '
                     Out[#Out + 1] = ToFraction(signraw)
                     Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     lastsign = sign
@@ -7538,6 +7548,7 @@ function Taiko.SerializeTJA(Parsed)
                         if i ~= #currentmeasure then
                             Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms) - futuredelayaddms) / gcd - 1)
                         else
+                            --print((((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)io.read()
                             Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (gcd + divtotalms) + measurestartms) - currentmeasure[#currentmeasure].ms) - futuredelayaddms) / gcd - 1)
                         end
                     end
