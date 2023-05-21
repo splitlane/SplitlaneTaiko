@@ -149,6 +149,7 @@ TODO: Add raylib option
     TODO: Cursed drumrolls (scrolls using 0)
     TODO: Serialize barline for SerializeTJA
     TODO: Fix some delay edge case glitchiness with SerializeTJA
+    TODO: Print notes, notedata human readable
     
 
 TODO: Taiko.Game
@@ -4073,7 +4074,8 @@ function Taiko.ParseTJA(source)
     --Parsing settings
     local zeroopt = true --Don't parse zeros
     local gimmick = true --Are gimmicks enabled?
-    local extragimmick = true --EXTRA gimmick enabled?
+    local extragimmick = true --EXTRA gimmicks enabled? (NON-STANDARDIZED)
+    local originalgimmick = true --ORIGINAL gimmicks enabled? (NON-STANDARDIZED, Not currently in any other simulator, proposed, weird)
 
 
 
@@ -6452,6 +6454,8 @@ Everyone who DL
                         local nextjposscroll = false
                         local nextbpmchange = false
                         local nextlyric = false
+
+                        local drumrollbend = nil
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
@@ -6478,6 +6482,11 @@ Everyone who DL
                                 nextlyric = c
                                 Parser.zeroopt = false
                             else
+                                --drumrollbend?
+                                if drumrollbend and c.type == 0 then
+                                    --WARMING: ms not yet included
+                                    drumrollbend[#drumrollbend + 1] = c
+                                end
 
                                 --if it is not air
                                 if not Parser.zeroopt or c.type ~= 0 then --zeroopt
@@ -6504,6 +6513,20 @@ Everyone who DL
                                         })
                                         --]]
                                     end
+
+
+                                    --benddrumroll?
+                                    if originalgimmick then
+                                        if c.type == 5 or c.type == 6 and (not drumrollbend) then
+                                            c.drumrollbend = {}
+                                            drumrollbend = c.drumrollbend
+                                        end
+                                        if c.type == 8 then
+                                            drumrollbend = nil
+                                        end
+                                    end
+
+
                                     table.insert(Parser.measurepushto, c)
                                     --onnotepush --balloon
                                     if c.onnotepush then
