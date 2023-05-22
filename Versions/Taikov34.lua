@@ -150,6 +150,8 @@ TODO: Add raylib option
     TODO: Serialize barline for SerializeTJA
     TODO: Fix some delay edge case glitchiness with SerializeTJA
     TODO: Print notes, notedata human readable
+    TODO: Fix drumrollbend over multiple measures
+    TODO: Fix drumrollbend applying even for normal drumrolls
     
 
 TODO: Taiko.Game
@@ -15279,7 +15281,8 @@ CalculateNoteHitGauge(target[1], target[2])
                                                 local startnote = drumrollbend[i]
 
                                                 --Draw startnote
-                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, startnote.tcenter, startnote.rotationr, rl.WHITE)
+                                                --EDITED SO rotationr is replaced with 0 (it shouldn't matter anyways)
+                                                rl.DrawTexturePro(Textures.PlaySong.Notes[startnote.notetype], tsourcerect, startnote.pr, endnote.tcenter, 0, rl.WHITE)
 
                                                 --test if circle drawing properly
                                                 --[[
