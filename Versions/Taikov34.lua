@@ -4624,7 +4624,7 @@ function Taiko.ParseTJA(source)
 
 
 
-            zeroopt = zeroopt
+            zeroopt = zeroopt,
             --[[
                 if zeroopt is on
                     if stopsong and there is delay in measure, it is turned off for measure
@@ -4633,6 +4633,20 @@ function Taiko.ParseTJA(source)
                     just parse all zeros
             ]]
             
+
+
+            --[[
+                drumrollbend
+
+                stores the table of startnote.drumrollbend
+
+                drumrollbendstart
+
+                stores the startnote
+            ]]
+            drumrollbend = nil,
+            drumrollbendstart = nil,
+
         }
 
 
@@ -6457,7 +6471,6 @@ Everyone who DL
                         local nextbpmchange = false
                         local nextlyric = false
 
-                        local drumrollbend = nil
                         for i = 1, #Parser.currentmeasure do
                             local c = Parser.currentmeasure[i]
 
@@ -6485,9 +6498,9 @@ Everyone who DL
                                 Parser.zeroopt = false
                             else
                                 --drumrollbend?
-                                if drumrollbend and c.type == 0 then
+                                if Parser.drumrollbend and c.type == 0 and (c.scrollx ~= Parser.drumrollbendstart.scrollx or c.scrolly ~= Parser.drumrollbendstart.scrolly) then
                                     --WARMING: ms not yet included
-                                    drumrollbend[#drumrollbend + 1] = c
+                                    Parser.drumrollbend[#Parser.drumrollbend + 1] = c
                                 end
 
                                 --if it is not air
@@ -6519,12 +6532,13 @@ Everyone who DL
 
                                     --benddrumroll?
                                     if originalgimmick then
-                                        if c.type == 5 or c.type == 6 and (not drumrollbend) then
+                                        if c.type == 5 or c.type == 6 and (not Parser.drumrollbend) then
                                             c.drumrollbend = {}
-                                            drumrollbend = c.drumrollbend
+                                            Parser.drumrollbend = c.drumrollbend
+                                            Parser.drumrollbendstart = c
                                         end
                                         if c.type == 8 then
-                                            drumrollbend = nil
+                                            Parser.drumrollbend = nil
                                         end
                                     end
 
@@ -11220,7 +11234,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
 
             --BACKGROUND
-            if SelectedConfig then
+            if false and SelectedConfig then
                 --LAZIEST SOLUTION EVER: Just render another one
                 Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + (BackgroundPosition >= 0 and -skinresolution[1] or skinresolution[1])
                 rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
@@ -15517,6 +15531,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+            if rl.IsKeyPressed(rl.KEY_A)then auto = not auto end
 
 
 
