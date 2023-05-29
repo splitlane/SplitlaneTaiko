@@ -146,12 +146,12 @@ TODO: Add raylib option
     TODO: Playsong branches
     TODO: Lyrics
     TODO: SongSelect Difficulties
-    TODO: Cursed drumrolls (scrolls using 0)
+    TODO: Cursed drumrolls (scrolls using 0) -DONE
     TODO: Serialize barline for SerializeTJA
     TODO: Fix some delay edge case glitchiness with SerializeTJA
     TODO: Print notes, notedata human readable
-    TODO: Fix drumrollbend over multiple measures
-    TODO: Fix drumrollbend applying even for normal drumrolls
+    TODO: Fix drumrollbend over multiple measures --DONE
+    TODO: Fix drumrollbend applying even for normal drumrolls --DONE
     
 
 TODO: Taiko.Game
