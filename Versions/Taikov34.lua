@@ -4079,6 +4079,7 @@ function Taiko.ParseTJA(source)
     local gimmick = true --Are gimmicks enabled?
     local extragimmick = true --EXTRA gimmicks enabled? (NON-STANDARDIZED)
     local originalgimmick = true --ORIGINAL gimmicks enabled? (NON-STANDARDIZED, Not currently in any other simulator, proposed, weird)
+    local multilinebrackets = true --Try parsing multi-line lines ([[]]) NON-STANDARDIZED
 
 
 
@@ -4991,7 +4992,12 @@ function Taiko.ParseTJA(source)
 
     --Start
     local lines = String.Split(source, '\n')
+    local jumpi = 0
     for i = 1, #lines do
+        if jumpi > i then
+            --Ignore line
+        else
+    
         LineN = i
 
         --local line = String.TrimLeft(lines[i])
@@ -5006,8 +5012,37 @@ function Taiko.ParseTJA(source)
             end
 
 
+            --NOT STANDARDIZED
+            --Combine multiple lines
+            if multilinebrackets then
+                local s, e = string.find(line, '%[%[')
+                if s then
+                    --Check for matching bracket
+                    local s2, e2 = string.find(line, '%]%]', e)
+                    if s2 then
+                        --Nope, bracket ends
+                    else
+                        --No bracket end, assume next line
+                        line = string.sub(line, 1, s - 1) .. string.sub(line, e + 1, -1)
+                        local i2 = i + 1
+                        local s3, e3
+                        while true do
+                            s3, e3 = string.find(lines[i2], '%]%]')
+                            if s3 then
+                                break
+                            else
+                                line = line .. '\n' .. lines[i2]
+                            end
+                            i2 = i2 + 1
+                        end
 
+                        jumpi = i2 - 1
+                        line = line .. '\n' .. string.sub(lines[i2], 1, s3 - 1)
+                        lines[i2] = string.sub(lines[i2], e3 + 1, -1)
 
+                    end
+                end
+            end
 
 
 
@@ -6786,7 +6821,7 @@ Everyone who DL
                 end
             end
 
-
+        end
         end
     end
 
@@ -12758,34 +12793,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-        if sudden then
-            --[[
-            how to implement
-        
-            for each note
-                if ms < note.appearancemsa then
-                    --hide note
-                else
-                    --show note
-                end
-                if ms < note.movemsa then
-                    --NO: place note into precalculated static position
-                    --YES: calc position using note.movemsa
-                else
-                    --calc position and move it
-                end
-            ]]
-            Taiko.ForAll(Parsed.Data, function(note, i, n)
-                if note.appearancems then
-                    --if ms < note.appearancemsa then hide else show end
-                    note.appearancemsa = note.ms + note.appearancems
-                end
-                if note.movems then
-                    --uses this ms instead of current ms
-                    note.movemsa = note.ms + note.movems
-                end
-            end)
-        end
+
 
 
         local bpmchangequeue = {}
@@ -12882,6 +12890,42 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 lastnote = note
             end)
             --print(#stopqueue)
+        end
+
+
+        if sudden then
+            --[[
+            how to implement
+        
+            for each note
+                if ms < note.appearancemsa then
+                    --hide note
+                else
+                    --show note
+                end
+                if ms < note.movemsa then
+                    --NO: place note into precalculated static position
+                    --YES: calc position using note.movemsa
+                else
+                    --calc position and move it
+                end
+            ]]
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                if note.appearancems then
+                    --if ms < note.appearancemsa then hide else show end
+                    note.appearancemsa = note.ms + note.appearancems
+                    
+                    --sudden override
+                    --print(note.appearancemsa, note.loadms)
+                    if note.appearancemsa < note.loadms then
+                        note.loadms = note.appearancemsa
+                    end
+                end
+                if note.movems then
+                    --uses this ms instead of current ms
+                    note.movemsa = note.ms + note.movems
+                end
+            end)
         end
 
 
