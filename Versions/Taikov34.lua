@@ -6431,6 +6431,96 @@ Everyone who DL
 
                                 Parser.positionf = f
                             end
+
+                        elseif originalgimmick and match[1] == 'POSITIONT' then
+                            --[[
+                                - Functions
+                                    - Note position function override
+                                    - Called instead of CalculatePosition
+                                    - Callled with (note, ms, target)
+                                    - Function should return (x, y) TRANSFORMED
+                                    - Essentially, function should be the same as CalculatePosition
+                                    - Function is loadstringed --UNSAFE --DIRTY
+                                - Time
+                                    - ms before note hit, positive
+                                - Return
+                                    - starttime, function, starttime, function, starttime, function, ...
+                                - Use with no second argument to clear
+                            ]]
+                            if not match[2] or match[2] == '' then
+                                Parser.positionf = nil
+                            else
+
+                                
+
+                                --add surrounding function and call to get inner function --DIRTY
+
+                                local t = nil
+
+                                if string.sub(String.TrimLeft(match[2]), 1, #'return ') == 'return ' then
+                                    --return expr, add nothing
+
+                                    t = {CheckF(match[1], match[2], 'Invalid positionf')()}
+                                else
+                                    --expr, add return
+
+                                    t = {CheckF(match[1], 'return ' .. match[2], 'Invalid positionf')()}
+                                end
+
+                                --make t into {{starttime, function}, {starttime, function}, {starttime, function}, ...}
+                                local t2 = {}
+                                for i = 1, #t, 2 do
+                                    t2[#t2 + 1] = {t[i], t[i + 1], {}}
+                                end
+                                t = nil
+
+                                --sort t2
+                                table.sort(t2, function(a, b)
+                                    return a[1] > b[1]
+                                end)
+
+                                local edgecase = nil
+                                if t2[1][1] == math.huge then
+                                    edgecase = t2[1]
+                                    table.remove(t2, 1)
+                                end
+                                
+
+                                --Generate positionf function from t
+                                Parser.positionf = function(note, ms, target)
+                                    --calculate targets
+                                    for i = #t2, 1, -1 do
+                                        local a = t2[i]
+                                        if i == #t2 then
+                                            a[3][1], a[3][2] = target[1], target[2]
+                                        else
+                                            --local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                            local howmuchmsbefore = t2[i][1] - (t2[i + 1] and t2[i + 1][1] or 0)
+                                            a[3][1], a[3][2] = (t2[i + 1])[2](note, note.ms - howmuchmsbefore, t2[i + 1][3])
+                                        end
+                                        --print(a[1], unpack(a[3]))
+                                    end
+
+                                    local mstilhit = note.ms - ms
+                                    --print(mstilhit)
+                                    for i = #t2, 1, -1 do
+                                        local a = t2[i]
+                                        if mstilhit < a[1] then
+                                            local finishms = t2[i + 1] and t2[i + 1][1] or 0
+                                            --if math.random(1,2)==1 then return unpack(a[3])end
+                                            return a[2](note, ms + finishms, a[3])
+                                        end
+                                    end
+
+                                    --unable to satisfy any time conditions, use calculateposition default
+                                    local howmuchmsbefore = t2[1][1] - (t2[2] and t2[2][1] or 0)
+                                    edgecase[3][1], edgecase[3][2] = (t2[1])[2](note, note.ms - howmuchmsbefore, t2[1][3])
+
+                                    local finishms = t2[1] and t2[1][1] or 0
+                                    --if math.random(1,2)==1 then return unpack(edgecase[3])end
+                                    return edgecase[2](note, ms + finishms, edgecase[3])
+                                end
+                            end
                         --end
 
 
