@@ -152,6 +152,7 @@ TODO: Add raylib option
     TODO: Print notes, notedata human readable
     TODO: Fix drumrollbend over multiple measures --DONE
     TODO: Fix drumrollbend applying even for normal drumrolls --DONE
+    TODO: Fix weird phantom hit (blue L, blue R) when auto
     
 
 TODO: Taiko.Game
@@ -4282,6 +4283,14 @@ function Taiko.ParseTJA(source)
             ParseError(cmd, e, b)
         end
     end
+    local function CheckF(cmd, s, e) --DIRTY --SLOW
+        local f, out = loadstring(s)
+        if f then
+            return f
+        else
+            ParseError(cmd, s, e .. ': ' .. out)
+        end
+    end
     local function CheckCSV(cmd, str) --No errors are possible
         local seperator = ','
         local escape = '\\'
@@ -4647,6 +4656,15 @@ function Taiko.ParseTJA(source)
             drumrollbend = nil,
             drumrollbendstart = nil,
 
+
+
+            --[[
+                positionf
+
+                stores the function (that was loadstringed) that will override CalculatePosition
+            ]]
+            positionf = nil,
+
         }
 
 
@@ -4760,6 +4778,8 @@ function Taiko.ParseTJA(source)
 
                     dummy = Parser.dummy,
 
+                    positionf = Parser.positionf,
+
 
 
 
@@ -4827,7 +4847,7 @@ function Taiko.ParseTJA(source)
                 end
 
                 --SENotes
-                if Parser.senotechange then
+                if n and Parser.senotechange then
                     note.senote = Parser.senotechange
                     Parser.senotechange = nil
                 --[[
@@ -4865,6 +4885,8 @@ function Taiko.ParseTJA(source)
                     movems = Parser.suddenmove,
 
                     dummy = Parser.dummy,
+
+                    positionf = Parser.positionf,
 
 
 
@@ -6035,7 +6057,7 @@ This is used when you want to return the judgment frame to its original position
                         }) --Just like delay
                         Parser.jposscroll = {}
                         
-                    elseif gimmick then
+                    --elseif gimmick then
 
                         --[[
                             Gimmicks
@@ -6046,20 +6068,20 @@ This is used when you want to return the judgment frame to its original position
                             https://github.com/0auBSQ/OpenTaiko/issues/290
                             OpenTaiko-
                         ]]
-                        if match[1] == 'GAMEMODE' then
+                        elseif gimmick and match[1] == 'GAMEMODE' then
                             --[[
                                 - Change the gamemode in realtime ([game mode] : "Taiko" or "Konga")
                             ]]
 
-                        elseif match[1] == 'SPLITLANE' then
+                        elseif gimmick and match[1] == 'SPLITLANE' then
                             --[[
                                 - Split the lane in 2 distinct lanes, dons appearing at the top lane and kas at the bottom, purple notes are squashed horizontally but overlap the 2 lanes
                             ]]
-                        elseif match[1] == 'MERGELANE' then
+                        elseif gimmick and match[1] == 'MERGELANE' then
                             --[[
                                 - Merge back to a single lane if the lane is split
                             ]]
-                        elseif match[1] == 'BARLINE' then
+                        elseif gimmick and match[1] == 'BARLINE' then
                             --[[
                                 - Display a barline at the current position
                             ]]
@@ -6285,34 +6307,34 @@ Akasoko
 Everyone who DL
 ■I would appreciate it if you could download it.
                         ]]
-                        elseif match[1] == 'DUMMYSTART' then
+                        elseif gimmick and match[1] == 'DUMMYSTART' then
                             --[[
                                 - It becomes dummy notes.
                             ]]
                             Parser.dummy = true
-                        elseif match[1] == 'DUMMYEND' then
+                        elseif gimmick and match[1] == 'DUMMYEND' then
                             --[[
                                 - It becomes normal notes.
                             ]]
                             Parser.dummy = false
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == '' then
-                        elseif match[1] == 'RESETCOMMAND' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == '' then
+                        elseif gimmick and match[1] == 'RESETCOMMAND' then
                             --[[
                                 Returns the effects of all commands to their initial values
                             ]]
@@ -6322,8 +6344,59 @@ Everyone who DL
                             --reset parser?
                             Parser = GetParser()
                             Parser.songstarted = true
-                        end
+                        --end
 
+
+
+
+
+
+
+
+                    --elseif originalgimmick then
+
+                        
+                        elseif originalgimmick and match[1] == 'POSITIONF' then
+                            --[[
+                                - Note position function override
+                                - Called instead of CalculatePosition
+                                - Callled with (note, ms, target)
+                                - Function should return (x, y) TRANSFORMED
+                                - Essentially, function should be the same as CalculatePosition
+                                - Function is loadstringed --UNSAFE --DIRTY
+                                - Use with no second argument to clear
+                            ]]
+                            if not match[2] or match[2] == '' then
+                                Parser.positionf = nil
+                            else
+
+                                
+
+                                --add surrounding function and call to get inner function --DIRTY
+
+                                local f = nil
+
+                                if string.sub(String.TrimLeft(match[2]), 1, #'return function(') == 'return function(' then
+                                    --return function expr, add nothing
+
+                                    f = CheckF(match[1], match[2], 'Invalid positionf')()
+                                elseif string.sub(String.TrimLeft(match[2]), 1, #'function(') == 'function(' then
+                                    --function expr, add return
+
+                                    f = CheckF(match[1], 'return ' .. match[2], 'Invalid positionf')()
+                                elseif string.sub(String.TrimLeft(match[2]), 1, #'return ') == 'return ' then
+                                    --return normal code, add function wrap
+
+                                    f = CheckF(match[1], 'return function(note,ms,target)' .. match[2] .. ' end', 'Invalid positionf')()
+                                else
+                                    --normal code, add function wrap and return
+
+                                    f = CheckF(match[1], 'return function(note,ms,target)return ' .. match[2] .. ' end', 'Invalid positionf')()
+                                end
+
+                                Parser.positionf = f
+                            end
+                        --end
 
 
 
@@ -6498,7 +6571,7 @@ Everyone who DL
                                 Parser.zeroopt = false
                             else
                                 --drumrollbend?
-                                if Parser.drumrollbend and c.type == 0 and (c.scrollx ~= Parser.drumrollbendstart.scrollx or c.scrolly ~= Parser.drumrollbendstart.scrolly) then
+                                if Parser.drumrollbend and c.type == 0 and (c.scrollx ~= Parser.drumrollbendstart.scrollx or c.scrolly ~= Parser.drumrollbendstart.scrolly or c.positionf ~= Parser.drumrollbendstart.positionf) then
                                     --WARMING: ms not yet included
                                     Parser.drumrollbend[#Parser.drumrollbend + 1] = c
                                 end
@@ -12414,7 +12487,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-        local function CalculatePosition(note, ms)
+        local function CalculatePosition(note, ms, target)
 
             return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
         end
@@ -12430,9 +12503,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             local increment = -10
             local ms = loadms
             while true do
-                note.p[1], note.p[2] = CalculatePosition(note, ms)
+                note.p[1], note.p[2] = note.CalculatePosition(note, ms, target)
                 note.p[1], note.p[2] = note.p[1] * xmul, note.p[2] * ymul
-                note.startnote.p[1], note.startnote.p[2] = CalculatePosition(note.startnote, ms)
+                note.startnote.p[1], note.startnote.p[2] = note.CalculatePosition(note.startnote, ms, target)
                 note.startnote.p[1], note.startnote.p[2] = note.startnote.p[1] * xmul, note.startnote.p[2] * ymul
                 if IsLineOutsideRectangle(
                     note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
@@ -12583,6 +12656,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             v.speed = speedcalcf(v, speedcalcarg)
 
+            --position override
+            v.CalculatePosition = v.positionf or CalculatePosition
+
 
             v.speed[1] = v.speed[1] * notespeedmul
             v.speed[2] = v.speed[2] * notespeedmul
@@ -12608,6 +12684,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     a.ms = (v.ms - v.startnote.ms) / (#drumrollbend + 1) * i + v.startnote.ms
 
                     a.speed = speedcalcf(a, speedcalcarg)
+
+                    --position override
+                    a.CalculatePosition = a.positionf or CalculatePosition
 
                     a.p = {}
                 end
@@ -13247,7 +13326,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
                     --drumrollbend?
                     for i = 1, #a.drumrollbend do
-                        a.drumrollbend[i].pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+                        local v = a.drumrollbend[i]
+                        v.pr = rl.new('Rectangle', 0, 0, tsizex, tsizey)
+                        v.notetype = 'drumrollbend'
                     end
 
                     drumrollqueue[#drumrollqueue + 1] = a
@@ -13739,13 +13820,15 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         --Wait for start
-        while not rl.WindowShouldClose() do
-            rl.BeginDrawing()
-            rl.ClearBackground(rl.RAYWHITE)
-            rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
-            rl.EndDrawing()
-            if rl.IsKeyPressed(32) then
-                break
+        if false then
+            while not rl.WindowShouldClose() do
+                rl.BeginDrawing()
+                rl.ClearBackground(rl.RAYWHITE)
+                rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
+                rl.EndDrawing()
+                if rl.IsKeyPressed(32) then
+                    break
+                end
             end
         end
 
@@ -14572,7 +14655,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                     --local px, py = CalculatePosition(note, stopfreezems or (ms + totaldelay))
-                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
+                    local px, py = note.CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay), target)
                     note.p[1] = px * xmul
                     note.p[2] = py * ymul
 
@@ -15093,7 +15176,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                                                     --Positions
                                                     --calculate note
-                                                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
+                                                    local px, py = note.CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay), target)
                                                     note.p[1] = px * xmul
                                                     note.p[2] = py * ymul
                                                     
@@ -15105,7 +15188,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                                                     --Positions
                                                     --calculate startnote
-                                                    local px, py = CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay))
+                                                    local px, py = startnote.CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay), target)
                                                     startnote.p[1] = px * xmul
                                                     startnote.p[2] = py * ymul
 
@@ -15117,7 +15200,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                                                     --Positions
                                                     --calculate startnote, note
-                                                    local px, py = CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay))
+                                                    local px, py = startnote.CalculatePosition(startnote, stopfreezems or ((startnote.movemsa and (ms >= startnote.movemsa and ms or startnote.movemsa) or ms) + totaldelay), target)
                                                     startnote.p[1] = px * xmul
                                                     startnote.p[2] = py * ymul
 
@@ -15125,7 +15208,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                                     startnote.pr.y = (startnote.p[2] + offsety) * scale[2]
 
 
-                                                    local px, py = CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay))
+                                                    local px, py = note.CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay), target)
                                                     note.p[1] = px * xmul
                                                     note.p[2] = py * ymul
 
@@ -15156,12 +15239,15 @@ CalculateNoteHitGauge(target[1], target[2])
                                                     note.rotationr = NormalizeAngle(0 - math.deg(math.atan2((y2 - y1) * ymul / scale[1], (x2 - x1) * xmul / scale[2])))
 
                                                     --copying some attributes over
+                                                    --[[
+                                                    --MOVED to notetable
                                                     if i == 1 then
                                                         --startnote.notetype = endnote.startnote.notetype
                                                         --should be normal startnote
                                                     else
                                                         startnote.notetype = 'drumrollbend'
                                                     end
+                                                    --]]
                                                     startnote.recttype = endnote.startnote.recttype
                                                     startnote.endtype = endnote.startnote.endtype
                                                     startnote.senotepr = endnote.startnote.senotepr
@@ -15531,7 +15617,9 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+            --DEBUG
             if rl.IsKeyPressed(rl.KEY_A)then auto = not auto end
+            if rl.IsKeyPressed(rl.KEY_R)then return false end
 
 
 
