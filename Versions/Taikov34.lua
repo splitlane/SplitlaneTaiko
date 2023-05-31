@@ -4189,7 +4189,10 @@ function Taiko.ParseTJA(source)
         List of parser flags:
         $PARSER_FORCE_OLD_SPEED_CALCULATION (old (Taiko.CalculateSpeed))
         $PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION (default opentaiko (Taiko.CalculateSpeedInterval))
+        $PARSER_FORCE_OLD_NOTERADIUS (old noteradius)
         $PARSER_FORCE_OLD_TARGET (old target pos)
+        $PARSER_FORCE_OLD_BPMCHANGE (old bpmchange (no respecting hbscroll))
+        $PARSER_UNCOMMENT_@@@ (uncomment lines of comments delimited by @@@ present in those lines)
 
         Make sure to comment them out so other simulators can still play the file. Also, if a flag is found anywhere in the file, it will apply to all difficulties.
     ]]
@@ -4212,6 +4215,53 @@ function Taiko.ParseTJA(source)
 
     if string.find(source, '$PARSER_FORCE_OLD_BPMCHANGE') then
         Parsed.Flag.PARSER_FORCE_OLD_BPMCHANGE = true
+    end
+
+    if string.find(source, '$PARSER_UNCOMMENT_@@@') then
+        Parsed.Flag.PARSER_UNCOMMENT_TRIPLE_ATMARK = true --flag doesn't do anything
+        source = string.gsub(source, '$PARSER_UNCOMMENT_@@@', '') --gsub so it doesn't catch the @@@ and comment
+        
+        local i = 0
+        while true do
+            if i > #source then
+                break
+            end
+            local s, e = string.find(source, '@@@', i)
+            if s then
+                local i2 = s
+                while true do
+                    if string.sub(source, i2, i2) == '\n' then
+                        break
+                    else
+                        i2 = i2 - 1
+                    end
+                end
+                local s2, e2 = string.find(source, '@@@', e)
+                if s2 then
+                    local i3 = e2
+                    while true do
+                        if string.sub(source, i3, i3) == '\n' then
+                            break
+                        else
+                            i3 = i3 + 1
+                        end
+                    end
+
+                    --take chunk and gsub
+                    local str = string.gsub(string.gsub(string.sub(source, i2, i3), '@@@', ''), '//(.-\n)', '%1')
+                    --print(i2, i3)
+                    source = string.sub(source, 1, i2 - 1) .. str .. string.sub(source, i3 + 1, -1)
+
+
+                    i = e2
+
+                else
+                    break
+                end
+            else
+                break
+            end
+        end
     end
 
 
