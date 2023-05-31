@@ -4994,7 +4994,7 @@ function Taiko.ParseTJA(source)
     local lines = String.Split(source, '\n')
     local jumpi = 0
     for i = 1, #lines do
-        if jumpi > i then
+        if i < jumpi then
             --Ignore line
         else
     
@@ -5036,7 +5036,7 @@ function Taiko.ParseTJA(source)
                             i2 = i2 + 1
                         end
 
-                        jumpi = i2 - 1
+                        jumpi = i2
                         line = line .. '\n' .. string.sub(lines[i2], 1, s3 - 1)
                         lines[i2] = string.sub(lines[i2], e3 + 1, -1)
 
@@ -16194,6 +16194,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         ResetResizeAll()
+        if''then return false end
         return true, Results
 
 
