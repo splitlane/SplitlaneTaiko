@@ -12873,12 +12873,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --]]
             --v.loadp = CalculateLoadPosition(v, v.loadms)
             --v.pdelay = 0
+            v.done = nil
             v.hit = nil --Reset hit just in case
             v.timeshit = nil
             v.brokecombo = false
 
             v.setdelay = false
             v.pop = false
+
+            --how much has this note affected score / combo?
+            v.addcombo = nil
+            v.addscore = nil
+            v.addgauge = nil
 
             --v.n = k --MISTAKE: after sorted
             --table.insert(timet, v.ms)
@@ -13162,6 +13168,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         local loadedrfinal = {
 
         }
+        local done = {} --table of done (notes and queues) to support rewinding
 
 
 
@@ -13804,6 +13811,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     4 -> biggood
                 ]]
                 local isbignote = (notetype == 3 or notetype == 4)
+                local oldcombo = combo
                 if n < (timing.good) then
                     --good
                     --local a = nearestnote[v].type
@@ -13829,12 +13837,18 @@ CalculateNoteHitGauge(target[1], target[2])
                     --complete miss
                     status = nil
                 end
+                note.addcombo = combo - oldcombo
+
                 if status then
                     --Calculate Score
+                    local oldscore = score
                     score = scoref(score, combo, scoreinit, scorediff, status, note.gogo)
+                    note.addscore = score - oldscore
 
                     --Calculate Gauge
+                    local oldgauge = gauge
                     gauge = gauge + gauget[gaugestatus]
+                    note.addgauge = gauge - oldgauge
                     gaugep = gaugepercentf(gauge)
                     gaugeclear = gaugep >= Taiko.Data.Gauge.ClearPercent
                     local oldgaugeoverflow = gaugeoverflow
@@ -13898,7 +13912,9 @@ CalculateNoteHitGauge(target[1], target[2])
             if (v == 1) and balloonstart and (ms > balloonstart and ms < balloonend) and (not balloon.pop) then
                 --balloon = hit don or ka
                 balloon.timeshit = balloon.timeshit and balloon.timeshit + 1 or 1
+                local oldscore = score
                 score = balloonscoref(score, balloon.type, balloon.gogo)
+                balloon.addscore = (balloon.addscore or 0) + score - oldscore
                 if balloon.timeshit >= balloon.requiredhits then
                     balloon.pop = true
                     popanim.startms = ms
@@ -13909,7 +13925,9 @@ CalculateNoteHitGauge(target[1], target[2])
             if (v == 1 or v == 2) and drumrollstart and (ms > drumrollstart and ms < drumrollend) then
                 --drumroll = hit don or ka
                 drumroll.timeshit = drumroll.timeshit and drumroll.timeshit + 1 or 1
+                local oldscore = score
                 score = drumrollscoref(score, drumroll.type, drumroll.gogo)
+                drumroll.addscore = (drumroll.addscore or 0) + score - oldscore
 
                 --notehitgauge animation
                 local i = #notehitgauge.notes + 1
@@ -14195,6 +14213,9 @@ CalculateNoteHitGauge(target[1], target[2])
                         stopstart = note.stopstart
                         stopend = note.stopend
 
+                        note.queue = stopqueue
+                        note.done = s
+                        done[#done + 1] = note
                         table.remove(stopqueue, i)
                         break
                     end
@@ -14228,9 +14249,10 @@ CalculateNoteHitGauge(target[1], target[2])
                         jposscrollstartp[1] = target[1]
                         jposscrollstartp[2] = target[2]
 
+                        note.queue = jposscrollqueue
+                        note.done = s
+                        done[#done + 1] = note
                         table.remove(jposscrollqueue, i)
-
-
                         break
                         --offseti = offseti - 1
                     end
@@ -14345,6 +14367,9 @@ CalculateNoteHitGauge(target[1], target[2])
                         end)
                         --print(bpmchangemul)
 
+                        note.queue = bpmchangequeue
+                        note.done = s
+                        done[#done + 1] = note
                         table.remove(bpmchangequeue, i)
                         break
                     end
@@ -14362,6 +14387,9 @@ CalculateNoteHitGauge(target[1], target[2])
                             currentlyric = nil
                         end
 
+                        lyric.queue = lyricqueue
+                        lyric.done = s
+                        done[#done + 1] = lyric
                         table.remove(lyricqueue, i)
                         break
                     end
@@ -14379,6 +14407,9 @@ CalculateNoteHitGauge(target[1], target[2])
                     drumrollstart = startnote.ms
                     drumrollend = startnote.ms + startnote.lengthms
 
+                    startnote.queue = drumrollqueue
+                    startnote.done = s
+                    done[#done + 1] = startnote
                     table.remove(drumrollqueue, i)
                     break
                 end
@@ -14945,8 +14976,9 @@ CalculateNoteHitGauge(target[1], target[2])
                     ))) then
                         --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
                         --print('UNLOAD')
-                        note.done = true
+                        note.done = s
                         table.remove(loaded, i2)
+                        done[#done + 1] = note
                         offseti = offseti - 1
 
                     --just connect with else
@@ -15802,8 +15834,91 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --DEBUG
-            if rl.IsKeyPressed(rl.KEY_A)then auto = not auto end
-            if rl.IsKeyPressed(rl.KEY_R)then return false end
+
+            --Toggle auto
+            if rl.IsKeyPressed(rl.KEY_A) then
+                auto = not auto
+            end
+            --Retry
+            if rl.IsKeyPressed(rl.KEY_R) then
+                return false
+            end
+            
+            --Time
+            if rl.IsKeyPressed(rl.KEY_LEFT) then
+                s = s - 5
+
+                --respawn notes
+
+
+                --loop over loaded (possibility of drumroll rewind)
+                --NOPE: drumroll is stored in drumrollqueue
+                --[[
+                for i = 1, #loaded do
+                    local note = loaded[i]
+                    --rewind combo and score
+                    if note.addcombo then
+                        combo = combo - note.addcombo
+                        note.addcombo = nil
+                    end
+                    if note.addscore then
+                        score = score - note.addscore
+                        note.addscore = nil
+                    end
+                    if note.addgauge then
+                        gauge = gauge - note.addgauge
+                        note.addgauge = nil
+                    end
+                end
+                --]]
+
+                --loop over done
+                local offseti = 0
+                for i = 1, #done do
+                    local i2 = i + offseti
+                    local note = done[i2]
+                    if note.done and note.done >= s then
+                        --note
+                        --rewind combo and score
+                        if note.addcombo then
+                            combo = combo - note.addcombo
+                            note.addcombo = nil
+                        end
+                        if note.addscore then
+                            score = score - note.addscore
+                            note.addscore = nil
+                        end
+                        if note.addgauge then
+                            gauge = gauge - note.addgauge
+                            note.addgauge = nil
+                        end
+
+                        --now queue and note branch out
+                        if note.queue then
+                            --queue
+                            --readd to queue
+                            note.done = nil
+                            note.queue[#note.queue + 1] = note
+                        else
+                            note.done = nil
+                            note.hit = nil
+                            note.addcombo = nil
+                            note.addscore = nil
+                            loaded[#loaded + 1] = note
+                        end
+                        table.remove(done, i2)
+                        offseti = offseti - 1
+                    end
+                end
+                
+                forceresync = true
+            end
+            if rl.IsKeyPressed(rl.KEY_RIGHT) then
+                s = s + 5
+                
+                forceresync = true
+            end
+            
 
 
 
