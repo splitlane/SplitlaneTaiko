@@ -47,6 +47,7 @@ DO NOT EDIT
             },
             'Fullscreen' = {
                 70 = true,
+                300 = true,
             },
             'Command' = {
                 'Init' = {
@@ -67,6 +68,51 @@ DO NOT EDIT
                     },
                     'Toggle' = {
                         77 = true,
+                    },
+                },
+            },
+            'Debug' = {
+                'ToggleAuto' = {
+                    65 = true,
+                },
+                'Retry' = {
+                    82 = true,
+                },
+                'Backward' = {
+                    263 = true,
+                },
+                'Forward' = {
+                    262 = true,
+                },
+                'SaveState' = {
+                    'Save' = {
+                        'Hold' = {
+                            340 = true,
+                        },
+                        'Slot' = {
+                            291 = true,
+                            292 = true,
+                            293 = true,
+                            294 = true,
+                            295 = true,
+                            296 = true,
+                            297 = true,
+                            298 = true,
+                            299 = true,
+                        },
+                    },
+                    'Load' = {
+                        'Slot' = {
+                            291 = true,
+                            292 = true,
+                            293 = true,
+                            294 = true,
+                            295 = true,
+                            296 = true,
+                            297 = true,
+                            298 = true,
+                            299 = true,
+                        },
                     },
                 },
             },
@@ -138,7 +184,7 @@ DO NOT EDIT
             'SONGVOLMultiplier' = 1,
             'SEVOLMultiplier' = 0.5,
             'LyricRomajiToHiragana' = true,
-            'Cheats' = {
+            'Debug' = {
                 
             },
         },
