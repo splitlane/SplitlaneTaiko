@@ -153,6 +153,8 @@ TODO: Add raylib option
     TODO: Fix drumrollbend over multiple measures --DONE
     TODO: Fix drumrollbend applying even for normal drumrolls --DONE
     TODO: Fix weird phantom hit (blue L, blue R) when auto
+    TODO: Integrate command --DELAYED until command is finished
+    TODO: EDITOR
     
 
 TODO: Taiko.Game

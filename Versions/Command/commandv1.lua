@@ -822,7 +822,7 @@ function Command.Parse(str)
                                 backslash = false
                             else
                                 --end
-                                seekingp = seekingp + 2
+                                seekingp = seekingp
                                 currentp = seekingp
                                 break
                             end
