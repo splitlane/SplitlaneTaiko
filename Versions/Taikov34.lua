@@ -12285,7 +12285,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
 
             --BACKGROUND
-            if false and SelectedConfig then
+            if SelectedConfig then
                 --LAZIEST SOLUTION EVER: Just render another one
                 Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + (BackgroundPosition >= 0 and -skinresolution[1] or skinresolution[1])
                 rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
@@ -14223,6 +14223,31 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
+        --Editor
+        local editor = true --enabled?
+        local runtimespeed = 1 --speed in which second gets incremented (multiplier)
+        local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
+
+
+        --Freeze (freezems) --makes s increment by 0. all controls work, just everything is stuck on the same frame. aka same frame is rendered over and over
+        --Pausing basically (LOL WHY DIDN'T I USE THIS FOR PAUSING) but allows input to pass (allows for toggling auto, fullscreen, and EVERYTHING works)
+        local freezems = false
+        local freezemstemp = nil
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -14932,7 +14957,7 @@ CalculateNoteHitGauge(target[1], target[2])
             -- [[
             --new: more precision
             --don't add frametime on first frame?
-            s = s + (framen ~= 0 and rl.GetFrameTime() or 0)
+            s = s + ((framen ~= 0 and rl.GetFrameTime() or 0) * runtimespeed)
             --s = s + rl.GetFrameTime()
             ms = s * 1000
             framen = framen + 1
@@ -14942,6 +14967,12 @@ CalculateNoteHitGauge(target[1], target[2])
 
             --MUSIC
             if playmusic then
+                --Account for runtimespeed
+                if runtimespeed ~= pastruntimespeed then
+                    rl.SetMusicPitch(song, songspeedmul * runtimespeed) 
+                    pastruntimespeed = runtimespeed
+                end
+
                 local offsets = s - Config.Offsets.Music
 
                 if offsets >= 0 then
@@ -16630,7 +16661,86 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+
+
+
+            --Editor
+            if editor then
+                --[[
+                    TODO:
+                    Left click on notes to move and stuff
+                    Right click on notes to set properties
+                    Middle click?
+                    Draw ms under notes
+
+                    NOTES:
+                    Modify oms so it doesn't get reverted
+                    This is before enddrawing so that it can draw on the frame last minute, however it uses previous frame input
+                ]]
+                local mouseposition = rl.GetMousePosition()
+                
+                local leftdown = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)
+                local leftpressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT)
+
+                local rightdown = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT)
+                local rightpressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_RIGHT)
+
+                --See if we are hovering over any notes
+                local x, y = mouseposition.x, mouseposition.y
+                local hovernote = nil
+                for i = 1, #loaded do
+                    local note = loaded[i]
+                    if note.data == 'note' then
+                        --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                        local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
+                        if condition then
+                            hovernote = note
+                            break
+                        end
+                    end
+                end
+                
+
+                if hovernote then
+                    --Display note statistics
+
+
+
+
+                    --Check if events happened
+                    if leftpressed then
+                        --runtimespeed = 0 --Pausing basically (LOL WHY DIDN'T I USE THIS FOR PAUSING) but allows input to pass (allows for toggling auto, fullscreen, and EVERYTHING works)
+                        freezems = true
+                    end
+                    if rightpressed then
+                        --runtimespeed = 0.5
+                        freezems = false
+                    end
+                end
+
+                
+
+            end
+
+
+
+
+
+
+            --for i = 1, #loaded do rl.DrawEllipse(loaded[i].pr.x, loaded[i].pr.y, loaded[i].pr.width / 4, loaded[i].pr.height / 4, rl.RED)end
+
             rl.EndDrawing()
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -16754,6 +16864,23 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
                 end
             end
+
+
+            --runtimespeed
+            if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Slower) then
+                runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+            end
+            if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Faster) then
+                runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+            end
+
+
+            --freezems
+            if IsKeyPressed(Config.Controls.PlaySong.Debug.Freeze) then
+                freezems = not freezems
+            end
+
+
 
             
 
@@ -16994,6 +17121,50 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 startt = startt + (os.clock() - before)
             end
+
+
+
+
+
+
+
+
+
+            --Freeze (freezems)
+            if freezems then
+                if not freezemstemp then
+                    freezemstemp = runtimespeed
+                    runtimespeed = 0
+                end
+            elseif freezemstemp then
+                runtimespeed = freezemstemp
+                freezemstemp = nil
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -115,6 +115,18 @@ DO NOT EDIT
                         },
                     },
                 },
+                'RunTimeSpeed' = {
+                    'Slower' = {
+                        264 = true,
+                    },
+                    'Faster' = {
+                        265 = true,
+                    },
+                    'FasterMultiplier' = 2,
+                },
+                'Freeze' = {
+                    32 = true,
+                },
             },
         },
         'SongSelect' = {
