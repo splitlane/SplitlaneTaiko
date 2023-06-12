@@ -14224,7 +14224,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         --Editor
-        local editor = true --enabled?
+        local editor = {
+            on = true, --enabled?
+            changingscroll = true, --changing note.scroll for dragging notes?
+            currentdragging = {}, --table of current notes that are being dragged
+        }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
 
@@ -16657,6 +16661,15 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+            --for i = 1, #loaded do rl.DrawEllipse(loaded[i].pr.x, loaded[i].pr.y, loaded[i].pr.width / 4, loaded[i].pr.height / 4, rl.RED)end
+
+            rl.EndDrawing()
+
+
+
+
+
+
 
 
 
@@ -16665,25 +16678,29 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --Editor
-            if editor then
+            if editor.on then
                 --[[
                     TODO:
                     Left click on notes to move and stuff
                     Right click on notes to set properties
                     Middle click?
                     Draw ms under notes
+                    Drag notes (ms and possibly scroll (target))
 
                     NOTES:
                     Modify oms so it doesn't get reverted
                     This is before enddrawing so that it can draw on the frame last minute, however it uses previous frame input
+                    Dragging of multiple notes is planned, so each note is modified with some tags (aka garbage)
                 ]]
                 local mouseposition = rl.GetMousePosition()
                 
                 local leftdown = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)
                 local leftpressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT)
+                local leftreleased = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_LEFT)
 
                 local rightdown = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT)
                 local rightpressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_RIGHT)
+                local rightreleased = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_RIGHT)
 
                 --See if we are hovering over any notes
                 local x, y = mouseposition.x, mouseposition.y
@@ -16701,13 +16718,30 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
                 
 
-                if hovernote then
+                --Set current dragging note
+                if leftreleased and not rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                    editor.currentdragging = {}
+                elseif leftpressed then
+                    if not rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                        if #editor.currentdragging > 1 then
+                            editor.currentdragging = {}
+                        end
+                    end
+                    editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                end
+
+
+                for i = 1, #editor.currentdragging do
+                    local note = editor.currentdragging[i]
                     --Display note statistics
 
 
 
 
                     --Check if events happened
+                    
+                    --TEMPORARY, DEBUG
+                    --[[
                     if leftpressed then
                         --runtimespeed = 0 --Pausing basically (LOL WHY DIDN'T I USE THIS FOR PAUSING) but allows input to pass (allows for toggling auto, fullscreen, and EVERYTHING works)
                         freezems = true
@@ -16715,6 +16749,51 @@ CalculateNoteHitGauge(target[1], target[2])
                     if rightpressed then
                         --runtimespeed = 0.5
                         freezems = false
+                    end
+                    --]]
+
+                    --Dragging of notes
+                    if leftpressed then
+                        note.editor = note.editor or {}
+
+                        note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
+                        note.editor.dragstartpr.x = note.pr.x
+                        note.editor.dragstartpr.y = note.pr.y
+
+                        note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
+                        note.editor.dragstartmousepr.x = mouseposition.x
+                        note.editor.dragstartmousepr.y = mouseposition.y
+                    end
+                    if leftdown then
+                        note.pr.x = note.editor.dragstartpr.x + (mouseposition.x - note.editor.dragstartmousepr.x)
+                        note.pr.y = note.editor.dragstartpr.y + (mouseposition.y - note.editor.dragstartmousepr.y)
+
+                        if editor.changingscroll then
+
+                            --Get speed from position
+
+                            local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
+
+                            --Taken from CalculatePosition
+                            note.speed[1] = (target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.ms - ms - note.delay)
+                            note.speed[2] = (target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.ms - ms - note.delay)
+                            
+
+
+
+
+
+                            --Get scroll from speed
+
+                            local displayratio = OriginalConfig.ScreenWidth / 1280
+
+                            --Taken from Taiko.CalculateSpeedInterval
+                            local interval = 960
+                            note.scrollx = note.speed[1] / note.bpm * 240000 / interval / displayratio
+                            note.scrolly = note.speed[2] / note.bpm * 240000 / interval / displayratio
+                        else
+
+                        end
                     end
                 end
 
@@ -16727,9 +16806,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-            --for i = 1, #loaded do rl.DrawEllipse(loaded[i].pr.x, loaded[i].pr.y, loaded[i].pr.width / 4, loaded[i].pr.height / 4, rl.RED)end
 
-            rl.EndDrawing()
 
 
 
