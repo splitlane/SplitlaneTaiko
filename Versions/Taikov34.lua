@@ -14228,6 +14228,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             on = true, --enabled?
             changingscroll = true, --changing note.scroll for dragging notes?
             currentdragging = {}, --table of current notes that are being dragged
+            info = {
+                hovernote = nil,
+                backgroundcolor = rl.new('Color', 128, 128, 128, 128) --background color of info box
+
+            }
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -16658,10 +16663,27 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+            if editor.on then
+                if editor.info.hovernote then
+
+                    local note = editor.info.hovernote
+                    rl.DrawRectangle(note.pr.x, note.pr.y, 100, 100, editor.info.backgroundcolor)
+
+
+                    editor.info.hovernote = nil
+                end
+            end
 
 
 
-            --for i = 1, #loaded do rl.DrawEllipse(loaded[i].pr.x, loaded[i].pr.y, loaded[i].pr.width / 4, loaded[i].pr.height / 4, rl.RED)end
+
+
+
+
+
+
+
+
 
             rl.EndDrawing()
 
@@ -16718,23 +16740,62 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
                 
 
+                --Note info
+
+                --Display note statistics
+                if hovernote then
+                    --Draw over everything (next frame)
+                    editor.info.hovernote = hovernote
+                end
+
+
+
+
+
+
+
+                --Note editing
+
+
+
                 --Set current dragging note
                 if leftreleased and not rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
                     editor.currentdragging = {}
                 elseif leftpressed then
-                    if not rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                    if rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                        if rl.IsKeyDown(rl.KEY_R) then
+                            local found = nil
+                            for i = 1, #editor.currentdragging do
+                                if editor.currentdragging[i] == hovernote then
+                                    found = i
+                                    break
+                                end
+                            end
+
+                            if found then
+                                --Remove from selection
+                                table.remove(editor.currentdragging, i)
+                            else
+                                --Add to selection
+                                editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                            end
+                        else
+                            --Add to selection
+                            editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                        end
+                    else
+                        --Clear selection
                         if #editor.currentdragging > 1 then
                             editor.currentdragging = {}
                         end
+                        --Add to selection
+                        editor.currentdragging[#editor.currentdragging + 1] = hovernote
                     end
-                    editor.currentdragging[#editor.currentdragging + 1] = hovernote
                 end
 
 
                 for i = 1, #editor.currentdragging do
                     local note = editor.currentdragging[i]
-                    --Display note statistics
-
 
 
 
