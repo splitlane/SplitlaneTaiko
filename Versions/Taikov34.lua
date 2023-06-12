@@ -14228,6 +14228,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             on = true, --enabled?
             changingscroll = true, --changing note.scroll for dragging notes?
             currentdragging = {}, --table of current notes that are being dragged
+            currentdragginglinethickness = 5, --thickness of currentdragging selection rectangle
+            currentdragginglinecolor = rl.new('Color', 13, 150, 241, 255 / 2), --color of currentdragging selection rectangle
+            currentdraggingr = rl.new('Rectangle'), --rectangle used for currentdragging selection rectangle
             info = {
                 hovernote = nil,
                 backgroundcolor = rl.new('Color', 128, 128, 128, 128) --background color of info box
@@ -16665,12 +16668,22 @@ CalculateNoteHitGauge(target[1], target[2])
 
             if editor.on then
                 if editor.info.hovernote then
-
                     local note = editor.info.hovernote
                     rl.DrawRectangle(note.pr.x, note.pr.y, 100, 100, editor.info.backgroundcolor)
 
 
                     editor.info.hovernote = nil
+                end
+
+                for i = 1, #editor.currentdragging do
+                    local note = editor.currentdragging[i]
+                    local r = editor.currentdraggingr
+                    r.x = note.pr.x - note.tcenter.x
+                    r.y = note.pr.y - note.tcenter.y
+                    r.width = note.pr.width
+                    r.height = note.pr.height
+                    
+                    rl.DrawRectangleLinesEx(r, editor.currentdragginglinethickness, editor.currentdragginglinecolor)
                 end
             end
 
@@ -16759,18 +16772,18 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                 --Set current dragging note
-                if leftreleased and not rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
-                    editor.currentdragging = {}
-                elseif leftpressed then
-                    if rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
-                        if rl.IsKeyDown(rl.KEY_R) then
-                            local found = nil
-                            for i = 1, #editor.currentdragging do
-                                if editor.currentdragging[i] == hovernote then
-                                    found = i
-                                    break
-                                end
+                if leftpressed then
+                    if hovernote then
+                        local found = nil
+                        for i = 1, #editor.currentdragging do
+                            if editor.currentdragging[i] == hovernote then
+                                found = i
+                                break
                             end
+                        end
+
+                        if rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                            --Modifying selection
 
                             if found then
                                 --Remove from selection
@@ -16780,16 +16793,21 @@ CalculateNoteHitGauge(target[1], target[2])
                                 editor.currentdragging[#editor.currentdragging + 1] = hovernote
                             end
                         else
-                            --Add to selection
-                            editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                            --Dragging selection
+
+                            if found then
+
+                            else
+                                --Clear selection
+                                editor.currentdragging = {}
+
+                                --Add to selection
+                                editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                            end
                         end
                     else
                         --Clear selection
-                        if #editor.currentdragging > 1 then
-                            editor.currentdragging = {}
-                        end
-                        --Add to selection
-                        editor.currentdragging[#editor.currentdragging + 1] = hovernote
+                        editor.currentdragging = {}
                     end
                 end
 
