@@ -155,6 +155,7 @@ TODO: Add raylib option
     TODO: Fix weird phantom hit (blue L, blue R) when auto
     TODO: Integrate command --DELAYED until command is finished
     TODO: EDITOR
+            TODO: Saving (I think diff files)
     
 
 TODO: Taiko.Game
@@ -14235,7 +14236,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 hovernote = nil,
                 backgroundcolor = rl.new('Color', 128, 128, 128, 128) --background color of info box
 
-            }
+            },
+            clipboard = {}
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -16255,6 +16257,12 @@ CalculateNoteHitGauge(target[1], target[2])
 
                                                     startnote.pr.x = (startnote.p[1] + offsetx) * scale[1]
                                                     startnote.pr.y = (startnote.p[2] + offsety) * scale[2]
+
+                                                    --scale
+                                                    startnote.pr.width = tsizex * scale[1]
+                                                    startnote.pr.height = tsizey * scale[2]
+                                                    -- startnote.tcenter.x = startnote.tcentero.x * scale[1]
+                                                    -- startnote.tcenter.y = startnote.tcentero.y * scale[2]
                                                 else
                                                     startnote = drumrollbend[i - 1]
                                                     note = drumrollbend[i]
@@ -16267,6 +16275,12 @@ CalculateNoteHitGauge(target[1], target[2])
 
                                                     startnote.pr.x = (startnote.p[1] + offsetx) * scale[1]
                                                     startnote.pr.y = (startnote.p[2] + offsety) * scale[2]
+
+                                                    --scale
+                                                    startnote.pr.width = tsizex * scale[1]
+                                                    startnote.pr.height = tsizey * scale[2]
+                                                    -- startnote.tcenter.x = startnote.tcentero.x * scale[1]
+                                                    -- startnote.tcenter.y = startnote.tcentero.y * scale[2]
 
 
                                                     local px, py = note.CalculatePosition(note, stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay), target)
@@ -16727,6 +16741,10 @@ CalculateNoteHitGauge(target[1], target[2])
                     This is before enddrawing so that it can draw on the frame last minute, however it uses previous frame input
                     Dragging of multiple notes is planned, so each note is modified with some tags (aka garbage)
                 ]]
+
+
+                --Input
+
                 local mouseposition = rl.GetMousePosition()
                 
                 local leftdown = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)
@@ -16743,15 +16761,218 @@ CalculateNoteHitGauge(target[1], target[2])
                 for i = 1, #loaded do
                     local note = loaded[i]
                     if note.data == 'note' then
-                        --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
-                        local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
-                        if condition then
-                            hovernote = note
-                            break
+                        if note.type == 8 then
+                            --WARNING: pr for drumroll is modified
+                            note.pr.x = (note.p[1] + offsetx) * scale[1]
+                            note.pr.y = (note.p[2] + offsety) * scale[2]
+
+                            --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                            local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
+                            if condition then
+                                hovernote = note
+                                break
+                            end
+                        elseif note.type == 5 or note.type == 6 then
+                            local startnote = note
+                            for i = 1, #startnote.drumrollbend do
+                                local note = startnote.drumrollbend[i]
+
+                                --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                                local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
+                                if condition then
+                                    hovernote = note
+                                    break
+                                end
+                            end
+
+                            --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                            local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
+                            if condition then
+                                hovernote = note
+                                break
+                            end
+                        else
+                            --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                            local condition = ((x - note.pr.x) ^ 2 / (note.pr.width / 4) ^ 2 + (y - note.pr.y) ^ 2 / (note.pr.height / 4) ^ 2 <= 1)
+                            if condition then
+                                hovernote = note
+                                break
+                            end
                         end
                     end
                 end
                 
+
+
+
+
+
+
+
+
+
+                --Shortcuts
+
+                if rl.IsKeyDown(rl.KEY_LEFT_CONTROL) then
+                    if rl.IsKeyPressed(rl.KEY_A) then
+                        --Select all
+
+                        editor.currentdragging = {}
+
+                        for i = 1, #loaded do
+                            local note = loaded[i]
+                            if note.data == 'note' then
+                                editor.currentdragging[#editor.currentdragging + 1] = note
+                            end
+                        end
+                    elseif rl.IsKeyPressed(rl.KEY_C) then
+                        editor.clipboard = {}
+
+                        for i = 1, #editor.currentdragging do
+                            local note = editor.currentdragging[i]
+                            editor.clipboard[#editor.clipboard + 1] = note
+                        end
+                    elseif rl.IsKeyPressed(rl.KEY_V) then
+                        --Clear selection
+                        editor.currentdragging = {}
+
+                        local note = editor.clipboard[1]
+                        local offsetx = mouseposition.x - note.pr.x
+                        local offsety = mouseposition.y - note.pr.y
+
+
+                        for i = 1, #editor.clipboard do
+                            local note = editor.clipboard[i]
+
+                            --Copy note
+                            local copy = {}
+                            for k, v in pairs(note) do
+                                local v2 = nil
+                                if k == 'pr' or k == 'osenotepr' or k == 'senotepr' then
+                                    v2 = rl.new('Rectangle')
+                                    v2.x = v.x
+                                    v2.y = v.y
+                                    v2.width = v.width
+                                    v2.height = v.height
+                                elseif k == 'tcentero' or k == 'tcenter' then
+                                    v2 = rl.new('Vector2')
+                                    v2.x = v.x
+                                    v2.y = v.y
+                                elseif k == 'speed' or k == 'p' then
+                                    v2 = {}
+                                    v2[1] = v[1]
+                                    v2[2] = v[2]
+                                elseif k == 'editor' then
+                                    v2 = nil
+                                else
+                                    v2 = v
+                                end
+
+                                --[[
+                                if type(v) == 'cdata' then
+                                    print(k, v)
+                                end
+                                --]]
+
+                                copy[k] = v2
+                            end
+
+
+                            do
+                                local note = copy
+
+                                note.editor = note.editor or {}
+
+                                --pr
+                                --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                                -- [[
+                                note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
+                                note.editor.dragstartpr.x = note.pr.x
+                                note.editor.dragstartpr.y = note.pr.y
+                                --]]
+        
+                                --p
+                                --WARNING: DEPRACATED SINCE P DOESNT SCALE
+                                --[[
+                                note.editor.dragstartp = note.editor.dragstartp or {}
+                                note.editor.dragstartp[1] = note.p[1]
+                                note.editor.dragstartp[2] = note.p[2]
+                                --]]
+        
+                                note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
+                                note.editor.dragstartmousepr.x = mouseposition.x - offsetx
+                                note.editor.dragstartmousepr.y = mouseposition.y - offsety
+                            end
+
+
+                            loaded[#loaded + 1] = copy
+                            editor.currentdragging[#editor.currentdragging + 1] = copy
+                        end
+
+                        leftdown = true
+                    elseif rl.IsKeyPressed(rl.KEY_X) then
+                        --TODO: Fully delete note
+                        editor.clipboard = {}
+
+                        for i = 1, #editor.currentdragging do
+                            local note = editor.currentdragging[i]
+
+                            editor.clipboard[#editor.clipboard + 1] = note
+
+                            --Delete note
+                            local offseti = 0
+                            for i2raw = 1, #loaded do
+                                local i2 = i2raw + offseti
+                                local c = loaded[i2]
+                                if c == note then
+                                    table.remove(loaded, i2)
+                                    offseti = offseti - 1
+                                end
+                            end
+
+                        end
+                    end
+                end
+
+                if rl.IsKeyPressed(rl.KEY_DELETE) or rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                    --TODO: Fully delete note
+                    for i = 1, #editor.currentdragging do
+                        local note = editor.currentdragging[i]
+
+                        --Delete note
+                        local offseti = 0
+                        for i2raw = 1, #loaded do
+                            local i2 = i2raw + offseti
+                            local c = loaded[i2]
+                            if c == note then
+                                table.remove(loaded, i2)
+                                offseti = offseti - 1
+                            end
+                        end
+                    
+                    end
+                end
+                
+                if rl.IsKeyPressed(rl.KEY_S) then
+                    --Snap selection on mouseposition
+                    leftdown = true
+                end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                 --Note info
 
@@ -16812,6 +17033,10 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
 
 
+
+
+
+
                 for i = 1, #editor.currentdragging do
                     local note = editor.currentdragging[i]
 
@@ -16832,20 +17057,44 @@ CalculateNoteHitGauge(target[1], target[2])
                     --]]
 
                     --Dragging of notes
-                    if leftpressed then
+                    if leftpressed or (not note.editor) then
                         note.editor = note.editor or {}
 
+                        --pr
+                        --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                        -- [[
                         note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
                         note.editor.dragstartpr.x = note.pr.x
                         note.editor.dragstartpr.y = note.pr.y
+                        --]]
+
+                        --p
+                        --WARNING: DEPRACATED SINCE P DOESNT SCALE
+                        --[[
+                        note.editor.dragstartp = note.editor.dragstartp or {}
+                        note.editor.dragstartp[1] = note.p[1]
+                        note.editor.dragstartp[2] = note.p[2]
+                        --]]
 
                         note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
                         note.editor.dragstartmousepr.x = mouseposition.x
                         note.editor.dragstartmousepr.y = mouseposition.y
                     end
                     if leftdown then
+                        --pr
+                        --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                        -- [[
                         note.pr.x = note.editor.dragstartpr.x + (mouseposition.x - note.editor.dragstartmousepr.x)
                         note.pr.y = note.editor.dragstartpr.y + (mouseposition.y - note.editor.dragstartmousepr.y)
+                        --]]
+
+                        --p
+                        --WARNING: DEPRACATED SINCE P DOESNT SCALE
+                        --[[
+                        note.p[1] = note.editor.dragstartp[1] + (mouseposition.x - note.editor.dragstartmousepr.x)
+                        note.p[2] = note.editor.dragstartp[2] + (mouseposition.y - note.editor.dragstartmousepr.y)
+                        --]]
+
 
                         if editor.changingscroll then
 
@@ -16853,9 +17102,20 @@ CalculateNoteHitGauge(target[1], target[2])
 
                             local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
 
+                            --pr
+                            --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
                             --Taken from CalculatePosition
+                            -- [[
                             note.speed[1] = (target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.ms - ms - note.delay)
                             note.speed[2] = (target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.ms - ms - note.delay)
+                            --]]
+                            
+                            --p
+                            --WARNING: DEPRACATED SINCE P DOESNT SCALE
+                            --[[
+                            note.speed[1] = (target[1] - (note.p[1] / xmul)) / (note.ms - ms - note.delay)
+                            note.speed[2] = (target[2] - (note.p[2] / ymul)) / (note.ms - ms - note.delay)
+                            --]]
                             
 
 

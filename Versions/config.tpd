@@ -43,7 +43,7 @@ DO NOT EDIT
                 },
             },
             'Screenshot' = {
-                83 = true,
+                83 = false,
             },
             'Fullscreen' = {
                 70 = true,
