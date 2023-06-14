@@ -155,7 +155,10 @@ TODO: Add raylib option
     TODO: Fix weird phantom hit (blue L, blue R) when auto
     TODO: Integrate command --DELAYED until command is finished
     TODO: EDITOR
-            TODO: Saving (I think diff files)
+        TODO: Saving (I think diff files)
+    
+    
+    TODO: Allow configuring hold for every shortcut
     
 
 TODO: Taiko.Game
@@ -16681,6 +16684,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             if editor.on then
+                --
                 if editor.info.hovernote then
                     local note = editor.info.hovernote
                     rl.DrawRectangle(note.pr.x, note.pr.y, 100, 100, editor.info.backgroundcolor)
@@ -16689,6 +16693,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     editor.info.hovernote = nil
                 end
 
+                --Selection box
                 for i = 1, #editor.currentdragging do
                     local note = editor.currentdragging[i]
                     local r = editor.currentdraggingr
@@ -16735,6 +16740,10 @@ CalculateNoteHitGauge(target[1], target[2])
                     Middle click?
                     Draw ms under notes
                     Drag notes (ms and possibly scroll (target))
+                    Edit drum rolls (copy paste, ms, drumrollbend)
+                    Edit note ms
+                    Screenshot key is the same as snap key
+                    Configure keys
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -16813,8 +16822,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 --Shortcuts
 
-                if rl.IsKeyDown(rl.KEY_LEFT_CONTROL) then
-                    if rl.IsKeyPressed(rl.KEY_A) then
+                if IsKeyDown(Config.Controls.PlaySong.Editor.Shortcut.Hold) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.SelectAll) then
                         --Select all
 
                         editor.currentdragging = {}
@@ -16825,14 +16834,14 @@ CalculateNoteHitGauge(target[1], target[2])
                                 editor.currentdragging[#editor.currentdragging + 1] = note
                             end
                         end
-                    elseif rl.IsKeyPressed(rl.KEY_C) then
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Copy) then
                         editor.clipboard = {}
 
                         for i = 1, #editor.currentdragging do
                             local note = editor.currentdragging[i]
                             editor.clipboard[#editor.clipboard + 1] = note
                         end
-                    elseif rl.IsKeyPressed(rl.KEY_V) then
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Paste) then
                         --Clear selection
                         editor.currentdragging = {}
 
@@ -16910,7 +16919,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
 
                         leftdown = true
-                    elseif rl.IsKeyPressed(rl.KEY_X) then
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Cut) then
                         --TODO: Fully delete note
                         editor.clipboard = {}
 
@@ -16934,7 +16943,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
                 end
 
-                if rl.IsKeyPressed(rl.KEY_DELETE) or rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Delete) then
                     --TODO: Fully delete note
                     for i = 1, #editor.currentdragging do
                         local note = editor.currentdragging[i]
@@ -16953,7 +16962,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
                 end
                 
-                if rl.IsKeyPressed(rl.KEY_S) then
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Snap) then
                     --Snap selection on mouseposition
                     leftdown = true
                 end
@@ -17003,7 +17012,7 @@ CalculateNoteHitGauge(target[1], target[2])
                             end
                         end
 
-                        if rl.IsKeyDown(rl.KEY_LEFT_SHIFT) then
+                        if IsKeyDown(Config.Controls.PlaySong.Editor.ModifySelectionHold) then
                             --Modifying selection
 
                             if found then
@@ -17102,6 +17111,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                             local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
 
+                            --s = d / t
                             --pr
                             --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
                             --Taken from CalculatePosition
@@ -17132,6 +17142,23 @@ CalculateNoteHitGauge(target[1], target[2])
                             note.scrolly = note.speed[2] / note.bpm * 240000 / interval / displayratio
                         else
 
+                            --Get speed from position (copied from editor.changingscroll) (MODIFIED to not modify speed)
+
+                            local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
+
+                            --pr
+                            --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                            --Taken from CalculatePosition
+                            -- [[
+                            if note.speed[1] ~= 0 then
+                                note.ms = ((target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.speed[1])) + ms + note.delay
+                            else
+                                note.ms = ((target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.speed[2])) + ms + note.delay
+                            end
+                            --]]
+                            
+                            --p
+                            
                         end
                     end
                 end

@@ -43,7 +43,7 @@ DO NOT EDIT
                 },
             },
             'Screenshot' = {
-                83 = false,
+                83 = true,
             },
             'Fullscreen' = {
                 70 = true,
@@ -126,6 +126,35 @@ DO NOT EDIT
                 },
                 'Freeze' = {
                     32 = true,
+                },
+            },
+            'Editor' = {
+                'Shortcut' = {
+                    'Hold' = {
+                        341 = true,
+                    },
+                    'SelectAll' = {
+                        65 = true,
+                    },
+                    'Copy' = {
+                        67 = true,
+                    },
+                    'Paste' = {
+                        86 = true,
+                    },
+                    'Cut' = {
+                        88 = true,
+                    },
+                    'Delete' = {
+                        261 = true,
+                        259 = true,
+                    },
+                    'Snap' = {
+                        80 = true,
+                    },
+                },
+                'ModifySelectionHold' = {
+                    340 = true,
                 },
             },
         },
