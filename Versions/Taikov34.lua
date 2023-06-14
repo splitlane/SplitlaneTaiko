@@ -14237,8 +14237,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             currentdraggingr = rl.new('Rectangle'), --rectangle used for currentdragging selection rectangle
             info = {
                 hovernote = nil,
-                backgroundcolor = rl.new('Color', 128, 128, 128, 128) --background color of info box
-
+                backgroundcolor = rl.new('Color', 128, 128, 128, 128), --background color of info box
+                textsize = 20, --text size for info text
+                backgroundpadding = 10 --background padding border
             },
             clipboard = {}
         }
@@ -16687,7 +16688,24 @@ CalculateNoteHitGauge(target[1], target[2])
                 --
                 if editor.info.hovernote then
                     local note = editor.info.hovernote
-                    rl.DrawRectangle(note.pr.x, note.pr.y, 100, 100, editor.info.backgroundcolor)
+
+                    local str = 'ms: ' .. note.ms
+                    .. '\ntype: ' .. note.type
+                    .. '\nscroll: {' .. note.scrollx .. ', ' .. note.scrolly .. '}'
+                    .. '\nspeed: {' .. note.speed[1] .. ', ' .. note.speed[2] .. '}'
+                    .. '\nbpm: ' .. note.bpm
+                    .. '\nn: ' .. note.n
+
+                    local x, y = note.pr.x, note.pr.y
+                    local width, height = GetTextSize(str, editor.info.textsize)
+        
+
+                    local padding = editor.info.backgroundpadding
+        
+
+                    rl.DrawRectangle(x - padding, y - padding, width + 2 * padding, height + 2 * padding, editor.info.backgroundcolor)
+
+                    rl.DrawText(str, x, y, editor.info.textsize, rl.RAYWHITE)
 
 
                     editor.info.hovernote = nil
@@ -16696,6 +16714,7 @@ CalculateNoteHitGauge(target[1], target[2])
                 --Selection box
                 for i = 1, #editor.currentdragging do
                     local note = editor.currentdragging[i]
+
                     local r = editor.currentdraggingr
                     r.x = note.pr.x - note.tcenter.x
                     r.y = note.pr.y - note.tcenter.y
@@ -16744,6 +16763,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     Edit note ms
                     Screenshot key is the same as snap key
                     Configure keys
+                    Ctrl z
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -16965,6 +16985,11 @@ CalculateNoteHitGauge(target[1], target[2])
                 if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Snap) then
                     --Snap selection on mouseposition
                     leftdown = true
+                end
+
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.ToggleDragMode) then
+                    --Toggle dragging mode (changingscroll: false <-> true)
+                    editor.changingscroll = not editor.changingscroll
                 end
 
 

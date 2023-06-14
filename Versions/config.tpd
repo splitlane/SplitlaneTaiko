@@ -156,6 +156,9 @@ DO NOT EDIT
                 'ModifySelectionHold' = {
                     340 = true,
                 },
+                'ToggleDragMode' = {
+                    84 = true,
+                },
             },
         },
         'SongSelect' = {
