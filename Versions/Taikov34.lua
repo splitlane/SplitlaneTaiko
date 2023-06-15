@@ -14251,7 +14251,17 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             },
             boxselection = false, --box selection happening?
             boxselectionpr = rl.new('Rectangle'), --pr for box selection
-            boxselectionpr2 = rl.new('Rectangle') --pr for box selection
+            boxselectionpr2 = rl.new('Rectangle'), --pr for box selection
+            grid = {
+                on = true, --enabled?
+                isrect = true, --rectangle? or ellipse?
+                pr = rl.new('Rectangle', 0, 0, tsizex, tsizey), --pr for grid (x, y are intersection / starting points), (width, height are grid width height per)
+                v = rl.new('Vector2'), --v used for drawing
+                v2 = rl.new('Vector2'), --v2 used for drawing
+                scrollincrement = 0.1, --scroll increment
+                msincrement = 100, --ms increment
+                selected = nil, --note selected (a single note)
+            }
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -16697,6 +16707,149 @@ CalculateNoteHitGauge(target[1], target[2])
             if editor.on then
                 local mouseposition = rl.GetMousePosition()
 
+                --Grid
+                if editor.grid.on then
+
+                    if editor.grid.selected then
+                        local note = editor.grid.selected
+
+                        --Center on note
+                        editor.grid.pr.x = note.pr.x
+                        editor.grid.pr.y = note.pr.y
+                    else
+                        --Just center on target
+                        editor.grid.pr.x = targetpr.x
+                        editor.grid.pr.y = targetpr.y
+                    end
+
+
+                    --Rectangle
+                    if editor.grid.isrect then
+                        local w, h = editor.grid.pr.width * scale[1], editor.grid.pr.height * scale[2]
+                        local v, v2 = editor.grid.v, editor.grid.v2
+                        local pr = editor.grid.pr
+                        local linethickness = editor.currentdragginglinethickness
+                        local color = editor.currentdragginglinecolor
+
+                        --Horizontal lines
+                        v.x = 0
+                        v2.x = Config.ScreenWidth
+
+                        --Current + Up
+                        local y = pr.y
+                        while true do
+                            if y < 0 then
+                                break
+                            else
+                                v.y = y
+                                v2.y = y
+                                rl.DrawLineEx(v, v2, linethickness, color)
+                                y = y - h
+                            end
+                        end
+
+                        --Down
+                        local y = pr.y + h
+                        while true do
+                            if y > Config.ScreenHeight then
+                                break
+                            else
+                                v.y = y
+                                v2.y = y
+                                rl.DrawLineEx(v, v2, linethickness, color)
+                                y = y + h
+                            end
+                        end
+
+
+                        --Vertical lines
+                        v.y = 0
+                        v2.y = Config.ScreenHeight
+
+                        --Current + Left
+                        local x = pr.x
+                        while true do
+                            if x < 0 then
+                                break
+                            else
+                                v.x = x
+                                v2.x = x
+                                rl.DrawLineEx(v, v2, linethickness, color)
+                                x = x - h
+                            end
+                        end
+
+                        --Right
+                        local x = pr.x + h
+                        while true do
+                            if x > Config.ScreenWidth then
+                                break
+                            else
+                                v.x = x
+                                v2.x = x
+                                rl.DrawLineEx(v, v2, linethickness, color)
+                                x = x + h
+                            end
+                        end
+
+
+
+                        --Circular
+                    else
+                        local x, y = editor.grid.pr.x, editor.grid.pr.y
+                        local ow, oh = editor.grid.pr.width * scale[1], editor.grid.pr.height * scale[2]
+                        local v, v2 = editor.grid.v, editor.grid.v2
+                        local pr = editor.grid.pr
+                        local linethickness = editor.currentdragginglinethickness
+                        local color = editor.currentdragginglinecolor
+
+                        local i = 1
+                        local w, h = nil, nil
+                        while true do
+                            w = ow * i
+                            h = oh * i
+
+                            --https://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+                            local condition = ((0 - x) ^ 2 / (w) ^ 2 + (0 - y) ^ 2 / (h) ^ 2 <= 1)
+                            and ((Config.ScreenWidth - x) ^ 2 / (w) ^ 2 + (0 - y) ^ 2 / (h) ^ 2 <= 1)
+                            and ((0 - x) ^ 2 / (w) ^ 2 + (Config.ScreenHeight - y) ^ 2 / (h) ^ 2 <= 1)
+                            and ((Config.ScreenWidth - x) ^ 2 / (w) ^ 2 + (Config.ScreenHeight - y) ^ 2 / (h) ^ 2 <= 1)
+                            if condition then
+                                break
+                            else
+                                rl.DrawEllipseLines(x, y, w, h, color)
+                                i = i + 1
+                            end
+                        end
+
+
+                        --Handle line thickness (since raylib doesn't have a linethickness option)
+                        for i2 = 1, linethickness - 1 do
+                            for i3 = 1, i do
+                                w = ow * i3 + i2
+                                h = oh * i3 + i2
+                                rl.DrawEllipseLines(x, y, w, h, color)
+                            end
+                        end
+
+
+
+                    end
+
+
+
+                end
+
+
+
+
+
+
+
+
+
+
+
 
                 --Box selection (leftpressed)
                 if editor.boxselection then
@@ -16760,8 +16913,15 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 --Overlay
                 if editor.overlay.on then
-                    --Logo text
-                    rl.DrawText('Editor', editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize, rl.BLACK)
+                    --Logo text and ms
+                    rl.DrawText(
+                        'Editor'
+                        .. '   Selected: ' .. #editor.currentdragging .. ' notes'
+                        .. '   ms: ' .. ms
+                        .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
+                        .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
+                        .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
+                        , editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize, rl.BLACK)
                 end
             end
 
@@ -17112,6 +17272,11 @@ CalculateNoteHitGauge(target[1], target[2])
                     editor.changingscroll = not editor.changingscroll
                 end
 
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.ToggleGrid) then
+                    --Toggle dragging mode (changingscroll: false <-> true)
+                    editor.grid.on = not editor.grid.on
+                end
+
 
 
 
@@ -17184,6 +17349,16 @@ CalculateNoteHitGauge(target[1], target[2])
                         --Clear selection
                         editor.currentdragging = {}
                     end
+                end
+
+
+
+
+                --Grid selection
+                if #editor.currentdragging == 1 then
+                    editor.grid.selected = editor.currentdragging[1]
+                else
+                    editor.grid.selected = nil
                 end
 
 

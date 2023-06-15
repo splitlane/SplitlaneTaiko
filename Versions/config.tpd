@@ -159,6 +159,9 @@ DO NOT EDIT
                 'ToggleDragMode' = {
                     84 = true,
                 },
+                'ToggleGrid' = {
+                    71 = true,
+                },
             },
         },
         'SongSelect' = {
