@@ -17088,21 +17088,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         for i = 1, #loaded do
                             local note = loaded[i]
                             if (x1 < note.pr.x and note.pr.x < x2) and (y1 < note.pr.y and note.pr.y < y2) then
-                                --[[
-                                local found = nil
-                                for i = 1, #editor.currentdragging do
-                                    if editor.currentdragging[i] == note then
-                                        found = i
-                                        break
-                                    end
-                                end
-
-                                if not found then
-                                --]]
-                                    editor.currentdragging[#editor.currentdragging + 1] = note
-                                --[[
-                                end
-                                --]]
+                                editor.currentdragging[#editor.currentdragging + 1] = note
                             end
                         end
 
@@ -17370,40 +17356,16 @@ CalculateNoteHitGauge(target[1], target[2])
                     local note = editor.currentdragging[i]
 
 
-
-                    --Check if events happened
-                    
-                    --TEMPORARY, DEBUG
-                    --[[
-                    if leftpressed then
-                        --runtimespeed = 0 --Pausing basically (LOL WHY DIDN'T I USE THIS FOR PAUSING) but allows input to pass (allows for toggling auto, fullscreen, and EVERYTHING works)
-                        freezems = true
-                    end
-                    if rightpressed then
-                        --runtimespeed = 0.5
-                        freezems = false
-                    end
-                    --]]
-
                     --Dragging of notes
                     if leftpressed or (not note.editor) then
                         note.editor = note.editor or {}
 
                         --pr
                         --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
-                        -- [[
                         note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
                         note.editor.dragstartpr.x = note.pr.x
                         note.editor.dragstartpr.y = note.pr.y
-                        --]]
 
-                        --p
-                        --WARNING: DEPRACATED SINCE P DOESNT SCALE
-                        --[[
-                        note.editor.dragstartp = note.editor.dragstartp or {}
-                        note.editor.dragstartp[1] = note.p[1]
-                        note.editor.dragstartp[2] = note.p[2]
-                        --]]
 
                         note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
                         note.editor.dragstartmousepr.x = mouseposition.x
@@ -17412,17 +17374,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     if leftdown then
                         --pr
                         --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
-                        -- [[
                         note.pr.x = note.editor.dragstartpr.x + (mouseposition.x - note.editor.dragstartmousepr.x)
                         note.pr.y = note.editor.dragstartpr.y + (mouseposition.y - note.editor.dragstartmousepr.y)
-                        --]]
-
-                        --p
-                        --WARNING: DEPRACATED SINCE P DOESNT SCALE
-                        --[[
-                        note.p[1] = note.editor.dragstartp[1] + (mouseposition.x - note.editor.dragstartmousepr.x)
-                        note.p[2] = note.editor.dragstartp[2] + (mouseposition.y - note.editor.dragstartmousepr.y)
-                        --]]
 
 
                         if editor.changingscroll then
@@ -17435,20 +17388,8 @@ CalculateNoteHitGauge(target[1], target[2])
                             --pr
                             --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
                             --Taken from CalculatePosition
-                            -- [[
                             note.speed[1] = (target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.ms - ms - note.delay)
                             note.speed[2] = (target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.ms - ms - note.delay)
-                            --]]
-                            
-                            --p
-                            --WARNING: DEPRACATED SINCE P DOESNT SCALE
-                            --[[
-                            note.speed[1] = (target[1] - (note.p[1] / xmul)) / (note.ms - ms - note.delay)
-                            note.speed[2] = (target[2] - (note.p[2] / ymul)) / (note.ms - ms - note.delay)
-                            --]]
-                            
-
-
 
 
 
@@ -17469,15 +17410,12 @@ CalculateNoteHitGauge(target[1], target[2])
                             --pr
                             --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
                             --Taken from CalculatePosition
-                            -- [[
                             if note.speed[1] ~= 0 then
                                 note.ms = ((target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.speed[1])) + ms + note.delay
                             else
                                 note.ms = ((target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.speed[2])) + ms + note.delay
                             end
-                            --]]
                             
-                            --p
                             
                         end
                     end
