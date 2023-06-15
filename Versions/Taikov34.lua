@@ -14239,9 +14239,19 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 hovernote = nil,
                 backgroundcolor = rl.new('Color', 128, 128, 128, 128), --background color of info box
                 textsize = 20, --text size for info text
-                backgroundpadding = 10 --background padding border
+                backgroundpadding = 10, --background padding border
+                offset = rl.new('Vector2', 50, 50) --offset of info box
             },
-            clipboard = {}
+            clipboard = {},
+            overlay = {
+                on = true, --enabled?
+                editortextp = rl.new('Vector2', 10, 10), --editor logo text pr
+                editortextsize = 50 --text size for editor logo text
+
+            },
+            boxselection = false, --box selection happening?
+            boxselectionpr = rl.new('Rectangle'), --pr for box selection
+            boxselectionpr2 = rl.new('Rectangle') --pr for box selection
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -16685,7 +16695,25 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             if editor.on then
-                --
+                local mouseposition = rl.GetMousePosition()
+
+
+                --Box selection (leftpressed)
+                if editor.boxselection then
+                    --Rectangle logic is handled below rl.EndDrawing
+
+                    rl.DrawRectangleLinesEx(editor.boxselectionpr2, editor.currentdragginglinethickness, editor.currentdragginglinecolor)
+                end
+
+
+
+
+
+
+
+
+
+                --Note info
                 if editor.info.hovernote then
                     local note = editor.info.hovernote
 
@@ -16696,7 +16724,12 @@ CalculateNoteHitGauge(target[1], target[2])
                     .. '\nbpm: ' .. note.bpm
                     .. '\nn: ' .. note.n
 
-                    local x, y = note.pr.x, note.pr.y
+                    --render based on note pr --DEPRACATED
+                    --local x, y = note.pr.x + editor.info.offset.x, note.pr.y + editor.info.offset.y
+
+                    --render based on mouseposition
+                    local x, y = mouseposition.x + editor.info.offset.x, mouseposition.y + editor.info.offset.y
+
                     local width, height = GetTextSize(str, editor.info.textsize)
         
 
@@ -16722,6 +16755,13 @@ CalculateNoteHitGauge(target[1], target[2])
                     r.height = note.pr.height
                     
                     rl.DrawRectangleLinesEx(r, editor.currentdragginglinethickness, editor.currentdragginglinecolor)
+                end
+
+
+                --Overlay
+                if editor.overlay.on then
+                    --Logo text
+                    rl.DrawText('Editor', editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize, rl.BLACK)
                 end
             end
 
@@ -16754,16 +16794,20 @@ CalculateNoteHitGauge(target[1], target[2])
             if editor.on then
                 --[[
                     TODO:
-                    Left click on notes to move and stuff
+                    Left click on notes to move and stuff --DONE
                     Right click on notes to set properties
                     Middle click?
-                    Draw ms under notes
-                    Drag notes (ms and possibly scroll (target))
+                    Draw ms under notes --DONE
+                    Drag notes (ms and possibly scroll (target)) --DONE
                     Edit drum rolls (copy paste, ms, drumrollbend)
-                    Edit note ms
-                    Screenshot key is the same as snap key
-                    Configure keys
+                    Edit note ms --DONE
+                    Screenshot key is the same as snap key --DONE
+                    Configure keys --DONE
                     Ctrl z
+                    Cursor selection box --DONE
+                    note.incurrentdragging -> so we don't have to search currentdragging every time
+                    Snap to ms / scroll (grid)
+                    History!!
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -16832,6 +16876,82 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
                 
 
+
+
+
+
+                --leftpressed
+                if leftpressed then
+                    if hovernote == nil then
+                        --box selection
+
+                        editor.boxselection = true
+                        editor.boxselectionpr.x = mouseposition.x
+                        editor.boxselectionpr.y = mouseposition.y
+                    else
+                        editor.boxselection = false
+                    end
+                end
+
+                --leftdown
+                if leftdown then
+                    if editor.boxselection then
+                        editor.boxselectionpr.width = mouseposition.x - editor.boxselectionpr.x
+                        editor.boxselectionpr.height = mouseposition.y - editor.boxselectionpr.y
+
+
+                        --Handle rectangle logic
+
+                        --Make sure width > 0 and height > 0
+                        if editor.boxselectionpr.width < 0 then
+                            editor.boxselectionpr2.x = editor.boxselectionpr.x + editor.boxselectionpr.width
+                            editor.boxselectionpr2.width = -editor.boxselectionpr.width
+                        else
+                            editor.boxselectionpr2.x = editor.boxselectionpr.x
+                            editor.boxselectionpr2.width = editor.boxselectionpr.width
+                        end
+                        if editor.boxselectionpr.height < 0 then
+                            editor.boxselectionpr2.y = editor.boxselectionpr.y + editor.boxselectionpr.height
+                            editor.boxselectionpr2.height = -editor.boxselectionpr.height
+                        else
+                            editor.boxselectionpr2.y = editor.boxselectionpr.y
+                            editor.boxselectionpr2.height = editor.boxselectionpr.height
+                        end
+
+
+                        --Handle selection logic
+                        local x1, x2 = editor.boxselectionpr2.x, editor.boxselectionpr2.x + editor.boxselectionpr2.width
+                        local y1, y2 = editor.boxselectionpr2.y, editor.boxselectionpr2.y + editor.boxselectionpr2.height
+
+                        --REINDEX EACH TIME
+                        editor.currentdragging = {}
+                        for i = 1, #loaded do
+                            local note = loaded[i]
+                            if (x1 < note.pr.x and note.pr.x < x2) and (y1 < note.pr.y and note.pr.y < y2) then
+                                --[[
+                                local found = nil
+                                for i = 1, #editor.currentdragging do
+                                    if editor.currentdragging[i] == note then
+                                        found = i
+                                        break
+                                    end
+                                end
+
+                                if not found then
+                                --]]
+                                    editor.currentdragging[#editor.currentdragging + 1] = note
+                                --[[
+                                end
+                                --]]
+                            end
+                        end
+
+                        --So the selected notes don't move
+                        leftdown = false
+                    end
+                else
+                    editor.boxselection = false
+                end
 
 
 
