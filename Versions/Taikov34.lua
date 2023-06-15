@@ -14261,6 +14261,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 scrollincrement = 0.1, --scroll increment
                 msincrement = 100, --ms increment
                 selected = nil, --note selected (a single note)
+                smallest = 10, --smallest grid increment that is rendered (enforced by selected)
             }
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
@@ -16714,12 +16715,24 @@ CalculateNoteHitGauge(target[1], target[2])
                         local note = editor.grid.selected
 
                         --Center on note
+                        --[[
                         editor.grid.pr.x = note.pr.x
                         editor.grid.pr.y = note.pr.y
+                        --]]
+
+                        --Just center on target
+                        editor.grid.pr.x = targetpr.x
+                        editor.grid.pr.y = targetpr.y
+
+                        --Width and Height are determined when selected is determined
                     else
                         --Just center on target
                         editor.grid.pr.x = targetpr.x
                         editor.grid.pr.y = targetpr.y
+
+                        --Default Width and Height
+                        editor.grid.pr.width = tsizex / 4
+                        editor.grid.pr.height = tsizey / 4
                     end
 
 
@@ -16794,7 +16807,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-                        --Circular
+                    --Circular
                     else
                         local x, y = editor.grid.pr.x, editor.grid.pr.y
                         local ow, oh = editor.grid.pr.width * scale[1], editor.grid.pr.height * scale[2]
@@ -17342,8 +17355,48 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 --Grid selection
                 if #editor.currentdragging == 1 then
-                    editor.grid.selected = editor.currentdragging[1]
+                    local note = editor.currentdragging[1]
+                    editor.grid.selected = note
+
+                    --Determine width and height
+                    if editor.changingscroll then
+                        editor.grid.isrect = true
+
+                        local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
+
+                        --Get scroll from speed (REVERSED)
+                        --AKA Get speed from scroll
+
+                        local displayratio = OriginalConfig.ScreenWidth / 1280
+
+                        --Taken from Taiko.CalculateSpeedInterval
+                        local interval = 960
+                        local speed1 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
+                        local speed2 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
+
+                        editor.grid.pr.width = speed1 * (note.ms - ms)
+                        editor.grid.pr.height = speed2 * (note.ms - ms)
+
+                        --Safety checks
+                        if editor.grid.pr.width < editor.grid.smallest then
+                            editor.grid.pr.width = Config.ScreenWidth
+                        end
+                        if editor.grid.pr.height < editor.grid.smallest then
+                            editor.grid.pr.height = Config.ScreenHeight
+                        end
+                    else
+                        editor.grid.isrect = false
+
+                        --d = st
+                        local d1 = (editor.msincrement) * note.speed[1]
+                        local d2 = (editor.msincrement) * note.speed[2]
+
+                        editor.grid.pr.width = d1
+                        editor.grid.pr.height = d2
+                    end
                 else
+                    editor.grid.isrect = true
+
                     editor.grid.selected = nil
                 end
 
