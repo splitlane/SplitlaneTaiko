@@ -14228,6 +14228,18 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         --Editor
+        local editortemp = {
+            data = {
+                DrawTexturePro = rl.DrawTexturePro,
+                --DrawTexture = rl.DrawTexture
+            },
+            offset = {
+                x = 0,
+                y = 0
+            }
+        } --moving temp
+
+        
         local editor = {
             on = true, --enabled?
             changingscroll = true, --changing note.scroll for dragging notes?
@@ -14266,10 +14278,21 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             movingnotes = true, --moving notes? or editor (camera) itself?
             moving = {
                 tempf = function() end, --function that temporarily replaces DrawTexture so textures aren't drawn
-                data = {
-                    DrawTexturePro = rl.DrawTexturePro,
-                    DrawTexture = rl.DrawTexture
-                } --functions that are overwritten
+                data = editortemp.data, --functions that are overwritten
+                offset = {
+                    tempf = {
+                        DrawTexturePro = function(texture, source, dest, origin, rotation, tint)
+                            local dest2 = rl.new('Rectangle', dest.x + editortemp.offset.x, dest.y + editortemp.offset.y, dest.width, dest.height)
+                            editortemp.data.DrawTexturePro(texture, source, dest2, origin, rotation, tint)
+                        end,
+                        --[[
+                        DrawTexture = function(texture, posX, posY, tint)
+
+                        end
+                        --]]
+                    },
+                    data = editortemp.data, --functions that are overwritten
+                } --data used for offsetting when moving
             },
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
@@ -15671,6 +15694,12 @@ CalculateNoteHitGauge(target[1], target[2])
             end
 
 
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.offset.tempf) do
+                    rl[k] = v
+                end
+            end
 
 
 
@@ -16766,6 +16795,29 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+
+
+
+
+
+
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.offset.data) do
+                    rl[k] = v
+                end
+            end
+
+
+
+
+
+
+
+
+
+            --EDITOR
+
             if editor.on then
                 local mouseposition = rl.GetMousePosition()
 
@@ -16998,9 +17050,19 @@ CalculateNoteHitGauge(target[1], target[2])
                         .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
                         .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
+                        .. '\nEditor   MoveMode: Moving ' .. (editor.movingnotes and 'notes' or 'editor')
                         , editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize, rl.BLACK)
                 end
             end
+
+
+
+
+
+
+
+
+
 
 
 
@@ -17046,6 +17108,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     Snap to ms / scroll (grid)
                     History!!
                     Change ellipse grid to diagonal lines (bc we need to change scroll to utilize)
+                    Move editor (freecam)
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -17342,19 +17405,20 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
 
                 --Move selection with arrow keys
+                local useiskeydown = not editor.movingnotes
                 local addmove = false
                 local movex = 0
                 local movey = 0
-                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Left) then
+                if (useiskeydown and IsKeyDown or IsKeyPressed)(Config.Controls.PlaySong.Editor.Move.Left) then
                     movex = movex - Config.Controls.PlaySong.Editor.Move.MoveIncrement
                 end
-                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Right) then
+                if (useiskeydown and IsKeyDown or IsKeyPressed)(Config.Controls.PlaySong.Editor.Move.Right) then
                     movex = movex + Config.Controls.PlaySong.Editor.Move.MoveIncrement
                 end
-                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Up) then
+                if (useiskeydown and IsKeyDown or IsKeyPressed)(Config.Controls.PlaySong.Editor.Move.Up) then
                     movey = movey - Config.Controls.PlaySong.Editor.Move.MoveIncrement
                 end
-                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Down) then
+                if (useiskeydown and IsKeyDown or IsKeyPressed)(Config.Controls.PlaySong.Editor.Move.Down) then
                     movey = movey + Config.Controls.PlaySong.Editor.Move.MoveIncrement
                 end
 
@@ -17364,9 +17428,26 @@ CalculateNoteHitGauge(target[1], target[2])
                     editor.movingnotes = not editor.movingnotes
                 end
 
+                if IsKeyDown(Config.Controls.PlaySong.Editor.Move.SpeedUpHold) then
+                    movex = movex * Config.Controls.PlaySong.Editor.Move.SpeedUpMultiplier
+                    movey = movey * Config.Controls.PlaySong.Editor.Move.SpeedUpMultiplier
+                end
+
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.MoveEditor.Reset) then
+                    --Move editor around
+                    local v = editortemp.offset
+
+                    --REMEMBER, REVERSED since this offset is just added
+                    v.x = 0
+                    v.y = 0
+                end
+
 
                 if not (movex == 0 and movey == 0) then
-                    print(movex, movey)
+                    movex = movex * scale[1]
+                    movey = movey * scale[2]
+
+                    --print(movex, movey)
                     if editor.movingnotes then
                         --Move all selected
 
@@ -17374,6 +17455,23 @@ CalculateNoteHitGauge(target[1], target[2])
                         addmove = true
                     else
                         --Move editor around
+                        local v = editortemp.offset
+
+                        --REMEMBER, REVERSED since this offset is just added
+                        v.x = v.x - movex
+                        v.y = v.y - movey
+
+                        --Load ALL notes
+                        --DIRTY
+                        local c = nextnote
+                        while true do
+                            if c then
+                                c.loadms = 0
+                                c = c.nextnote
+                            else
+                                break
+                            end
+                        end
                     end
                 end
 

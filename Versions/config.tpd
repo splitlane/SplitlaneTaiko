@@ -167,20 +167,33 @@ DO NOT EDIT
                 },
                 'Move' = {
                     'MoveIncrement' = 10,
+                    'SpeedUpHold' = {
+                        340 = true,
+                    },
+                    'SpeedUpMultiplier' = 2,
                     'Left' = {
-                        263 = nil,
+                        263 = true,
+                        74 = true,
                     },
                     'Right' = {
                         262 = true,
+                        76 = true,
                     },
                     'Up' = {
                         265 = true,
+                        73 = true,
                     },
                     'Down' = {
                         264 = true,
+                        75 = true,
                     },
                     'Toggle' = {
                         77 = true,
+                    },
+                    'MoveEditor' = {
+                        'Reset' = {
+                            344 = true,
+                        },
                     },
                 },
             },
