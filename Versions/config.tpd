@@ -72,6 +72,9 @@ DO NOT EDIT
                 },
             },
             'Debug' = {
+                'Hold' = {
+                    342 = true,
+                },
                 'ToggleAuto' = {
                     65 = true,
                 },
@@ -161,6 +164,24 @@ DO NOT EDIT
                 },
                 'ToggleGrid' = {
                     71 = true,
+                },
+                'Move' = {
+                    'MoveIncrement' = 10,
+                    'Left' = {
+                        263 = nil,
+                    },
+                    'Right' = {
+                        262 = true,
+                    },
+                    'Up' = {
+                        265 = true,
+                    },
+                    'Down' = {
+                        264 = true,
+                    },
+                    'Toggle' = {
+                        77 = true,
+                    },
                 },
             },
         },

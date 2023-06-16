@@ -14262,7 +14262,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 msincrement = 100, --ms increment
                 selected = nil, --note selected (a single note)
                 smallest = 10, --smallest grid increment that is rendered (enforced by selected)
-            }
+            },
+            movingnotes = true, --moving notes? or editor (camera) itself?
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -16711,6 +16712,8 @@ CalculateNoteHitGauge(target[1], target[2])
                 --Grid
                 if editor.grid.on then
 
+                    --ALL CALCULATED BELOW
+                    --[=[
                     if editor.grid.selected then
                         local note = editor.grid.selected
 
@@ -16734,6 +16737,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         editor.grid.pr.width = tsizex / 4
                         editor.grid.pr.height = tsizey / 4
                     end
+                    --]=]
 
 
                     --Rectangle
@@ -16981,6 +16985,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     note.incurrentdragging -> so we don't have to search currentdragging every time
                     Snap to ms / scroll (grid)
                     History!!
+                    Change ellipse grid to diagonal lines (bc we need to change scroll to utilize)
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -17276,6 +17281,41 @@ CalculateNoteHitGauge(target[1], target[2])
                     editor.grid.on = not editor.grid.on
                 end
 
+                --Move selection with arrow keys
+                local addmove = false
+                local movex = 0
+                local movey = 0
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Left) then
+                    movex = movex - Config.Controls.PlaySong.Editor.Move.MoveIncrement
+                end
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Right) then
+                    movex = movex + Config.Controls.PlaySong.Editor.Move.MoveIncrement
+                end
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Up) then
+                    movey = movey - Config.Controls.PlaySong.Editor.Move.MoveIncrement
+                end
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Down) then
+                    movey = movey + Config.Controls.PlaySong.Editor.Move.MoveIncrement
+                end
+
+                if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Toggle) then
+                    --Toggle moving mode (movingnotes: true <-> false)
+                    --if not moving notes then we are moving the camera
+                    editor.movingnotes = not editor.movingnotes
+                end
+
+
+                if not (movex == 0 and movey == 0) then 
+                    if editor.movingnotes then
+                        --Move all selected
+
+                        --The movex, movey will be added later (right before pr)
+                        addmove = true
+                        print(movex, movey)
+                    else
+
+                    end
+                end
 
 
 
@@ -17356,48 +17396,78 @@ CalculateNoteHitGauge(target[1], target[2])
                 --Grid selection
                 if #editor.currentdragging == 1 then
                     local note = editor.currentdragging[1]
-                    editor.grid.selected = note
+                    if editor.grid.selected == nil or (editor.changingscroll == not editor.grid.isrect) or (editor.grid.selected ~= note) or editor.changingscroll then
+                        editor.grid.selected = note
 
-                    --Determine width and height
-                    if editor.changingscroll then
-                        editor.grid.isrect = true
+                        --Determine width and height
+                        if editor.changingscroll then
+                            editor.grid.isrect = true
 
-                        local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
+                            local ms = stopfreezems or ((note.movemsa and (ms >= note.movemsa and ms or note.movemsa) or ms) + totaldelay)
 
-                        --Get scroll from speed (REVERSED)
-                        --AKA Get speed from scroll
+                            --Get scroll from speed (REVERSED)
+                            --AKA Get speed from scroll
 
-                        local displayratio = OriginalConfig.ScreenWidth / 1280
+                            local displayratio = OriginalConfig.ScreenWidth / 1280
 
-                        --Taken from Taiko.CalculateSpeedInterval
-                        local interval = 960
-                        local speed1 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
-                        local speed2 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
+                            --Taken from Taiko.CalculateSpeedInterval
+                            local interval = 960
+                            local speed1 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
+                            local speed2 = (note.bpm / 240000 * (editor.grid.scrollincrement) * interval * displayratio)
 
-                        editor.grid.pr.width = speed1 * (note.ms - ms)
-                        editor.grid.pr.height = speed2 * (note.ms - ms)
+                            editor.grid.pr.width = speed1 * (note.ms - ms)
+                            editor.grid.pr.height = speed2 * (note.ms - ms)
+
+                            --Center on target
+                            editor.grid.pr.x = targetpr.x
+                            editor.grid.pr.y = targetpr.y
+                        else
+                            editor.grid.isrect = false
+
+                            --d = st
+                            local d1 = (editor.grid.msincrement) * note.speed[1]
+                            local d2 = (editor.grid.msincrement) * note.speed[2]
+
+                            --Account for diagonal distance
+
+                            editor.grid.pr.width = d1
+                            editor.grid.pr.height = d2
+
+                            --Center on note
+                            --[[
+                            editor.grid.pr.x = note.pr.x
+                            editor.grid.pr.y = note.pr.y
+                            --]]
+
+                            --Center on target
+                            editor.grid.pr.x = targetpr.x
+                            editor.grid.pr.y = targetpr.y
+                        end
+
+                        --Absolute value
+                        editor.grid.pr.width = math.abs(editor.grid.pr.width)
+                        editor.grid.pr.height = math.abs(editor.grid.pr.height)
 
                         --Safety checks
                         if editor.grid.pr.width < editor.grid.smallest then
-                            editor.grid.pr.width = Config.ScreenWidth
+                            editor.grid.pr.width = Config.ScreenWidth * 2
                         end
                         if editor.grid.pr.height < editor.grid.smallest then
-                            editor.grid.pr.height = Config.ScreenHeight
+                            editor.grid.pr.height = Config.ScreenHeight * 2
                         end
-                    else
-                        editor.grid.isrect = false
-
-                        --d = st
-                        local d1 = (editor.msincrement) * note.speed[1]
-                        local d2 = (editor.msincrement) * note.speed[2]
-
-                        editor.grid.pr.width = d1
-                        editor.grid.pr.height = d2
                     end
                 else
                     editor.grid.isrect = true
 
                     editor.grid.selected = nil
+
+                    --Center on target
+                    editor.grid.pr.x = targetpr.x
+                    editor.grid.pr.y = targetpr.y
+
+                    --Default Width and Height
+                    editor.grid.pr.width = tsizex / 4
+                    editor.grid.pr.height = tsizey / 4
                 end
 
 
@@ -17424,11 +17494,30 @@ CalculateNoteHitGauge(target[1], target[2])
                         note.editor.dragstartmousepr.x = mouseposition.x
                         note.editor.dragstartmousepr.y = mouseposition.y
                     end
-                    if leftdown then
-                        --pr
-                        --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
-                        note.pr.x = note.editor.dragstartpr.x + (mouseposition.x - note.editor.dragstartmousepr.x)
-                        note.pr.y = note.editor.dragstartpr.y + (mouseposition.y - note.editor.dragstartmousepr.y)
+                    if leftdown or addmove then
+                        if addmove then
+                            note.pr.x = note.pr.x + movex
+                            note.pr.y = note.pr.y + movey
+                        else
+                            --pr
+                            --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                            note.pr.x = note.editor.dragstartpr.x + (mouseposition.x - note.editor.dragstartmousepr.x)
+                            note.pr.y = note.editor.dragstartpr.y + (mouseposition.y - note.editor.dragstartmousepr.y)
+
+
+                            if editor.grid.on and editor.grid.selected then
+                                --Snap to grid
+                                local pr = editor.grid.pr
+                                local x = (note.pr.x - pr.x) / pr.width
+                                local y = (note.pr.y - pr.y) / pr.height
+    
+                                --Round to nearest grid line (integer) and multiply back with grid width and height and add back pr.x, pr.y
+                                note.pr.x = math.floor(x + 0.5) * pr.width + pr.x
+                                note.pr.y = math.floor(y + 0.5) * pr.height + pr.y
+                            end
+                        end
+
+
 
 
                         if editor.changingscroll then
@@ -17463,7 +17552,8 @@ CalculateNoteHitGauge(target[1], target[2])
                             --pr
                             --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
                             --Taken from CalculatePosition
-                            if note.speed[1] ~= 0 then
+                            --if note.speed[1] ~= 0 then
+                            if math.abs(note.speed[1]) >= math.abs(note.speed[2]) then
                                 note.ms = ((target[1] - ((note.pr.x / scale[1] - offsetx) / xmul)) / (note.speed[1])) + ms + note.delay
                             else
                                 note.ms = ((target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.speed[2])) + ms + note.delay
@@ -17500,6 +17590,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --DEBUG
+            if IsKeyDown(Config.Controls.PlaySong.Debug.Hold) then
 
             --Toggle auto
             if IsKeyPressed(Config.Controls.PlaySong.Debug.ToggleAuto) then
@@ -17629,9 +17720,18 @@ CalculateNoteHitGauge(target[1], target[2])
             end
 
 
+            end
+
+
+
             --freezems
             if IsKeyPressed(Config.Controls.PlaySong.Debug.Freeze) then
                 freezems = not freezems
+
+                --Force resync if unfroze
+                if freezems == false then
+                    forceresync = true
+                end
             end
 
 
