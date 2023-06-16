@@ -14264,6 +14264,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 smallest = 10, --smallest grid increment that is rendered (enforced by selected)
             },
             movingnotes = true, --moving notes? or editor (camera) itself?
+            moving = {
+                tempf = function() end, --function that temporarily replaces DrawTexture so textures aren't drawn
+                data = {
+                    DrawTexturePro = rl.DrawTexturePro,
+                    DrawTexture = rl.DrawTexture
+                } --functions that are overwritten
+            },
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -14929,6 +14936,38 @@ CalculateNoteHitGauge(target[1], target[2])
 
             rl.ClearBackground(rl.RAYWHITE)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.data) do
+                    rl[k] = editor.moving.tempf
+                end
+            end
+
+
+
+
+
+
             --draw bottom
 
             --draw infobar
@@ -15579,6 +15618,73 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+            --draw notehitgauge (below title, status, explosion, (notes?)) (above background, gauge, lane)
+            local offseti = 0
+            for i = 1, #notehitgauge.notes do
+                local i2 = i + offseti
+                local note = notehitgauge.notes[i2]
+                local startms = notehitgauge.startms[i2]
+                local difms = ms - startms
+                local animn = math.floor(difms / skinframems)
+                --Anim ended?
+                --local frame = notehitgauge.animcache[animn]
+                local currenttarget = notehitgauge.currenttarget
+                --local frame = notehitgauge.animcache[currenttarget[1][i2]][currenttarget[2][i2]][animn] --LEGACY --DIRTY
+                local frame = notehitgauge.anim[i2]
+                if frame[1][animn] ~= nil then
+                    if frame[1][animn] then
+                        --scale
+                        note.pr.width = tsizex * scale[1]
+                        note.pr.height = tsizey * scale[2]
+                        note.tcenter.x = note.tcentero.x * scale[1]
+                        note.tcenter.y = note.tcentero.y * scale[2]
+
+                        --draw note
+                        note.pr.x = frame[1][animn] * scale[1]
+                        note.pr.y = frame[2][animn] * scale[2]
+                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
+                    else
+                        --invis
+                    end
+                else
+                    --Anim ended, remove status
+                    table.remove(notehitgauge.notes, i2)
+                    table.remove(notehitgauge.startms, i2)
+                    table.remove(notehitgauge.currenttarget[1], i2)
+                    table.remove(notehitgauge.currenttarget[2], i2)
+                    table.remove(notehitgauge.anim, i2)
+                    offseti = offseti - 1
+                end
+            end
+
+
+
+
+
+
+
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.data) do
+                    rl[k] = v
+                end
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -15622,52 +15728,6 @@ CalculateNoteHitGauge(target[1], target[2])
             targetpr.height = tsizey * scale[2]
             rl.DrawTexturePro(Textures.PlaySong.Notes.target, tsourcerect, targetpr, tcenter, 0, rl.WHITE)
 
-
-
-
-
-
-
-
-
-            --draw notehitgauge (below title, status, explosion, (notes?)) (above background, gauge, lane)
-            local offseti = 0
-            for i = 1, #notehitgauge.notes do
-                local i2 = i + offseti
-                local note = notehitgauge.notes[i2]
-                local startms = notehitgauge.startms[i2]
-                local difms = ms - startms
-                local animn = math.floor(difms / skinframems)
-                --Anim ended?
-                --local frame = notehitgauge.animcache[animn]
-                local currenttarget = notehitgauge.currenttarget
-                --local frame = notehitgauge.animcache[currenttarget[1][i2]][currenttarget[2][i2]][animn] --LEGACY --DIRTY
-                local frame = notehitgauge.anim[i2]
-                if frame[1][animn] ~= nil then
-                    if frame[1][animn] then
-                        --scale
-                        note.pr.width = tsizex * scale[1]
-                        note.pr.height = tsizey * scale[2]
-                        note.tcenter.x = note.tcentero.x * scale[1]
-                        note.tcenter.y = note.tcentero.y * scale[2]
-
-                        --draw note
-                        note.pr.x = frame[1][animn] * scale[1]
-                        note.pr.y = frame[2][animn] * scale[2]
-                        rl.DrawTexturePro(Textures.PlaySong.Notes[note.type], tsourcerect, note.pr, note.tcenter, note.rotationr, rl.WHITE) --For drawtexturepro, no need to draw with offset TEXTURE
-                    else
-                        --invis
-                    end
-                else
-                    --Anim ended, remove status
-                    table.remove(notehitgauge.notes, i2)
-                    table.remove(notehitgauge.startms, i2)
-                    table.remove(notehitgauge.currenttarget[1], i2)
-                    table.remove(notehitgauge.currenttarget[2], i2)
-                    table.remove(notehitgauge.anim, i2)
-                    offseti = offseti - 1
-                end
-            end
 
 
 
@@ -17305,15 +17365,15 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
 
 
-                if not (movex == 0 and movey == 0) then 
+                if not (movex == 0 and movey == 0) then
+                    print(movex, movey)
                     if editor.movingnotes then
                         --Move all selected
 
                         --The movex, movey will be added later (right before pr)
                         addmove = true
-                        print(movex, movey)
                     else
-
+                        --Move editor around
                     end
                 end
 
