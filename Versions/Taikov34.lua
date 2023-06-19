@@ -17109,6 +17109,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     History!!
                     Change ellipse grid to diagonal lines (bc we need to change scroll to utilize)
                     Move editor (freecam)
+                    Make everything work with freecam
 
                     NOTES:
                     Modify oms so it doesn't get reverted
