@@ -17031,8 +17031,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     local note = editor.currentdragging[i]
 
                     local r = editor.currentdraggingr
-                    r.x = note.pr.x - note.tcenter.x
-                    r.y = note.pr.y - note.tcenter.y
+                    r.x = note.pr.x - note.tcenter.x + editortemp.offset.x
+                    r.y = note.pr.y - note.tcenter.y + editortemp.offset.y
                     r.width = note.pr.width
                     r.height = note.pr.height
                     
@@ -17110,6 +17110,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     Change ellipse grid to diagonal lines (bc we need to change scroll to utilize)
                     Move editor (freecam)
                     Make everything work with freecam
+                    Add zoom for freecam
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -17131,7 +17132,7 @@ CalculateNoteHitGauge(target[1], target[2])
                 local rightreleased = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_RIGHT)
 
                 --See if we are hovering over any notes
-                local x, y = mouseposition.x, mouseposition.y
+                local x, y = mouseposition.x - editortemp.offset.x, mouseposition.y - editortemp.offset.y
                 local hovernote = nil
                 for i = 1, #loaded do
                     local note = loaded[i]
@@ -17222,8 +17223,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                         --Handle selection logic
-                        local x1, x2 = editor.boxselectionpr2.x, editor.boxselectionpr2.x + editor.boxselectionpr2.width
-                        local y1, y2 = editor.boxselectionpr2.y, editor.boxselectionpr2.y + editor.boxselectionpr2.height
+                        local x1, x2 = editor.boxselectionpr2.x - editortemp.offset.x, editor.boxselectionpr2.x + editor.boxselectionpr2.width - editortemp.offset.x
+                        local y1, y2 = editor.boxselectionpr2.y - editortemp.offset.y, editor.boxselectionpr2.y + editor.boxselectionpr2.height - editortemp.offset.y
 
                         --REINDEX EACH TIME
                         editor.currentdragging = {}
