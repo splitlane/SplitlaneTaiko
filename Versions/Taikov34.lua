@@ -17046,6 +17046,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     rl.DrawText(
                         'Editor'
                         .. '   Selected: ' .. #editor.currentdragging .. ' notes'
+                        .. '   Runtime speed: ' .. (freezems and freezemstemp or runtimespeed)
                         .. '   ms: ' .. ms
                         .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
@@ -17108,9 +17109,10 @@ CalculateNoteHitGauge(target[1], target[2])
                     Snap to ms / scroll (grid)
                     History!!
                     Change ellipse grid to diagonal lines (bc we need to change scroll to utilize)
-                    Move editor (freecam)
-                    Make everything work with freecam
+                    Move editor (freecam) --DONE
+                    Make everything work with freecam --DONE
                     Add zoom for freecam
+                    Check for nils on noteinfo
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -17695,6 +17697,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+                            --Convert into scroll so it doesn't get reverted
+
                             --Get scroll from speed
 
                             local displayratio = OriginalConfig.ScreenWidth / 1280
@@ -17718,6 +17722,10 @@ CalculateNoteHitGauge(target[1], target[2])
                             else
                                 note.ms = ((target[2] - ((note.pr.y / scale[2] - offsety) / ymul)) / (note.speed[2])) + ms + note.delay
                             end
+
+                            --Convert into oms so it doesn't get reverted
+                            --v.ms = (v.ms - startms) / songspeedmul
+                            note.oms = note.ms * songspeedmul + startms
                             
                             
                         end
@@ -17873,10 +17881,18 @@ CalculateNoteHitGauge(target[1], target[2])
 
             --runtimespeed
             if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Slower) then
-                runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                if freezems then
+                    freezemstemp = freezemstemp / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                else
+                    runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                end
             end
             if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Faster) then
-                runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                if freezems then
+                    freezemstemp = freezemstemp * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                else
+                    runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                end
             end
 
 
