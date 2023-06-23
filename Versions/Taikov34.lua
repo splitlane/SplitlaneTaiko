@@ -17481,6 +17481,183 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+                
+
+
+                --Shortcuts (Originally from Debug) (Modified to fit with editor shortcuts and be without debug hold key)
+
+                --Shortcuts (Editor) key not active
+
+                if not IsKeyDown(Config.Controls.PlaySong.Editor.Shortcut.Hold) then
+
+                    --Toggle auto
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.ToggleAuto) then
+                        auto = not auto
+                    end
+                    --Retry
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.Retry) then
+                        return false
+                    end
+
+
+                end
+
+
+                --Not moving editor and no notes selected
+                if editor.movingnotes and #editor.currentdragging == 0 then
+                   
+                    --Time
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.Backward) then
+                        s = s - 5
+
+                        --respawn notes
+
+
+                        --loop over loaded (possibility of drumroll rewind)
+                        --NOPE: drumroll is stored in drumrollqueue
+                        --[[
+                        for i = 1, #loaded do
+                            local note = loaded[i]
+                            --rewind combo and score
+                            if note.addcombo then
+                                combo = combo - note.addcombo
+                                note.addcombo = nil
+                            end
+                            if note.addscore then
+                                score = score - note.addscore
+                                note.addscore = nil
+                            end
+                            if note.addgauge then
+                                gauge = gauge - note.addgauge
+                                note.addgauge = nil
+                            end
+                        end
+                        --]]
+
+                        --loop over done
+                        local offseti = 0
+                        for i = 1, #done do
+                            local i2 = i + offseti
+                            local note = done[i2]
+                            if note.done and note.done >= s then
+                                --note
+                                --rewind combo and score
+                                if note.addcombo then
+                                    combo = combo - note.addcombo
+                                    note.addcombo = nil
+                                end
+                                if note.addscore then
+                                    score = score - note.addscore
+                                    note.addscore = nil
+                                end
+                                if note.addgauge then
+                                    gauge = gauge - note.addgauge
+                                    note.addgauge = nil
+                                end
+
+                                --now queue and note branch out
+                                if note.queue then
+                                    --queue
+                                    --readd to queue
+                                    note.done = nil
+                                    note.queue[#note.queue + 1] = note
+                                else
+                                    note.done = nil
+                                    note.hit = nil
+                                    note.addcombo = nil
+                                    note.addscore = nil
+                                    loaded[#loaded + 1] = note
+                                end
+                                table.remove(done, i2)
+                                offseti = offseti - 1
+                            end
+                        end
+                        
+                        forceresync = true
+                    end
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.Forward) then
+                        s = s + 5
+                        
+                        forceresync = true
+                    end
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    --runtimespeed
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Slower) then
+                        if freezems then
+                            freezemstemp = freezemstemp / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                        else
+                            runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                        end
+                    end
+                    if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Faster) then
+                        if freezems then
+                            freezemstemp = freezemstemp * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                        else
+                            runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                        end
+                    end
+                end
+
+
+
+                --freezems
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.Freeze) then
+                    freezems = not freezems
+
+                    --Force resync if unfroze
+                    if freezems == false then
+                        forceresync = true
+                    end
+                end
+
+                --Savestates
+                --[[
+                    Notes:
+                    For function keys, here is the mapping:
+                        f1: command
+                        f2-f10: slots
+                        f11: fullscreen
+                        f12: raylib screenshot / gif (can't disable)
+                ]]
+                --TODO USE Fn keys
+                --TODO: Error handling for loading: when loading nonexistant slot
+                --TODO: Text feedback: ex: you loaded slot 2, you saved to slot 2
+                if IsKeyDown(Config.Controls.PlaySong.Debug.SaveState.Save.Hold) then
+                    local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Save.Slot)
+                    if a then
+                        local success, out = SaveState.SaveSlot(a)
+                        --success should always be true, there is no way that saving can fail
+                        if success then
+                            --io.open('taikov34_serialized.lua','w+'):write(Serialize.Save(out))
+                            print('SaveSlot: Saved to slot ' .. a)
+                        end
+                    end
+                else
+                    local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Load.Slot)
+                    if a then
+                        local success = SaveState.LoadSlot(a)
+                        if success then
+                            print('SaveSlot: Loaded from slot ' .. a)
+                        else
+                            print('SaveSlot: Unable to find slot ' .. a)
+                        end
+                    end
+                end
+
+
+
+
+
+
+
+
+
 
 
 
@@ -17760,50 +17937,27 @@ CalculateNoteHitGauge(target[1], target[2])
             --DEBUG
             if IsKeyDown(Config.Controls.PlaySong.Debug.Hold) then
 
-            --Toggle auto
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.ToggleAuto) then
-                auto = not auto
-            end
-            --Retry
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.Retry) then
-                return false
-            end
-            
-            --Time
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.Backward) then
-                s = s - 5
-
-                --respawn notes
-
-
-                --loop over loaded (possibility of drumroll rewind)
-                --NOPE: drumroll is stored in drumrollqueue
-                --[[
-                for i = 1, #loaded do
-                    local note = loaded[i]
-                    --rewind combo and score
-                    if note.addcombo then
-                        combo = combo - note.addcombo
-                        note.addcombo = nil
-                    end
-                    if note.addscore then
-                        score = score - note.addscore
-                        note.addscore = nil
-                    end
-                    if note.addgauge then
-                        gauge = gauge - note.addgauge
-                        note.addgauge = nil
-                    end
+                --Toggle auto
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.ToggleAuto) then
+                    auto = not auto
                 end
-                --]]
+                --Retry
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.Retry) then
+                    return false
+                end
+                
+                --Time
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.Backward) then
+                    s = s - 5
 
-                --loop over done
-                local offseti = 0
-                for i = 1, #done do
-                    local i2 = i + offseti
-                    local note = done[i2]
-                    if note.done and note.done >= s then
-                        --note
+                    --respawn notes
+
+
+                    --loop over loaded (possibility of drumroll rewind)
+                    --NOPE: drumroll is stored in drumrollqueue
+                    --[[
+                    for i = 1, #loaded do
+                        local note = loaded[i]
                         --rewind combo and score
                         if note.addcombo then
                             combo = combo - note.addcombo
@@ -17817,98 +17971,122 @@ CalculateNoteHitGauge(target[1], target[2])
                             gauge = gauge - note.addgauge
                             note.addgauge = nil
                         end
+                    end
+                    --]]
 
-                        --now queue and note branch out
-                        if note.queue then
-                            --queue
-                            --readd to queue
-                            note.done = nil
-                            note.queue[#note.queue + 1] = note
-                        else
-                            note.done = nil
-                            note.hit = nil
-                            note.addcombo = nil
-                            note.addscore = nil
-                            loaded[#loaded + 1] = note
+                    --loop over done
+                    local offseti = 0
+                    for i = 1, #done do
+                        local i2 = i + offseti
+                        local note = done[i2]
+                        if note.done and note.done >= s then
+                            --note
+                            --rewind combo and score
+                            if note.addcombo then
+                                combo = combo - note.addcombo
+                                note.addcombo = nil
+                            end
+                            if note.addscore then
+                                score = score - note.addscore
+                                note.addscore = nil
+                            end
+                            if note.addgauge then
+                                gauge = gauge - note.addgauge
+                                note.addgauge = nil
+                            end
+
+                            --now queue and note branch out
+                            if note.queue then
+                                --queue
+                                --readd to queue
+                                note.done = nil
+                                note.queue[#note.queue + 1] = note
+                            else
+                                note.done = nil
+                                note.hit = nil
+                                note.addcombo = nil
+                                note.addscore = nil
+                                loaded[#loaded + 1] = note
+                            end
+                            table.remove(done, i2)
+                            offseti = offseti - 1
                         end
-                        table.remove(done, i2)
-                        offseti = offseti - 1
                     end
-                end
-                
-                forceresync = true
-            end
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.Forward) then
-                s = s + 5
-                
-                forceresync = true
-            end
-
-            --Savestates
-            --[[
-                Notes:
-                For function keys, here is the mapping:
-                    f1: command
-                    f2-f10: slots
-                    f11: fullscreen
-                    f12: raylib screenshot / gif (can't disable)
-            ]]
-            --TODO USE Fn keys
-            --TODO: Error handling for loading: when loading nonexistant slot
-            --TODO: Text feedback: ex: you loaded slot 2, you saved to slot 2
-            if IsKeyDown(Config.Controls.PlaySong.Debug.SaveState.Save.Hold) then
-                local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Save.Slot)
-                if a then
-                    local success, out = SaveState.SaveSlot(a)
-                    --success should always be true, there is no way that saving can fail
-                    if success then
-                        --io.open('taikov34_serialized.lua','w+'):write(Serialize.Save(out))
-                        print('SaveSlot: Saved to slot ' .. a)
-                    end
-                end
-            else
-                local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Load.Slot)
-                if a then
-                    local success = SaveState.LoadSlot(a)
-                    if success then
-                        print('SaveSlot: Loaded from slot ' .. a)
-                    else
-                        print('SaveSlot: Unable to find slot ' .. a)
-                    end
-                end
-            end
-
-
-            --runtimespeed
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Slower) then
-                if freezems then
-                    freezemstemp = freezemstemp / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
-                else
-                    runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
-                end
-            end
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Faster) then
-                if freezems then
-                    freezemstemp = freezemstemp * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
-                else
-                    runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
-                end
-            end
-
-
-            end
-
-
-
-            --freezems
-            if IsKeyPressed(Config.Controls.PlaySong.Debug.Freeze) then
-                freezems = not freezems
-
-                --Force resync if unfroze
-                if freezems == false then
+                    
                     forceresync = true
                 end
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.Forward) then
+                    s = s + 5
+                    
+                    forceresync = true
+                end
+
+                --Savestates
+                --[[
+                    Notes:
+                    For function keys, here is the mapping:
+                        f1: command
+                        f2-f10: slots
+                        f11: fullscreen
+                        f12: raylib screenshot / gif (can't disable)
+                ]]
+                --TODO USE Fn keys
+                --TODO: Error handling for loading: when loading nonexistant slot
+                --TODO: Text feedback: ex: you loaded slot 2, you saved to slot 2
+                if IsKeyDown(Config.Controls.PlaySong.Debug.SaveState.Save.Hold) then
+                    local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Save.Slot)
+                    if a then
+                        local success, out = SaveState.SaveSlot(a)
+                        --success should always be true, there is no way that saving can fail
+                        if success then
+                            --io.open('taikov34_serialized.lua','w+'):write(Serialize.Save(out))
+                            print('SaveSlot: Saved to slot ' .. a)
+                        end
+                    end
+                else
+                    local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Load.Slot)
+                    if a then
+                        local success = SaveState.LoadSlot(a)
+                        if success then
+                            print('SaveSlot: Loaded from slot ' .. a)
+                        else
+                            print('SaveSlot: Unable to find slot ' .. a)
+                        end
+                    end
+                end
+
+
+                --runtimespeed
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Slower) then
+                    if freezems then
+                        freezemstemp = freezemstemp / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                    else
+                        runtimespeed = runtimespeed / Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                    end
+                end
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.RunTimeSpeed.Faster) then
+                    if freezems then
+                        freezemstemp = freezemstemp * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                    else
+                        runtimespeed = runtimespeed * Config.Controls.PlaySong.Debug.RunTimeSpeed.FasterMultiplier
+                    end
+                end
+
+                --freezems
+                if IsKeyPressed(Config.Controls.PlaySong.Debug.Freeze) then
+                    freezems = not freezems
+
+                    --Force resync if unfroze
+                    if freezems == false then
+                        forceresync = true
+                    end
+                end
+
             end
+
+
+
+
 
 
 
