@@ -16857,6 +16857,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         local w, h = editor.grid.pr.width * scale[1], editor.grid.pr.height * scale[2]
                         local v, v2 = editor.grid.v, editor.grid.v2
                         local pr = editor.grid.pr
+                        local prx, pry = pr.x + (editortemp.offset.x % w), pr.y + (editortemp.offset.y % h)
                         local linethickness = editor.currentdragginglinethickness
                         local color = editor.currentdragginglinecolor
 
@@ -16865,7 +16866,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         v2.x = Config.ScreenWidth
 
                         --Current + Up
-                        local y = pr.y
+                        local y = pry
                         while true do
                             if y < 0 then
                                 break
@@ -16878,7 +16879,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
 
                         --Down
-                        local y = pr.y + h
+                        local y = pry + h
                         while true do
                             if y > Config.ScreenHeight then
                                 break
@@ -16896,7 +16897,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         v2.y = Config.ScreenHeight
 
                         --Current + Left
-                        local x = pr.x
+                        local x = prx
                         while true do
                             if x < 0 then
                                 break
@@ -16909,7 +16910,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
 
                         --Right
-                        local x = pr.x + h
+                        local x = prx + h
                         while true do
                             if x > Config.ScreenWidth then
                                 break
@@ -16925,7 +16926,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                     --Circular
                     else
-                        local x, y = editor.grid.pr.x, editor.grid.pr.y
+                        local x, y = editor.grid.pr.x + editortemp.offset.x, editor.grid.pr.y + editortemp.offset.y
                         local ow, oh = editor.grid.pr.width * scale[1], editor.grid.pr.height * scale[2]
                         local v, v2 = editor.grid.v, editor.grid.v2
                         local pr = editor.grid.pr
@@ -17847,12 +17848,13 @@ CalculateNoteHitGauge(target[1], target[2])
                             if editor.grid.on and editor.grid.selected then
                                 --Snap to grid
                                 local pr = editor.grid.pr
-                                local x = (note.pr.x - pr.x) / pr.width
-                                local y = (note.pr.y - pr.y) / pr.height
+                                local prw, prh = pr.width * scale[1], pr.height * scale[2]
+                                local x = (note.pr.x - pr.x) / (prw)
+                                local y = (note.pr.y - pr.y) / (prh)
     
                                 --Round to nearest grid line (integer) and multiply back with grid width and height and add back pr.x, pr.y
-                                note.pr.x = math.floor(x + 0.5) * pr.width + pr.x
-                                note.pr.y = math.floor(y + 0.5) * pr.height + pr.y
+                                note.pr.x = math.floor(x + 0.5) * prw + pr.x
+                                note.pr.y = math.floor(y + 0.5) * prh + pr.y
                             end
                         end
 
