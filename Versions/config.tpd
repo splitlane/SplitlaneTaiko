@@ -43,7 +43,7 @@ DO NOT EDIT
                 },
             },
             'Screenshot' = {
-                83 = true,
+                -83 = true,
             },
             'Fullscreen' = {
                 70 = true,
@@ -154,6 +154,12 @@ DO NOT EDIT
                     },
                     'Snap' = {
                         80 = true,
+                    },
+                    'Save' = {
+                        83 = true,
+                    },
+                    'Load' = {
+                        76 = true,
                     },
                 },
                 'ModifySelectionHold' = {

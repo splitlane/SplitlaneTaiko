@@ -156,6 +156,7 @@ TODO: Add raylib option
     TODO: Integrate command --DELAYED until command is finished
     TODO: EDITOR
         TODO: Saving (I think diff files)
+    TODO: Remove cdata from notes
     
     
     TODO: Allow configuring hold for every shortcut
@@ -3919,6 +3920,62 @@ do
 
 
 
+    --[[
+        example:
+        {["n"]=247,["bpm"]=194,["senotepr"]=cdata,["oms"]=33092.783505155,["odelay"]=0,["mspermeasure"]=1237.1134020619,["scrollx"]=-1,["senote"]=1,["type"]=1,["setdelay"]=false,["osenotepr"]=cdata,["tcenter"]=cdata,["line"]=57,["p"]={},["scrolly"]=0,["data"]="note",["nextnote"]=248,["loadms"]=33382.711340206,["rotationr"]=0,["radiusr"]=1,["tcentero"]=cdata,["CalculatePosition"]=_[1],["speed"]={-0.776,0},["delay"]=0,["gogo"]=false,["radius"]=1,["ms"]=34601.783505155,["brokecombo"]=false,["pop"]=false,["pr"]=cdata,["senotet"]=0}
+    ]]
+    PersistentParsed.CompressKeyData = {
+        n = 'a',
+        bpm = 'b',
+        senotepr = 'c',
+        oms = 'd',
+        odelay = 'e',
+        mspermeasure = 'f',
+        scrollx = 'g',
+        senote = 'h',
+        type = 'i',
+        setdelay = 'j',
+        osenotepr = 'k',
+        tcenter = 'l',
+        line = 'm',
+        p = 'n',
+        scrolly = 'o',
+        data = 'p',
+        nextnote = 'q',
+        loadms = 'r',
+        rotationr = 's',
+        radiusr = 't',
+        tcentero = 'u',
+        CalculatePosition = 'v',
+        speed = 'w',
+        delay = 'x',
+        gogo = 'y',
+        radius = 'z',
+        ms = 'A',
+        brokecombo = 'B',
+        pop = 'C',
+        pr = 'D',
+        senotet = 'E',
+        event = 'F',
+        startnote = 'G',
+        endnote = 'H',
+        onnotepush = 'I',
+        lengthms = 'J',
+        endtype = 'K',
+        drumrollbend = 'L',
+        notetype = 'M',
+        recttype = 'N',
+    }
+
+
+
+    PersistentParsed.DecompressKeyData = {}
+    for k, v in pairs(PersistentParsed.CompressKeyData) do
+        PersistentParsed.DecompressKeyData[v] = k
+    end
+
+
+
 
 
 
@@ -4068,12 +4125,17 @@ do
                 if np and (np[k] or np[v]) then
                 --check_multiple(k); check_multiple(v) -- force dumps in localdefs
                 elseif not idx_dumped[k] then
-                table.insert (acc, "[" .. dump_or_ref_val(k) .. "]=" .. dump_or_ref_val(v))
+                    if PersistentParsed.CompressKeyData[k] then
+                        table.insert (acc, PersistentParsed.CompressKeyData[k] .. "=" .. dump_or_ref_val(v))
+                    else
+                        table.insert (acc, "[" .. dump_or_ref_val(k) .. "]=" .. dump_or_ref_val(v))
+                    end
                 end
             end
             return "{"..table.concat(acc,",").."}"
         else
-            error ("Can't serialize data of type "..t)
+            return 'cdata'
+            --error ("Can't serialize data of type "..t)
         end
     end
             
@@ -4301,7 +4363,11 @@ do
 
 
 
-
+    --disable compression
+    -- [[
+    compress = function(str)return str end
+    decompress = compress
+    --]]
 
 
 
@@ -4313,11 +4379,82 @@ do
 
 
     function PersistentParsed.Save(Parsed)
+        --Trim Parsed.Data so that serialization would be way faster
+
+
+        --Index notes [note] = i
+        local index = {}
+        for i = 1, #Parsed.Data do
+            index[Parsed.Data[i]] = i
+        end
+
+        for i = 1, #Parsed.Data do
+            local note = Parsed.Data[i]
+            
+
+            --change nextnote, startnote, endnote into numbers
+            if note.nextnote then
+                note.nextnote = index[note.nextnote]
+            end
+            if note.startnote then
+                note.startnote = index[note.startnote]
+            end
+            if note.endnote then
+                note.endnote = index[note.endnote]
+            end
+        end
+        
+        --Compress keys is included in serializd
         return compress(serialize(Parsed))
     end
 
     function PersistentParsed.Load(str)
-        return loadstring(decompress(str))()
+        local Parsed = loadstring(decompress(str))()
+
+        --Decompress keys
+        for i = 1, #Parsed.Data do
+            local note = Parsed.Data[i]
+            local new = {}
+            --[=[
+            for k, v in pairs(note) do
+                if PersistentParsed.DecompressKeyData[k] then
+                    note[PersistentParsed.DecompressKeyData[k]] = v
+                    note[k] = nil
+                end
+            end
+            --]=]
+            for k, v in pairs(note) do
+                if PersistentParsed.DecompressKeyData[k] then
+                    new[PersistentParsed.DecompressKeyData[k]] = v
+                else
+                    new[k] = v
+                end
+            end
+
+            Parsed.Data[i] = new
+        end
+
+        --Undo index
+        for i = 1, #Parsed.Data do
+            local note = Parsed.Data[i]
+            
+
+            --change nextnote, startnote, endnote into numbers
+            if note.nextnote then
+                note.nextnote = Parsed.Data[note.nextnote]
+            end
+            if note.startnote then
+                note.startnote = Parsed.Data[note.startnote]
+            end
+            if note.endnote then
+                note.endnote = Parsed.Data[note.endnote]
+            end
+        end
+
+        --Undo cdata???? cdata is nil so it dissappears after second iteration
+
+
+        return Parsed
     end
 end
 
@@ -17860,6 +17997,49 @@ CalculateNoteHitGauge(target[1], target[2])
                             end
 
                         end
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Save) then
+                        --[[
+                        local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
+
+                        local str = PersistentParsed.Save(data)
+                        print(str, #str)
+                        --]]
+
+
+                        local data = Parsed
+
+                        local str = PersistentParsed.Save(data)
+                        --print(#str)
+
+                        local f = io.open('Taikov34_out.lua', 'wb+')
+                        f:write(str)
+                        f:close()
+
+                        --Undo index
+                        for i = 1, #Parsed.Data do
+                            local note = Parsed.Data[i]
+                            
+
+                            --change nextnote, startnote, endnote into numbers
+                            if note.nextnote then
+                                note.nextnote = Parsed.Data[note.nextnote]
+                            end
+                            if note.startnote then
+                                note.startnote = Parsed.Data[note.startnote]
+                            end
+                            if note.endnote then
+                                note.endnote = Parsed.Data[note.endnote]
+                            end
+                        end
+
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
+                        local f = io.open('Taikov34_out.lua', 'rb')
+                        local str = f:read('*all')
+                        f:close()
+
+                        local data = PersistentParsed.Load(str)
+
+                        Parsed = data
                     end
                 end
 
