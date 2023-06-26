@@ -156,7 +156,7 @@ TODO: Add raylib option
     TODO: Integrate command --DELAYED until command is finished
     TODO: EDITOR
         TODO: Saving (I think diff files)
-    TODO: Remove cdata from notes
+    TODO: Remove cdata from notes (NOT POSSIBLE SINCE pr is used in editor)
     
     
     TODO: Allow configuring hold for every shortcut
@@ -3914,6 +3914,13 @@ do
 
     PersistentParsed = {}
 
+    local ffi = require('ffi')
+    local function tohex(str)
+        return (str:gsub('.', function (c)
+            return string.format('%02X', string.byte(c))
+        end))
+    end
+
 
 
 
@@ -4134,8 +4141,20 @@ do
             end
             return "{"..table.concat(acc,",").."}"
         else
-            return 'cdata'
+            --return 'cdata'
             --error ("Can't serialize data of type "..t)
+
+            --cdata serializer
+            local t = x
+            local ctype = string.match(tostring(ffi.typeof(t)), 'ctype<struct (.-)>')
+            if not ctype then
+                ctype = 'void *'
+            else
+                --remove pointer
+                ctype = string.gsub(ctype, '%s%*', '')
+            end
+            local s = ffi.string(t, ffi.sizeof(t)) -- specify how long the byte sequence is
+            return '_CDATA(\'' .. ctype .. '\',\'' .. tohex(s) .. '\')'
         end
     end
             
@@ -4153,12 +4172,15 @@ do
     local toplevel = dump_or_ref_val (x)
     dump_nest_patches()
 
+    --cdata serializer
+    local cdata = "local ffi=require'ffi'_CDATA=function(t,h)return ffi.cast(t..'*',h:gsub('..',function(c)return string.char(tonumber(c,16))end))end "
+    
     if next (localdefs) then
-        return "local _={}" ..
+        return cdata .. "local _={}" ..
             table.concat (localdefs, "") .. 
             "return " .. toplevel
     else
-        return "return " .. toplevel
+        return cdata .. "return " .. toplevel
     end
     end
 
@@ -4363,7 +4385,7 @@ do
 
 
 
-    --disable compression
+    --disable compression (max fastness, but shit storage)
     -- [[
     compress = function(str)return str end
     decompress = compress
@@ -4456,6 +4478,26 @@ do
 
         return Parsed
     end
+
+
+
+
+    
+    function PersistentParsed.Read(file)
+        local f = io.open(file, 'rb')
+        local s = f:read('*all')
+        f:close()
+        return s
+    end
+
+    function PersistentParsed.Write(file, str)
+        local f = io.open(file, 'wb+')
+        f:write(str)
+        f:close()
+    end
+
+
+
 end
 
 
@@ -13134,7 +13176,17 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                     while true do
                         local Parsed, Error = Taiko.ParseTJAFile(nextdir)
                         if Parsed then
-                            local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
+                            --local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
+                            -- [[
+                            --Load Parsed from file
+                            local f = io.open('Taikov34_out.lua', 'rb')
+                            local str = f:read('*all')
+                            f:close()
+
+                            local data = PersistentParsed.Load(str)
+
+                            local ParsedData = data
+                            --]]
                             local Status, Result = Taiko.PlaySong(ParsedData)
                             if Status == true then
                                 --Song ended
