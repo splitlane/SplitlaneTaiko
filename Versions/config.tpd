@@ -275,5 +275,6 @@ DO NOT EDIT
                 
             },
         },
+        'MasterVolume' = 0.05,
     },
 }

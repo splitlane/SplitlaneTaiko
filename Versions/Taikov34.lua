@@ -12525,6 +12525,7 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
     end
     --]]
     rl.InitAudioDevice()
+    rl.SetMasterVolume(Config.Settings.MasterVolume)
 
 
 
@@ -15994,6 +15995,7 @@ CalculateNoteHitGauge(target[1], target[2])
             --s = s + rl.GetFrameTime()
             ms = s * 1000
             framen = framen + 1
+            --forceresync = true --Alternately enable forceresync for extra precision? (???)
             --]]
 
 
