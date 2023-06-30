@@ -160,7 +160,9 @@ TODO: Add raylib option
     
     
     TODO: Allow configuring hold for every shortcut
-    TODO: Replace time management (rl.GetFrameTime) with something else since its not really accurate (only gets time between begindraw and enddraw, not during input processing)
+    TODO: Replace time management (rl.GetFrameTime) with something else since its not really accurate (only gets time between begindraw and enddraw, not during input processing) --DONE
+    TODO: Add Settings page (modify configs)
+    TODO: Allow calibration of offsets (one with only music, one with only notes (visual))
     
 
 TODO: Taiko.Game
@@ -14037,7 +14039,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
     
-    function Taiko.PlaySong(Parsed)
+    function Taiko.PlaySong(Parsed, OptionalConfig)
         SetupResizeAll()
 
 
@@ -14046,6 +14048,21 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         --INIT
         local oldscale = {scale[1], scale[2]}
         ResizeAll(Textures, 1 / scale[1], 1 / scale[2])
+
+
+
+
+
+
+
+        --OPTIONALCONFIG
+        OptionalConfig = OptionalConfig or {}
+        local oneveryframe = OptionalConfig.oneveryframe
+        local oneveryhit = OptionalConfig.oneveryhit
+
+
+
+
 
 
 
@@ -18535,8 +18552,8 @@ CalculateNoteHitGauge(target[1], target[2])
                 if editor.movingnotes and #editor.currentdragging == 0 then
                    
                     --Time
-                    if IsKeyPressed(Config.Controls.PlaySong.Debug.Backward) then
-                        s = s - 5
+                    if IsKeyDown(Config.Controls.PlaySong.Debug.Backward) then
+                        s = s - Config.Controls.PlaySong.Debug.BackwardIncrement
 
                         --respawn notes
 
@@ -18603,8 +18620,8 @@ CalculateNoteHitGauge(target[1], target[2])
                         
                         forceresync = true
                     end
-                    if IsKeyPressed(Config.Controls.PlaySong.Debug.Forward) then
-                        s = s + 5
+                    if IsKeyDown(Config.Controls.PlaySong.Debug.Forward) then
+                        s = s + Config.Controls.PlaySong.Debug.ForwardIncrement
                         
                         forceresync = true
                     end
@@ -18976,8 +18993,8 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
                 
                 --Time
-                if IsKeyPressed(Config.Controls.PlaySong.Debug.Backward) then
-                    s = s - 5
+                if IsKeyDown(Config.Controls.PlaySong.Debug.Backward) then
+                    s = s - Config.Controls.PlaySong.Debug.BackwardIncrement
 
                     --respawn notes
 
@@ -19044,8 +19061,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     
                     forceresync = true
                 end
-                if IsKeyPressed(Config.Controls.PlaySong.Debug.Forward) then
-                    s = s + 5
+                if IsKeyDown(Config.Controls.PlaySong.Debug.Forward) then
+                    s = s + Config.Controls.PlaySong.Debug.ForwardIncrement
                     
                     forceresync = true
                 end
@@ -19638,6 +19655,16 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+    function Taiko.Calibrate()
+        --[[
+            Returns:
+            Offset = {
+                Timing = 0,
+                Music = 0
+            }
+            return Offset
+        ]]
+    end
 
 
 
@@ -19652,6 +19679,50 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --return Taiko.Calibrate()
     return Taiko.SongSelect()
     --return Taiko.PlaySong(Parsed)
 

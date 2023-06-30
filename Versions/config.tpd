@@ -87,6 +87,8 @@ DO NOT EDIT
                 'Forward' = {
                     262 = true,
                 },
+                'BackwardIncrement' = 0.100,
+                'ForwardIncrement' = 0.100,
                 'SaveState' = {
                     'Save' = {
                         'Hold' = {
@@ -125,7 +127,7 @@ DO NOT EDIT
                     'Faster' = {
                         265 = true,
                     },
-                    'FasterMultiplier' = 2,
+                    'FasterMultiplier' = 1.1,
                 },
                 'Freeze' = {
                     32 = true,
