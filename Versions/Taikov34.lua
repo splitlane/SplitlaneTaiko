@@ -14057,8 +14057,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         --OPTIONALCONFIG
         OptionalConfig = OptionalConfig or {}
-        local oneveryframe = OptionalConfig.oneveryframe
-        local oneveryhit = OptionalConfig.oneveryhit
+        local oneveryframe = OptionalConfig.oneveryframe --Called RIGHT before rl.EndDrawing(): oneveryframe(ms)
+        local oneveryhit = OptionalConfig.oneveryhit --Called in hit function: oneveryhit(ms, v, side)
 
 
 
@@ -15610,6 +15610,11 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         local function Hit(v, side)
+            if oneveryhit then
+                oneveryhit(ms, v, side)
+            end
+
+
             --Play Sound
             rl.PlaySound(Sounds.PlaySong.Notes[v]) --PlaySound vs PlaySoundMulti?
             
@@ -18023,7 +18028,9 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
+            if oneveryframe then
+                oneveryframe(ms)
+            end
 
 
 
