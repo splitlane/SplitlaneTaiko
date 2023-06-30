@@ -160,6 +160,7 @@ TODO: Add raylib option
     
     
     TODO: Allow configuring hold for every shortcut
+    TODO: Replace time management (rl.GetFrameTime) with something else since its not really accurate (only gets time between begindraw and enddraw, not during input processing)
     
 
 TODO: Taiko.Game
@@ -15404,7 +15405,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         --Hit: Hit the drum with a 1 (don) or 2 (ka)
         local s = 0
-        local ms
+        local lasts = nil
+        local ms = nil
         local nearest, nearestnote = {}, {}
         local autoside = false --false -> left, true = right
 
@@ -15983,7 +15985,12 @@ CalculateNoteHitGauge(target[1], target[2])
             -- [[
             --new: more precision
             --don't add frametime on first frame?
-            s = s + ((framen ~= 0 and rl.GetFrameTime() or 0) * runtimespeed)
+            --s = s + ((framen ~= 0 and (rl.GetFrameTime()) or 0) * runtimespeed)
+            --don't use rl.GetFrameTime since it doesn't track time outside of rl.BeginDrawing and rl.EndDrawing
+            --new2: instead generate deltatime ourselves
+            local news = rl.GetTime()
+            s = s + ((framen ~= 0 and (news - lasts) or 0) * runtimespeed)
+            lasts = news
             --s = s + rl.GetFrameTime()
             ms = s * 1000
             framen = framen + 1
