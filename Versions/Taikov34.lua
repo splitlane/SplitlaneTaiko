@@ -163,6 +163,7 @@ TODO: Add raylib option
     TODO: Replace time management (rl.GetFrameTime) with something else since its not really accurate (only gets time between begindraw and enddraw, not during input processing) --DONE
     TODO: Add Settings page (modify configs)
     TODO: Allow calibration of offsets (one with only music, one with only notes (visual))
+    TODO: Fix pausing (old)
     
 
 TODO: Taiko.Game
@@ -14058,7 +14059,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         --OPTIONALCONFIG
         OptionalConfig = OptionalConfig or {}
         local oneveryframe = OptionalConfig.oneveryframe --Called RIGHT before rl.EndDrawing(): oneveryframe(ms)
-        local oneveryhit = OptionalConfig.oneveryhit --Called in hit function: oneveryhit(ms, v, side)
+        local oneveryhit = OptionalConfig.oneveryhit --Called in hit function: oneveryhit(ms, v, side, nearestnote)
 
 
 
@@ -15611,7 +15612,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
         local function Hit(v, side)
             if oneveryhit then
-                oneveryhit(ms, v, side)
+                oneveryhit(ms, v, side, nearestnote)
             end
 
 
@@ -16737,6 +16738,11 @@ CalculateNoteHitGauge(target[1], target[2])
             --notes
 
             --nearest (IF THERE IS NOTHING LOADED IT WILL BE NIL)
+            --[[
+                notes:
+                nearest is [1] = ms, [2] = ms
+                nearestnote is [1] = note, [2] = note
+            ]]
             nearest = {
                 
             }
@@ -19662,15 +19668,204 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-    function Taiko.Calibrate()
+    function Taiko.CalibrateParsed(Parsed)
         --[[
+            HELPER FUNCTION FOR Taiko.Calibrate (Calibrate handles timing shit)
+
+            Parsed is just an optional score to calibrate against
+
             Returns:
-            Offset = {
+            Offsets = {
                 Timing = 0,
                 Music = 0
             }
-            return Offset
+            return Offsets
+
+
+            Notes:
+            Hit Calibration isn't counted if you miss (toggle ignoremiss)
+
+            TODO:
+            Default parsed score
         ]]
+        --[[
+        if not Parsed then
+            Parsed = Taiko.GetDifficulty(Taiko.ParseTJAFile('./defaultcalibrate.tja'), 'Oni') --Possibly add this to config?
+        end
+        --]]
+
+        local ignoremiss = false
+
+
+
+
+
+        local timing = Taiko.Data.Timing.Level[Parsed.Metadata.TIMING]
+
+
+
+        --[[
+        --Offset data
+        local Offsets = {
+            Timing = nil,
+            Music = nil
+        }
+        --]]
+
+
+        local hitdata = {
+            ms = {},
+            n = {}
+        }
+
+
+
+        local OptionalConfig = {
+            oneveryframe = function(ms)
+                --Display stats
+
+
+                --Detect input (ex: exit)
+            end,
+            oneveryhit = function(ms, v, side, nearestnote)
+                hitdata.ms[#hitdata.ms + 1] = ms
+                hitdata.n[#hitdata.n + 1] = nearestnote[v]
+            end
+        }
+
+
+
+        --PlaySong
+
+        Taiko.PlaySong(Parsed, OptionalConfig)
+
+        
+        --list of all offsets (that aren't ignoredmiss) (- is early, + is late)
+        local offsets = {}
+
+        --Process data
+        for i = 1, #hitdata.ms do
+            local ms = hitdata.ms[i]
+            local n = hitdata.n[i]
+
+            --If not n then its a complete (COMPLETE (since its not loaded)) miss
+            if n then
+
+                
+                --No leniency for good
+                local leniency = ((n.type == 3 or n.type == 4) and Taiko.Data.BigLeniency) or 1
+
+                if (not ignoremiss) or (math.abs(ms - n.ms) < (timing.bad * leniency)) then
+                    offsets[#offsets + 1] = ms - n.ms
+                end
+
+
+            end
+        end
+
+
+        --Statistics!
+        local offsetanalyzed = {
+            sum = 0,
+            average = nil,
+            min = nil,
+            max = nil
+        }
+        for i = 1, #offsets do
+            local o = offsets[i]
+
+            --print(o)
+
+            --Calculate some stats
+            offsetanalyzed.sum = offsetanalyzed.sum + o
+            offsetanalyzed.min = (not offsetanalyzed.min or o < offsetanalyzed.min) and o or offsetanalyzed.min
+            offsetanalyzed.max = (not offsetanalyzed.max or o > offsetanalyzed.max) and o or offsetanalyzed.max
+        end
+
+        --Calculate some stats
+        offsetanalyzed.average = offsetanalyzed.sum / #offsets
+
+
+
+        return offsetanalyzed
+    end
+
+
+
+
+    function Taiko.Calibrate(Parsed)
+        --[[
+            Parsed is just an optional score to calibrate against
+
+            Returns:
+            Offsets = {
+                Timing = 0,
+                Music = 0
+            }
+            return Offsets
+
+
+            Notes:
+            Hit Calibration isn't counted if you miss (toggle ignoremiss)
+
+            TODO:
+            Default parsed score
+
+
+            Values for myself:
+            Desktop-KTP: {Music=-59.810474468085,Timing=5.0134218750001}
+        ]]
+        if not Parsed then
+            Parsed = Taiko.GetDifficulty(Taiko.ParseTJAFile('./defaultcalibrate120.tja'), 'Oni') --Possibly add this to config?
+        end
+
+
+        --Offset data
+        local Offsets = {
+            Timing = nil,
+            Music = nil
+        }
+
+        --Do without music (Timing) (Visual)
+        local temp = Parsed.Metadata.SONG
+        Parsed.Metadata.SONG = nil
+
+        local offsetanalyzedvisual = Taiko.CalibrateParsed(Parsed)
+
+        Parsed.Metadata.SONG = temp
+        temp = nil
+
+        --Do without notes (Music) (Audio)
+        local scroll = 0.00001
+        for i = 1, #Parsed.Data do
+            local note = Parsed.Data[i]
+            --Make note scroll like 0.00001
+            note.oscrollx = note.scrollx
+            note.oscrolly = note.scrolly
+
+            note.scrollx = scroll
+            note.scrolly = scroll
+        end
+
+        local offsetanalyzedaudio = Taiko.CalibrateParsed(Parsed)
+        for i = 1, #Parsed.Data do
+            local note = Parsed.Data[i]
+            --Undo
+            note.scrollx = note.oscrollx
+            note.scrolly = note.oscrolly
+
+            note.oscrollx = nil
+            note.oscrolly = nil
+        end
+
+
+        --Set values
+        Offsets.Timing = offsetanalyzedvisual.average
+        Offsets.Music = offsetanalyzedaudio.average
+
+        require'ppp'(Offsets)
+
+        return Offsets
     end
 
 
@@ -19724,13 +19919,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
-
-
-
-
-    --return Taiko.Calibrate()
-    return Taiko.SongSelect()
+    return Taiko.Calibrate()
+    --return Taiko.SongSelect()
     --return Taiko.PlaySong(Parsed)
 
 
