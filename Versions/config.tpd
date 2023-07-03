@@ -166,6 +166,9 @@ DO NOT EDIT
                     'Export' = {
                         69 = true,
                     },
+                    'Import' = {
+                        73 = true,
+                    },
                 },
                 'ModifySelectionHold' = {
                     340 = true,

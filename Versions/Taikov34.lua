@@ -9719,7 +9719,9 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = '#SCROLL '
                     Out[#Out + 1] = tostring(-v)
                     if note.scrolly ~= 0 then
-                        Out[#Out + 1] = '+'
+                        if note.scrolly >= 0 then
+                            Out[#Out + 1] = '+'
+                        end
                         Out[#Out + 1] = tostring(-note.scrolly)
                         Out[#Out + 1] = 'i'
                     end
@@ -9757,7 +9759,7 @@ function Taiko.SerializeTJA(Parsed)
                         addnewline = false
                     end
                 else
-                    print('Invalid attribute, ' .. k)
+                    --print('Invalid attribute, ' .. k)
                     addnewline = false
                 end
 
@@ -18922,6 +18924,75 @@ CalculateNoteHitGauge(target[1], target[2])
                         local path = FileDialog.Save('Export: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
+
+
+
+                        --Sort by ms + barline first always
+                        --Sort all branches firt
+                        for k, v in pairs(Parsed.Data) do
+                            if v.branch then
+                                for k2, v2 in pairs(v.branch.paths) do
+                                    table.sort(v2, function(a, b)
+                                        --return a.ms < b.ms
+
+                                        --switch to branches, this is too complex
+                                        --[[
+                                        if a.ms == b.ms then
+                                            return a.data == 'event' and a.event == 'barline'
+                                        else
+                                            return a.ms < b.ms
+                                        end
+                                        --]]
+                                        --nvm i can handle this
+                                        return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
+                                    end)
+                                end
+                            end
+                        end
+
+
+                        --Path doesn't matter, they should all have same loadms
+                        table.sort(Parsed.Data, function(a, b)
+                            if a.branch and b.branch then
+                                --both branches
+                                for k, v in pairs(a.branch.paths) do
+                                    for k2, v2 in pairs(b.branch.paths) do
+                                        return v[1].ms < v2[1].ms
+                                    end
+                                end
+                            elseif a.branch then
+                                --a is branch
+                                for k, v in pairs(a.branch.paths) do
+                                    return v[1].ms < b.ms
+                                end
+                            elseif b.branch then
+                                --b is branch
+                                for k, v in pairs(b.branch.paths) do
+                                    return a.ms < v[1].ms
+                                end
+                            else
+                                --notes
+                                --return a.ms < b.ms
+
+                                --switch to branches, this is too complex
+                                --[[
+                                if a.ms == b.ms then
+                                    return a.data == 'event' and a.event == 'barline'
+                                else
+                                    return a.ms < b.ms
+                                end
+                                --]]
+                                --nvm i can handle this
+                                return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
+                            end
+                        end)
+
+
+
+
+
+
+
                             --print(path)
                             local data = Parsed
 
@@ -18951,7 +19022,57 @@ CalculateNoteHitGauge(target[1], target[2])
                             error('File not selected')
                         end
 
-                        --TODO: ADD IMPORT
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
+                        local path = FileDialog.Open('Import: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
+
+                        if path then
+                            --print(path)
+                            local Parsed, Error = Taiko.ParseTJAFile(path)
+
+                            if Parsed then
+
+                                local data = Parsed[1]
+
+                                --[[
+                                --Set current parsed to loaded parsed
+                                
+                                --Parsed = data (doesn't work, notes are still linked through nextnote)
+                                
+                                Parsed = data
+                                loaded = {}
+                                nextnote = data[1]
+
+
+                                --REMEMBER: Set endtime so song would end at the right time
+
+                                --]]
+
+
+
+                                --Reset rl.GetFrameTime (prevent weird jump)
+                                --[[
+                                rl.EndDrawing()
+                                rl.BeginDrawing()
+                                --]]
+                                --WE NOW USE os.clock
+                                dontincrements = true
+
+
+                                --NVM: Just open new window (instance)
+                                --Then return what it returns, effectively ending this session (replace window basically)
+                                --TODO: Accept retry
+                                return Taiko.PlaySong(data)
+                            else
+                                error(Error)
+                            end
+
+                        else
+                            --TODO: Handle error
+                            error('File not selected')
+                        end
+
+
+
                     end
                 end
 
