@@ -9719,7 +9719,7 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = '#SCROLL '
                     Out[#Out + 1] = tostring(-v)
                     if note.scrolly ~= 0 then
-                        if note.scrolly >= 0 then
+                        if -note.scrolly >= 0 then
                             Out[#Out + 1] = '+'
                         end
                         Out[#Out + 1] = tostring(-note.scrolly)
@@ -16301,6 +16301,30 @@ CalculateNoteHitGauge(target[1], target[2])
         --]]
 
 
+        --Message (GUI message to users)
+        --ACTUALLY GUIMESSAGE DOES THE SAME THING
+        --local MessageLog = {}
+
+        --Blocking
+        --[[
+        local function Message(str)
+            while true do
+                while not rl.WindowShouldClose() do
+                    rl.BeginDrawing()
+                    rl.ClearBackground(rl.RAYWHITE)
+                    rl.DrawText('Press SPACE to start', Config.ScreenWidth / 2, Config.ScreenHeight / 2, fontsize, rl.BLACK)
+                    rl.EndDrawing()
+                    if rl.IsKeyPressed(32) then
+                        break
+                    end
+                end
+            end
+        end
+        --]]
+
+
+
+
 
 
 
@@ -16334,7 +16358,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         --Wait for start
-        if false then
+        if Config.Settings.PlaySong.WaitForStart then
             while not rl.WindowShouldClose() do
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.RAYWHITE)
@@ -18785,6 +18809,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                             loaded[#loaded + 1] = copy
+                            Parsed.Data[#Parsed.Data + 1] = copy
                             editor.currentdragging[#editor.currentdragging + 1] = copy
                         end
 
@@ -18861,9 +18886,10 @@ CalculateNoteHitGauge(target[1], target[2])
                             --WE NOW USE os.clock
                             dontincrements = true
 
+                            GuiMessage('Save: Success')
                         else
                             --TODO: Handle error
-                            error('File not selected')
+                            GuiMessage('Save: File not selected')
                         end
 
                     elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
@@ -18905,11 +18931,12 @@ CalculateNoteHitGauge(target[1], target[2])
                             --NVM: Just open new window (instance)
                             --Then return what it returns, effectively ending this session (replace window basically)
                             --TODO: Accept retry
-                            return Taiko.PlaySong(data)
+                            GuiMessage('Load: Success')
 
+                            return Taiko.PlaySong(data)
                         else
                             --TODO: Handle error
-                            error('File not selected')
+                            GuiMessage('Load: File not selected')
                         end
 
                     elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Export) then
@@ -18927,65 +18954,71 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-                        --Sort by ms + barline first always
-                        --Sort all branches firt
-                        for k, v in pairs(Parsed.Data) do
-                            if v.branch then
-                                for k2, v2 in pairs(v.branch.paths) do
-                                    table.sort(v2, function(a, b)
-                                        --return a.ms < b.ms
+                            --Sort by ms + barline first always
+                            --Sort all branches firt
+                            for k, v in pairs(Parsed.Data) do
+                                if v.branch then
+                                    for k2, v2 in pairs(v.branch.paths) do
+                                        table.sort(v2, function(a, b)
+                                            --return a.ms < b.ms
 
-                                        --switch to branches, this is too complex
-                                        --[[
-                                        if a.ms == b.ms then
-                                            return a.data == 'event' and a.event == 'barline'
-                                        else
-                                            return a.ms < b.ms
-                                        end
-                                        --]]
-                                        --nvm i can handle this
-                                        return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
-                                    end)
-                                end
-                            end
-                        end
+                                            --switch to branches, this is too complex
+                                            --[[
+                                            if a.ms == b.ms then
+                                                return a.data == 'event' and a.event == 'barline'
+                                            else
+                                                return a.ms < b.ms
+                                            end
+                                            --]]
+                                            --nvm i can handle this
+                                            --return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
 
-
-                        --Path doesn't matter, they should all have same loadms
-                        table.sort(Parsed.Data, function(a, b)
-                            if a.branch and b.branch then
-                                --both branches
-                                for k, v in pairs(a.branch.paths) do
-                                    for k2, v2 in pairs(b.branch.paths) do
-                                        return v[1].ms < v2[1].ms
+                                            --v3 handles the case when 2 barlines have same ms
+                                            return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline' and not (b.data == 'event' and b.event == 'barline')) or (a.ms < b.ms)
+                                        end)
                                     end
                                 end
-                            elseif a.branch then
-                                --a is branch
-                                for k, v in pairs(a.branch.paths) do
-                                    return v[1].ms < b.ms
-                                end
-                            elseif b.branch then
-                                --b is branch
-                                for k, v in pairs(b.branch.paths) do
-                                    return a.ms < v[1].ms
-                                end
-                            else
-                                --notes
-                                --return a.ms < b.ms
-
-                                --switch to branches, this is too complex
-                                --[[
-                                if a.ms == b.ms then
-                                    return a.data == 'event' and a.event == 'barline'
-                                else
-                                    return a.ms < b.ms
-                                end
-                                --]]
-                                --nvm i can handle this
-                                return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
                             end
-                        end)
+
+
+                            --Path doesn't matter, they should all have same loadms
+                            table.sort(Parsed.Data, function(a, b)
+                                if a.branch and b.branch then
+                                    --both branches
+                                    for k, v in pairs(a.branch.paths) do
+                                        for k2, v2 in pairs(b.branch.paths) do
+                                            return v[1].ms < v2[1].ms
+                                        end
+                                    end
+                                elseif a.branch then
+                                    --a is branch
+                                    for k, v in pairs(a.branch.paths) do
+                                        return v[1].ms < b.ms
+                                    end
+                                elseif b.branch then
+                                    --b is branch
+                                    for k, v in pairs(b.branch.paths) do
+                                        return a.ms < v[1].ms
+                                    end
+                                else
+                                    --notes
+                                    --return a.ms < b.ms
+
+                                    --switch to branches, this is too complex
+                                    --[[
+                                    if a.ms == b.ms then
+                                        return a.data == 'event' and a.event == 'barline'
+                                    else
+                                        return a.ms < b.ms
+                                    end
+                                    --]]
+                                    --nvm i can handle this
+                                    --return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline') or (a.ms < b.ms)
+
+                                    --v3 handles the case when 2 barlines have same ms
+                                    return (a.ms == b.ms) and (a.data == 'event' and a.event == 'barline' and not (b.data == 'event' and b.event == 'barline')) or (a.ms < b.ms)
+                                end
+                            end)
 
 
 
@@ -19017,9 +19050,10 @@ CalculateNoteHitGauge(target[1], target[2])
                             --WE NOW USE os.clock
                             dontincrements = true
 
+                            GuiMessage('Export: Success')
                         else
                             --TODO: Handle error
-                            error('File not selected')
+                            GuiMessage('Export: File not selected')
                         end
 
                     elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
@@ -19061,14 +19095,16 @@ CalculateNoteHitGauge(target[1], target[2])
                                 --NVM: Just open new window (instance)
                                 --Then return what it returns, effectively ending this session (replace window basically)
                                 --TODO: Accept retry
+                                GuiMessage('Import: Success')
+
                                 return Taiko.PlaySong(data)
                             else
+                                --Handle Parsed Error
                                 error(Error)
                             end
-
                         else
                             --TODO: Handle error
-                            error('File not selected')
+                            GuiMessage('Import: File not selected')
                         end
 
 

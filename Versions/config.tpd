@@ -282,6 +282,7 @@ DO NOT EDIT
             'Debug' = {
                 
             },
+            'WaitForStart' = false,
         },
         'MasterVolume' = 0.05,
     },
