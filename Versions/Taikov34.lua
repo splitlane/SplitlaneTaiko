@@ -167,7 +167,7 @@ TODO: Add raylib option
     TODO: Editor serialize to TJA
     TODO: Editor import tja (easy)
     TODO: Serializetja v3
-    TODO: Delay is not added to barline when change?????
+    TODO: Delay is not added to barline when change????? --DONE
     
 
 TODO: Taiko.Game
@@ -9831,8 +9831,6 @@ function Taiko.SerializeTJA(Parsed)
         for i = 2, #currentmeasure do
             gcd = Gcd(gcd, currentmeasure[i].ms - measurestartms)
         end
-        print(gcd, measureendms - currentmeasure[#currentmeasure].ms)
-        print(measureendms, currentmeasure[#currentmeasure].ms)
         gcd = Gcd(gcd, measureendms - currentmeasure[#currentmeasure].ms)
         return gcd
     end
@@ -9884,10 +9882,8 @@ function Taiko.SerializeTJA(Parsed)
         --Just subtract delay from notes
         for i = 1, #ParsedData do
             local note = ParsedData[i]
-            --note.ms = note.ms - note.delay
-            print(note.ms, note.delay, note.type)
+            note.ms = note.ms - note.delay
         end
-        error()
 
 
         Out[#Out + 1] = '#START\n'
