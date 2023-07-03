@@ -163,7 +163,11 @@ TODO: Add raylib option
     TODO: Replace time management (rl.GetFrameTime) with something else since its not really accurate (only gets time between begindraw and enddraw, not during input processing) --DONE
     TODO: Add Settings page (modify configs)
     TODO: Allow calibration of offsets (one with only music, one with only notes (visual))
-    TODO: Fix pausing (old)
+    TODO: Fix pausing (old) --DONE
+    TODO: Editor serialize to TJA
+    TODO: Editor import tja (easy)
+    TODO: Serializetja v3
+    TODO: Delay is not added to barline when change?????
     
 
 TODO: Taiko.Game
@@ -7887,7 +7891,9 @@ This is used when you want to return the judgment frame to its original position
                             --[[
                                 - Display a barline at the current position
                             ]]
-                            table.insert(Parser.measurepushto, Parser.createbarline())
+                            --table.insert(Parser.measurepushto, Parser.createbarline())
+                            --Push to currentmeasure so delay, jposscroll, etc can be applied
+                            table.insert(Parser.currentmeasure, Parser.createbarline())
 
 
 
@@ -8345,7 +8351,9 @@ Everyone who DL
                     --]]
                     --table.insert(Parser.currentmeasure, 1, note)
                     --table.insert(Parser.measurepushto, 1, note)
-                    table.insert(Parser.measurepushto, Parser.createbarline())
+                    --table.insert(Parser.measurepushto, Parser.createbarline())
+                    --Push to currentmeasure so delay, jposscroll, etc can be applied
+                    table.insert(Parser.currentmeasure, Parser.createbarline())
                     Parser.insertbarline = false
                 end
 
@@ -8671,7 +8679,6 @@ Everyone who DL
                             --Parser.zeroopt = false
                         end
                         --Parser.zeroopt = zeroopt
-                        --io.read()
                     end
                 else
                     Parser.measuredone = false
@@ -8828,6 +8835,7 @@ error()
 
 
 --[===[
+--v1
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed) --Parsed should be a top level parsed object
     --[[
@@ -9230,8 +9238,8 @@ end
 
 
 
-
-
+--[===[
+--v2
 --Serialize TJA Parsed into TJA
 function Taiko.SerializeTJA(Parsed)
     --Config
@@ -9339,8 +9347,13 @@ function Taiko.SerializeTJA(Parsed)
 
                 --GIMMICKS
                 elseif k == 'radius' then
-                    Out[#Out + 1] = '#RADIUS '
-                    Out[#Out + 1] = tostring(v)
+                    local n = note.type
+                    if (not lastnote or not (v / ((n == 3 or n == 4 or n == 6) and Taiko.Data.BigNoteMul or 1) == lastnote[k] / ((lastnote.type == 3 or lastnote.type == 4 or lastnote.type == 6) and Taiko.Data.BigNoteMul or 1))) then
+                        Out[#Out + 1] = '#RADIUS '
+                        Out[#Out + 1] = tostring(v)
+                    else
+                        addnewline = false
+                    end
                 else
                     print('Invalid attribute, ' .. k)
                     addnewline = false
@@ -9605,10 +9618,437 @@ function Taiko.SerializeTJA(Parsed)
 
     return table.concat(Out)
 end
+--]===]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--v3
+--Serialize TJA Parsed into TJA
+function Taiko.SerializeTJA(Parsed)
+    --Config
+    --Multiplier for Metadata, kv pairs
+    local MetadataMul = {
+        OFFSET = 0.001,
+        MOVIEOFFSET = 0.001,
+        DEMOSTART = 0.001,
+
+        SONGVOL = 100,
+        SEVOL = 100,
+    }
+
+
+
+
+    
+    local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n\n'}
+
+
+
+
+
+    --Functions
+
+    --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
+    --[[
+        Automatically pushes to out, returns nothing
+        Input: note
+        Output: nothing
+    ]]
+    local lastnote = nil
+    local exclude = {
+        mspermeasure = true,
+        startnote = true,
+        endnote = true,
+        nextnote = true,
+        lengthms = true,
+        onnotepush = true,
+        data = true,
+        line = true,
+        type = true,
+        ms = true,
+        scrolly = true,
+    }
+    local function SerializeNote(note)
+        local delayaddms = 0
+        local addfirstnewline = true
+
+        for k, v in spairs(note, function(t, a, b)
+            return a < b
+        end) do
+            if (not exclude[k]) and (not lastnote or not (note[k] == lastnote[k])) then
+                --[[
+                --TODO: Only output when addnewline is true
+                --Output change
+                if newline == false then
+                    Out[#Out + 1] = '\n'
+                    newline = true
+                end
+                --]]
+                --DIRTY --TODO: some memory and cpu is wasted since we are adding it later using table.insert
+                local beforenewline = #Out + 1
+
+                local addnewline = true
+                
+                if k == 'bpm' then
+                    Out[#Out + 1] = '#BPMCHANGE '
+                    Out[#Out + 1] = tostring(v)
+                elseif k == 'scrollx' then
+                    --scrollx handles both scrollx and scrolly
+
+                    Out[#Out + 1] = '#SCROLL '
+                    Out[#Out + 1] = tostring(-v)
+                    if note.scrolly ~= 0 then
+                        Out[#Out + 1] = '+'
+                        Out[#Out + 1] = tostring(-note.scrolly)
+                        Out[#Out + 1] = 'i'
+                    end
+                elseif k == 'gogo' then
+                    if v then
+                        Out[#Out + 1] = '#GOGOSTART'
+                    else
+                        Out[#Out + 1] = '#GOGOEND'
+                    end
+                elseif k == 'senote' then
+                    --TODO: Make a proper senote sequence decoder
+
+                    addnewline = false
+                elseif k == 'delay' then
+                    if v == 0 then
+                        --Nothing, default
+                        addnewline = false
+                    else
+                        --STOPSONG is on
+                        Out[#Out + 1] = '#DELAY '
+                        local changems = note.delay - (lastnote and lastnote.delay or 0)
+                        Out[#Out + 1] = tostring(MsToS(changems))
+
+                        delayaddms = delayaddms + changems
+                    end
+
+
+                --GIMMICKS
+                elseif k == 'radius' then
+                    local n = note.type
+                    if (not lastnote or not (v / ((n == 3 or n == 4 or n == 6) and Taiko.Data.BigNoteMul or 1) == lastnote[k] / ((lastnote.type == 3 or lastnote.type == 4 or lastnote.type == 6) and Taiko.Data.BigNoteMul or 1))) then
+                        Out[#Out + 1] = '#RADIUS '
+                        Out[#Out + 1] = tostring(v)
+                    else
+                        addnewline = false
+                    end
+                else
+                    print('Invalid attribute, ' .. k)
+                    addnewline = false
+                end
+
+                if addnewline then
+                    if addfirstnewline then
+                        table.insert(Out, beforenewline, '\n')
+                        addfirstnewline = false
+                    end
+                    Out[#Out + 1] = '\n'
+                end
+            end
+        end
+
+        Out[#Out + 1] = tostring(note.type)
+
+        lastnote = note
+
+        return delayaddms --the ms that delay removed
+    end
+
+
+    --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
+    --TODO: Modify tolerance
+    local tolerance = 1 --was 0.001
+    local function Gcd(a, b)
+        --negative check
+        -- [[
+        if a < 0 or b < 0 then
+            return nil
+        end
+        --]]
+
+        if a < b then
+            return Gcd(b, a)
+        end
+        if math.abs(b) < tolerance then
+            return a
+        else
+            return Gcd(b, a - math.floor(a / b) * b)
+        end
+    end
+    local function Round(a)
+        return math.floor(a + 0.5)
+    end
+    local function ToFraction(n)
+        --[[
+        local a = Gcd(n, 1)
+        return Round(n / a) .. '/' .. Round(1 / a)
+        --]]
+
+        --Don't use Gcd, floating point
+        local a, b = n, 1
+        while true do
+            if not string.find(tostring(a), '%.') then
+                break
+            end
+            a = a * 10
+            b = b * 10
+        end
+        return a .. '/' .. b
+    end
+
+    --[[
+        Input: measure with at least 2 notes
+        Output: subdivision ms
+
+        Rewritten using measurestartms
+    ]]
+    local function Subdivide(currentmeasure, measurestartms, measureendms)
+        local gcd = currentmeasure[1].ms - measurestartms
+        for i = 2, #currentmeasure do
+            gcd = Gcd(gcd, currentmeasure[i].ms - measurestartms)
+        end
+        print(gcd, measureendms - currentmeasure[#currentmeasure].ms)
+        print(measureendms, currentmeasure[#currentmeasure].ms)
+        gcd = Gcd(gcd, measureendms - currentmeasure[#currentmeasure].ms)
+        return gcd
+    end
+
+
+    --Main loop
+    for k, v in pairs(Parsed) do
+        --Reset SerializeNote
+        lastnote = nil
+
+        --SerializeTJA for each of these
+        local ParsedData = v.Data
+
+        --METADATA
+        for k2, v2 in spairs(v.Metadata, function(t, a, b)
+            return a < b
+        end) do
+            if (type(v2) == 'string' or type(v2) == 'number') and k2 ~= 'SONG' then
+                Out[#Out + 1] = tostring(k2)
+                
+                Out[#Out + 1] = ':'
+                if k2 == 'COURSE' then
+                    Out[#Out + 1] = tostring(Taiko.Data.CourseName[v2])
+                elseif MetadataMul[k2] then
+                    Out[#Out + 1] = tostring(v2 * MetadataMul[k2])
+                else
+                    Out[#Out + 1] = tostring(v2)
+                end
+
+                Out[#Out + 1] = '\n'
+            end
+        end
+        Out[#Out + 1] = '\n'
+
+
+        --NMSCROLL / HBSCROLL / BMSCROLL
+        --[[
+            NOTE: there is no bmscroll since it is just hbscroll with scrolls disabled
+            you cannot find from metadata
+        ]]
+        if v.Metadata.STOPSONG then
+            Out[#Out + 1] = '\n#HBSCROLL\n'
+        else
+            Out[#Out + 1] = '\n#NMSCROLL\n'
+        end
+
+        --NOTES
+
+        --Just subtract delay from notes
+        for i = 1, #ParsedData do
+            local note = ParsedData[i]
+            --note.ms = note.ms - note.delay
+            print(note.ms, note.delay, note.type)
+        end
+        error()
+
+
+        Out[#Out + 1] = '#START\n'
+        local currentmeasure = nil
+        local measurestartms = nil
+        --local measurestartnote = nil
+        local lastsign = nil
+        for i = 1, #ParsedData do
+            --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
+
+            local note = ParsedData[i]
+            local nextnote = ParsedData[i + 1] --CAN BE NIL
+            
+            --print(note.ms)
+
+
+            --start of measure
+            if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) then
+                currentmeasure = {}
+                measurestartms = note.ms
+                --measurestartnote = note
+            end
+
+
+
+
+            --do stuff with notes
+            if (note.data == 'note') then
+                currentmeasure[#currentmeasure + 1] = note
+            end
+
+
+            
+
+
+            --end of measure
+            if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) then
+                local measureendms = (nextnote and nextnote.ms or note.ms)
+                local divtotalms = measureendms - measurestartms
+
+                --Subdivide
+                local gcd = nil
+                if #currentmeasure >= 2 then
+                    gcd = Subdivide(currentmeasure, measurestartms, measureendms)
+                elseif #currentmeasure == 1 then
+                    --Same as Subdivide but optimized
+                    --Take gcd of before or after note ms
+                    gcd = Gcd(note.ms - measurestartms, measureendms - note.ms)
+                else
+                    gcd = divtotalms
+                end
+
+                --Determine total measure ms
+                local measurems = nil
+                if nextnote then
+                    measurems = divtotalms
+                else
+                    --Subdivide
+                    measurems = gcd + divtotalms
+                end
+
+                --Place measure
+
+                --Determine measure sign
+                local msperbeat = 60000 / note.bpm
+                local signraw = (measurems / msperbeat) / 4
+                local sign = tostring(signraw)
+
+                --dont place measure if no measure change
+                if sign ~= lastsign then
+                    --LAZY --DIRTY (decimal fraction???)
+                    --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                    Out[#Out + 1] = '\n#MEASURE '
+                    Out[#Out + 1] = ToFraction(signraw)
+                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                    lastsign = sign
+                end
+                
+                --print(measurems, #currentmeasure, gcd, note.type)
+
+                --Cases
+                if #currentmeasure == 0 then
+                    Out[#Out + 1] = ',\n'
+                --[[
+                    --There are some weird cases (0's after or before note, so just switch to normal)
+                elseif #currentmeasure == 1 then
+                    local delayaddms = SerializeNote(note)
+                    Out[#Out + 1] = ',\n'
+                --]]
+                else
+                    --Start (barline - first note)
+                    Out[#Out + 1] = string.rep('0', ((currentmeasure[1].ms - measurestartms)) / gcd)
+
+                    --Push notes
+                    for i = 1, #currentmeasure do
+                        local note = currentmeasure[i]
+                        local delayaddms = SerializeNote(note)
+                        
+                        --[[
+                        local futuredelayaddms = (currentmeasure[i + 1] and currentmeasure[i + 1].delay or (nextnote and nextnote.delay or note.delay)) - note.delay
+                        --futuredelayaddms = 0
+                        --]]
+
+                       
+                        if i == #currentmeasure then
+                            --End (last note - next barline)
+                            Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (measurems) + measurestartms) - currentmeasure[#currentmeasure].ms)) / gcd - 1)
+                        else
+                            --Middle
+                            Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
+                        end
+                    end
+                    Out[#Out + 1] = ',\n'
+                end
+
+            end
+
+        end
+
+        Out[#Out + 1] = '#END\n'
+
+
+        --Just subtract delay from notes (UNDO)
+        for i = 1, #ParsedData do
+            local note = ParsedData[i]
+            note.ms = note.ms + note.delay
+        end
+
+
+
+        return table.concat(Out)
+    end
+
+    return table.concat(Out)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 --[[
-local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/delay.tja')
+--Serialize Test
+local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/serializein.tja')
 local ParsedData = Parsed[1]
 for i = 1, #ParsedData.Data do
     local note = ParsedData.Data[i]
@@ -9617,10 +10057,35 @@ end
 
 local out = Taiko.SerializeTJA(Parsed)
 print(out)
-io.open('./Songs/00 Customs/tja/neta/ekiben/delayserialized.tja', 'wb+'):write(out)
+io.open('./Songs/00 Customs/tja/neta/ekiben/serializeout.tja', 'wb+'):write(out)
 --print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
---error()
+error()
 --]]
+
+
+
+
+
+--[[
+--Compare Test
+local Parsed1, Error1 = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/serializein.tja')
+local Parsed2, Error2 = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/serializein.tja')
+local Data1 = Parsed1[1].Data
+local Data2 = Parsed2[1].Data
+
+for i = 1, #Data1 do
+    local note1 = Data1[i]
+    local note2 = Data2[i]
+    print(i, note1.type, note1.ms, note2.ms)
+    if tostring(note1.ms) ~= tostring(note2.ms) then
+        error'MISMATCH'
+    end
+end
+error()
+--]]
+
+
+
 
 
 
@@ -15426,6 +15891,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         local s = 0
         local lasts = nil
         local ms = nil
+        local dontincrements = false --flag to not increment s in case of freeze (file save dialog or pause)
+
         local nearest, nearestnote = {}, {}
         local autoside = false --false -> left, true = right
 
@@ -16013,7 +16480,11 @@ CalculateNoteHitGauge(target[1], target[2])
             --don't use rl.GetFrameTime since it doesn't track time outside of rl.BeginDrawing and rl.EndDrawing
             --new2: instead generate deltatime ourselves
             local news = rl.GetTime()
-            s = s + ((framen ~= 0 and (news - lasts) or 0) * runtimespeed)
+            if dontincrements then
+                dontincrements = false
+            else
+                s = s + ((framen ~= 0 and (news - lasts) or 0) * runtimespeed)
+            end
             lasts = news
             --s = s + rl.GetFrameTime()
             ms = s * 1000
@@ -18078,6 +18549,11 @@ CalculateNoteHitGauge(target[1], target[2])
                     Add zoom for freecam
                     Check for nils on noteinfo
                     Fix changems grid (grid + snap)
+                    Jump to ms
+                    Command?
+                        jump to ms
+                        reset all
+                        bulk set
 
                     NOTES:
                     Modify oms so it doesn't get reverted
@@ -18380,8 +18856,12 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                             --Reset rl.GetFrameTime (prevent weird jump)
+                            --[[
                             rl.EndDrawing()
                             rl.BeginDrawing()
+                            --]]
+                            --WE NOW USE os.clock
+                            dontincrements = true
 
                         else
                             --TODO: Handle error
@@ -18416,8 +18896,12 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                             --Reset rl.GetFrameTime (prevent weird jump)
+                            --[[
                             rl.EndDrawing()
                             rl.BeginDrawing()
+                            --]]
+                            --WE NOW USE os.clock
+                            dontincrements = true
 
 
                             --NVM: Just open new window (instance)
@@ -18429,6 +18913,49 @@ CalculateNoteHitGauge(target[1], target[2])
                             --TODO: Handle error
                             error('File not selected')
                         end
+
+                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Export) then
+                        --[[
+                        local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
+
+                        local str = PersistentParsed.Save(data)
+                        print(str, #str)
+                        --]]
+
+
+                        local path = FileDialog.Save('Export: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
+
+                        if path then
+                            --print(path)
+                            local data = Parsed
+
+                            --tja
+                            --Note: We are encapsulating Parsed in a table since it wants all difficulties
+                            local str = Taiko.SerializeTJA({data})
+
+                            local f = io.open(path, 'wb+')
+                            f:write(str)
+                            f:close()
+
+
+
+
+
+
+                            --Reset rl.GetFrameTime (prevent weird jump)
+                            --[[
+                            rl.EndDrawing()
+                            rl.BeginDrawing()
+                            --]]
+                            --WE NOW USE os.clock
+                            dontincrements = true
+
+                        else
+                            --TODO: Handle error
+                            error('File not selected')
+                        end
+
+                        --TODO: ADD IMPORT
                     end
                 end
 
@@ -19202,6 +19729,8 @@ CalculateNoteHitGauge(target[1], target[2])
             --Pause / Command
             local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
             if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
+                dontincrements = true
+
                 local before = os.clock()
 
                 rl.EndDrawing()
@@ -19919,8 +20448,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-    return Taiko.Calibrate()
-    --return Taiko.SongSelect()
+    --return Taiko.Calibrate()
+    return Taiko.SongSelect()
     --return Taiko.PlaySong(Parsed)
 
 
