@@ -4687,52 +4687,67 @@ do
     end
 
     function PersistentParsed.Load(str)
-        local Parsed = loadstring(decompress(string.sub(str, #header + 1, -1)))()
+        local data = decompress(string.sub(str, #header + 1, -1))
+        if data then
+            local f = loadstring(data)
+            if f then
+                local success, Parsed = pcall(f)
 
-        --Decompress keys
-        for i = 1, #Parsed.Data do
-            local note = Parsed.Data[i]
-            local new = {}
-            --[=[
-            for k, v in pairs(note) do
-                if PersistentParsed.DecompressKeyData[k] then
-                    note[PersistentParsed.DecompressKeyData[k]] = v
-                    note[k] = nil
-                end
-            end
-            --]=]
-            for k, v in pairs(note) do
-                if PersistentParsed.DecompressKeyData[k] then
-                    new[PersistentParsed.DecompressKeyData[k]] = v
+                if success then
+
+                    --Decompress keys
+                    for i = 1, #Parsed.Data do
+                        local note = Parsed.Data[i]
+                        local new = {}
+                        --[=[
+                        for k, v in pairs(note) do
+                            if PersistentParsed.DecompressKeyData[k] then
+                                note[PersistentParsed.DecompressKeyData[k]] = v
+                                note[k] = nil
+                            end
+                        end
+                        --]=]
+                        for k, v in pairs(note) do
+                            if PersistentParsed.DecompressKeyData[k] then
+                                new[PersistentParsed.DecompressKeyData[k]] = v
+                            else
+                                new[k] = v
+                            end
+                        end
+
+                        Parsed.Data[i] = new
+                    end
+
+                    --Undo index
+                    for i = 1, #Parsed.Data do
+                        local note = Parsed.Data[i]
+                        
+
+                        --change nextnote, startnote, endnote into numbers
+                        if note.nextnote then
+                            note.nextnote = Parsed.Data[note.nextnote]
+                        end
+                        if note.startnote then
+                            note.startnote = Parsed.Data[note.startnote]
+                        end
+                        if note.endnote then
+                            note.endnote = Parsed.Data[note.endnote]
+                        end
+                    end
+
+                    --Undo cdata???? cdata is nil so it dissappears after second iteration
+
+
+                    return Parsed
                 else
-                    new[k] = v
+                    return nil
                 end
+            else
+                return nil
             end
-
-            Parsed.Data[i] = new
+        else
+            return nil
         end
-
-        --Undo index
-        for i = 1, #Parsed.Data do
-            local note = Parsed.Data[i]
-            
-
-            --change nextnote, startnote, endnote into numbers
-            if note.nextnote then
-                note.nextnote = Parsed.Data[note.nextnote]
-            end
-            if note.startnote then
-                note.startnote = Parsed.Data[note.startnote]
-            end
-            if note.endnote then
-                note.endnote = Parsed.Data[note.endnote]
-            end
-        end
-
-        --Undo cdata???? cdata is nil so it dissappears after second iteration
-
-
-        return Parsed
     end
 
 
@@ -13889,39 +13904,21 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
 
                     --Play Song!
-                    while true do
-                        local Parsed, Error = Taiko.ParseTJAFile(nextdir)
-                        if Parsed then
-                            local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
-                            --[[
-                            --Load Parsed from file
-                            local f = io.open('Taikov34_out.lua', 'rb')
-                            local str = f:read('*all')
-                            f:close()
+                    local Parsed = Taiko.Parse(nextdir)
+                    if Parsed then
+                        local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
+                        --[[
+                        --Load Parsed from file
+                        local f = io.open('Taikov34_out.lua', 'rb')
+                        local str = f:read('*all')
+                        f:close()
 
-                            local data = PersistentParsed.Load(str)
+                        local data = PersistentParsed.Load(str)
 
-                            local ParsedData = data
-                            --]]
-                            local Status, Result = Taiko.PlaySong(ParsedData)
-                            if Status == true then
-                                --Song ended
+                        local ParsedData = data
+                        --]]
 
-                                --Show Results
-
-                                break
-                            elseif Status == false then
-                                --Retry
-
-                            elseif Status == nil then
-                                --Quit
-                                break
-                            else
-                                
-                            end
-                        else
-                            error('SONGSELECT: ' .. Error) --TODO
-                        end
+                        Taiko.Play(ParsedData)
                     end
                 else
                     --[[
@@ -18903,37 +18900,43 @@ CalculateNoteHitGauge(target[1], target[2])
 
                             local data = PersistentParsed.Load(str)
 
-                            --[[
-                            --Set current parsed to loaded parsed
-                            
-                            --Parsed = data (doesn't work, notes are still linked through nextnote)
-                            
-                            Parsed = data
-                            loaded = {}
-                            nextnote = data[1]
+                            if data then
+
+                                --[[
+                                --Set current parsed to loaded parsed
+                                
+                                --Parsed = data (doesn't work, notes are still linked through nextnote)
+                                
+                                Parsed = data
+                                loaded = {}
+                                nextnote = data[1]
 
 
-                            --REMEMBER: Set endtime so song would end at the right time
+                                --REMEMBER: Set endtime so song would end at the right time
 
-                            --]]
-
-
-
-                            --Reset rl.GetFrameTime (prevent weird jump)
-                            --[[
-                            rl.EndDrawing()
-                            rl.BeginDrawing()
-                            --]]
-                            --WE NOW USE os.clock
-                            dontincrements = true
+                                --]]
 
 
-                            --NVM: Just open new window (instance)
-                            --Then return what it returns, effectively ending this session (replace window basically)
-                            --TODO: Accept retry
-                            GuiMessage('Load: Success')
 
-                            return Taiko.PlaySong(data)
+                                --Reset rl.GetFrameTime (prevent weird jump)
+                                --[[
+                                rl.EndDrawing()
+                                rl.BeginDrawing()
+                                --]]
+                                --WE NOW USE os.clock
+                                dontincrements = true
+
+
+                                --NVM: Just open new window (instance)
+                                --Then return what it returns, effectively ending this session (replace window basically)
+                                --TODO: Accept retry
+                                GuiMessage('Load: Success')
+
+                                return Taiko.Play(data)
+
+                            else
+                                GuiMessage('Load: Invalid file data')
+                            end
                         else
                             --TODO: Handle error
                             GuiMessage('Load: File not selected')
@@ -19097,7 +19100,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                 --TODO: Accept retry
                                 GuiMessage('Import: Success')
 
-                                return Taiko.PlaySong(data)
+                                return Taiko.Play(data)
                             else
                                 --Handle Parsed Error
                                 error(Error)
@@ -20349,7 +20352,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
+    --Helper function for Taiko.Calibrate
     function Taiko.CalibrateParsed(Parsed)
         --[[
             HELPER FUNCTION FOR Taiko.Calibrate (Calibrate handles timing shit)
@@ -20474,7 +20477,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
+    --Entry point for calibration
     function Taiko.Calibrate(Parsed)
         --[[
             Parsed is just an optional score to calibrate against
@@ -20565,6 +20568,55 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+
+
+
+
+
+
+
+
+    --Wrapper for Taiko.PlaySong that handles everything (except difficulty selection and parsing)
+    function Taiko.Play(Parsed)
+        while true do
+            local Status, Result = Taiko.PlaySong(Parsed)
+            if Status == true then
+                --Song ended
+
+                --Show Results
+
+                break
+            elseif Status == false then
+                --Retry
+
+            elseif Status == nil then
+                --Quit
+                break
+            else
+                
+            end
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+    --Wrapper for Taiko.ParseTJAFile that handles errors
+    function Taiko.Parse(path)
+        local Parsed, Error = Taiko.ParseTJAFile(path)
+        if Parsed then
+            return Parsed
+        else
+            GuiMessage('Taiko.ParseTJA Error: ' .. Error)
+            return nil
+        end
+    end
 
 
 
