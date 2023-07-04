@@ -168,6 +168,7 @@ TODO: Add raylib option
     TODO: Editor import tja (easy)
     TODO: Serializetja v3
     TODO: Delay is not added to barline when change????? --DONE
+    TODO: Improve precision of SerializeTJA
     
 
 TODO: Taiko.Game
@@ -9803,6 +9804,7 @@ function Taiko.SerializeTJA(Parsed)
         --negative check
         -- [[
         if a < 0 or b < 0 then
+            error('Negative GCD')
             return nil
         end
         --]]
@@ -9908,6 +9910,7 @@ function Taiko.SerializeTJA(Parsed)
         local measurestartms = nil
         --local measurestartnote = nil
         local lastsign = nil
+        local lastsignraw = nil
         for i = 1, #ParsedData do
             --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
 
@@ -9915,7 +9918,7 @@ function Taiko.SerializeTJA(Parsed)
             local nextnote = ParsedData[i + 1] --CAN BE NIL
             
             --print(note.ms)
-
+            if i < 100 then print(note.ms) end
 
             --start of measure
             if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) then
@@ -9977,6 +9980,7 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = ToFraction(signraw)
                     Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     lastsign = sign
+                    lastsignraw = signraw
                 end
                 
                 --print(measurems, #currentmeasure, gcd, note.type)
@@ -9991,6 +9995,8 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = ',\n'
                 --]]
                 else
+                    local stacked = false
+
                     --Start (barline - first note)
                     Out[#Out + 1] = string.rep('0', ((currentmeasure[1].ms - measurestartms)) / gcd)
 
@@ -10010,9 +10016,30 @@ function Taiko.SerializeTJA(Parsed)
                             Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (measurems) + measurestartms) - currentmeasure[#currentmeasure].ms)) / gcd - 1)
                         else
                             --Middle
-                            Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
+                            --Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
+                            --Handle stacked notes
+                            if currentmeasure[i + 1].ms - currentmeasure[i].ms == 0 then
+                                --Enable stacked
+                                if not stacked then
+                                    Out[#Out + 1] = '\n#MEASURE 0/1\n'
+                                    stacked = true
+                                end
+                            else
+                                --Disable stacked
+                                if stacked then
+                                    Out[#Out + 1] = '\n#MEASURE '
+                                    Out[#Out + 1] = ToFraction(lastsignraw)
+                                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                                    stacked = false
+                                end
+                                Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
+                            end
                         end
                     end
+
+                    --Disable stacked
+
+
                     Out[#Out + 1] = ',\n'
                 end
 
