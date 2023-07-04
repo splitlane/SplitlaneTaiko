@@ -9692,6 +9692,7 @@ function Taiko.SerializeTJA(Parsed)
         Output: nothing
     ]]
     local lastnote = nil
+    --exclude: don't question, don't run
     local exclude = {
         mspermeasure = true,
         startnote = true,
@@ -9705,6 +9706,10 @@ function Taiko.SerializeTJA(Parsed)
         ms = true,
         scrolly = true,
     }
+    --include: don't question, just run
+    local include = {
+        scrollx = true,
+    }
     local function SerializeNote(note)
         local delayaddms = 0
         local addfirstnewline = true
@@ -9712,7 +9717,7 @@ function Taiko.SerializeTJA(Parsed)
         for k, v in spairs(note, function(t, a, b)
             return a < b
         end) do
-            if (not exclude[k]) and (not lastnote or not (note[k] == lastnote[k])) then
+            if (include[k]) or ((not exclude[k]) and (not lastnote or not (note[k] == lastnote[k]))) then
                 --[[
                 --TODO: Only output when addnewline is true
                 --Output change
@@ -9731,15 +9736,20 @@ function Taiko.SerializeTJA(Parsed)
                     Out[#Out + 1] = tostring(v)
                 elseif k == 'scrollx' then
                     --scrollx handles both scrollx and scrolly
+                    --TODO: Check scrolly against lastnote too --DONE
 
-                    Out[#Out + 1] = '#SCROLL '
-                    Out[#Out + 1] = tostring(-v)
-                    if note.scrolly ~= 0 then
-                        if -note.scrolly >= 0 then
-                            Out[#Out + 1] = '+'
+                    if (not lastnote or not (note[k] == lastnote[k] and note.scrolly == lastnote.scrolly)) then
+                        Out[#Out + 1] = '#SCROLL '
+                        Out[#Out + 1] = tostring(-v)
+                        if note.scrolly ~= 0 then
+                            if -note.scrolly >= 0 then
+                                Out[#Out + 1] = '+'
+                            end
+                            Out[#Out + 1] = tostring(-note.scrolly)
+                            Out[#Out + 1] = 'i'
                         end
-                        Out[#Out + 1] = tostring(-note.scrolly)
-                        Out[#Out + 1] = 'i'
+                    else
+                        addnewline = false
                     end
                 elseif k == 'gogo' then
                     if v then
@@ -9789,7 +9799,9 @@ function Taiko.SerializeTJA(Parsed)
             end
         end
 
-        Out[#Out + 1] = tostring(note.type)
+        if note.data == 'note' then
+            Out[#Out + 1] = tostring(note.type)
+        end
 
         lastnote = note
 
@@ -9911,6 +9923,8 @@ function Taiko.SerializeTJA(Parsed)
         --local measurestartnote = nil
         local lastsign = nil
         local lastsignraw = nil
+        local stacked = nil --holds ms
+        local stackedcondition = nil --holds last stackedcondition
         for i = 1, #ParsedData do
             --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
 
@@ -9918,129 +9932,162 @@ function Taiko.SerializeTJA(Parsed)
             local nextnote = ParsedData[i + 1] --CAN BE NIL
             
             --print(note.ms)
-            if i < 100 then print(note.ms) end
+            --if i < 100 then print(note.type, note.ms) end
 
             --start of measure
-            if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) then
+
+            --TODO: simplify to measureendedlast or (i == 1) or ((not stacked) and (nextnote and note.ms == nextnote.ms))
+            if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) or stackedcondition or ((not stacked) and (nextnote and note.ms == nextnote.ms)) then
                 currentmeasure = {}
                 measurestartms = note.ms
                 --measurestartnote = note
             end
 
 
+            --stacked
+            if (not stacked) and (nextnote and (note.data == 'note' and nextnote.data == 'note') and note.ms == nextnote.ms) then
+                stacked = note.ms
+            end
+
+
 
 
             --do stuff with notes
-            if (note.data == 'note') then
+            --[[
+            if note.data == 'note' then
                 currentmeasure[#currentmeasure + 1] = note
             end
-
+            --]]
+            --NVM: Also use barlines!
+            currentmeasure[#currentmeasure + 1] = note
 
             
 
 
+            stackedcondition = (stacked and not (nextnote and nextnote.ms == stacked))
+
             --end of measure
-            if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) then
-                local measureendms = (nextnote and nextnote.ms or note.ms)
-                local divtotalms = measureendms - measurestartms
-
-                --Subdivide
-                local gcd = nil
-                if #currentmeasure >= 2 then
-                    gcd = Subdivide(currentmeasure, measurestartms, measureendms)
-                elseif #currentmeasure == 1 then
-                    --Same as Subdivide but optimized
-                    --Take gcd of before or after note ms
-                    gcd = Gcd(note.ms - measurestartms, measureendms - note.ms)
-                else
-                    gcd = divtotalms
-                end
-
-                --Determine total measure ms
-                local measurems = nil
-                if nextnote then
-                    measurems = divtotalms
-                else
-                    --Subdivide
-                    measurems = gcd + divtotalms
-                end
-
-                --Place measure
-
-                --Determine measure sign
-                local msperbeat = 60000 / note.bpm
-                local signraw = (measurems / msperbeat) / 4
-                local sign = tostring(signraw)
-
-                --dont place measure if no measure change
-                if sign ~= lastsign then
-                    --LAZY --DIRTY (decimal fraction???)
-                    --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
-                    Out[#Out + 1] = '\n#MEASURE '
-                    Out[#Out + 1] = ToFraction(signraw)
-                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
-                    lastsign = sign
-                    lastsignraw = signraw
-                end
-                
-                --print(measurems, #currentmeasure, gcd, note.type)
-
-                --Cases
-                if #currentmeasure == 0 then
-                    Out[#Out + 1] = ',\n'
-                --[[
-                    --There are some weird cases (0's after or before note, so just switch to normal)
-                elseif #currentmeasure == 1 then
-                    local delayaddms = SerializeNote(note)
-                    Out[#Out + 1] = ',\n'
-                --]]
-                else
-                    local stacked = false
-
-                    --Start (barline - first note)
-                    Out[#Out + 1] = string.rep('0', ((currentmeasure[1].ms - measurestartms)) / gcd)
+            if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) or stackedcondition then
+                if stackedcondition then
+                    Out[#Out + 1] = '\n#BARLINEOFF\n'
+                    if lastsignraw ~= 0 then
+                        Out[#Out + 1] = '#MEASURE 0/1\n'
+                    end
 
                     --Push notes
                     for i = 1, #currentmeasure do
                         local note = currentmeasure[i]
                         local delayaddms = SerializeNote(note)
-                        
-                        --[[
-                        local futuredelayaddms = (currentmeasure[i + 1] and currentmeasure[i + 1].delay or (nextnote and nextnote.delay or note.delay)) - note.delay
-                        --futuredelayaddms = 0
-                        --]]
-
-                       
-                        if i == #currentmeasure then
-                            --End (last note - next barline)
-                            Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (measurems) + measurestartms) - currentmeasure[#currentmeasure].ms)) / gcd - 1)
-                        else
-                            --Middle
-                            --Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
-                            --Handle stacked notes
-                            if currentmeasure[i + 1].ms - currentmeasure[i].ms == 0 then
-                                --Enable stacked
-                                if not stacked then
-                                    Out[#Out + 1] = '\n#MEASURE 0/1\n'
-                                    stacked = true
-                                end
-                            else
-                                --Disable stacked
-                                if stacked then
-                                    Out[#Out + 1] = '\n#MEASURE '
-                                    Out[#Out + 1] = ToFraction(lastsignraw)
-                                    Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
-                                    stacked = false
-                                end
-                                Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
-                            end
-                        end
                     end
-
-                    --Disable stacked
 
 
                     Out[#Out + 1] = ',\n'
+
+                    --Place measure
+
+                    --Determine measure sign
+                    local msperbeat = 60000 / note.bpm
+                    local signraw = ((nextnote.ms - stacked) / msperbeat) / 4
+                    local sign = tostring(signraw)
+
+                    --dont place measure if no measure change
+                    if sign ~= lastsign then
+                        --LAZY --DIRTY (decimal fraction???)
+                        --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                        Out[#Out + 1] = '\n#MEASURE '
+                        Out[#Out + 1] = ToFraction(signraw)
+                        Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                        Out[#Out + 1] = ',\n'
+
+                        Out[#Out + 1] = '\n#MEASURE '
+                        Out[#Out + 1] = ToFraction(lastsignraw)
+                        Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                    end
+
+
+
+                    Out[#Out + 1] = '#BARLINEON\n'
+                    
+                    stacked = nil
+
+                else
+
+
+                    local measureendms = (nextnote and nextnote.ms or note.ms)
+                    local divtotalms = measureendms - measurestartms
+
+                    --Subdivide
+                    local gcd = nil
+                    if #currentmeasure >= 2 then
+                        gcd = Subdivide(currentmeasure, measurestartms, measureendms)
+                    elseif #currentmeasure == 1 then
+                        --Same as Subdivide but optimized
+                        --Take gcd of before or after note ms
+                        gcd = Gcd(note.ms - measurestartms, measureendms - note.ms)
+                    else
+                        gcd = divtotalms
+                    end
+
+                    --Determine total measure ms
+                    local measurems = nil
+                    if nextnote then
+                        measurems = divtotalms
+                    else
+                        --Subdivide
+                        measurems = gcd + divtotalms
+                    end
+
+                    --Place measure
+
+                    --Determine measure sign
+                    local msperbeat = 60000 / note.bpm
+                    local signraw = (measurems / msperbeat) / 4
+                    local sign = tostring(signraw)
+
+                    --dont place measure if no measure change
+                    if sign ~= lastsign then
+                        --LAZY --DIRTY (decimal fraction???)
+                        --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
+                        Out[#Out + 1] = '\n#MEASURE '
+                        Out[#Out + 1] = ToFraction(signraw)
+                        Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
+                        lastsign = sign
+                        lastsignraw = signraw
+                    end
+                    
+                    --print(measurems, #currentmeasure, gcd, note.type)
+
+                    --Cases
+                    if #currentmeasure == 0 then
+                        Out[#Out + 1] = ',\n'
+                    --[[
+                        --There are some weird cases (0's after or before note, so just switch to normal)
+                    elseif #currentmeasure == 1 then
+                        local delayaddms = SerializeNote(note)
+                        Out[#Out + 1] = ',\n'
+                    --]]
+                    else
+                        --Start (barline - first note)
+                        Out[#Out + 1] = string.rep('0', ((currentmeasure[1].ms - measurestartms)) / gcd)
+
+                        --Push notes
+                        for i = 1, #currentmeasure do
+                            local note = currentmeasure[i]
+                            local delayaddms = SerializeNote(note)
+                        
+                            if i == #currentmeasure then
+                                --End (last note - next barline)
+                                Out[#Out + 1] = string.rep('0', (((nextnote and nextnote.ms or (measurems) + measurestartms) - currentmeasure[#currentmeasure].ms)) / gcd - 1)
+                            else
+                                --Middle
+                                Out[#Out + 1] = string.rep('0', ((currentmeasure[i + 1].ms - currentmeasure[i].ms)) / gcd - 1)
+                            end
+                        end
+
+
+                        Out[#Out + 1] = ',\n'
+                    end
+
                 end
 
             end
