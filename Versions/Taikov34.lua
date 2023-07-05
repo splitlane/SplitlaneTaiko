@@ -15736,8 +15736,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             overlay = {
                 on = true, --enabled?
                 editortextp = rl.new('Vector2', 10, 10), --editor logo text pr
-                editortextsize = 50 --text size for editor logo text
-
+                editortextsize = 25 --text size for editor logo text
             },
             boxselection = false, --box selection happening?
             boxselectionpr = rl.new('Rectangle'), --pr for box selection
@@ -18578,7 +18577,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
                         .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
                         .. '\nEditor   MoveMode: Moving ' .. (editor.movingnotes and 'notes' or 'editor')
-                        , editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize, rl.BLACK)
+                        , editor.overlay.editortextp.x, editor.overlay.editortextp.y, editor.overlay.editortextsize * scale[2], rl.BLACK)
                 end
             end
 
@@ -19934,6 +19933,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 --RESCALE EVERYTHING
                 ResizeAll(Textures, rx, ry)
+
+                forceresync = true
             end
 
             --Screenshot
@@ -19949,6 +19950,8 @@ CalculateNoteHitGauge(target[1], target[2])
                 rl.ExportImage(image, GetTimestampFilename(Config.Paths.Screenshots, Config.Formats.Screenshot))
                 rl.UnloadImage(image)
                 --]]
+
+                forceresync = true
             end
             --[[
             if IsKeyPressed(Config.Controls.PlaySong.R) then
