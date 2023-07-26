@@ -18646,6 +18646,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         jump to ms
                         reset all
                         bulk set
+                    incrementms with measure 1/4 etc
 
                     NOTES:
                     Modify oms so it doesn't get reverted
