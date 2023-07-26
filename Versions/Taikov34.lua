@@ -18434,7 +18434,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
 
                         --Right
-                        local x = prx + h
+                        local x = prx + w
                         while true do
                             if x > Config.ScreenWidth then
                                 break
