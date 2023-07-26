@@ -18429,7 +18429,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                 v.x = x
                                 v2.x = x
                                 rl.DrawLineEx(v, v2, linethickness, color)
-                                x = x - h
+                                x = x - w
                             end
                         end
 
@@ -18442,7 +18442,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                 v.x = x
                                 v2.x = x
                                 rl.DrawLineEx(v, v2, linethickness, color)
-                                x = x + h
+                                x = x + w
                             end
                         end
 
@@ -19575,6 +19575,7 @@ CalculateNoteHitGauge(target[1], target[2])
                             editor.grid.pr.x = targetpr.x
                             editor.grid.pr.y = targetpr.y
                         else
+                            --[=[
                             editor.grid.isrect = false
 
                             --d = st
@@ -19585,6 +19586,29 @@ CalculateNoteHitGauge(target[1], target[2])
 
                             editor.grid.pr.width = d1
                             editor.grid.pr.height = d2
+
+                            --]=]
+
+                            editor.grid.isrect = true
+
+
+                            --v2
+                            local d1 = (editor.grid.msincrement) * note.speed[1]
+                            local d2 = (editor.grid.msincrement) * note.speed[2]
+
+                            --Account for diagonal distance
+
+                            editor.grid.pr.width = math.sqrt(d1 ^ 2 + d2 ^ 2)
+                            editor.grid.pr.height = Config.ScreenHeight
+
+
+
+
+
+
+
+
+
 
                             --Center on note
                             --[[
@@ -19600,6 +19624,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         --Absolute value
                         editor.grid.pr.width = math.abs(editor.grid.pr.width)
                         editor.grid.pr.height = math.abs(editor.grid.pr.height)
+                        print(editor.grid.pr.width)
 
                         --Safety checks
                         if editor.grid.pr.width < editor.grid.smallest then
