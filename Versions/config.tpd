@@ -273,8 +273,9 @@ DO NOT EDIT
         'Screenshot' = '.png',
     },
     'Settings' = {
+        'LimitFPS' = false,
         'FPS' = 60,
-        'VSync' = true,
+        'VSync' = false,
         'PlaySong' = {
             'SONGVOLMultiplier' = 1,
             'SEVOLMultiplier' = 0.5,

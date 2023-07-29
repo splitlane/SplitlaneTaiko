@@ -11648,7 +11648,9 @@ int MeasureText(const char *text, int fontSize)
         rl.SetTraceLogLevel(rl.LOG_NONE)
         rl.InitWindow(Config.ScreenWidth, Config.ScreenHeight, Config.WindowName)
     
-        rl.SetTargetFPS(Config.Settings.FPS)
+        if Config.Settings.LimitFPS then
+            rl.SetTargetFPS(Config.Settings.FPS)
+        end
         rl.SetExitKey(rl.KEY_NULL) --So you can't escape with ESC key used for pausing
         --rl.HideCursor() --Hide cursor
     end
@@ -11838,7 +11840,9 @@ int MeasureText(const char *text, int fontSize)
             InitWindow()
             lastconfigupdate.vsync = Config.Settings.VSync
         else
-            rl.SetTargetFPS(Config.Settings.FPS)
+            if Config.Settings.LimitFPS then
+                rl.SetTargetFPS(Config.Settings.FPS)
+            end
         end
     end
     Taiko.UpdateConfig()
@@ -16572,6 +16576,18 @@ CalculateNoteHitGauge(target[1], target[2])
             --don't use rl.GetFrameTime since it doesn't track time outside of rl.BeginDrawing and rl.EndDrawing
             --new2: instead generate deltatime ourselves
             local news = rl.GetTime()
+
+            --[[
+                multiplier from 60fps to whatever fps
+            ]]
+            local deltamultiplier = nil
+            if lasts then
+                deltamultiplier = (news - lasts) / (1 / 60)
+            else
+                deltamultiplier = 1
+            end
+            --print(deltamultiplier)
+
             if dontincrements then
                 dontincrements = false
             else
@@ -16583,6 +16599,8 @@ CalculateNoteHitGauge(target[1], target[2])
             framen = framen + 1
             --forceresync = true --Alternately enable forceresync for extra precision? (???)
             --]]
+
+
 
 
 
@@ -19263,8 +19281,8 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
                 if not (movex == 0 and movey == 0) then
-                    movex = movex * scale[1]
-                    movey = movey * scale[2]
+                    movex = movex * deltamultiplier * scale[1]
+                    movey = movey * deltamultiplier * scale[2]
 
                     --print(movex, movey)
                     if editor.movingnotes then
@@ -19323,7 +19341,7 @@ CalculateNoteHitGauge(target[1], target[2])
                    
                     --Time
                     if IsKeyDown(Config.Controls.PlaySong.Debug.Backward) then
-                        s = s - Config.Controls.PlaySong.Debug.BackwardIncrement
+                        s = s - (Config.Controls.PlaySong.Debug.BackwardIncrement * deltamultiplier)
 
                         --respawn notes
 
@@ -19391,7 +19409,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         forceresync = true
                     end
                     if IsKeyDown(Config.Controls.PlaySong.Debug.Forward) then
-                        s = s + Config.Controls.PlaySong.Debug.ForwardIncrement
+                        s = s + (Config.Controls.PlaySong.Debug.ForwardIncrement * deltamultiplier)
                         
                         forceresync = true
                     end
@@ -19789,7 +19807,7 @@ CalculateNoteHitGauge(target[1], target[2])
                 
                 --Time
                 if IsKeyDown(Config.Controls.PlaySong.Debug.Backward) then
-                    s = s - Config.Controls.PlaySong.Debug.BackwardIncrement
+                    s = s - (Config.Controls.PlaySong.Debug.BackwardIncrement * deltamultiplier)
 
                     --respawn notes
 
@@ -19857,7 +19875,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     forceresync = true
                 end
                 if IsKeyDown(Config.Controls.PlaySong.Debug.Forward) then
-                    s = s + Config.Controls.PlaySong.Debug.ForwardIncrement
+                    s = s + (Config.Controls.PlaySong.Debug.ForwardIncrement * deltamultiplier)
                     
                     forceresync = true
                 end
