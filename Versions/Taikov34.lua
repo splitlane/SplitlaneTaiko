@@ -19625,7 +19625,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         --Absolute value
                         editor.grid.pr.width = math.abs(editor.grid.pr.width)
                         editor.grid.pr.height = math.abs(editor.grid.pr.height)
-                        print(editor.grid.pr.width)
+                        --print(editor.grid.pr.width)
 
                         --Safety checks
                         if editor.grid.pr.width < editor.grid.smallest then
