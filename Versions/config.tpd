@@ -172,9 +172,9 @@ DO NOT EDIT
                     'Import' = {
                         73 = true,
                     },
-                    // Clear Everything / new file
-                    'ClearEverything' = {
-
+                    // Clear all, everything / new file
+                    'ClearAll' = {
+                        78 = true,
                     },
                     // New note
                     'New' = {

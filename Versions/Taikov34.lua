@@ -18901,14 +18901,18 @@ CalculateNoteHitGauge(target[1], target[2])
                                 editor.currentdragging[#editor.currentdragging + 1] = note
                             end
                         end
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Copy) then
+                    end
+
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Copy) then
                         editor.clipboard = {}
 
                         for i = 1, #editor.currentdragging do
                             local note = editor.currentdragging[i]
                             editor.clipboard[#editor.clipboard + 1] = note
                         end
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Paste) then
+                    end
+
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Paste) then
                         --Clear selection
                         editor.currentdragging = {}
 
@@ -18987,7 +18991,9 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
 
                         leftdown = true
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Cut) then
+                    end
+
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Cut) then
                         --TODO: Fully delete note
                         editor.clipboard = {}
 
@@ -19008,7 +19014,9 @@ CalculateNoteHitGauge(target[1], target[2])
                             end
 
                         end
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Save) then
+                    end
+
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Save) then
                         --[[
                         local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
 
@@ -19064,8 +19072,9 @@ CalculateNoteHitGauge(target[1], target[2])
                             --TODO: Handle error
                             GuiMessage('Save: File not selected')
                         end
+                    end
 
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
                         local path = FileDialog.Open('Load: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
@@ -19117,8 +19126,9 @@ CalculateNoteHitGauge(target[1], target[2])
                             --TODO: Handle error
                             GuiMessage('Load: File not selected')
                         end
+                    end
 
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Export) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Export) then
                         --[[
                         local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
 
@@ -19234,8 +19244,9 @@ CalculateNoteHitGauge(target[1], target[2])
                             --TODO: Handle error
                             GuiMessage('Export: File not selected')
                         end
+                    end
 
-                    elseif IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
                         local path = FileDialog.Open('Import: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
@@ -19285,9 +19296,10 @@ CalculateNoteHitGauge(target[1], target[2])
                             --TODO: Handle error
                             GuiMessage('Import: File not selected')
                         end
+                    end
 
-
-
+                    if IsKeyPressed(Config.Config.Controls.PlaySong.Editor.Shortcut.ClearAll) then
+                        
                     end
                 end
 
