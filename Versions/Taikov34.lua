@@ -170,6 +170,9 @@ TODO: Add raylib option
     TODO: Delay is not added to barline when change????? --DONE
     TODO: Improve precision of SerializeTJA
     TODO: move defaultcalibrate and defaultconfig and defaults to default folder
+    TODO: raygui
+    TODO: RayGuiDifficulty
+    TODO: jposscroll editor
     
 
 TODO: Taiko.Game
@@ -13373,6 +13376,93 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
 
 
+    --MISC GUI FUNCTIONS
+    --ALL RAYGUI
+    --[[
+        rgl files should all be 1280x720
+        code autogen should be hand audited
+
+        TODO:
+        RayGuiDifficulty
+        Gui for editor
+            New notes
+            Logo
+    ]]
+    function Taiko.RayGuiTemplate()
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+
+            
+
+            rl.EndDrawing()
+        end
+    end
+    function Taiko.RayGuiDifficulty()
+
+        local SelectedDifficulty = nil
+
+        --TEMPORARY --TODO
+        --choose difficulty
+        SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra'))
+        return SelectedDifficulty
+
+        --[[
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+
+            
+
+            rl.EndDrawing()
+        end
+
+        --]]
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --START OF ACTUAL GAME FUNCTIONS
+
+
+
     function Taiko.ParseBoxDef(source)
         --[[
             https://github.com/0auBSQ/OpenTaiko/blob/f47c4df82bc722eec0579ae52efa8dc00569d4df/Test/Documentation/Tja/NewCommands.md
@@ -14023,43 +14113,13 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                     --File
                     --print(nextdir)
 
-                    local SelectedDifficulty = nil
-
-                    --TEMPORARY --TODO
-                    --choose difficulty
-                    SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra'))
-                    --[[
-                    local str = ''
-                    while not rl.WindowShouldClose() do
-                        rl.BeginDrawing()
-                        rl.ClearBackground(rl.RAYWHITE)
-                        rl.DrawText('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra\n> ' .. str, 0, 0, fontsize, rl.BLACK)
-                        rl.EndDrawing()
-                        --print(str)
-                        if rl.IsKeyPressed(rl.KEY_ENTER) then
-                            local found = nil
-                            for k, v in pairs(Taiko.Data.CourseId) do
-                                if string.lower(string.sub(k, 1, #str)) == string.lower(str) then
-                                    found = k
-                                    break
-                                end
-                            end
-                            if found then
-                                SelectedDifficulty = found
-                                break
-                            end
-                        end
-                        local a = rl.GetCharPressed()
-                        if a ~= 0 then
-                            str = str .. string.char(a)
-                        end
-                    end
-                    --]]
+                    
 
 
                     --Play Song!
                     local Parsed = Taiko.Parse(nextdir)
                     if Parsed then
+                        local SelectedDifficulty = Taiko.RayGuiDifficulty()
                         local ParsedData = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
                         --[[
                         --Load Parsed from file
@@ -19275,8 +19335,8 @@ CalculateNoteHitGauge(target[1], target[2])
                             local Parsed, Error = Taiko.ParseTJAFile(path)
 
                             if Parsed then
-
-                                local data = Parsed
+                                local SelectedDifficulty = Taiko.RayGuiDifficulty()
+                                local data = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
 
                                 --[[
                                 --Set current parsed to loaded parsed
@@ -19338,8 +19398,8 @@ CalculateNoteHitGauge(target[1], target[2])
                                 local Parsed, Error = Taiko.ParseTJAFile(path)
     
                                 if Parsed then
-    
-                                    local data = Parsed
+                                    local SelectedDifficulty = Taiko.RayGuiDifficulty()
+                                    local data = Taiko.GetDifficulty(Parsed, SelectedDifficulty)
     
                                     --[[
                                     --Set current parsed to loaded parsed
