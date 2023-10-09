@@ -2487,6 +2487,7 @@ do
 
     function Persistent.Load(str)
         str = Persistent.StripComments(str)
+        --print(str)
         --[[
             Instead of lazy loadstringing, we parse
         ]]
@@ -10951,6 +10952,19 @@ int MeasureText(const char *text, int fontSize)
         end
         return out
     end
+    local superwarnenabled = true
+    local function GuiSuperWarn(str, str2)
+        if superwarnenabled then
+            local input = GuiInput(str .. '\nType \'' .. str2 .. '\' to confirm')
+            if input == str2 then
+                return true
+            else
+                return false
+            end
+        else
+            return true
+        end
+    end
 
 
 
@@ -19298,10 +19312,20 @@ CalculateNoteHitGauge(target[1], target[2])
                         end
                     end
 
-                    if IsKeyPressed(Config.Config.Controls.PlaySong.Editor.Shortcut.ClearAll) then
-                        
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.ClearAll) then
+                        --ACTUALLY CONFIRM, THIS WILL DELETE EVERYTHING
+                        local v = GuiSuperWarn('Are you sure you want to delete this chart?\nTHIS ACTION CANNOT BE DONE,\nAND EVERYTHING WILL BE DELETED', tostring(math.random(0, 1000000000)))
+                        if v then
+                            GuiMessage('ClearAll: Chart deleted')
+                        else
+                            GuiMessage('ClearAll: Action cancelled')
+                        end
                     end
                 end
+
+
+
+
 
                 if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Delete) then
                     --TODO: Fully delete note
@@ -19418,6 +19442,12 @@ CalculateNoteHitGauge(target[1], target[2])
                 --Shortcuts (Editor) key not active
 
                 if not IsKeyDown(Config.Controls.PlaySong.Editor.Shortcut.Hold) then
+
+                    --New note
+                    if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.New) then
+                        
+                    end
+
 
                     --Toggle auto
                     if IsKeyPressed(Config.Controls.PlaySong.Debug.ToggleAuto) then
