@@ -134,6 +134,9 @@ DO NOT EDIT
                 },
             },
             'Editor' = {
+                'Toggle' = {
+                    69 = true,
+                },
                 'Shortcut' = {
                     'Hold' = {
                         341 = true,
@@ -168,6 +171,14 @@ DO NOT EDIT
                     },
                     'Import' = {
                         73 = true,
+                    },
+                    // Clear Everything / new file
+                    'ClearEverything' = {
+
+                    },
+                    // New note
+                    'New' = {
+                        78 = true,
                     },
                 },
                 'ModifySelectionHold' = {

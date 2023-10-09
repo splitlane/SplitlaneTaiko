@@ -2382,7 +2382,9 @@ end
 
 do
     --[[
-    persistentv1.lua
+    persistentv2.lua
+
+    ADDED COMMENTS, and comment stripper. Parser is the same (except 1 line, added acceptiongkeys to equalsparse)
 
     Goal:
     save scores (numbers) and strings elegantly and compactly
@@ -2484,6 +2486,7 @@ do
 
 
     function Persistent.Load(str)
+        str = Persistent.StripComments(str)
         --[[
             Instead of lazy loadstringing, we parse
         ]]
@@ -2506,7 +2509,7 @@ do
         repeat
             i = i + 1
 
-            if string.sub(str, i, i + 2) == ' = ' then
+            if acceptingkey and string.sub(str, i, i + 2) == ' = ' then
                 acceptingkey = false
                 acceptingvalue = true
                 lastvalue = {}
@@ -2589,6 +2592,13 @@ do
     end
 
 
+
+
+    function Persistent.StripComments(str)
+        --DIRTY AS FUCK
+        --you better not have // anywhere
+        return string.gsub(str, '//.-\n', '')
+    end
 
 
 
@@ -17605,9 +17615,20 @@ CalculateNoteHitGauge(target[1], target[2])
             --]]
 
             --Use controls to look for keys because GetCharPressed / GetKeyPressed doesn't capture special keys
-            for k, v in pairs(Config.Controls.PlaySong.Hit) do
-                if rl.IsKeyPressed(k) then
-                    Hit(v[1], v[2])
+            -- + more efficient
+            --Editor takes priority
+            --TODO: Fix keybinds (conflicts) for EVERYTHING
+            if editor.on then
+                for k, v in pairs(Config.Controls.PlaySong.Hit) do
+                    if not (Config.Controls.PlaySong.Editor.Shortcut.New[k]) and rl.IsKeyPressed(k) then
+                        Hit(v[1], v[2])
+                    end
+                end
+            else
+                for k, v in pairs(Config.Controls.PlaySong.Hit) do
+                    if rl.IsKeyPressed(k) then
+                        Hit(v[1], v[2])
+                    end
                 end
             end
 
@@ -18694,6 +18715,11 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --Editor
+            --Toggle Editor?
+            if IsKeyPressed(Config.Controls.PlaySong.Editor.Toggle) then
+                editor.on = not editor.on
+            end
+
             if editor.on then
                 --[[
                     TODO:

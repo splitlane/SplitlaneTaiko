@@ -1,0 +1,2566 @@
+[33mcommit f02f9e39c35b8cc9ac9dc89c06e8dd83b53d1cd8[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: mc08 <mc08>
+Date:   Sat Jul 29 14:40:51 2023 -0700
+
+    playsong: multipled by deltamultiplier on some things so fps can scale
+
+[33mcommit d61c5f6a29811f2422c02223c8eb9766be0a4372[m
+Author: mc08 <mc08>
+Date:   Sat Jul 29 08:41:26 2023 -0700
+
+    raylua: updated to 4.5a
+
+[33mcommit 877de8a1b383c52f709913a65946d4f6baa64c34[m
+Author: mc08 <mc08>
+Date:   Tue Jul 25 18:07:07 2023 -0700
+
+    editor: updated todo
+
+[33mcommit 1dbfbba60df12b0a81b6fc777c808825b9fdc432[m
+Author: mc08 <mc08>
+Date:   Tue Jul 25 17:52:34 2023 -0700
+
+    amend
+
+[33mcommit 13581a2bb06955da08d286f4d04d70fb80b0d067[m
+Author: mc08 <mc08>
+Date:   Tue Jul 25 17:02:58 2023 -0700
+
+    editor: fixed grid (isrect) using only height (aka square) bruh, editor: used isrect for editingms grid
+
+[33mcommit 9c2fb19d45963713c89f7a3ead47559145724701[m
+Author: mc08 <mc08>
+Date:   Tue Jul 4 21:11:35 2023 -0700
+
+    editor: made overlay font size scale, playsong: added forceresync to togglefullscreen and screenshot
+
+[33mcommit 3aa3fadc0308a9fd72b1c51b75addb5e9cea5152[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 21:18:28 2023 -0700
+
+    serialize: fixed weird scroll lastnote bug, improved newmeasuregen
+
+[33mcommit 82e0de2eb610bfc747b7c5c0095c14a23e1b5196[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 17:33:00 2023 -0700
+
+    serializetja: v1 fail of stacked notes handler
+
+[33mcommit 741dad7821f8426ec33180a62e1fc7e7f48a2bab[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 16:11:19 2023 -0700
+
+    taiko: added Taiko.Parse, Taiko.Play, editor, songselect: added error handling
+
+[33mcommit 12b0c797de21f489fa2091375558ade106883943[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 15:49:27 2023 -0700
+
+    playsong, config: added waitforstart, editor: added feedback to save, load, export, import
+
+[33mcommit fffe6ee9c6a457253d18317cfdb787a118b8fb25[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 12:00:12 2023 -0700
+
+    serializetja: finished, editor: importing and exporting done
+
+[33mcommit 9302daa37c79dacd987e43bc6e5a18515c58328f[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 11:31:26 2023 -0700
+
+    serializetja: probably finished
+
+[33mcommit 9b040cf2ad986771044e80b44805dbc0c266f496[m
+Author: mc08 <mc08>
+Date:   Mon Jul 3 11:15:10 2023 -0700
+
+    parsetja: switched to pushing barline to currentmeasure (so delay, jposscroll, etc actually works), serializev3: works a lot smoother (gcd isn't fucked up and now uses ms relative to measurestart)
+
+[33mcommit da15bb76b0d50aab298a34f8ff016c7add96b15c[m
+Author: mc08 <mc08>
+Date:   Fri Jun 30 18:25:07 2023 -0700
+
+    calibrate: finished (except 60bpm audio)
+
+[33mcommit b69df32e5232ea65a9cc590668e0a0cc995ee137[m
+Author: mc08 <mc08>
+Date:   Thu Jun 29 19:17:54 2023 -0700
+
+    playsong: added oneveryframe and oneveryhit callbacks
+
+[33mcommit 6b7173f3452e9502fa7cad669191c67dca32e6d5[m
+Author: mc08 <mc08>
+Date:   Thu Jun 29 19:12:52 2023 -0700
+
+    playsong: made forward and backwards hold and added increment in config, playsong: added nonfunctional oneveryframe, oneveryhit, calibrate: started
+
+[33mcommit 4355e691f177a02d437461da722375a1d3b84296[m
+Author: mc08 <mc08>
+Date:   Thu Jun 29 18:30:00 2023 -0700
+
+    init, config: added mastervolume
+
+[33mcommit 5feb6529cd314820ee11ea6fe3c10a66ef7bf748[m
+Author: mc08 <mc08>
+Date:   Thu Jun 29 17:15:20 2023 -0700
+
+    playsong: NEW TIME SYSTEM, generating deltams ourselves (old one did not account for time outside rl.BeginDrawing and rl.EndDrawing)
+
+[33mcommit 32b31415eccdf092d96e23ae2a85f78d3d8e730c[m
+Author: mc08 <mc08>
+Date:   Wed Jun 28 22:38:18 2023 -0700
+
+    playsong: added persistentparsed saving and loading and file dialogs!
+
+[33mcommit 21b177c3cdb84e0252e9dbce1b75b87ef27225ce[m
+Author: mc08 <mc08>
+Date:   Mon Jun 26 15:26:21 2023 -0700
+
+    persistent: done, taiko: persistent done, filedialog: imported
+
+[33mcommit b1c024a4c521b437f9fff7e16677bf16d219fe4b[m
+Author: mc08 <mc08>
+Date:   Sun Jun 25 18:36:17 2023 -0700
+
+    persistentparsed: made it efficient and compact and fast
+
+[33mcommit 079126feb385fe3b4af75f6c8d72d79792f352d8[m
+Author: mc08 <mc08>
+Date:   Sun Jun 25 15:49:57 2023 -0700
+
+    persistentparsed: done, taiko: added persistentparsed
+
+[33mcommit 95986a0738baa1780dc882b50c10d16961528c0b[m
+Author: mc08 <mc08>
+Date:   Sun Jun 25 10:39:04 2023 -0700
+
+    editor: grid works with move, grid snap is scaled
+
+[33mcommit c6fba65787812555228e30311d06b49a4fadd11f[m
+Author: mc08 <mc08>
+Date:   Thu Jun 22 19:14:36 2023 -0700
+
+    editor: copied debug shortcuts to make it work with editor and without debug hold key
+
+[33mcommit c46e13c8d87ec436a999345c7242630f79e8f87d[m
+Author: mc08 <mc08>
+Date:   Thu Jun 22 19:05:43 2023 -0700
+
+    editor: overlay, display runtime speed, allow modification of runtime speed even when freezems is active
+
+[33mcommit b5affbc1bde1fbe705111570f8a335e611bcdf36[m
+Author: mc08 <mc08>
+Date:   Mon Jun 19 15:04:03 2023 -0700
+
+    editor: made offsets (freecam) work with selection and editor
+
+[33mcommit ede05ac5b3e1a758caba10ce9fb6dbe1f99587da[m
+Author: mc08 <mc08>
+Date:   Mon Jun 19 14:54:21 2023 -0700
+
+    editor: before massive freecam update
+
+[33mcommit d2409d1dbb51382c77722e94a7ca0626bec71e68[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 21:50:54 2023 -0700
+
+    editor: finished move (editor), config: added controls for move
+
+[33mcommit 844845d4e9fe5fd4b6dbe645e0e0c31c7ebeeb2c[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 19:10:15 2023 -0700
+
+    playsong: added toggle for background elements
+
+[33mcommit 85ef3b7660b9216eebc0afc4aa5c464bc4fcbf03[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 18:56:46 2023 -0700
+
+    editor: moving notes with arrow keys supported, grid finished, config: added move with arrow keys for editor
+
+[33mcommit de9dbf4a07b4fd815475cd20ecf781a9d7381f01[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 16:31:14 2023 -0700
+
+    editor: grid for changingscroll is done!
+
+[33mcommit 2549a0e9d4d16bdd5cf2d8f4f61422cee9eda19d[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 12:05:49 2023 -0700
+
+    editor: removed a bunch of commented out code
+
+[33mcommit 0ec781d0207c4317ecced26096928d4fc86f5732[m
+Author: mc08 <mc08>
+Date:   Thu Jun 15 12:04:08 2023 -0700
+
+    editor: added grid
+
+[33mcommit 4b2acb5e76d40151f0acca88e0b6506bfdc12752[m
+Author: mc08 <mc08>
+Date:   Wed Jun 14 21:49:39 2023 -0700
+
+    editor: finished cursor box selection
+
+[33mcommit e7584556d541cd1c17877c0d8e639b094085d8c7[m
+Author: mc08 <mc08>
+Date:   Wed Jun 14 11:50:16 2023 -0700
+
+    editor: added hovernote info, and toggle between changescroll or changems
+
+[33mcommit 93dcc1f33fa28a898df060a723da313f6d55e2cf[m
+Author: mc08 <mc08>
+Date:   Wed Jun 14 11:18:50 2023 -0700
+
+    editor: added edit note by moving (ms), config: added editor controls
+
+[33mcommit 8f28a5b9d2dadb85692430a8578dac5a3ee9369c[m
+Author: mc08 <mc08>
+Date:   Tue Jun 13 15:41:19 2023 -0700
+
+    editor: added shortcuts ctrl a, ctrl c, ctrl v, ctrl x, delete / backspace, s (snap)
+    editor: allowed editing drumrollbend
+    editor: finalized on pr (it can just be recalced) and p has scale issues
+
+[33mcommit 7edbb575368a2ec313625d3bb75e9592b6cce335[m
+Author: mc08 <mc08>
+Date:   Mon Jun 12 10:01:21 2023 -0700
+
+    editor: added selection
+
+[33mcommit f161554ccea627673537d2d4fba93922b338e30e[m
+Author: mc08 <mc08>
+Date:   Mon Jun 12 09:44:45 2023 -0700
+
+    editor: added hovernote info
+
+[33mcommit db755126694926564555c7d86379fab7c97a8298[m
+Author: mc08 <mc08>
+Date:   Sun Jun 11 18:01:09 2023 -0700
+
+    editor: dragging notes is experimental (non-persistent)
+
+[33mcommit 562ab6c8bfc2f66525ed76936a122442ee90d72f[m
+Author: mc08 <mc08>
+Date:   Sat Jun 3 21:40:25 2023 -0700
+
+    playsong: added runtimespeed, freeze (freezems), config: added more debug (freeze, slow, fast)
+
+[33mcommit d662dc67fd73f20bc8ddfb427411afddb77778b0[m
+Author: mc08 <mc08>
+Date:   Fri Jun 2 17:14:36 2023 -0700
+
+    LAST VERSION BEFORE EDITOR
+
+[33mcommit 4ad04c6e943cd077a7a0c556cc8103f2e801e596[m
+Author: mc08 <mc08>
+Date:   Fri Jun 2 16:04:04 2023 -0700
+
+    playsong: added savestates BUT SERIALIZE DOESNT WORK, config: added debug controls, serialize: started work
+
+[33mcommit b1231a5572a279b63227aa55a3bf6f427b7e3f9d[m
+Author: mc08 <mc08>
+Date:   Wed May 31 19:27:50 2023 -0700
+
+    playsong: added DEBUG rewind system, minor performance impacts, forward always works but backword is glichy with delay
+
+[33mcommit aaf6f6c359d2c4fa21e86cdfcf5c48c58094a313[m
+Author: mc08 <mc08>
+Date:   Wed May 31 18:08:38 2023 -0700
+
+    notepositiontest2: fixed flipped < sign
+
+[33mcommit ba7eb8919592d4c424092ed65206891e39828263[m
+Author: mc08 <mc08>
+Date:   Tue May 30 19:45:51 2023 -0700
+
+    parsetja: added flag $PARSER_UNCOMMENT_@@@ for tja compatibility (playing charts with #POSITIONF, #POSITIONT on other sims)
+
+[33mcommit e7a6cf572347e76dffec85379e1a189c1ed0b421[m
+Author: mc08 <mc08>
+Date:   Tue May 30 17:53:55 2023 -0700
+
+    parsetja: fixed multilinebrackets jumpline bug, added more examples for gimmick positiont
+
+[33mcommit 88d5056ed9ecf31d990c2f4015f9104db8ea3968[m
+Author: mc08 <mc08>
+Date:   Tue May 30 16:51:10 2023 -0700
+
+    parsetja: added positiont
+
+[33mcommit 0c635295c893973977ab1e692e6785b5614eaf0d[m
+Author: mc08 <mc08>
+Date:   Mon May 29 21:39:02 2023 -0700
+
+    parsetja: implemented multiline brackets, playsong: fixed sudden loadms override, notepositiontest2: finished circle bait and bait
+
+[33mcommit ded2be39a7d67937c74e657352fef3cb54d3d08f[m
+Author: mc08 <mc08>
+Date:   Mon May 29 18:28:03 2023 -0700
+
+    parsetja, playsong: implemented originalgimmick positionf, playsong: fixed some drumrollbend notes not having a notetype, tja: notepositiontest added
+
+[33mcommit d592c8b03d4dbec678b9987d22c36daa89c4374b[m
+Author: mc08 <mc08>
+Date:   Mon May 29 09:26:29 2023 -0700
+
+    reverted notes texture, updated todo
+
+[33mcommit b23793e310b96efcdb7045732623e5e754aad56d[m
+Author: mc08 <mc08>
+Date:   Mon May 22 17:10:49 2023 -0700
+
+    parsetja: fixed drumrollbend with normal drumrolls
+
+[33mcommit 9d51d84cd8649b1d57db34d1b2b98507baa167dc[m
+Author: mc08 <mc08>
+Date:   Mon May 22 11:27:23 2023 -0700
+
+    playsong: fixed benddrumroll rotationr error
+
+[33mcommit 1e4b25a27e2b4683b8222aab7a2d4624eac46bff[m
+Author: mc08 <mc08>
+Date:   Sun May 21 16:24:36 2023 -0700
+
+    playsong: finished and tested out drumrollbend
+
+[33mcommit da2f79bf9fd1251852fea6376b44c567a30d013c[m
+Author: mc08 <mc08>
+Date:   Sun May 21 11:20:27 2023 -0700
+
+    AFTER MAJOR LEGACY DRUMROLL CODE COMMENT CLEANUP
+
+[33mcommit 8dc2ff52ea81308c549edcfc002722720be3c200[m
+Author: mc08 <mc08>
+Date:   Sun May 21 11:19:27 2023 -0700
+
+    BEFORE MAJOR LEGACY DRUMROLL CODE COMMENT CLEANUP
+
+[33mcommit 13d1297eee1677fda39b945f505c4ab23e7760f5[m
+Author: mc08 <mc08>
+Date:   Sun May 21 11:17:08 2023 -0700
+
+    parsetja: implemented drumrollbend
+
+[33mcommit 3c26763eadb103e36ee8b57bd937efc2f3a0a3cd[m
+Author: mc08 <mc08>
+Date:   Sun May 21 10:38:56 2023 -0700
+
+    BEFORE cursed drumroll implementation
+
+[33mcommit fe18102ab699d112ceda8eb5a85860c78ddfed0c[m
+Author: mc08 <mc08>
+Date:   Sat May 20 22:41:39 2023 -0700
+
+    serializetja: fixed delay measure edge case part 3 (FINAL HOPEFULLY)
+
+[33mcommit 95260e6f48ea29aef72750289fc29a51ed074542[m
+Author: mc08 <mc08>
+Date:   Sat May 20 22:20:15 2023 -0700
+
+    serializetja: fixed delay measure edge case part 2
+
+[33mcommit 21fb2638b8e94d98a66cbd430614d07e6e87b360[m
+Author: mc08 <mc08>
+Date:   Sat May 20 22:01:24 2023 -0700
+
+    serializetja: fixing delay measure edge case part 1
+
+[33mcommit 1c96c6d2427e385f7c84433daae9d74fbe728279[m
+Author: mc08 <mc08>
+Date:   Fri May 19 19:42:24 2023 -0700
+
+    Failed1 attempt to fix SerializeTJA delay bug
+
+[33mcommit c8753e980c5fea5894fac274e088cf61caec287e[m
+Author: mc08 <mc08>
+Date:   Mon May 8 22:56:07 2023 -0700
+
+    serializetja: even more improvements to delay handling (measure correctness)
+
+[33mcommit e0fce39db56ebadbfafe8eec42b0601f8d969308[m
+Author: mc08 <mc08>
+Date:   Sun Apr 23 17:58:35 2023 -0700
+
+    command: added todo flags to many commands
+
+[33mcommit d59ea5edb03ea60f0bf60038dab5c12480861ffb[m
+Author: mc08 <mc08>
+Date:   Sun Apr 23 17:55:02 2023 -0700
+
+    command: text wrap works perfectly
+
+[33mcommit f23e77a6951943ad58ca278bb42eedf1dc52da5c[m
+Author: mc08 <mc08>
+Date:   Sun Apr 23 17:42:12 2023 -0700
+
+    taiko: started lyric wrapping, command: text wrapping works but word wrapping buggy when a word is longer than a line
+
+[33mcommit 752dd07f44edac3b2d7983ab4abd27f4dc5039da[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 19:24:14 2023 -0700
+
+    command: missing a comma in defaultcommands LMAO
+
+[33mcommit 7a0fc0cef1967aa19ca650a34774e15b62acb62b[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 19:23:18 2023 -0700
+
+    command: added example command and optional Data field for persistent data for commands
+
+[33mcommit 26eb6807d4967168d824c80b0d90393fdb500587[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 19:09:37 2023 -0700
+
+    command: added filesystem prefix (user@path$ ) and added Command.MergeFunction
+
+[33mcommit ab6791fb2bc8bf24f67943aaee0b845119a69166[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 18:51:30 2023 -0700
+
+    command: added ppp, updated Command.LastAutoComplete docs
+
+[33mcommit dc8fa47899a0c340e7b628c1afe337c3bed39031[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 12:30:37 2023 -0700
+
+    parsetja: fixed jposscroll fraction negatives not being parsed
+
+[33mcommit 49bdaf924dcab51e9c2b10736782497231464468[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 12:19:32 2023 -0700
+
+    playsong: optimized notehitgauge
+
+[33mcommit b0936c4e06b8d72935ce0a35337a8bfa0a89bcb4[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 12:01:19 2023 -0700
+
+    playsong: fixed notehitgauge cache weirdness
+
+[33mcommit 7fc8f4fcb40d78b4131030b532aae65fcd7c6018[m
+Author: mc08 <mc08>
+Date:   Thu Apr 20 11:29:59 2023 -0700
+
+    (taiko) init: fixed vsync window, config: vsync is on by default
+
+[33mcommit 3c8e1c6cc7d275789153667ae08f01febf5f53ae[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 15:44:02 2023 -0700
+
+    command: finished sethook
+
+[33mcommit aa60e861023230b80c3f4a73ace581d9c53c3900[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 15:29:47 2023 -0700
+
+    command: added headers to command files
+
+[33mcommit 90ff841c19bf9c8414447285ef3d5d6cfcf8a0b0[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 15:23:53 2023 -0700
+
+    command: fixed erroring when empty history, finished hookglobal
+
+[33mcommit 5cc8c5e1b1ad8b4e362f8bec335853a5a761303e[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 15:00:03 2023 -0700
+
+    command: fixed autocomplete tab for quoted strings, fixed parsing for quoted strings
+
+[33mcommit f8d044ea7f87552fa243df61fdee1579c87d6269[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 12:04:28 2023 -0700
+
+    command: finished setlocal, getlocal, listlocals, setglobal, getglobal, listglobals
+
+[33mcommit cc50f5aa9764ea398fdba14414f3ebfc4297a967[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 11:17:21 2023 -0700
+
+    command: autocomplete now adds space even when there are no suggestions
+
+[33mcommit 4f0031619ca7e7984530f3d3fc7ae4d520a015ec[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 11:14:49 2023 -0700
+
+    command: partially finished getlocal, setlocal
+
+[33mcommit ef1931b05353d2088d73ad99b7b89166ffe36493[m
+Author: mc08 <mc08>
+Date:   Wed Apr 19 10:27:20 2023 -0700
+
+    command: added debugcommands
+
+[33mcommit 39bb0c3afd02838e2a0524793740e86109de1e30[m
+Author: mc08 <mc08>
+Date:   Tue Apr 18 15:31:18 2023 -0700
+
+    command: added filesystemcommands, autocomplete stable
+
+[33mcommit 9b56a039d073ff1158300c8b6066871c2ee3cf17[m
+Author: mc08 <mc08>
+Date:   Tue Apr 18 09:58:19 2023 -0700
+
+    command: argdata display works on commands with no autocomplete
+
+[33mcommit f410e9d5b61b2682fd456caaca048c2e8f8ce876[m
+Author: mc08 <mc08>
+Date:   Tue Apr 18 09:54:17 2023 -0700
+
+    command: added optional ? identifier
+
+[33mcommit 6cae5c10a794f6ed6f03ab3bd11587718e563447[m
+Author: mc08 <mc08>
+Date:   Tue Apr 18 09:47:10 2023 -0700
+
+    command: prioritize arg autocomplete over autocomplete list data, defaultcommands, cmdrcommands: fix period consistency
+
+[33mcommit d48f417597b3ad35c4048f3cd9e6b875b3b7a070[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 22:47:15 2023 -0700
+
+    command: added cmdrcommands and raylibcommands and Validate for defaulttypes
+
+[33mcommit 515155abb34ce96bd0b1ff421bdd7f99b87b33d4[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 18:23:04 2023 -0700
+
+    command: finished autocomplete, added progress to autocompleteselected
+
+[33mcommit c85593f7159b17e8f0a77069dcd482ea0e06142f[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 17:25:46 2023 -0700
+
+    command: after autocomplete revamp v2
+
+[33mcommit e9f2abd614d0736642f7e089a1f50f319f22af03[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 17:19:52 2023 -0700
+
+    command: added defaulttypes, BEFORE AUTOCOMPLETE REVAMP V2
+
+[33mcommit 816fe0ede3578a7707251425ff67557eb83af363[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 11:49:18 2023 -0700
+
+    command: catchup scrolling implemented (where if the text is going offscreen, it scrolls)
+
+[33mcommit 464cfe1dc884755f9157d27b0fb09e7b7a7a5213[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 11:22:52 2023 -0700
+
+    command: implemented Command.Exit
+
+[33mcommit 5236475a6bdb38e0cb89e65de1a61df31d2e19de[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 11:20:55 2023 -0700
+
+    command: scroll -> Command.Scroll, fixed lua repl exit
+
+[33mcommit 7988fe89efb85ab7fe9c99bec89bfe60000c80ba[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 11:12:56 2023 -0700
+
+    command: added clear and clearhistory, and Command.Input
+
+[33mcommit 265c4de83b09e1931a377785f62354c512900cfa[m
+Author: mc08 <mc08>
+Date:   Mon Apr 17 10:37:19 2023 -0700
+
+    command: tab works for autocompletion! before Command.Input revamp
+
+[33mcommit 8b8443b29756e7cadd6703344ce7a895f26d46ee[m
+Author: mc08 <mc08>
+Date:   Sun Apr 16 17:23:40 2023 -0700
+
+    command: scroll bar works!
+
+[33mcommit 4ea3ac75c07604f202a541c8afbb8d04620018a7[m
+Author: mc08 <mc08>
+Date:   Sun Apr 16 12:26:52 2023 -0700
+
+    command: implemented scrolling with up and down and pageup and pagedown
+
+[33mcommit 7011cbe909d2952db329fe47cac421c88706f9f5[m
+Author: mc08 <mc08>
+Date:   Sun Apr 16 12:15:02 2023 -0700
+
+    command: autocomplete commands done!
+
+[33mcommit 654bb779d7b1e394a7ead1b92ea901be5f3e7bb9[m
+Author: mc08 <mc08>
+Date:   Sun Apr 16 11:54:05 2023 -0700
+
+    command: revamp autocomplete data structure, types added to commands
+
+[33mcommit fa46c39fcc6b9526c111c381630b955efdafa1c2[m
+Author: mc08 <mc08>
+Date:   Sun Apr 16 11:45:46 2023 -0700
+
+    command: before autocomplete revamp
+
+[33mcommit ef87209da695ef3c13207208440207c7aac4dba2[m
+Author: mc08 <mc08>
+Date:   Sat Apr 15 22:27:34 2023 -0700
+
+    command: parser and running commands done! now autocomplete!
+
+[33mcommit 4d29644438b4c163df11e828a7e4172c2f869b6c[m
+Author: mc08 <mc08>
+Date:   Fri Apr 7 18:01:13 2023 -0700
+
+    todo: updated todo
+
+[33mcommit 5c9f84adf7556d7f530ec8c6f4a5e834954aa186[m
+Author: mc08 <mc08>
+Date:   Fri Apr 7 17:56:47 2023 -0700
+
+    playsong: added sudden support, tja: created suddentest.tja
+
+[33mcommit 34370262e3e30ab1ce039c189959b7dc07548fe9[m
+Author: mc08 <mc08>
+Date:   Fri Apr 7 17:21:45 2023 -0700
+
+    parsetja: sudden done, now implementing on playsong
+
+[33mcommit 77d284afc9a8d8ed4096d751bd01b24def8f28fa[m
+Author: mc08 <mc08>
+Date:   Fri Apr 7 17:10:30 2023 -0700
+
+    parsetja: fixed sudden sign
+
+[33mcommit 946c896fa59cf12bf5ee4986bb713cb55fa94a95[m
+Author: mc08 <mc08>
+Date:   Fri Apr 7 17:08:31 2023 -0700
+
+    parsetja: made appearancems and movems relative, todo: updated todo
+
+[33mcommit f3ffac3b8cedf8ca2743624ff59d5554309e5422[m
+Author: mc08 <mc08>
+Date:   Wed Apr 5 22:21:57 2023 -0700
+
+    config: added vsync, fps, windowname, game: added updateconfig
+
+[33mcommit ff33fd75e790b2707ebbd6d1dc9088aeab29b94d[m
+Author: mc08 <mc08>
+Date:   Wed Apr 5 17:19:47 2023 -0700
+
+    ultraminify: lzw support!
+
+[33mcommit 766bde4b041c49a95d1ccbbd49ab983f8278f641[m
+Author: mc08 <mc08>
+Date:   Wed Apr 5 08:35:06 2023 -0700
+
+    ultraminify: added TRASH pattern escaper
+
+[33mcommit 05af2d5ebfdf2c4e5a072e59b441ef6d85d9a961[m
+Author: mc08 <mc08>
+Date:   Wed Apr 5 08:28:00 2023 -0700
+
+    ultraminify: updated variable priority
+
+[33mcommit 8ea17e10bbdcd2259b5503f5c76e21674cd5622c[m
+Author: mc08 <mc08>
+Date:   Tue Apr 4 21:45:03 2023 -0700
+
+    ultraminifyv2: its super good, todo: sudden, parsetja: added reset command
+
+[33mcommit eee8e0c4f948d0420eecb7442fbf0ebb605a59cd[m
+Author: mc08 <mc08>
+Date:   Fri Mar 31 17:16:48 2023 -0700
+
+    parsetja: added #RESETCOMMAND (but NOT TESTED)
+
+[33mcommit 3cb33ff29c4f0e256a4c05e0b454be503551f326[m
+Author: mc08 <mc08>
+Date:   Thu Mar 30 09:32:18 2023 -0700
+
+    parsewebvtt: works!!!
+
+[33mcommit 547afb7db794512524f64f1bf548d1551a34649c[m
+Author: mc08 <mc08>
+Date:   Sun Mar 26 10:31:42 2023 -0700
+
+    assets: fixed scaling issue for songselect genrebar
+
+[33mcommit 4e74de0b773a77252e087820cecf2bdd67526dcb[m
+Author: mc08 <mc08>
+Date:   Fri Mar 24 22:41:26 2023 -0700
+
+    songselect: add scrolling background
+
+[33mcommit c79cf0f5df8f98eb8b75e557ab9c85bbc61fda18[m
+Author: mc08 <mc08>
+Date:   Fri Mar 24 17:43:12 2023 -0700
+
+    songselect: fixed weird condensedirectory bug
+
+[33mcommit 18472981a4f18adea8e8a0655dfe1c0a765405f9[m
+Author: mc08 <mc08>
+Date:   Fri Mar 24 16:38:56 2023 -0700
+
+    songselect: use guiinput to select difficulty
+
+[33mcommit bbf0cbcd41b4b26fb9dc77e33a8a63119936c043[m
+Author: mc08 <mc08>
+Date:   Thu Mar 23 19:22:02 2023 -0700
+
+    songselect: added TEMPORARY center open and TEMPORARY difficulty select
+
+[33mcommit 37af35f05e984ca23c11e82045de8d25ed23c3f1[m
+Author: mc08 <mc08>
+Date:   Sun Mar 19 10:17:46 2023 -0700
+
+    songselect: fixed expanddirectory with nested dirs
+
+[33mcommit 3d737d234fe74a406141b33ed367fdddc8dd4b69[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 18:06:49 2023 -0700
+
+    songselect: added background that doesn't move yet
+
+[33mcommit 8a2b07a7a04006c694e388a09c741270a731fa41[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 17:59:12 2023 -0700
+
+    songselect: BOXDEF BOXCOLOR works!!!
+
+[33mcommit 45f90c4ba8afa66abe59968e77c0d4dd96e6f08c[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 17:45:53 2023 -0700
+
+    songselect: add box textures and colors! also optimized hextorgb!!! docs: added opentaiko command docs
+
+[33mcommit 724a52d38e1f3c52356359e3931e3b2568e6dd52[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 17:07:02 2023 -0700
+
+    serializetja: worked on it for a bit, config: added SONGVOLMultiplier, SEVOLMultiplier
+
+[33mcommit 783240a5423425b1ee8ddead241d539ce0650193[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 16:33:34 2023 -0700
+
+    songselect: made text position from skinconfig work!!! now, time for texture
+
+[33mcommit 7a64b3e63172581bc51fdf9a72a0349cee54b3bc[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 16:11:53 2023 -0700
+
+    MAJOR: realized ive been committing to v33 instead of v34 so i copy pasted all the changes
+
+[33mcommit ff52a387aa7338a47204e2113b23b4ef3a1d09cf[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 12:36:56 2023 -0700
+
+    playsong: fixed empty lyrics
+
+[33mcommit 402f6ebcd045561ec59ac7257d6df8ee24633f55[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 12:18:22 2023 -0700
+
+    added luacheck, and linted v34
+
+[33mcommit 7755deb5d247da06295b904b741c30588b3e3058[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 10:35:06 2023 -0700
+
+    playsong: lyrics are scaling!!! also added docs in code about vsync and settargetfps
+
+[33mcommit 493e71c2222da34b81fba739f0676d0ac4333887[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 10:21:59 2023 -0700
+
+    added dynamic fonts, playsong: lyrics only load codepoints that they need
+
+[33mcommit 3241b22e33bb778baba289115380d97c63219359[m
+Author: mc08 <mc08>
+Date:   Sat Mar 18 09:40:30 2023 -0700
+
+    parsetja: fixed jposscroll, bpmchange, and lyric carrying over to next measure, playsong: fixed empty lyrics
+
+[33mcommit d4a5d91191c6d12b41aaa1e2f461ae3155d720c6[m
+Author: mc08 <mc08>
+Date:   Fri Mar 17 11:48:07 2023 -0700
+
+    docs: added playsong works and returns, playsong: added results (TODO)
+
+[33mcommit 741f51529687d40883246a357e1fd89c1170ed3a[m
+Author: mc08 <mc08>
+Date:   Wed Mar 15 22:24:37 2023 -0700
+
+    docs: added / moved drumroll docs
+
+[33mcommit c7f61326f523f74f2f8ee56b352c0e2b17e9118e[m
+Author: mc08 <mc08>
+Date:   Wed Mar 15 22:21:50 2023 -0700
+
+    docs: added more about Taiko.ParseTJA
+
+[33mcommit 08fce81127b5e5d684c2825166e06f827b508246[m
+Author: mc08 <mc08>
+Date:   Wed Mar 15 17:58:50 2023 -0700
+
+    game: added sound warning
+
+[33mcommit 438bc89e26c1f7102710d4ef98a745477acb5656[m
+Author: mc08 <mc08>
+Date:   Wed Mar 15 17:20:21 2023 -0700
+
+    added run.cmd for easy running
+
+[33mcommit 3ef25371bf5ec0f495399d72ecb3c6b5e409ebc4[m
+Author: mc08 <mc08>
+Date:   Wed Mar 15 17:16:01 2023 -0700
+
+    assets: updated loading text to v34
+
+[33mcommit ab26839bcf3ec62b158b3426998d879179fd6db7[m
+Author: mc08 <mc08>
+Date:   Sat Mar 11 16:57:45 2023 -0800
+
+    playsong: added drumrollhitnote to notehitgauge
+
+[33mcommit 76ce289e817bdd29f62f935f817fdc1c64dd905b[m
+Author: mc08 <mc08>
+Date:   Sat Mar 11 16:47:42 2023 -0800
+
+    gameinit: CSVN Config if valid, refactoring is postponed
+
+[33mcommit b369e7f505c3822c2ec8b95700590ad628878d38[m
+Author: mc08 <mc08>
+Date:   Fri Mar 10 17:54:04 2023 -0800
+
+    BEFORE: MASSIVE implementing all ini values for game
+
+[33mcommit f9e5df3fd9e7ad5aae543c99694edfa2ac61ad31[m
+Author: mc08 <mc08>
+Date:   Fri Mar 10 17:52:13 2023 -0800
+
+    textures: ini parsing works
+
+[33mcommit 978bfcb1340b16d79ab0d75889c7d972d542eb92[m
+Author: mc08 <mc08>
+Date:   Fri Mar 10 17:43:19 2023 -0800
+
+    assets: added config files, textureloading: added a bit more of songselect texture
+
+[33mcommit 05abc8af64b9d8c021e44071bc2c7dce7d120be6[m
+Author: mc08 <mc08>
+Date:   Thu Mar 9 17:09:50 2023 -0800
+
+    taiko: updated ini parser
+
+[33mcommit d7bf2172ac9037d7d90e2da877b0b5e9397fb4e2[m
+Author: mc08 <mc08>
+Date:   Thu Mar 9 17:08:26 2023 -0800
+
+    iniparser: added #include
+
+[33mcommit 69be1d2c53f876e132f00eaa435e5a764f8299d0[m
+Author: mc08 <mc08>
+Date:   Thu Mar 9 16:52:43 2023 -0800
+
+    iniparser: added commands, fixed globals
+
+[33mcommit 674e2327f492f94c03469498f54dc5d649ac5f21[m
+Author: mc08 <mc08>
+Date:   Thu Mar 9 16:41:55 2023 -0800
+
+    v34
+
+[33mcommit 57582ef491c2ecd795c2744357af8ee6068284c9[m
+Author: mc08 <mc08>
+Date:   Wed Mar 8 18:53:04 2023 -0800
+
+    command: started work
+
+[33mcommit 03814420599fdfa955c5a546b2b2133a57a6102b[m
+Author: mc08 <mc08>
+Date:   Wed Mar 8 17:38:02 2023 -0800
+
+    game: replaced most of Config.ScreenHeight / Config.ScreenWidth with OriginalConfig.ScreenHeight / OriginalConfig.ScreenWidth
+
+[33mcommit 4d73ce501804e093bd8ef586be41674743d62e2e[m
+Author: mc08 <mc08>
+Date:   Wed Mar 8 17:32:16 2023 -0800
+
+    playsong: refactored code (remove animation creation for each playsong call) and allow for rescaling when game is ended
+
+[33mcommit 16f16d5fb70ee8179cb1774158598eefbaa0b330[m
+Author: mc08 <mc08>
+Date:   Tue Mar 7 22:20:26 2023 -0800
+
+    playsong: fixed minor textsize resizing issue
+
+[33mcommit 45066f6e3f40811db181e0422f0278855aeecac4[m
+Author: mc08 <mc08>
+Date:   Tue Mar 7 17:23:10 2023 -0800
+
+    removed 3 declarations for utf8Decode (LMAO)
+
+[33mcommit ba1660ef07dfeb473297f86dcb8ed2f71d555678[m
+Author: mc08 <mc08>
+Date:   Tue Mar 7 17:07:38 2023 -0800
+
+    updated strict.lua
+
+[33mcommit 5f930e243f995e6a7d9b134d050d27cec573396e[m
+Author: mc08 <mc08>
+Date:   Mon Mar 6 18:09:34 2023 -0800
+
+    major variable name refactoring and strict.lua: found a ton of dead code / dead variables
+
+[33mcommit 0ea8a7097255e4b140226f7418c06a8f32a0114d[m
+Author: mc08 <mc08>
+Date:   Sat Mar 4 21:59:22 2023 -0800
+
+    Config: added settings (LyricRomajiToHiragana, Cheats (todo))
+
+[33mcommit 9b15871331376da8c5cae24f5cc85e06a5e76e06[m
+Author: mc08 <mc08>
+Date:   Sat Mar 4 21:47:12 2023 -0800
+
+    parsetja, playsong: moved Romaji.ToHiragana calls from parsetja to playsong
+
+[33mcommit fce1a4afd54644c391507bc7e21242995d1833b2[m
+Author: mc08 <mc08>
+Date:   Sat Mar 4 21:31:27 2023 -0800
+
+    assets: added font assets, playsong: added font loading (load all 65536 fonts (very slow))
+
+[33mcommit 1eae3a977eb6e44c2e3330096f9cf7d9f35684e9[m
+Author: mc08 <mc08>
+Date:   Sat Mar 4 19:55:54 2023 -0800
+
+    romaji: fixed it for uppercase, just lowercase str, playsong: implemented lyrics with Codepoint
+
+[33mcommit b09647b57944fd716a34b84e3fabf533098674a6[m
+Author: mc08 <mc08>
+Date:   Sat Mar 4 17:46:31 2023 -0800
+
+    romaji: made initial converter
+
+[33mcommit c8ba469e68133a6935914532d3a19f5a5849f593[m
+Author: mc08 <mc08>
+Date:   Fri Mar 3 21:59:00 2023 -0800
+
+    Taiko.Data, parsetja, playsong: Changed timing to fit opentaiko zones, better performance too
+
+[33mcommit cc1367827651104c5038058fb55f1f6e099a92e0[m
+Author: mc08 <mc08>
+Date:   Fri Mar 3 21:50:35 2023 -0800
+
+    playsong: apparantly rl.LoadMusicStreamFromMemory is bug
+
+[33mcommit 5a9247c4638d2ab42d3bd4928173b7599694f5a5[m
+Author: mc08 <mc08>
+Date:   Fri Mar 3 18:09:59 2023 -0800
+
+    playsong: trying to fix LoadMusicStreamFromMemory but IT DOESNT WORK!!
+
+[33mcommit 9416823a5edcc8548cdd28fbc3309b264fad6d51[m
+Author: mc08 <mc08>
+Date:   Thu Mar 2 18:51:13 2023 -0800
+
+    UnicodeFileName: made it a lot gentler / lighter, no longer overrides all io functions but only io.open
+
+[33mcommit 7139ec16e53975f49baf05792e64d25641f7a91d[m
+Author: mc08 <mc08>
+Date:   Thu Mar 2 18:43:49 2023 -0800
+
+    dependency: integrated UnicodeFileName to Taikov33
+
+[33mcommit 275ea29078185554eaa85cb290a898e61e2bb796[m
+Author: mc08 <mc08>
+Date:   Wed Mar 1 21:59:19 2023 -0800
+
+    serializewebvtt: fix endms
+
+[33mcommit 03742297168e7a613aeb3976db78eea61bdf1b6a[m
+Author: mc08 <mc08>
+Date:   Wed Mar 1 21:56:31 2023 -0800
+
+    moved a lot of files, implemented webvtt serializer
+    added romaji to hiragana project
+
+[33mcommit 79861a2d11b1809b71643caef968d558cad53cee[m
+Author: mc08 <mc08>
+Date:   Wed Mar 1 17:53:04 2023 -0800
+
+    ffiFile: UnicodeFileName WORKS! DROP IN REPLACEMENT FOR IO
+
+[33mcommit ffbc4ebff5f41041397618b0f490443c8f74d567[m
+Author: mc08 <mc08>
+Date:   Wed Mar 1 17:24:55 2023 -0800
+
+    ffiFile: READING UNICODE FILE NAMES WORK!!!!!
+
+[33mcommit c30889713a394229f0138b3ef0239f75e7360582[m
+Author: mc08 <mc08>
+Date:   Wed Mar 1 16:59:29 2023 -0800
+
+    playsong: fixed drumroll scaling issues (FINALLY) + aspect ratio, started Taiko.SerializeWebVTT
+
+[33mcommit c5d3f58e80f3a73b9b27143ce82e98deb0131753[m
+Author: mc08 <mc08>
+Date:   Tue Feb 28 18:05:42 2023 -0800
+
+    playsong: fix drumroll startms and endms loading with queue
+
+[33mcommit 31ca077096599be5147071acda07f99056867190[m
+Author: mc08 <mc08>
+Date:   Tue Feb 28 17:55:12 2023 -0800
+
+    docs: added drumroll example code, playsong: FIXED DRUMROLL ENDS (MAJOR ISSUE)
+
+[33mcommit acc7630fc5a65cef6535f49345daab4926d19a29[m
+Author: mc08 <mc08>
+Date:   Mon Feb 27 18:11:35 2023 -0800
+
+    playsong: fixed drumroll scaling with change in aspect ratio, but there is still a SLIGHT error in scaling, the drumroll middle passes end at extreme aspect ratio
+
+[33mcommit 0743978ac1a15a75fbeae2922abc27ee030e0be9[m
+Author: mc08 <mc08>
+Date:   Mon Feb 27 17:59:47 2023 -0800
+
+    created drumroll test, playsong: cleaned up drumroll code
+
+[33mcommit 7730bd5043c739ff1a471ac3b5825df0b8c91a7e[m
+Author: mc08 <mc08>
+Date:   Sun Feb 26 17:59:39 2023 -0800
+
+    ffiFile: READING UTF8 FILES WORK!!!
+
+[33mcommit e62993bd9bb3cbc6dbf7d35c5a2a45eaabc17f69[m
+Author: mc08 <mc08>
+Date:   Sun Feb 26 15:16:20 2023 -0800
+
+    parsetja: added #NMSCROLL, parsetja: apply offsets to lyrics instead of passing it on to playsong
+
+[33mcommit 5fa355a7c087ac58632123c5860b984fd0f35465[m
+Author: mc08 <mc08>
+Date:   Sun Feb 26 12:48:33 2023 -0800
+
+    parsetja, playsong: support lyrics!!!!
+
+[33mcommit 6b5cda9e10c399ce783abe4b415ba883c54c7d90[m
+Author: mc08 <mc08>
+Date:   Sun Feb 26 09:43:31 2023 -0800
+
+    parsetja: lyric implemented, improved zeroopt for measure-continue on
+
+[33mcommit 4fe9a3f8cf08b14404e04b29123c1e9b3924a980[m
+Author: mc08 <mc08>
+Date:   Sun Feb 26 09:18:07 2023 -0800
+
+    FINAL VERSION OF BPMCHANGE, STOPSONG, and JPOSSCROLL being attached to notes
+    From now on, BPMCHANGE, STOPSONG, JPOSSCROLL will be directly stored in the Parsed of each difficulty.
+    Lyrics will be implemented in "LYRIC" of Parsed and WebVTT will be too
+
+[33mcommit 6b92f0890b09410ca2eae3eab8897558fa812162[m
+Author: mc08 <mc08>
+Date:   Sat Feb 25 22:00:46 2023 -0800
+
+    serializetja: done with simple song notation (EXCEPT: #DELAY)
+
+[33mcommit 9a1ba856d0823f7a379d6f29b3976b946c341fb1[m
+Author: mc08 <mc08>
+Date:   Sat Feb 25 21:01:03 2023 -0800
+
+    parsetja: removed Parser.scroll (i forgot)
+
+[33mcommit 5a58cffdff276d2a2a36e694b0b6804a21272ef6[m
+Author: mc08 <mc08>
+Date:   Sat Feb 25 20:52:54 2023 -0800
+
+    parsetja: removed note.scroll, serializetja: improved
+
+[33mcommit 1389d28f73c5ef88bb652ec0ecd40356510c8e07[m
+Author: mc08 <mc08>
+Date:   Fri Feb 24 22:22:31 2023 -0800
+
+    parsetja: decimals are valid in #MEASURE
+
+[33mcommit df863f39bc405f66bc2d493936d8dbcde31d585b[m
+Author: mc08 <mc08>
+Date:   Fri Feb 24 22:09:23 2023 -0800
+
+    playsong: loadsong: removed debug code, serializetja: adjusted tolerance 0.001 -> 1 ms
+
+[33mcommit b70f942e14fdb940bb0d2e6cd7964c6098f88ce3[m
+Author: mc08 <mc08>
+Date:   Fri Feb 24 20:38:31 2023 -0800
+
+    serializetja: works on first part of ekiben, no attributes yet
+
+[33mcommit d8440657abef194fa5065d66f82c424e71cf48ab[m
+Author: mc08 <mc08>
+Date:   Fri Feb 24 14:06:34 2023 -0800
+
+    serializetja: serializing notes without properties is implemented!
+
+[33mcommit dddb2223998da25b4d867ca5c1a8c3b4ac849889[m
+Author: mc08 <mc08>
+Date:   Fri Feb 24 13:57:27 2023 -0800
+
+    started working on REWRITING serializetja
+
+[33mcommit 3bc7bfb3f8c338b56b6b32c6719b6dd9f0a81603[m
+Author: mc08 <mc08>
+Date:   Thu Feb 23 16:45:01 2023 -0800
+
+    playsong: fixed auto (oops forgot to readd the dirty delay values trick)
+
+[33mcommit 3f23c79a6579d59c19b0663ec44e1afeb76656c4[m
+Author: mc08 <mc08>
+Date:   Thu Feb 23 15:24:10 2023 -0800
+
+    playsong: fixed timing offset, fixed auto offset, assets: added genre tag assets
+
+[33mcommit 6862de64dade920b17b2bc5c51264ac9f762f040[m
+Author: mc08 <mc08>
+Date:   Thu Feb 23 10:36:46 2023 -0800
+
+    songselect: fixed escaping from searches erroring, songs: added more songs
+
+[33mcommit 69d15cd1213b0f46f7cfecdd5a29dfd656eb3078[m
+Author: mc08 <mc08>
+Date:   Wed Feb 22 13:18:07 2023 -0800
+
+    tried to make unicode filenames allowed for music, but failed miserably
+
+[33mcommit 01225d727d1204a4d2cff59d3cd9f0db93c5bd99[m
+Author: mc08 <mc08>
+Date:   Tue Feb 21 18:15:36 2023 -0800
+
+    parsetja: zeroopt made faster by not disabling for entire measure, but just a note
+
+[33mcommit 3160e7d484dee6c450918b94f28a3b5a99f52ef2[m
+Author: mc08 <mc08>
+Date:   Tue Feb 21 17:49:55 2023 -0800
+
+    songselect: fixed currenttree for search (update it!)
+
+[33mcommit b31529d6148c286f9ecec5495b65fab847a042a6[m
+Author: mc08 <mc08>
+Date:   Tue Feb 21 17:39:34 2023 -0800
+
+    songselect, config: added searching
+
+[33mcommit 9e09e17f2402372cf4fc6fa3e4edc51f9340e16b[m
+Author: mc08 <mc08>
+Date:   Tue Feb 21 13:19:57 2023 -0800
+
+    config: renamed some controls
+
+[33mcommit f3607f0551d187aa22ce27403ae5d5971e58aeb5[m
+Author: mc08 <mc08>
+Date:   Tue Feb 21 08:42:27 2023 -0800
+
+    playsong: fixed hbscroll bpmchange loadms
+
+[33mcommit 3f9fbf429c74bb6e1446861f6cfcaaa358544ca3[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 22:32:06 2023 -0800
+
+    fixed donkama hbscroll
+
+[33mcommit e024455201f58b3fdb9ce3c86dc61f9b3b36dd77[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 22:29:45 2023 -0800
+
+    parsetja: fix zeroopt for jposscroll and bpmchange leading into next measure
+
+[33mcommit 24ad250458f6a4bc8c270d7ed8fcdc06597a5209[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 14:17:00 2023 -0800
+
+    Taiko.ParseTJAFile: Added error catching
+
+[33mcommit a41be188bc32d64b318c0b50aed30084454d03d2[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 14:02:34 2023 -0800
+
+    playsong: fixed balloon senotes
+
+[33mcommit 81af1416786dc8303a5c0b42202733e5908cf545[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 13:56:16 2023 -0800
+
+    playsong: fixed balloons below 5 hits, MAY BE UNSTABLE
+
+[33mcommit 08aa5324090bbd83e688dd54910d40d09caa98ce[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 13:42:10 2023 -0800
+
+    config: changed FastScrollTime into 512ms (default windows 10)
+
+[33mcommit fa7a89dd40d2322465b6679e06b3e9563e4fb1d0[m
+Author: mc08 <mc08>
+Date:   Mon Feb 20 13:36:55 2023 -0800
+
+    playsong: removed round from functions
+
+[33mcommit 26e1f3eec4995d8850e7618e3995164207a5c7fa[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 22:25:43 2023 -0800
+
+    boxdefparser: fixed not being able to recognize boxexplanation
+
+[33mcommit 7ea8fecf9f8dab86c24cb7cea5c8d0dcc323fd71[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 22:20:39 2023 -0800
+
+    deps: added IniParser.ParseCSV and IniParser.ParseCSVN
+
+[33mcommit 331e491a44e3f83f4bb229226a0156f1ce43e50e[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 22:17:05 2023 -0800
+
+    songselect: started texture loading, main: integrated iniparserv1
+
+[33mcommit 7983747ab8a754b3959f9b9adbaa350678b59876[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 21:46:24 2023 -0800
+
+    assets: added texture mapping songselect
+
+[33mcommit dad98b4ae4f23273a46177c81bee83a711128491[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 21:15:24 2023 -0800
+
+    songselect: added box.def parser, songs: moved stuff and added opentaiko folders
+
+[33mcommit 80cb6b801263ec6c09bdbe28f7e7b822bd506d69[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 19:19:48 2023 -0800
+
+    playsong: fixed delays completely not working
+
+[33mcommit 775a90e3c50199aeaa5505694047fe422906405c[m
+Author: mc08 <mc08>
+Date:   Mon Feb 6 19:06:36 2023 -0800
+
+    moved /tja into /Songs, parsetja, playsong: added flag $PARSER_FORCE_OLD_BPMCHANGE, which removes bpmchange gimmick from hbscroll and bmscroll
+
+[33mcommit 3be8739793e0c71ac894b3efec5860fbd9e3dbe5[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 19:53:29 2023 -0800
+
+    playsong: moved stuff from Taiko.Game into playsong, removed settings mapping
+
+[33mcommit 96c1229b2f8f82f862077ff13abb0d4d4855f581[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 18:25:25 2023 -0800
+
+    playsong: added recording and replaying notes with side
+
+[33mcommit ed1a1a9850a16446283d73d86972ae3685d5467d[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 15:56:17 2023 -0800
+
+    playsong: fixed indentation issue (random indent lmao)
+
+[33mcommit 0dd04511c0cf3a7daf409c10a49b9edfc0908db1[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 15:53:50 2023 -0800
+
+    playsong: added pause menu
+
+[33mcommit 75fe09a1d8fd6440fdc1843532c65a7efd462e68[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 15:33:37 2023 -0800
+
+    songselect: added playing songs
+
+[33mcommit b8511b40f54c85ffcae2bea921ff7461fd0a059e[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 15:27:38 2023 -0800
+
+    songselect: removed Loaded cache, fixed loading folders
+
+[33mcommit b0453d3a342b637f63d653ad2e2988a56f494537[m
+Author: mc08 <mc08>
+Date:   Sun Feb 5 14:41:58 2023 -0800
+
+    songselect: opening folders works pretty badly, probably rewrite after this commit
+
+[33mcommit c9751473bdc7fb5e5149a8c7290488812e6135ce[m
+Author: mc08 <mc08>
+Date:   Fri Feb 3 18:05:10 2023 -0800
+
+    songselect, config: added fastscroll and scroll
+
+[33mcommit 75b137ff635f92d4e01b7e4cde729b9758158665[m
+Author: mc08 <mc08>
+Date:   Thu Feb 2 22:32:42 2023 -0800
+
+    songselect: text rendering and selected and renderdistance works
+
+[33mcommit d8c8231975a91a8932cd27380ab1eef11f7d2063[m
+Author: mc08 <mc08>
+Date:   Thu Feb 2 22:24:44 2023 -0800
+
+    songselect: fixed GetFileNameWithoutExt, worked on song sorting
+
+[33mcommit a7ea3b22b32161827a1e7fd6ebead4cff7fd2105[m
+Author: mc08 <mc08>
+Date:   Wed Feb 1 18:14:59 2023 -0800
+
+    Finished Taiko.ParseBoxDef
+
+[33mcommit 9a1f40c613aa7f78a8527afd88c62742dc75a641[m
+Author: mc08 <mc08>
+Date:   Tue Jan 31 22:12:56 2023 -0800
+
+    finished ini parser
+
+[33mcommit a5dfbdec312f4d2e4bd50480576c83ff6ca935dd[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 18:50:54 2023 -0800
+
+    playsong: fixed drumroll scaling, rect
+
+[33mcommit 9fe2c4c00a72bdabdd678c11f259de77cb09251b[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 15:38:39 2023 -0800
+
+    playsong: fixed balloon anim scaling, rect
+
+[33mcommit 0519c2e122e680527368f77e7817d50d89ac2701[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 14:49:24 2023 -0800
+
+    Songs/Bakemono2/test.tja missing a balloon, so modified
+
+[33mcommit 3e7e4194bc0f52112a23bcc5185ca0216c9b31d7[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 14:47:10 2023 -0800
+
+    playsong: finalized bpmchange, songs/BakemonoFriends fixed and works unmodified
+
+[33mcommit a759abf8487a58510532c3d836803c5987a6bb41[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 14:30:58 2023 -0800
+
+    playsong: stopqueue and bpmchangequeue is ordered by ms to fix alignment issues
+
+[33mcommit 2117ef73331708c6d996d2f82767154f7d508405[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 14:06:37 2023 -0800
+
+    parsetja: fixed zeroopt with bpmchange, playsong: fixed loadms for bpmchange by recalcing
+
+[33mcommit 15991582f94d9a2e4ea1b64d58489b5851cf8dce[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 11:30:35 2023 -0800
+
+    playsong: Seperated Controls into Config.Controls.PlaySong
+
+[33mcommit d8c18a01e422e65e84ce9fdb724606c77d4651bd[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 11:06:48 2023 -0800
+
+    playsong: prequeue jposscroll, stopsong, bpmchange, instead of checking for each note every frame
+
+[33mcommit 84aaaefcab7fbb579095e1c6cceaf6a203b88fd8[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 10:56:06 2023 -0800
+
+    playsong: MAJOR Code refactoring (remove old, useless comments)
+
+[33mcommit 173624e3befeb220f6edbef677f6d93174c38df1[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 09:58:26 2023 -0800
+
+    playsong: removed loading by calcing position
+
+[33mcommit 28d4821a08d31076a433844f874dfb7d19c85d85[m
+Author: mc08 <mc08>
+Date:   Sun Jan 29 09:50:30 2023 -0800
+
+    playsong: fixed HBSCROLL and BMSCROLL bpmchanges
+
+[33mcommit ef80b11a2f8143c4899dfb04cd0fdee4456901c9[m
+Author: mc08 <mc08>
+Date:   Sat Jan 28 17:26:35 2023 -0800
+
+    updated stuff
+
+[33mcommit 53766cdac386d5cb126d07fc4b40f5c32bdc087e[m
+Author: mc08 <mc08>
+Date:   Sat Jan 28 15:36:25 2023 -0800
+
+    added BakemonoFriends Song, playsong: added ScanSongs + fixed raylib functions for unicode
+
+[33mcommit ca8458e534427903917dec7325d8b43da1b2cdbf[m
+Author: mc08 <mc08>
+Date:   Fri Jan 27 17:22:21 2023 -0800
+
+    moved taikobuipm into Songs/
+
+[33mcommit b2e171c408729aaf6c24d5dbced2775bdc9ba9a9[m
+Author: mc08 <mc08>
+Date:   Fri Jan 27 17:19:45 2023 -0800
+
+    songselect: converts FilesListC into FilesList
+
+[33mcommit 8b5d5c7bf9e58f3d228aab0198bd85e690acc5f3[m
+Author: mc08 <mc08>
+Date:   Thu Jan 26 22:16:49 2023 -0800
+
+    added Songs/
+
+[33mcommit 13ca6237b5571da7c0a68602553102f1552e402e[m
+Author: mc08 <mc08>
+Date:   Thu Jan 26 19:09:45 2023 -0800
+
+    assets: added 3_SongSelect, songselect: built base
+
+[33mcommit 243f2462c76f9fe468de9a04984a3c4a405475c4[m
+Author: mc08 <mc08>
+Date:   Wed Jan 25 22:11:15 2023 -0800
+
+    playsong: added console
+
+[33mcommit 627c55910097373f49649f480a9fc08feead4b46[m
+Author: mc08 <mc08>
+Date:   Wed Jan 25 18:28:22 2023 -0800
+
+    playsong: made pausing take a still image and texture of screen, and render that every frame
+
+[33mcommit 6cdfcfad3bf2fbcd22471ddc04ae9edd235347e7[m
+Author: mc08 <mc08>
+Date:   Wed Jan 25 18:12:35 2023 -0800
+
+    added skinconfig and otherconfig assets
+
+[33mcommit f779a1323301c8bd2568a68beb604ebc2e062ac9[m
+Author: mc08 <mc08>
+Date:   Wed Jan 25 17:06:37 2023 -0800
+
+    playsong: switched from os.clock to rl.GetFrameTime
+
+[33mcommit 9fe446d3d86e68bceb43e3f38c43cf2ee6d614ca[m
+Author: mc08 <mc08>
+Date:   Wed Jan 25 16:52:51 2023 -0800
+
+    added paths to config, playsong: screenshot timestamp
+
+[33mcommit cc571b43a8346324ae0cfa0d0c78319469c71f01[m
+Author: mc08 <mc08>
+Date:   Tue Jan 24 22:05:23 2023 -0800
+
+    playsong: added nameplate
+
+[33mcommit 0047c59014c1b674a68f82bf316c4f3af07dd836[m
+Author: mc08 <mc08>
+Date:   Tue Jan 24 21:39:28 2023 -0800
+
+    updated todo, added assets
+
+[33mcommit 59b1f8d3d6c3591c8c7ab2cd733ac04da424cbd6[m
+Author: mc08 <mc08>
+Date:   Tue Jan 24 21:14:56 2023 -0800
+
+    playsong: added judgeanim
+
+[33mcommit fe89927cfa194a96dfe80cec1d8c8fb240b8b094[m
+Author: mc08 <mc08>
+Date:   Tue Jan 24 18:58:54 2023 -0800
+
+    playsong: added notehitlane anim
+
+[33mcommit 821b5fb942dfb83e49ae9da9928b4131397055a9[m
+Author: mc08 <mc08>
+Date:   Mon Jan 23 19:05:06 2023 -0800
+
+    playsong: added offsets.music
+
+[33mcommit 0562db389da88bc9e434109e2f3b8006686928e2[m
+Author: mc08 <mc08>
+Date:   Mon Jan 23 18:50:12 2023 -0800
+
+    playsong: updates music after resync
+
+[33mcommit 2cf8e69ba7ac5d688d1c72acdd126582ecf6284b[m
+Author: mc08 <mc08>
+Date:   Mon Jan 23 18:49:31 2023 -0800
+
+    playsong: implemented offsets.timing
+
+[33mcommit c94aedea0b7d15cc342c4ef4e81e1b33b7d128e2[m
+Author: mc08 <mc08>
+Date:   Mon Jan 23 18:28:24 2023 -0800
+
+    playsong: fixed gaugeclearanim scaling
+
+[33mcommit dcf6aa0b2d55e120199714272a5ea99599abf564[m
+Author: mc08 <mc08>
+Date:   Sun Jan 22 21:57:18 2023 -0800
+
+    playsong: made jposscroll more consistent
+
+[33mcommit 32848bdd930032002966f187576628007f6b6f9a[m
+Author: mc08 <mc08>
+Date:   Sun Jan 22 21:44:26 2023 -0800
+
+    playsong: fixed window bugs
+
+[33mcommit 14a5cee89df988d54b4eeb02a400bc8e21866c31[m
+Author: mc08 <mc08>
+Date:   Sun Jan 22 19:49:17 2023 -0800
+
+    playsong: added window resizing
+
+[33mcommit 285ca0b22ca68198e26ff43c18e49538188ed460[m
+Author: mc08 <mc08>
+Date:   Sun Jan 22 17:11:02 2023 -0800
+
+    playsong: added fullscreen and in-game scaling!
+
+[33mcommit f1fc4bcc18eae8353c6ca69b244d813109dab43a[m
+Author: mc08 <mc08>
+Date:   Sun Jan 22 09:41:58 2023 -0800
+
+    playsong: notehitgauge fixed for scaling
+
+[33mcommit feaca0a370d628a65a267bc1369f53a162f1f5d1[m
+Author: mc08 <mc08>
+Date:   Sat Jan 21 18:43:59 2023 -0800
+
+    updated TODO
+
+[33mcommit 06cfa217d0d92c7822d2b86aa8c85d164e8c6fb6[m
+Author: mc08 <mc08>
+Date:   Sat Jan 21 18:38:04 2023 -0800
+
+    playsong: added gaugeclear and gaugeoverflow animations
+
+[33mcommit 52fe2d44e1b7057e2b400903c353cf7e6d0ce197[m
+Author: mc08 <mc08>
+Date:   Wed Jan 18 19:56:49 2023 -0800
+
+    config, playsong: added ComboSoundEnabled
+
+[33mcommit 136b57091dd328cb25e13b085fa714e8edf0e4f0[m
+Author: mc08 <mc08>
+Date:   Wed Jan 18 18:39:51 2023 -0800
+
+    playsong: fixed calculating drumroll loading ms
+
+[33mcommit f9c699bba4873431c26e6f7e64f355206f87b7aa[m
+Author: mc08 <mc08>
+Date:   Tue Jan 17 22:28:59 2023 -0800
+
+    playsong: calculates drumroll unload with IsLineOutsideRectangle
+
+[33mcommit 6576aa12e452de5ee3df70e9d113d847931e7243[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 21:51:01 2023 -0800
+
+    playsong: drumroll senotes support
+
+[33mcommit 953c35fc980afa05e85db81cb6f8844a691c6a42[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 18:35:09 2023 -0800
+
+    playsong: fixed ANY drumroll, used atan2 for elegant solution
+
+[33mcommit 248990921a8e08b9fc0607b13bbf6f3f16018968[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 18:25:44 2023 -0800
+
+    playsong: fixed drumrolls if end goes faster
+
+[33mcommit b538ce10fdbfc4b300df8ed151623c44f2f9b9e3[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 17:40:14 2023 -0800
+
+    parsetja, playsong: added senotes for only don and ka
+
+[33mcommit e18c2e79735503258102c959e7706e69291f4f70[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 13:54:58 2023 -0800
+
+    parsetjafile: fixed taking first slash instead of last
+
+[33mcommit 5746ce071d420d4938aaf25f0628369ed5c60441[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 12:56:47 2023 -0800
+
+    playsong: removed loads and s
+
+[33mcommit 0380f2b19c12224cf31ca3ca4b7cc7f1ff2e5a16[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 12:54:01 2023 -0800
+
+    playsong: tried to fix loadms but failed
+
+[33mcommit 0207d30aa0f259e29caac22375461af5e2ad8a90[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 12:27:06 2023 -0800
+
+    playsong: fixed sound effects (hitsound + combo) not being loaded
+
+[33mcommit 3306a53a46fced638f787ddd9545ac407a45a54c[m
+Author: mc08 <mc08>
+Date:   Mon Jan 16 10:56:31 2023 -0800
+
+    test: helped ESE add japanese titles and subtitles
+
+[33mcommit 49eb488cff75717d431ccf71c327ed43c15101a5[m
+Author: mc08 <mc08>
+Date:   Thu Jan 12 19:12:37 2023 -0800
+
+    integrated texturemap dependency
+
+[33mcommit 5cc90a0aa3f58252188718e41c7d4206dcd23d00[m
+Author: mc08 <mc08>
+Date:   Thu Jan 12 18:55:43 2023 -0800
+
+    playsong: game will not error even if all assets are gone!
+
+[33mcommit fcaa55c172a25a514176d6c1feb549b2a6b2845e[m
+Author: mc08 <mc08>
+Date:   Thu Jan 12 18:47:14 2023 -0800
+
+    integrated dependencies into v33
+
+[33mcommit 6893e2007e5a850c377a477849011d9530814b93[m
+Author: mc08 <mc08>
+Date:   Thu Jan 12 18:43:07 2023 -0800
+
+    v33
+
+[33mcommit 9984cc6460fca68f8c84d22baeaaf30fe89ea33e[m
+Author: mc08 <mc08>
+Date:   Thu Jan 12 18:36:47 2023 -0800
+
+    updated docs
+
+[33mcommit 50bfb9f33c2b7cd153c7fab9b1cfac32302d166a[m
+Author: mc08 <mc08>
+Date:   Wed Jan 11 17:55:40 2023 -0800
+
+    playsong: notehitgauge, added fix for height (made it constant)
+
+[33mcommit ce68a817f6ab0cabf59040428aeb3c5b53dce9a1[m
+Author: mc08 <mc08>
+Date:   Wed Jan 11 17:14:16 2023 -0800
+
+    playsong: added notehitgauge animation (doesn't work for y)
+    parsetja, playsong: fixed not fraction complex jposscroll breaking
+
+[33mcommit 6a13f0b1d813b0c23e78c42e7d8bd517e5092376[m
+Author: mc08 <mc08>
+Date:   Tue Jan 10 20:27:08 2023 -0800
+
+    test: tried to not hard code values, and use bezier
+
+[33mcommit df1810fd1ef194944958a3116e177db1d43cd128[m
+Author: mc08 <mc08>
+Date:   Sun Jan 8 16:36:19 2023 -0800
+
+    v30: removed debug code, and it works now
+
+[33mcommit ec978faa39851972aca1c3afb689eb80145bb937[m
+Author: mc08 <mc08>
+Date:   Sun Jan 8 16:34:17 2023 -0800
+
+    playsong: fixed flag PARSER_FORCE_OLD_TARGET, fixed v31 not working
+
+[33mcommit 0b4a69d6937fded58c1f89733067743297ceb7b9[m
+Author: mc08 <mc08>
+Date:   Sun Jan 8 16:27:02 2023 -0800
+
+    experimented with notehitgauge animation, parsetja: made flags apply for all difficulties, added new flag $PARSER_FORCE_OLD_TARGET
+
+[33mcommit dd93b6090300c5a3777a56b292d92de74dc85a94[m
+Author: mc08 <mc08>
+Date:   Sat Jan 7 20:42:43 2023 -0800
+
+    playsong: updated todo
+
+[33mcommit 303ece01d452efd84db4238a78abc56e353695c8[m
+Author: mc08 <mc08>
+Date:   Sat Jan 7 17:44:06 2023 -0800
+
+    playsong: allowed animations to have any number of frames
+
+[33mcommit 57433f1369da0e95d554041baa74b67a5ee81554[m
+Author: mc08 <mc08>
+Date:   Sat Jan 7 17:25:03 2023 -0800
+
+    playsong: fixed combo number rendering during 0-9 combo
+
+[33mcommit fbb66045ca59881b42d36337c5da76b975689ba9[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 20:02:46 2023 -0800
+
+    playsong: added combo text, and combo counter
+
+[33mcommit 6696f9455efaf2f220875adc3deed2b893cffe0d[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 16:42:20 2023 -0800
+
+    playsong: fixed fast loading
+
+[33mcommit 58bf70624cb6941be45c8fa3a21e71261f58591f[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 14:03:29 2023 -0800
+
+    playsong: added fast loading (but no progress)
+
+[33mcommit e14d8e9dd90af3f9129ff97aa7412c88f0a8d0ad[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 13:08:26 2023 -0800
+
+    playsong: added clear sign to gauge
+
+[33mcommit 0d517e6dbf005e1884fb7ad1c3fce80723934c51[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 12:44:13 2023 -0800
+
+    playsong: changed rendering order to frame -> meter -> lane
+
+[33mcommit d39c867c070b8c9faeb103486d1d11b82f013f7b[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 12:35:51 2023 -0800
+
+    playsong: fixed bug with default speed calc (interval)
+
+[33mcommit 7f77b0b29582c55adde814b75af9c31503102995[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 12:30:52 2023 -0800
+
+    parsetja, playsong: added flag $PARSER_FORCE_OLD_NOTERADIUS
+    also added flags to donkama neta and jposscrolltest
+
+[33mcommit 0f190a6b192716490fb901cd5d312d80c6cf37a7[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 11:54:27 2023 -0800
+
+    parsetja: added parser flags (Parsed.Flag)
+    $PARSER_FORCE_OLD_SPEED_CALCULATION
+    $PARSER_FORCE_OPENTAIKO_SPEED_CALCULATION
+    to songs that use jposscroll
+
+[33mcommit 735faab034256dbef6b88c58026b78b6cc07913c[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 11:40:33 2023 -0800
+
+    playsong: added gauge functionality!
+
+[33mcommit 7316e2ed6b58a43a6f14e6dbf64f781a3ed315b0[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 09:29:34 2023 -0800
+
+    parsetja, playsong: renamed currentbranch attribute of note to currentbranch from branch to resolve name conflicts
+
+[33mcommit 4a6d8b5a3d4e03aad83ccd71c3f55c2f1f9b6724[m
+Author: mc08 <mc08>
+Date:   Wed Jan 4 09:26:18 2023 -0800
+
+    parsetja: fixed current branch, added branch data to notes
+
+[33mcommit 21acf7918afac59d13b89e338538ef63bbfae961[m
+Author: mc08 <mc08>
+Date:   Tue Jan 3 12:25:24 2023 -0800
+
+    playsong: added gauge but it doesn't work
+
+[33mcommit d6ec8d87f8c7664e819a22ca418a5e1d9475b5c3[m
+Author: mc08 <mc08>
+Date:   Tue Jan 3 12:17:53 2023 -0800
+
+    playsong: added coursesymbol
+
+[33mcommit 901423cb985b8605da3f358e6f06dfc5fd197471[m
+Author: mc08 <mc08>
+Date:   Mon Jan 2 21:37:58 2023 -0800
+
+    playsong: now uses the correct score font, instead of combo font
+
+[33mcommit cb6ca2032409c98f01ce34ca60de94f47d2dde30[m
+Author: mc08 <mc08>
+Date:   Mon Jan 2 20:41:08 2023 -0800
+
+    playsong: added score font rendering, but still scaled weirdly
+
+[33mcommit dd73251d69ed256fa40433978aa3c510b8ef0029[m
+Author: mc08 <mc08>
+Date:   Mon Jan 2 19:45:27 2023 -0800
+
+    playsong: added infobar
+
+[33mcommit 8f1a17e878899c14f6122788c11e7782d3d99efa[m
+Author: mc08 <mc08>
+Date:   Mon Jan 2 17:50:50 2023 -0800
+
+    playsong: added DrawTextTexture, which is font renderer for taiko fonts
+
+[33mcommit 1af0670ae951a26e8cb8255c027d187fbf6b3f70[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 21:33:15 2023 -0800
+
+    fixed speed calculation with interval + credit
+    added taiko animation and edited config
+
+[33mcommit cb0b9e3ad2bda736e2382586c5fda7f88bc40643[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 21:31:47 2023 -0800
+
+    Changed to calculating speed with interval formula from opentaiko
+
+[33mcommit d28573d9ed2d8cb16cf12c1232cb873f1eaf8118[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 19:40:09 2023 -0800
+
+    added background assets, ORIENTING TOWARDS SIMULATOR
+
+[33mcommit 2f12bd3ac12a8e7427fe3b715f578e3c3a2c699e[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 17:02:38 2023 -0800
+
+    added combo sound assets to sound and combo sound and balloon pop sound
+
+[33mcommit 8aa65f9c8001776091b15a43710889778f12c2d7[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 16:53:06 2023 -0800
+
+    playsong: completed balloon animation and added more assets (guage and end)
+
+[33mcommit bb1b6140d5cb286247482f14f7b875b3ccfd4956[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 14:23:35 2023 -0800
+
+    parsetja: improved zeroopt (delay and jposscroll), persistent: fixed carriage return being in newline, finished donkama neta
+
+[33mcommit 15440b63129466c34f7bf3940c1b0f926d6e950c[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 12:35:21 2023 -0800
+
+    moved files around
+
+[33mcommit c64e0f4a6c7fd2553f09576d462ad097d150abb6[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 12:28:57 2023 -0800
+
+    Finished config generation and loading
+
+[33mcommit 3b4928940b971e1723f593eb93423a10ea8b0c95[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 11:49:57 2023 -0800
+
+    deleted all redirects except for compact
+
+[33mcommit 19bc9247e8253b114ff54e798b61e80f20613c56[m
+Author: mc08 <mc08>
+Date:   Sun Jan 1 11:47:52 2023 -0800
+
+    Added config support (controls)
+
+[33mcommit 33d6d4ad53089fa2f74afd4054fb7195563b0739[m
+Author: mc08 <mc08>
+Date:   Sat Dec 31 20:19:50 2022 -0800
+
+    added persistent
+
+[33mcommit 33f99fe2f9c1ef745e21967f76a54c2056703087[m
+Author: mc08 <mc08>
+Date:   Sat Dec 31 15:31:56 2022 -0800
+
+    playsong: added progress bar, transitioned stopms to queue
+
+[33mcommit 517a7ece7bc74321f22693ba9d748afdb230029c[m
+Author: mc08 <mc08>
+Date:   Sat Dec 31 09:42:14 2022 -0800
+
+    playsong: REMOVED BRAILLE
+
+[33mcommit b7c6cbe864db66937ec19317d14e9bb06ab1652c[m
+Author: mc08 <mc08>
+Date:   Sat Dec 31 09:33:44 2022 -0800
+
+    v32
+
+[33mcommit 65aae9dfa788644a2ecfc6d5c21e1d87705e5541[m
+Author: mc08 <mc08>
+Date:   Sat Dec 31 09:33:00 2022 -0800
+
+    replaytaiko: added metadata parsing, playsong: check replay files
+
+[33mcommit 188aeed7fa02647217c1d6ee15460289bf3134a9[m
+Author: mc08 <mc08>
+Date:   Fri Dec 30 17:21:04 2022 -0800
+
+    minification, tested recording
+
+[33mcommit d819ad1e365db86db32f6d01e192eecb2d40be63[m
+Author: mc08 <mc08>
+Date:   Fri Dec 30 11:24:36 2022 -0800
+
+    playsong: added replaying and recording
+
+[33mcommit c548b7b53eea56fe1744e171eea3355a48d145d6[m
+Author: mc08 <mc08>
+Date:   Thu Dec 29 15:54:51 2022 -0800
+
+    updated donkama neta, created replay library
+
+[33mcommit f6d1afbe0bf364ba58be36500b89036967d636f2[m
+Author: mc08 <mc08>
+Date:   Tue Dec 27 15:11:14 2022 -0800
+
+    added donkama neta (UNFINISHED) and donchan assets and playsong: fixed minor bugs
+
+[33mcommit a01db0ad92b7bd80ca1d6dfb45c36d81a0737ffd[m
+Author: mc08 <mc08>
+Date:   Sun Dec 25 13:10:43 2022 -0800
+
+    playsong: fixed notes repeatedly breaking combo if not hit
+
+[33mcommit 7e9ebd9f73cf8e14a1384466060c41ae98127b14[m
+Author: mc08 <mc08>
+Date:   Thu Dec 22 22:17:41 2022 -0800
+
+    Updated readme, added LICENSE
+
+[33mcommit 3e1e859814416433be952044f411c799c78fdff9[m
+Author: mc08 <mc08>
+Date:   Thu Dec 22 21:57:40 2022 -0800
+
+    updated readme, ran tests
+
+[33mcommit b945096bcf6876587d032dee73bc1c5a781f6f4a[m
+Author: mc08 <mc08>
+Date:   Thu Dec 22 21:35:50 2022 -0800
+
+    playsong: fixed effects, descoped priority function
+
+[33mcommit 278abbbdfa4944c7cf761adc2512da0f3e8bda4d[m
+Author: mc08 <mc08>
+Date:   Thu Dec 22 11:58:55 2022 -0800
+
+    playsong: added effects
+
+[33mcommit 938b8fa2f92b5d7e796ad62de0d5ae0c7a2afd6a[m
+Author: mc08 <mc08>
+Date:   Thu Dec 22 10:28:06 2022 -0800
+
+    playsong: fixed note sound so it doesn't lag out the game
+
+[33mcommit bd2af058bea01dcac7029811ec26565f1342339b[m
+Author: mc08 <mc08>
+Date:   Wed Dec 21 21:30:10 2022 -0800
+
+    playsong: added resync if song goes above specified allowed offset, and also added more assets (effects, lanes)
+
+[33mcommit d4ac92cb99c576afee34f0342a31bdc174493a59[m
+Author: mc08 <mc08>
+Date:   Wed Dec 21 19:00:17 2022 -0800
+
+    playsong: rendering priority is by ms, and added sound effects affected by SEVOL and music affected by SONGVOL
+
+[33mcommit 1ca755f617528b287bb2efcc185d7f3335718f6e[m
+Author: mc08 <mc08>
+Date:   Wed Dec 21 18:27:46 2022 -0800
+
+    Added all sounds from skin
+
+[33mcommit 725ad397385bc6093eeab8d05c5506c24391f065[m
+Author: mc08 <mc08>
+Date:   Wed Dec 21 18:25:34 2022 -0800
+
+    playsong: added music but raylib takes it from payload
+
+[33mcommit cd6947e6338adf46f862d234bd01fb45b5b02f93[m
+Author: mc08 <mc08>
+Date:   Tue Dec 20 17:09:08 2022 -0800
+
+    parsetja, playsong: note.delay is only added if STOPSONG, and fixed loading priority issues, and improved consistency on CalculatePosition
+
+[33mcommit d281d8fca4a8d1f1292674995c191104c68531b9[m
+Author: mc08 <mc08>
+Date:   Mon Dec 19 22:16:30 2022 -0800
+
+    Added Assets_OpenTaiko, updated readme
+
+[33mcommit 7556005b1de992b38763f878d51f1fe96cdb9dd7[m
+Author: mc08 <mc08>
+Date:   Mon Dec 19 16:17:19 2022 -0800
+
+    v31, v30 RELEASE
+
+[33mcommit 6a8b85e401796d548a25086974b6c14a8a103038[m
+Author: mc08 <mc08>
+Date:   Mon Dec 19 15:51:51 2022 -0800
+
+    parsetja: parsecomplexnumbersimple, fixed negative
+
+[33mcommit 9c0219e40027ff67fe9c6c3548d8643cb8f8082e[m
+Author: mc08 <mc08>
+Date:   Sun Dec 18 20:48:54 2022 -0800
+
+    playsong: fixed notes that are supposed to come from top coming from bottom, flipy fixed!
+
+[33mcommit e3c26473c323b0b019a88ae2b709b9c04f33a7f9[m
+Author: mc08 <mc08>
+Date:   Sun Dec 18 18:39:40 2022 -0800
+
+    parsetja, playsong: added UNTESTED jposscroll y complex and polar
+
+[33mcommit 18a55664652a6951fcb2a021cffec96d5beac832[m
+Author: mc08 <mc08>
+Date:   Sun Dec 18 12:35:27 2022 -0800
+
+    added balloon textures, playsong: added default for jposscroll
+
+[33mcommit 9c7da0c3e0f4a7493cb71a1a2ac4a500b27208d4[m
+Author: mc08 <mc08>
+Date:   Sun Dec 18 10:43:51 2022 -0800
+
+    playsong: fixed loading priority for balloon, fixed notesize and noteradius and resizefactor
+
+[33mcommit 29eb4a49643764efc198da93e2d4724b2e206b1f[m
+Author: mc08 <mc08>
+Date:   Sun Dec 18 10:08:29 2022 -0800
+
+    playsong: loading, fixed drumrolls being loaded forever and notes can only be unloaded after it passes target (ms > note.ms)
+
+[33mcommit a33f3a590cb7a36bcfc047d847bc79dbea07aa19[m
+Author: mc08 <mc08>
+Date:   Sat Dec 17 21:37:38 2022 -0800
+
+    playsong: jposscroll, add more precision, if it ends uninterrupted, it ends at endpos
+
+[33mcommit 10245688b2f16595bb19f812cf0309e8fb9415c8[m
+Author: mc08 <mc08>
+Date:   Sat Dec 17 21:26:09 2022 -0800
+
+    playsong: jposscroll now ALWAYS activates before unload, like auto
+
+[33mcommit b44b13c23347c77db2903ecaadc95dd2af23733b[m
+Author: mc08 <mc08>
+Date:   Sat Dec 17 21:20:46 2022 -0800
+
+    playsong: fixed jposscroll not working sometimes, due to > comparison and auto hitting before
+
+[33mcommit 8442f6667fa0921bad3b5291ca0ad24651ee67de[m
+Author: mc08 <mc08>
+Date:   Sat Dec 17 21:12:34 2022 -0800
+
+    playsong: jposscroll, fixed unload rect
+
+[33mcommit b75516b4dae7ba4605975be13d2cce6f4e68cbbc[m
+Author: mc08 <mc08>
+Date:   Sat Dec 17 16:17:38 2022 -0800
+
+    parsetja and playsong: added jposscroll support
+
+[33mcommit baeb0b0e30206f8e6265a998d85f5fd5d5265627[m
+Author: mc08 <mc08>
+Date:   Thu Dec 15 21:47:41 2022 -0800
+
+    Added tween.lua and rendering of it for testing
+
+[33mcommit b565f38709400f82195ed9cce64a7e6a949515d5[m
+Author: mc08 <mc08>
+Date:   Wed Dec 14 17:23:20 2022 -0800
+
+    playsong: moved input to between calc and render
+
+[33mcommit 573ae002c292986e49c3a8774ccd56fde8f5ac90[m
+Author: mc08 <mc08>
+Date:   Wed Dec 14 17:15:02 2022 -0800
+
+    AFTER REVAMP: playsong: put ms and nearest and nearestnote to outer scope, delocalize
+
+[33mcommit dfaedb09182944a826a90f650799b02b886b27b3[m
+Author: mc08 <mc08>
+Date:   Tue Dec 13 20:56:56 2022 -0800
+
+    REFACTOR: PlaySong Raylib game loop comments (old rendering / speedopt) removed
+
+[33mcommit b3189f165439272dd8e2d783bb6cf95f54b34d47[m
+Author: mc08 <mc08>
+Date:   Sun Dec 11 19:26:19 2022 -0800
+
+    parsetja: added jposscroll, but not tested / not added on playsong, BEFORE REVAMP
+
+[33mcommit dd6ea3d31b076e66619cf316e241786034310d32[m
+Author: mc08 <mc08>
+Date:   Sun Dec 11 15:01:21 2022 -0800
+
+    playsong: added radius functionality, still haven't refactored, BEFORE REFACTOR STILL
+
+[33mcommit 0624676d29df067bd726150b069ae22bc9566ee0[m
+Author: mc08 <mc08>
+Date:   Sun Dec 11 11:26:43 2022 -0800
+
+    REFACTOR: before major refactoring
+
+[33mcommit bdde1f7e31e472b8416f9833dbcb628cddf3947c[m
+Author: mc08 <mc08>
+Date:   Sun Dec 11 11:25:57 2022 -0800
+
+    playsong: note priority is done!!! might slow down
+
+[33mcommit 42502549a42dfc36d496134ba9091028c084aea5[m
+Author: mc08 <mc08>
+Date:   Sun Dec 11 11:09:52 2022 -0800
+
+    playsong: before splitting loading priority, barline->drumroll->notes (back to front)
+
+[33mcommit 94b6f3e2367b27655f04dd00594b149bb3d2ac74[m
+Author: mc08 <mc08>
+Date:   Sat Dec 10 18:00:06 2022 -0800
+
+    playsong: Added more assets and added config for assets path
+
+[33mcommit 26599cd791a718181136007554e41c2246d91ddb[m
+Author: mc08 <mc08>
+Date:   Fri Dec 9 22:13:58 2022 -0800
+
+    neta.tja: fixed barline gimmick
+
+[33mcommit bab6609e424881def5df594d687ca2b29e0be020[m
+Author: mc08 <mc08>
+Date:   Fri Dec 9 07:49:38 2022 -0800
+
+    playsong: added FULL drumroll support for raylib
+
+[33mcommit 1fed84c9d4168154cfcfab27cc2f52fefad29144[m
+Author: mc08 <mc08>
+Date:   Thu Dec 8 16:57:11 2022 -0800
+
+    playsong: added drumroll support for positive scroll
+
+[33mcommit 05fd02d88d9564dd494670be517afcd0b80f60cf[m
+Author: mc08 <mc08>
+Date:   Sun Dec 4 12:13:21 2022 -0800
+
+    PlaySong: Raylib, transition away from DrawTexture to DrawTextureEx
+
+[33mcommit e96e75bba4bc7f9b8e28862b49b67ec8dfc3520a[m
+Author: mc08 <mc08>
+Date:   Wed Nov 30 18:03:27 2022 -0800
+
+    Playsong: added drumroll rendering
+
+[33mcommit 27074ccf469c9c198cde4a1bd590536b5ba7771e[m
+Author: mc08 <mc08>
+Date:   Tue Nov 29 19:25:19 2022 -0800
+
+    Playsong: added raylib support, but no status / input
+
+[33mcommit 93c9cd853867b4587eba048dfe7abc334242e311[m
+Author: mc08 <mc08>
+Date:   Sun Nov 27 12:07:59 2022 -0800
+
+    playsong: just added raylib option, but nothing coded yet
+
+[33mcommit 48d5c6dd0e17bdad715e8e05ec4accb24c2bb6d4[m
+Author: mc08 <mc08>
+Date:   Sat Nov 26 11:41:48 2022 -0800
+
+    v30
+
+[33mcommit c36780e3cf1ff88cba1f2a0966e3302895439f1d[m
+Author: mc08 <mc08>
+Date:   Sat Nov 26 11:33:36 2022 -0800
+
+    playsong: fixed auto not counting gogo
+
+[33mcommit d701eb8cc9f137963ace1177f38d239918412e68[m
+Author: mc08 <mc08>
+Date:   Fri Nov 25 22:32:41 2022 -0800
+
+    playsong: improved auto, moved auto back so even if note is going to be unloaded on frame, auto can hit
+
+[33mcommit 3f890730e8684c95bd8509c93f97447a37f82703[m
+Author: mc08 <mc08>
+Date:   Fri Nov 25 17:56:26 2022 -0800
+
+    playsong: COMPLETELY revamped auto, it now makes its own statuses and doesn't just emulate key press
+
+[33mcommit 01c08796e9d42945d2842c4fb34ba64632cc184d[m
+Author: mc08 <mc08>
+Date:   Fri Nov 25 17:43:56 2022 -0800
+
+    v28
+
+[33mcommit a546b2f5efc30ceb7adc766642b98e5760dd027c[m
+Author: mc08 <mc08>
+Date:   Fri Nov 25 17:40:07 2022 -0800
+
+    playsong: fixed wrong nearestnote and improved auto, also fixed drumrolls being unloaded instantly
+
+[33mcommit 0286f4a7fe550bb29cf66961b1a1dca445ed2722[m
+Author: mc08 <mc08>
+Date:   Thu Nov 24 22:29:11 2022 -0800
+
+    playsong: fixed only being able to load 1 note per frame
+
+[33mcommit b13a8fb4af8d8ed5073febd1b113c1407b7e45ee[m
+Author: mc08 <mc08>
+Date:   Thu Nov 24 11:58:52 2022 -0800
+
+    v28
+
+[33mcommit 7345027101ce2d6df7f0b552604c82b903a9e64b[m
+Author: mc08 <mc08>
+Date:   Thu Nov 24 11:58:08 2022 -0800
+
+    todo: updated todo
+
+[33mcommit b5e7bb609845045ffa0d51acc10696ade17e66a8[m
+Author: mc08 <mc08>
+Date:   Thu Nov 24 11:50:01 2022 -0800
+
+    songselect: added modifiers: reverse, invisible, messy
+
+[33mcommit b22ec7ab057d92966220b044f2cd3e91bb0bbee3[m
+Author: mc08 <mc08>
+Date:   Thu Nov 24 11:01:07 2022 -0800
+
+    ekiben neta finish!
+
+[33mcommit ba4f335b0d7c38f42249b2e218dbbd26325f5063[m
+Author: mc08 <mc08>
+Date:   Wed Nov 23 18:09:24 2022 -0800
+
+    playsong: removed speedopt (outoffsetx)
+
+[33mcommit 80709f503645fef146303b76b72c791402770171[m
+Author: mc08 <mc08>
+Date:   Wed Nov 23 17:59:08 2022 -0800
+
+    playsong: flipped y in todots and renderstatus
+
+[33mcommit 7a45245b8167209c67e5857759be4aff8eb6f664[m
+Author: mc08 <mc08>
+Date:   Wed Nov 23 14:57:10 2022 -0800
+
+    playsong: supports scrollx, y and speedx, y and stable!
+
+[33mcommit 99f48219502882d79a2c1b7dbf893101e7144493[m
+Author: mc08 <mc08>
+Date:   Tue Nov 22 11:50:50 2022 -0800
+
+    v27
+
+[33mcommit bebd3c0cfbf271d1ae258833ef75c2afaf3e8ce7[m
+Author: mc08 <mc08>
+Date:   Tue Nov 22 11:43:59 2022 -0800
+
+    songselect: added renaming function
+
+[33mcommit 02fb2d24c411baa684fdb1cfd140e33f395acc27[m
+Author: mc08 <mc08>
+Date:   Mon Nov 21 21:53:24 2022 -0800
+
+    neta: Finished delay.tja
+
+[33mcommit b66e81f5d9a3432202fd65c92ce4b639f4868f06[m
+Author: mc08 <mc08>
+Date:   Thu Nov 17 18:20:22 2022 -0800
+
+    parsetja: fixed nonexistant delay issue, just use measure cause delay doesn't count in increment
+
+[33mcommit a717f4e01d02674dff4f920fc79a5bc734ad66d5[m
+Author: mc08 <mc08>
+Date:   Thu Nov 17 17:50:12 2022 -0800
+
+    parsetja: added STOPSONG to metadata
+
+[33mcommit f962f3a57217933c2e5a660ab3cf63e3592684ee[m
+Author: mc08 <mc08>
+Date:   Tue Nov 15 22:11:24 2022 -0800
+
+    parsetja: added #direction
+
+[33mcommit 20188e64ae0ed9ae127a4aed73c147c18ffbfb5a[m
+Author: mc08 <mc08>
+Date:   Mon Nov 14 19:04:52 2022 -0800
+
+    moved around some files, created readme.md
+
+[33mcommit 5c1239cebbd5f075bd3314fbeda75b69af1cadd0[m
+Author: mc08 <mc08>
+Date:   Mon Nov 14 19:04:01 2022 -0800
+
+    parsetja: added complex and polar scroll
+
+[33mcommit f42ad5fb40cd539c5263f771084eb76db6e54d45[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 18:27:09 2022 -0800
+
+    docs: added TaikoManyGimmicks docs
+
+[33mcommit 7a6d601051eecbfab66646ee57991d5ba7e08b81[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 17:41:30 2022 -0800
+
+    parsetja: removed unnecessary safety checks
+
+[33mcommit f8d94cad6a93e0ce29a26cf10836ecf26ef3a67c[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 11:45:16 2022 -0800
+
+    v26
+
+[33mcommit 37b455fbbb59bb4c5860e4dc3a148c4072181faf[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 11:39:04 2022 -0800
+
+    Updated TODO
+
+[33mcommit 39d8a9a56f882d175f4fc597208282cea05d95d9[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 11:10:23 2022 -0800
+
+    playsong: removed unloading code, and duplicate and combined unloading detection
+
+[33mcommit 5e47dbfdf8f56a0b1a64d07763deb83239b58e5b[m
+Author: mc08 <mc08>
+Date:   Sun Nov 13 10:35:13 2022 -0800
+
+    playsong: fixed timing for songspeed
+
+[33mcommit 44683759d26087ae493465452831cf54efe42156[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 22:31:59 2022 -0800
+
+    playsong: finally fixed balloons being popped with ka
+
+[33mcommit 6cde29b8bdf5b57178b890ebbfc88b52929cec3c[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 22:30:52 2022 -0800
+
+    playsong: fixed balloons being popped by ka
+
+[33mcommit 6735a4e0510a01d14ea13597bfe64da8b3049d6c[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 21:05:01 2022 -0800
+
+    playsong: added tested drumroll and untested and untextured balloon
+
+[33mcommit ba43efb540df4957a365ae690df500144b01d4ae[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 20:54:50 2022 -0800
+
+    playsong: added tested drumroll and untested balloon support
+
+[33mcommit a811e68a3a82dc2f4f22026701e0ea5552381e22[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 18:40:46 2022 -0800
+
+    data: added balloon and balloonpop scoremodes
+
+[33mcommit fdbe821d363eea4884bedc0200e80ed8f936e7d6[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 18:17:58 2022 -0800
+
+    data: fixed scoring, only truncate ones place on 2
+
+[33mcommit 97614b9cb80701a6a9b1eee4a97027eaecb2949d[m
+Author: mc08 <mc08>
+Date:   Sat Nov 12 17:12:47 2022 -0800
+
+    playsong: before drumroll
+
+[33mcommit a4d16791d8535cd10c08efc96736d7aaf5211c70[m
+Author: mc08 <mc08>
+Date:   Fri Nov 11 21:15:18 2022 -0800
+
+    playsong: removed no autoemu, auto is autoemu
+
+[33mcommit 1f2ff1f831b96cc89430fd9277b2f80c9d04c525[m
+Author: mc08 <mc08>
+Date:   Fri Nov 11 21:07:13 2022 -0800
+
+    playsong: commented out redundant statistics
+
+[33mcommit 7857a54a23c8e6f75d71ee28a0c9a9e51b8f694b[m
+Author: mc08 <mc08>
+Date:   Wed Nov 9 17:51:34 2022 -0800
+
+    persistent
+
+[33mcommit 4499166d5673d064a9109d94b19c8629fc9ced48[m
+Author: mc08 <mc08>
+Date:   Sun Nov 6 15:24:27 2022 -0800
+
+    made notes disappear after hitting!
+
+[33mcommit 25e365597c5742fce20565165b800557d81f9ee4[m
+Author: mc08 <mc08>
+Date:   Sun Nov 6 13:36:44 2022 -0800
+
+    v25
+
+[33mcommit d42f2f00c04029019a418cff242eb2cd0434ae03[m
+Author: mc08 <mc08>
+Date:   Sun Nov 6 11:42:16 2022 -0800
+
+    parsetja: before changing delay parsing
+
+[33mcommit 6a761977475e5eb1fdf16e131b0aef500239ca46[m
+Author: mc08 <mc08>
+Date:   Sun Nov 6 10:13:49 2022 -0800
+
+    playsong: before rewrite of delay parser
+
+[33mcommit 86da5ed9cfaea04433ef973494298e269ac9efd6[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 15:48:47 2022 -0700
+
+    serializetja: organized current and state
+
+[33mcommit 2f869088c2dc16ca080014ce7fcf469ebdb37387[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 15:20:25 2022 -0700
+
+    v24
+
+[33mcommit 8bf03278d91db10d7d7fd5c972bdb16350f3151e[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 14:18:51 2022 -0700
+
+    v23
+
+[33mcommit 733136cfd0c8b06b4dd4573f1e3e90d38e2dc546[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 14:06:54 2022 -0700
+
+    serializetja: fixed first note issue
+
+[33mcommit f8cfc523820f1a0896393bb4e6f0a5b98d744d17[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 13:54:13 2022 -0700
+
+    serializetja: restructured current
+
+[33mcommit 39a324b6c7d0eb35023cda085eb8324559ebab58[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 13:45:39 2022 -0700
+
+    serializetja: just put barline in currentmeasure
+
+[33mcommit c7bc00900f39e39f738488457beb640bee32b044[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 13:36:20 2022 -0700
+
+    v22
+
+[33mcommit 7074ccc520692dc64497b2106cb0b781d6b93c3c[m
+Author: mc08 <mc08>
+Date:   Sat Nov 5 13:30:01 2022 -0700
+
+    serializetja measure fix
+
+[33mcommit a0c96a3faefab804bc8c8e465415666d9cb5027c[m
+Author: mc08 <mc08>
+Date:   Fri Nov 4 22:50:12 2022 -0700
+
+    serializer complete!
+
+[33mcommit d1c62c692fa3c6215d1d04474b658958069bdef7[m
+Author: mc08 <mc08>
+Date:   Fri Nov 4 22:36:49 2022 -0700
+
+    v21
+
+[33mcommit aba3abed6845280eb569284fc762bb201fbf864b[m
+Author: mc08 <mc08>
+Date:   Fri Nov 4 18:46:42 2022 -0700
+
+    v21
+
+[33mcommit 116d71ba549b956ec10f704a27e741b91e785f93[m
+Author: mc08 <mc08>
+Date:   Wed Nov 2 22:19:31 2022 -0700
+
+    renamed mata to kita
+
+[33mcommit 8178f03493ee260873e5dcf5e420dd92e9114784[m
+Author: mc08 <mc08>
+Date:   Wed Nov 2 18:51:47 2022 -0700
+
+    v20
+
+[33mcommit 8742edc145126ad634df1362b273376b9861bdf0[m
+Author: mc08 <mc08>
+Date:   Sun Oct 30 17:26:06 2022 -0700
+
+    Taikov19.lua
+
+[33mcommit 978b69b90c2a8b8b705b7100018309991f80eb7b[m
+Author: mc08 <mc08>
+Date:   Fri Oct 21 10:27:11 2022 -0700
+
+    Added curses + LOT MORE
+
+[33mcommit 23bc4947976e3f1e8448d523ec67e20ea6860003[m
+Author: mc08 <mc08>
+Date:   Wed Oct 5 17:33:10 2022 -0700
+
+    Taiko.Playsong
+
+[33mcommit f3f83be164c09d811d1e3e2c96b1acd6ae59f37c[m
+Author: mc08 <mc08>
+Date:   Mon Sep 26 16:48:46 2022 -0700
+
+    FPS improved
+
+[33mcommit 872af4ece31b0a6b62489fce7fc3f60f7586e59c[m
+Author: mc08 <mc08>
+Date:   Sun Sep 25 18:05:23 2022 -0700
+
+    Taiko.PlaySong
+
+[33mcommit 8b6f8263ec260b5c66a6dfd0b2cc0db4f12f6751[m
+Author: mc08 <mc08>
+Date:   Sun Sep 25 11:12:53 2022 -0700
+
+    Taiko.PlaySong
+
+[33mcommit 739726c9bc02661c1e8e3ed1daffa20304d690d3[m
+Author: mc08 <mc08>
+Date:   Wed Sep 21 18:33:06 2022 -0700
+
+    Parser
+
+[33mcommit bd1445cf9308ef24e4c1e8bf7961a08f18f3a5dc[m
+Author: mc08 <mc08>
+Date:   Tue Sep 20 17:09:03 2022 -0700
+
+    Parser
+
+[33mcommit 7ca3fac906518a31536eb3e71ad75d2f695e7ce3[m
+Author: mc08 <mc08>
+Date:   Mon Sep 19 18:30:20 2022 -0700
+
+    Speed
+
+[33mcommit 0b6031c7e3d9620813b6efa172754ebc008e64bc[m
+Author: mc08 <mc08>
+Date:   Fri Sep 16 20:13:05 2022 -0700
+
+    Added comments
+
+[33mcommit c854c673ae3e2a15671300c76e57ca6c5eb730af[m
+Author: mc08 <mc08>
+Date:   Fri Sep 16 18:53:44 2022 -0700
+
+    Parser
+
+[33mcommit e430434f86e853954e8eed80a3f6a66406358e72[m
+Author: mc08 <mc08>
+Date:   Wed Sep 14 21:43:49 2022 -0700
+
+    Adding commands / plan
