@@ -1,0 +1,592 @@
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Brand-new World/Brand-new World.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 223
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/New Genesis/New Genesis.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 16
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Let it Go ～Ari no Mama de～/Let it Go ～Ari no Mama de～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 103
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/THE DAY/THE DAY.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 145
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Cocotama Happy～Paradise!/Cocotama Happy～Paradise!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 177
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Oshiri Kajiri Mushi/Oshiri Kajiri Mushi.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 193
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Inferno/Inferno.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 198
+START: Invalid scoreinit, 830,4490
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Kaizoku Sentai Gokaiger/Kaizoku Sentai Gokaiger.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 142
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Connect/Connect.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 211
+START: Invalid scoreinit, 1080,6840
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Ultraman no Uta/Ultraman no Uta.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 201
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Wai Wai World/Wai Wai World.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 110
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Kill Me no Baby!/Kill Me no Baby!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 71
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Tokyo Shandy Rendezvous/Tokyo Shandy Rendezvous.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 16
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/DAY × DAY/DAY × DAY.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Jimmy Neutron Theme Song/Jimmy Neutron Theme Song.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 100
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/JoJo ～Sono Chi no Sadame～/JoJo ～Sono Chi no Sadame～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 135
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Your World/Your World.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 684
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/REAL × EYEZ/REAL × EYEZ.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Genkai Toppa × Survivor/Genkai Toppa × Survivor.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Moete Hero/Moete Hero.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 233
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Mahou Tsukai Sally/Mahou Tsukai Sally.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 155
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Saa Ike! Ninninger!/Saa Ike! Ninninger!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 325
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Goushoku My Way!!/Goushoku My Way!!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 217
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Sacrifice/Sacrifice.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 303
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Ashita no Hikari/Ashita no Hikari.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 182
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Dramatic/Dramatic.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 344
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/1・2・3/1・2・3.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 244
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Bataille Decisive/Bataille Decisive.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 71
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Jinsei Dramatic/Jinsei Dramatic.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 240
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/SHINING LINE/SHINING LINE.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 186
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Blood Circulator/Blood Circulator.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 365
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/BLUE SAPPHIRE/BLUE SAPPHIRE.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 130
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Speed/Speed.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 197
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/02 Anime/Happiness Charge Pretty Cure! WOW!/Happiness Charge Pretty Cure! WOW!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 253
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/IN THE ZONE/IN THE ZONE.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 253
+START: Invalid scoreinit, 770,3650
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/KAGYUKIYO/KAGYUKIYO.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 216
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Kakenukete-yuku/Kakenukete-yuku.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 327
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Kanashiki Soukyuu o Kakeru/Kanashiki Soukyuu o Kakeru.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 401
+parser.noteparse: Invalid number of balloons, 10
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Katamari on the Rocks ～Main Theme～/Katamari on the Rocks ～Main Theme～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 114
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Ridge Racer/Ridge Racer.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 565
+START: Invalid scoreinit, 640,2980
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Rising/Rising.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 797
+parser.noteparse: Invalid number of balloons, 11
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Tales of Xillia Medley/Tales of Xillia Medley.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 675
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Over Clock ～Kaihou～/Over Clock ～Kaihou～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 466
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Thunder Ceptor Medley/Thunder Ceptor Medley.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 200
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/The world is all one!!/The world is all one!!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 224
+START: Invalid scoreinit, 580,2530
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Tanoshii Taiko Dojo/Tanoshii Taiko Dojo.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 314
+START: Invalid scoreinit, 790,4000
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Garakuta Doll Play/Garakuta Doll Play.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 432
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/WARNING × WARNING × WARNING/WARNING × WARNING × WARNING.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Ashita e no Kodou/Ashita e no Kodou.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 441
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Overmaster/Overmaster.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 389
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Oshiete, Kuma Tomo/Oshiete, Kuma Tomo.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 269
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/DIGITAL HORIZON/DIGITAL HORIZON.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 225
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Chain Chronicle Normal Battle Medley -Short Version-/Chain Chronicle Normal Battle Medley -Short Version-.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 290
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Ghosts ‘n Goblins Overworld Remix/Ghosts ‘n Goblins Overworld Remix.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 355
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Ladystar Wandering/Ladystar Wandering.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 196
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/L・O・V・E/L・O・V・E.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 155
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Knuckle Heads ～Ouburoukou～/Knuckle Heads ～Ouburoukou～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 375
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Chain Chronicle Total War Medley/Chain Chronicle Total War Medley.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 457
+parser.noteparse: Invalid number of balloons, 8
+
+C:\Users\User\Documents\BACKUP\ESE/07 Game Music/Hopes and Dreams/Hopes and Dreams.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 1115
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/08 Live Festival Mode/44 SF Live/03 SF Live “Groovy Tune”.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 306
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/04 Children and Folk/Zenryoku King/Zenryoku King.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 16
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/04 Children and Folk/Kerakera Janken/Kerakera Janken.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 278
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/04 Children and Folk/Escatumbararibe/Escatumbararibe.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 104
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Megamina Sekai II/Megamina Sekai II.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 699
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/You don't need a reason to like it!/You don't need a reason to like it!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 702
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Yume to Genjitsu no Kyoukaisen/Yume to Genjitsu no Kyoukaisen.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 180
+parser.noteparse: Invalid number of balloons, 10
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Yumeiro Coaster/Yumeiro Coaster.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 423
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Gold Armor/Gold Armor.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 412
+parser.noteparse: Invalid number of balloons, 7
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Heaven’s Rider/Heaven’s Rider.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 402
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/The Magician’s Dream/The Magician’s Dream.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 439
+parser.noteparse: Invalid number of balloons, 9
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/La Paz no Niji/La Paz no Niji.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 803
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Hibike! Taiko no Tatsujin/Hibike! Taiko no Tatsujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 233
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Tonde Mite/Tonde Mite.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 482
+START: Invalid scoreinit, 1130,5390
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Magical Parfait/Magical Parfait.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 245
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Hikari no Kanata e -Long Version-/Hikari no Kanata e -Long Version-.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 769
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Coquette/Coquette.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 328
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Maou no Showtime/Maou no Showtime.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 451
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Crazy Beauty/Crazy Beauty.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 891
+parser.noteparse: Invalid number of balloons, 9
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Cutie☆Demonic☆Majin Emo!!/Cutie☆Demonic☆Majin Emo!!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 750
+parser.noteparse: Invalid number of balloons, 7
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Zero no Rhapsody/Zero no Rhapsody.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 250
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Zero no Symphony/Zero no Symphony.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 358
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Tongachin/Tongachin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 184
+parser.noteparse: Invalid number of balloons, 8
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/OK I’m blue rat/OK I’m blue rat.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 218
+START: Invalid scoreinit, 680,2220
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/punk bastards/punk bastards.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 255
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Furi-furi♪ Nori-nori♪/Furi-furi♪ Nori-nori♪.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 721
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Oozora to Taiko no Odori/Oozora to Taiko no Odori.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 540
+parser.noteparse: Invalid number of balloons, 7
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Fuun! Bachio Sensei -Long Version-/Fuun! Bachio Sensei -Long Version-.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 596
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Rasen Shuukai Kidou/Rasen Shuukai Kidou.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 695
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Reitouko CJ ～Amen Taiko Brothers～/Reitouko CJ ～Amen Taiko Brothers～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 522
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Tabetemo Tabetemo/Tabetemo Tabetemo.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 245
+START: Invalid scoreinit, 860,4710
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Pan vs Gohan! Dai-kessen!/Pan vs Gohan! Dai-kessen!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 1378
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Taiko Love!/Taiko Love!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 372
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Player’s High/Player’s High.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 605
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Saturday Taiko Fever/Saturday Taiko Fever.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 292
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Seigaitten/Seigaitten.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 649
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Densetsu no Matsuri/Densetsu no Matsuri.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 356
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Behemoth/Behemoth.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 164
+START: Invalid scoreinit, 530,1910
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Shishihagemai/Shishihagemai.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 64
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Blue Rose Ruin/Blue Rose Ruin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 412
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Don-chan Ekaki Uta/Don-chan Ekaki Uta.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 83
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Angel Dream/Angel Dream.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 398
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Bokura no Mae ni Michi wa Aru/Bokura no Mae ni Michi wa Aru.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 255
+START: Invalid scoreinit, 580,3030
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Shounin YokkQ/Shounin YokkQ.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 375
+START: Invalid scoreinit, 590,2640
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Calculator/Calculator.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 185
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Ninja wa Saikou/Ninja wa Saikou.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 460
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Lambda7708/λ7708.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 819
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Central Dogma Part 2/Central Dogma Part 2.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 711
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Chiheisen no Aeolia/Chiheisen no Aeolia.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 223
+START: Invalid scoreinit, 800,3950
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Inu Hoeru/Inu Hoeru.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 429
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Hello, Worldooon!!/Hello, Worldooon!!.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 184
+parser.noteparse: Invalid number of balloons, 7
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Kaze no Kuni no Ryuu to Kishi/Kaze no Kuni no Ryuu to Kishi.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 383
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Isso Kono Mama de/Isso Kono Mama de.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 536
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Itadaki/Itadaki.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 438
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Konamono☆/Konamono☆.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 395
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Koritsu Aoharu Gakuen Kouka/Koritsu Aoharu Gakuen Kouka.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 16
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/HARDCORE no Kokoroe/HARDCORE no Kokoroe.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 268
+START: Invalid scoreinit, 440,1590
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Hakanaki wa Gensho ni Mau/Hakanaki wa Gensho ni Mau.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 704
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Vixtory/Vixtory.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 414
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Wadaiko Sentai Don Ranger/Wadaiko Sentai Don Ranger.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 179
+parser.noteparse: Invalid number of balloons, 7
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Nesin Amatias/Nesin Amatias.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 353
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Dragon of Ice ～Kooryu～/Dragon of Ice ～Kooryu～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 1722
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Hikari no Kanata e -Boss Battle Version-/Hikari no Kanata e -Boss Battle Version-.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 595
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/09 Namco Original/Donko no First Date/Donko no First Date.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 53
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Aruite Ikou/Aruite Ikou.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 52
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Hero (Namie Amuro)/Hero.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 187
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/believe in you/believe in you.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 108
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Bukan Cinta Biasa/Bukan Cinta Biasa.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 14
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Odo/Odo.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 408
+parser.noteparse: Invalid number of balloons, 9
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Caramelldansen (°∀°)/Caramelldansen (°∀°).tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 162
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Kibun Joujou↑↑/Kibun Joujou↑↑.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 228
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Onegai! Senorita/Onegai! Senorita.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 185
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Oretachi CoroCoro Age/Oretachi CoroCoro Age.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 86
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/DREAMERS’ PARADISE/DREAMERS’ PARADISE.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 378
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Uma to Shika/Uma to Shika.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 118
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Usseewa/Usseewa.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 233
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Shuchishin/Shuchishin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 158
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Furisodation/Furisodation.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 340
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Sugar Song to Bitter Step/Sugar Song to Bitter Step.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 319
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Koi Suru Fortune Cookie/Koi Suru Fortune Cookie.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 314
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Labrador Retriever/Labrador Retriever.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 130
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Hello, Morning/Hello, Morning.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 463
+parser.noteparse: Invalid number of balloons, 9
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Suirenka/Suirenka.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 353
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Lassen Gorelai/Lassen Gorelai.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 418
+parser.noteparse: Invalid number of balloons, 5
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/Shining Star/Shining Star.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 172
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/360°/360°.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/01 Pop/365 Nichi no Love Story/365 Nichi no Love Story..tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 349
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Geragera to Warauna/Geragera to Warauna.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 737
+parser.noteparse: Invalid number of balloons, 4
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Alien Alien/Alien Alien.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 221
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Monochrome Voice/Monochrome Voice.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 1047
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Moshi-moshi Kamisama/Moshi-moshi Kamisama.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 469
+parser.noteparse: Invalid number of balloons, 8
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Asu no Yozora Shoukaihan/Asu no Yozora Shoukaihan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 453
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Cantabile × Passione/Cantabile × Passione.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Karamari no Hana/Karamari no Hana.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 110
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/Hatsune Miku no Shoushitsu -Gekijouban-/Hatsune Miku no Shoushitsu -Gekijouban-.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 652
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/03 Vocaloid/LOVE × LOVE Whistle/LOVE × LOVE Whistle.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/BAROQUE HOEDOWN ～Electrical Parade Theme～/BAROQUE HOEDOWN ～Electrical Parade Theme～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 400
+parser.noteparse: Invalid number of balloons, 3
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/Brain Power/Brain Power.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 238
+START: Invalid balloon, 
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/Wataru Seken wa Oni Bakari Theme/Wataru Seken wa Oni Bakari Theme.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 123
+parser.noteparse: Last long note has not ended
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/WARNING × WARNING × WARNING/WARNING × WARNING × WARNING.tja: Unable to open file
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/TRUTH/TRUTH.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 165
+parser.noteparse: Invalid number of balloons, 1
+
+C:\Users\User\Documents\BACKUP\ESE/05 Variety/INSPION/INSPION.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 420
+parser.noteparse: Invalid number of balloons, 11
+
+C:\Users\User\Documents\BACKUP\ESE/06 Classical/Clapolpolska/Clapolpolska.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 283
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/06 Classical/Mars/Mars.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 329
+parser.noteparse: Invalid number of balloons, 10
+
+C:\Users\User\Documents\BACKUP\ESE/06 Classical/Pavane for a Dead Princess ～Kimi no Kodou～/Pavane for a Dead Princess ～Kimi no Kodou～.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 150
+END: Current measure is not empty
+
+C:\Users\User\Documents\BACKUP\ESE/10 Taiko Towers/Taiko Tower 03 Kara-kuchi/Taiko Tower 3 Kara-kuchi.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 83
+parser.noteparse: Invalid number of balloons, 49
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/04 Green Version/25 Green Tatsujin/Green Tatsujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 315
+parser.noteparse: Invalid number of balloons, 2
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/12 Nijiiro 2021 Seventh Dan/Nijiiro 2021 Seventh Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/17 Nijiiro 2021 Meijin/Nijiiro 2021 Meijin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/11 Nijiiro 2021 Sixth Dan/Nijiiro 2021 Sixth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/08 Nijiiro 2021 Third Dan/Nijiiro 2021 Third Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/10 Nijiiro 2021 Fifth Dan/Nijiiro 2021 Fifth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 19
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/07 Nijiiro 2021 Second Dan/Nijiiro 2021 Second Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/09 Nijiiro 2021 Fourth Dan/Nijiiro 2021 Fourth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/06 Nijiiro 2021 Shodan/Nijiiro 2021 Shodan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/19 Nijiiro 2021 Tatsujin/Nijiiro 2021 Tatsujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/16 Nijiiro 2021 Kurouto/Nijiiro 2021 Kurouto.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/18 Nijiiro 2021 Choujin/Nijiiro 2021 Choujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/15 Nijiiro 2021 Tenth Dan/Nijiiro 2021 Tenth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/14 Nijiiro 2021 Ninth Dan/Nijiiro 2021 Ninth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/02 Nijiiro 2021 Version/13 Nijiiro 2021 Eighth Dan/Nijiiro 2021 Eighth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/18 Nijiiro 2020 Choujin/Nijiiro 2020 Choujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/12 Nijiiro 2020 Seventh Dan/Nijiiro 2020 Seventh Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/17 Nijiiro 2020 Meijin/Nijiiro 2020 Meijin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/16 Nijiiro 2020 Kurouto/Nijiiro 2020 Kurouto.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/11 Nijiiro 2020 Sixth Dan/Nijiiro 2020 Sixth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/15 Nijiiro 2020 Tenth Dan/Nijiiro 2020 Tenth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/19 Nijiiro 2020 Tatsujin/Nijiiro 2020 Tatsujin.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/13 Nijiiro 2020 Eighth Dan/Nijiiro 2020 Eighth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/03 Nijiiro 2020 Version/14 Nijiiro 2020 Ninth Dan/Nijiiro 2020 Ninth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/15 Nijiiro 2022 Tenth Dan/Nijiiro 2022 Tenth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/09 Nijiiro 2022 Fourth Dan/Nijiiro 2022 Fourth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/14 Nijiiro 2022 Ninth Dan/Nijiiro 2022 Ninth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/07 Nijiiro 2022 Second Dan/Nijiiro 2022 Second Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/12 Nijiiro 2022 Seventh Dan/Nijiiro 2022 Seventh Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/02 Nijiiro 2022 Fourth Kyuu/Nijiiro 2022 Fourth Kyuu.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 216
+parser.noteparse: Invalid number of balloons, 6
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/13 Nijiiro 2022 Eighth Dan/Nijiiro 2022 Eighth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 22
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/08 Nijiiro 2022 Third Dan/Nijiiro 2022 Third Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/11 Nijiiro 2022 Sixth Dan/Nijiiro 2022 Sixth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/06 Nijiiro 2022 Shodan/Nijiiro 2022 Shodan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+
+C:\Users\User\Documents\BACKUP\ESE/11 Dan Dojo/01 Nijiiro 2022 Version/10 Nijiiro 2022 Fifth Dan/Nijiiro 2022 Fifth Dan.tja: c:\Users\User\OneDrive\code\Taiko\Versions\Taikov34.lua:4959: Line: 20
+parser.noteparse: Invalid symbol
+

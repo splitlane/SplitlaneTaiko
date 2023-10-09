@@ -267,15 +267,17 @@ DO NOT EDIT
         'Assets' = 'Assets/',
         'Screenshots' = 'Screenshots/',
         'Config' = 'config.tpd',
-        'Songs' = 'Songs/',
+        'Songs_THISISNOTUSED' = 'Songs/',
+        'SongsESE_THISISNOTUSED' = 'C:\Users\User\Documents\BACKUP\ESE/',
+        'Songs' = 'C:\Users\User\Documents\BACKUP\ESE/',
     },
     'Formats' = {
         'Screenshot' = '.png',
     },
     'Settings' = {
-        'LimitFPS' = false,
+        'LimitFPS' = true,
         'FPS' = 60,
-        'VSync' = false,
+        'VSync' = true,
         'PlaySong' = {
             'SONGVOLMultiplier' = 1,
             'SEVOLMultiplier' = 0.5,

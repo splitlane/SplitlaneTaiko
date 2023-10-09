@@ -5818,7 +5818,7 @@ function Taiko.ParseTJA(source)
     local originalgimmick = true --ORIGINAL gimmicks enabled? (NON-STANDARDIZED, Not currently in any other simulator, proposed, weird)
     local multilinebrackets = true --Try parsing multi-line lines ([[]]) NON-STANDARDIZED
 
-
+    local strict = true --Be strict with parsing
 
 
 
@@ -6348,6 +6348,19 @@ function Taiko.ParseTJA(source)
                     ['5'] = 180,
                     ['6'] = 135,
                     ['7'] = 225
+                },
+
+                --only matters if strict is on
+                strict = {
+                    noteparse = {
+                        notes = {
+                            [','] = true,
+                            [' '] = true,
+                            ['\t'] = true,
+                            ['\n'] = true,
+                            ['\r'] = true,
+                        }
+                    }
                 }
             },
     
@@ -8405,6 +8418,10 @@ Everyone who DL
                         note.data = 'note'
                         --note.type = n
                         table.insert(Parser.currentmeasure, note)
+                    else
+                        if strict and not Parser.settings.strict.noteparse.notes[s] then
+                            ParseError('parser.noteparse', 'Invalid symbol')
+                        end
                     end
                 end
 
@@ -13934,6 +13951,40 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             rl.DrawText('Path: ' .. DisplayPath(Path), 100, 0, fontsize, rl.BLACK)
             SelectedConfig = Display.Config[Selected]
 
+
+            --DEBUG
+            --Parse all files
+            if rl.IsKeyPressed(rl.KEY_P) then
+                local out = {}
+                local function a(t)
+                    for k, v in pairs(t) do
+                        if type(v) == 'table' then
+                            a(v)
+                        else
+                            print(v)
+                            local Parsed, Error = Taiko.ParseTJAFile(v)
+                            if Parsed then
+                                --return Parsed
+                                --Good!
+                            else
+                                out[#out + 1] = v
+                                out[#out + 1] = ': '
+                                out[#out + 1] = Error
+                                out[#out + 1] = '\n\n'
+                                --print(v, Error)
+                                --Bad!
+                            end
+                        end
+                    end
+                end
+                a(SongTree)
+                io.open('taikov34_parseerror.txt', 'w+'):write(table.concat(out))
+            end
+
+
+
+
+
             --Select
             if IsKeyPressed(Config.Controls.SongSelect.Select) then
                 --Update CurrentTree
@@ -18570,16 +18621,23 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
 
                 --Selection box
+                local offseti = 0
                 for i = 1, #editor.currentdragging do
-                    local note = editor.currentdragging[i]
+                    local i2 = i + offseti
+                    local note = editor.currentdragging[i2]
 
-                    local r = editor.currentdraggingr
-                    r.x = note.pr.x - note.tcenter.x + editortemp.offset.x
-                    r.y = note.pr.y - note.tcenter.y + editortemp.offset.y
-                    r.width = note.pr.width
-                    r.height = note.pr.height
-                    
-                    rl.DrawRectangleLinesEx(r, editor.currentdragginglinethickness, editor.currentdragginglinecolor)
+                    if note.hit then
+                        table.remove(editor.currentdragging, i2)
+                        offseti = offseti - 1
+                    else
+                        local r = editor.currentdraggingr
+                        r.x = note.pr.x - note.tcenter.x + editortemp.offset.x
+                        r.y = note.pr.y - note.tcenter.y + editortemp.offset.y
+                        r.width = note.pr.width
+                        r.height = note.pr.height
+                        
+                        rl.DrawRectangleLinesEx(r, editor.currentdragginglinethickness, editor.currentdragginglinecolor)
+                    end
                 end
 
 
