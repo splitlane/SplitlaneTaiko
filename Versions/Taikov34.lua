@@ -169,6 +169,7 @@ TODO: Add raylib option
     TODO: Serializetja v3
     TODO: Delay is not added to barline when change????? --DONE
     TODO: Improve precision of SerializeTJA
+    TODO: move defaultcalibrate and defaultconfig and defaults to default folder
     
 
 TODO: Taiko.Game
@@ -19031,6 +19032,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Save) then
+                        dontincrements = true
                         --[[
                         local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
 
@@ -19079,7 +19081,7 @@ CalculateNoteHitGauge(target[1], target[2])
                             rl.BeginDrawing()
                             --]]
                             --WE NOW USE os.clock
-                            dontincrements = true
+                            --dontincrements = true
 
                             GuiMessage('Save: Success')
                         else
@@ -19089,6 +19091,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
+                        dontincrements = true
+
                         local path = FileDialog.Open('Load: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
@@ -19123,7 +19127,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                 rl.BeginDrawing()
                                 --]]
                                 --WE NOW USE os.clock
-                                dontincrements = true
+                                --dontincrements = true
 
 
                                 --NVM: Just open new window (instance)
@@ -19143,6 +19147,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Export) then
+                        dontincrements = true
                         --[[
                         local data = Taiko.ParseTJAFile('./Songs/00 Customs/taikobuipm/Ekiben 2000.tja')
 
@@ -19251,7 +19256,7 @@ CalculateNoteHitGauge(target[1], target[2])
                             rl.BeginDrawing()
                             --]]
                             --WE NOW USE os.clock
-                            dontincrements = true
+                            --dontincrements = true
 
                             GuiMessage('Export: Success')
                         else
@@ -19261,6 +19266,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
+                        dontincrements = true
+
                         local path = FileDialog.Open('Import: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
@@ -19269,7 +19276,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                             if Parsed then
 
-                                local data = Parsed[1]
+                                local data = Parsed
 
                                 --[[
                                 --Set current parsed to loaded parsed
@@ -19293,7 +19300,7 @@ CalculateNoteHitGauge(target[1], target[2])
                                 rl.BeginDrawing()
                                 --]]
                                 --WE NOW USE os.clock
-                                dontincrements = true
+                                --dontincrements = true
 
 
                                 --NVM: Just open new window (instance)
@@ -19313,10 +19320,69 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.ClearAll) then
+                        dontincrements = true
+
                         --ACTUALLY CONFIRM, THIS WILL DELETE EVERYTHING
                         local v = GuiSuperWarn('Are you sure you want to delete this chart?\nTHIS ACTION CANNOT BE DONE,\nAND EVERYTHING WILL BE DELETED', tostring(math.random(0, 1000000000)))
                         if v then
-                            GuiMessage('ClearAll: Chart deleted')
+                            --TODO: Delete chart
+                            --Just import a blank chart
+                            --Also TODO: new note
+
+
+                            --Import default tja
+                            local path = Config.Settings.Defaults.ClearAllPath
+
+                            if path then
+                                --print(path)
+                                local Parsed, Error = Taiko.ParseTJAFile(path)
+    
+                                if Parsed then
+    
+                                    local data = Parsed
+    
+                                    --[[
+                                    --Set current parsed to loaded parsed
+                                    
+                                    --Parsed = data (doesn't work, notes are still linked through nextnote)
+                                    
+                                    Parsed = data
+                                    loaded = {}
+                                    nextnote = data[1]
+    
+    
+                                    --REMEMBER: Set endtime so song would end at the right time
+    
+                                    --]]
+    
+    
+    
+                                    --Reset rl.GetFrameTime (prevent weird jump)
+                                    --[[
+                                    rl.EndDrawing()
+                                    rl.BeginDrawing()
+                                    --]]
+                                    --WE NOW USE os.clock
+                                    --dontincrements = true
+    
+    
+                                    --NVM: Just open new window (instance)
+                                    --Then return what it returns, effectively ending this session (replace window basically)
+                                    --TODO: Accept retry
+                                    GuiMessage('ClearAll: Success')
+    
+                                    return Taiko.Play(data)
+                                else
+                                    --Handle Parsed Error
+                                    error(Error)
+                                end
+                            else
+                                --TODO: Handle error
+                                GuiMessage('ClearAll: File not selected')
+                            end
+
+
+                            --GuiMessage('ClearAll: Chart deleted')
                         else
                             GuiMessage('ClearAll: Action cancelled')
                         end
@@ -20748,7 +20814,7 @@ CalculateNoteHitGauge(target[1], target[2])
             Desktop-KTP: {Music=-59.810474468085,Timing=5.0134218750001}
         ]]
         if not Parsed then
-            Parsed = Taiko.GetDifficulty(Taiko.ParseTJAFile('./defaultcalibrate120.tja'), 'Oni') --Possibly add this to config?
+            Parsed = Taiko.GetDifficulty(Taiko.ParseTJAFile(Config.Settings.Defaults.CalibratePath), Config.Settings.Defaults.CalibrateDifficulty)
         end
 
 

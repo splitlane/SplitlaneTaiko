@@ -299,5 +299,11 @@ DO NOT EDIT
             'WaitForStart' = false,
         },
         'MasterVolume' = 0.05,
+        'Defaults' = {
+            'CalibratePath' = './defaultcalibrate120.tja',
+            'CalibrateDifficulty' = 'Oni',
+            'ClearAllPath' = './defaultclearall.tja',
+            'ClearAllDifficulty' = 'Oni',
+        },
     },
 }
