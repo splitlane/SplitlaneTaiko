@@ -280,7 +280,7 @@ DO NOT EDIT
         'Config' = 'config.tpd',
         'Songs_THISISNOTUSED' = 'Songs/',
         'SongsESE_THISISNOTUSED' = 'C:\Users\User\Documents\BACKUP\ESE/',
-        'Songs' = 'C:\Users\User\Documents\BACKUP\ESE/',
+        'Songs' = 'Songs/',
     },
     'Formats' = {
         'Screenshot' = '.png',

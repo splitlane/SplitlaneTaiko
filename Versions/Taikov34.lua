@@ -173,7 +173,14 @@ TODO: Add raylib option
     TODO: raygui
     TODO: RayGuiDifficulty
     TODO: jposscroll editor
+    hbscroll / bmscroll editor
+    gimmick editor
+    properties inspector
+    USE DIALOGS NOT FULL SCREEN
     
+
+    FOR ESE GIT: git commit -a
+    git push -u https://ese.tjadataba.se/mc08/ESE.git
 
 TODO: Taiko.Game
 TODO: Taiko.SongSelect
@@ -4971,7 +4978,8 @@ end
 --error
 
 function Error(msg)
-    error(msg)
+    --error(msg, 2) --Add error position info
+    error(msg, 0) --Don't add error position info
     --print(msg)
     
     --[[
@@ -6369,7 +6377,7 @@ function Taiko.ParseTJA(source)
                 strict = {
                     noteparse = {
                         notes = {
-                            [','] = true,
+                            --[','] = true,
                             [' '] = true,
                             ['\t'] = true,
                             ['\n'] = true,
@@ -6652,7 +6660,7 @@ function Taiko.ParseTJA(source)
                             --note.type = 0 --to delete note
                         end
                     else
-                        --ParseError('parser.noteparse', 'Last long note has ended')
+                        ParseError('parser.noteparse', 'Last long note has already ended')
                     end
                 end
 
@@ -8434,8 +8442,18 @@ Everyone who DL
                         --note.type = n
                         table.insert(Parser.currentmeasure, note)
                     else
-                        if strict and not Parser.settings.strict.noteparse.notes[s] then
-                            ParseError('parser.noteparse', 'Invalid symbol')
+                        if strict then
+                            if Parser.settings.strict.noteparse.notes[s] then
+                                --Good
+                            else
+                                local lastsymbol = #String.TrimRight(line)
+                                if i == lastsymbol then
+                                    --Edge case: Ends with comma
+                                else
+                                    --ParseError('parser.noteparse', 'Invalid symbol' .. string.byte(s))
+                                    ParseError('parser.noteparse', 'Invalid symbol')
+                                end
+                            end
                         end
                     end
                 end
@@ -8756,9 +8774,9 @@ Everyone who DL
     end
 
 
+    LineN = 1 --Reset LineN
 
-
-    print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
+    --print('Parsing Took: '.. SToMs(os.clock() - time) .. 'ms')
 
 
     return Out
@@ -10160,8 +10178,21 @@ end
 
 
 
+--[[
+--Serialize Test
+local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/serializein.tja')
+local ParsedData = Parsed[1]
+for i = 1, #ParsedData.Data do
+    local note = ParsedData.Data[i]
+    --print(note.delay)
+end
 
-
+local out = Taiko.SerializeTJA(Parsed)
+print(out)
+io.open('./Songs/00 Customs/tja/neta/ekiben/serializeout.tja', 'wb+'):write(out)
+--print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
+error()
+--]]
 
 
 
@@ -14070,14 +14101,132 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             --DEBUG
             --Parse all files
             if rl.IsKeyPressed(rl.KEY_P) then
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+--[[
+    Statistics.lua
+
+    Analyze the results of datasets.
+]]
+
+
+
+
+Statistics = {}
+
+
+function Statistics.CalculateAllSet(Set)
+    local Stats = {
+        Length = #Set, --N
+        Sum = 0, --Total
+        Minimum = nil,
+        Maximum = nil,
+        Mean = nil, --Average
+        Median = nil, --REQUIRES SORTED ARRAY
+        ModeOccurence = {},
+        Mode = nil,
+
+        DeviationSquaredSum = 0,
+        Variance = nil,
+        StandardDeviation = nil,
+
+        --Aliases
+        N = nil,
+        Total = nil,
+        Average = nil,
+    }
+
+    --First iteration
+    for i = 1, #Set do
+        local Element = Set[i]
+        Stats.Sum = Stats.Sum + Element
+        if (Stats.Minimum and Element < Stats.Minimum) or (not Stats.Minimum) then
+            Stats.Minimum = Element
+        end
+        if (Stats.Maximum and Element > Stats.Maximum) or (not Stats.Maximum) then
+            Stats.Maximum = Element
+        end
+        Stats.ModeOccurence[Element] = Stats.ModeOccurence[Element] and Stats.ModeOccurence[Element] + 1 or 1
+    end
+
+    Stats.Mean = Stats.Sum / Stats.Length
+
+    --Second iteration
+    for i = 1, #Set do
+        local Element = Set[i]
+        Stats.DeviationSquaredSum = Stats.DeviationSquaredSum + (Element - Stats.Mean) ^ 2
+    end
+
+    Stats.Variance = Stats.DeviationSquaredSum / Stats.Length
+    Stats.StandardDeviation = math.sqrt(Stats.Variance)
+
+    return Stats
+end
+
+function Statistics.CalculateAllPoints(Points)
+    
+end
+
+function Statistics.List(Stats)
+    local out = {}
+
+    for k, v in pairs(Stats) do
+        out[#out + 1] = k
+        out[#out + 1] = ': '
+        out[#out + 1] = tostring(v)
+        out[#out + 1] = '\n'
+    end
+
+    return table.concat(out)
+end
+
+
+
+
+--return Statistics
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 local out = {}
+                local times = {} --Parse times
                 local function a(t)
                     for k, v in pairs(t) do
                         if type(v) == 'table' then
                             a(v)
                         else
-                            print(v)
+                            --print(v)
+                            local starttime = os.clock()
                             local Parsed, Error = Taiko.ParseTJAFile(v)
+                            local endtime = os.clock()
+                            times[#times + 1] = (endtime - starttime) * 1000
+                            print(times[#times])
                             if Parsed then
                                 --return Parsed
                                 --Good!
@@ -14094,6 +14243,8 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
                 end
                 a(SongTree)
                 io.open('taikov34_parseerror.txt', 'w+'):write(table.concat(out))
+
+                print(Statistics.List(Statistics.CalculateAllSet(times)))
             end
 
 
