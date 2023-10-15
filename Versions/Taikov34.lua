@@ -9720,7 +9720,10 @@ function Taiko.SerializeTJA(Parsed)
         SONGVOL = 100,
         SEVOL = 100,
     }
-
+    local AttributeMul = {
+        --jposscroll_lengthms = 0.001,
+        --NVM: just use MsToS
+    }
 
 
 
@@ -9735,6 +9738,59 @@ function Taiko.SerializeTJA(Parsed)
 
     --https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
     local spairs = function(a,b)local c={}for d in pairs(a)do c[#c+1]=d end;if b then table.sort(c,function(e,f)return b(a,e,f)end)else table.sort(c)end;local g=0;return function()g=g+1;if c[g]then return c[g],a[c[g]]end end end
+
+    --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
+    --TODO: Modify tolerance
+    local tolerance = 1 --was 0.001
+    local function Gcd(a, b)
+        --negative check
+        -- [[
+        if a < 0 or b < 0 then
+            error('Negative GCD')
+            return nil
+        end
+        --]]
+
+        if a < b then
+            return Gcd(b, a)
+        end
+        if math.abs(b) < tolerance then
+            return a
+        else
+            return Gcd(b, a - math.floor(a / b) * b)
+        end
+    end
+    local function Round(a)
+        return math.floor(a + 0.5)
+    end
+    local function ToFraction(n)
+        --[[
+        local a = Gcd(n, 1)
+        return Round(n / a) .. '/' .. Round(1 / a)
+        --]]
+
+        --Don't use Gcd, floating point
+        local a, b = n, 1
+        while true do
+            if not string.find(tostring(a), '%.') then
+                break
+            end
+            a = a * 10
+            b = b * 10
+        end
+        return a .. '/' .. b
+    end
+
+
+
+
+
+
+
+
+
+
+
 
     --[[
         Automatically pushes to out, returns nothing
@@ -9755,6 +9811,7 @@ function Taiko.SerializeTJA(Parsed)
         type = true,
         ms = true,
         scrolly = true,
+        event = true,
     }
     --include: don't question, just run
     local include = {
@@ -9823,6 +9880,40 @@ function Taiko.SerializeTJA(Parsed)
 
                         delayaddms = delayaddms + changems
                     end
+                elseif k == 'jposscroll' then
+                    --require('ppp')(v)
+                    --{lengthms=1500,lanep={0.6}}
+                    --local lengthms = v.lengthms * AttributeMul.jposscroll_lengthms
+                    Out[#Out + 1] = '#JPOSSCROLL '
+                    Out[#Out + 1] = tostring(MsToS(v.lengthms))
+                    Out[#Out + 1] = ' '
+                    if v.p == 'default' then
+                        --default
+                        Out[#Out + 1] = 'default'
+                    else
+                        if v.p and v.p[1] then
+                            --p
+                            Out[#Out + 1] = tostring(v.p[1])
+                        else
+                            --lanep
+                            Out[#Out + 1] = ToFraction(v.lanep[1])
+                        end
+
+                        if v.p and v.p[2] and v.p[2] ~= 0 then
+                            if v.p[2] >= 0 then
+                                Out[#Out + 1] = '+'
+                            end
+                            Out[#Out + 1] = tostring(v.p[2])
+                            Out[#Out + 1] = 'i'
+                        elseif v.lanep and v.lanep[2] and v.lanep[2] ~= 0 then
+                            if v.lanep[2] >= 0 then
+                                Out[#Out + 1] = '+'
+                            end
+                            Out[#Out + 1] = ToFraction(v.lanep[2])
+                            Out[#Out + 1] = 'i'
+                        end
+                    end
+                    Out[#Out + 1] = ' 1'
 
 
                 --GIMMICKS
@@ -9835,7 +9926,7 @@ function Taiko.SerializeTJA(Parsed)
                         addnewline = false
                     end
                 else
-                    --print('Invalid attribute, ' .. k)
+                    print('Invalid attribute, ' .. k)
                     addnewline = false
                 end
 
@@ -9859,47 +9950,7 @@ function Taiko.SerializeTJA(Parsed)
     end
 
 
-    --https://www.geeksforgeeks.org/program-find-gcd-floating-point-numbers/
-    --TODO: Modify tolerance
-    local tolerance = 1 --was 0.001
-    local function Gcd(a, b)
-        --negative check
-        -- [[
-        if a < 0 or b < 0 then
-            error('Negative GCD')
-            return nil
-        end
-        --]]
 
-        if a < b then
-            return Gcd(b, a)
-        end
-        if math.abs(b) < tolerance then
-            return a
-        else
-            return Gcd(b, a - math.floor(a / b) * b)
-        end
-    end
-    local function Round(a)
-        return math.floor(a + 0.5)
-    end
-    local function ToFraction(n)
-        --[[
-        local a = Gcd(n, 1)
-        return Round(n / a) .. '/' .. Round(1 / a)
-        --]]
-
-        --Don't use Gcd, floating point
-        local a, b = n, 1
-        while true do
-            if not string.find(tostring(a), '%.') then
-                break
-            end
-            a = a * 10
-            b = b * 10
-        end
-        return a .. '/' .. b
-    end
 
     --[[
         Input: measure with at least 2 notes
@@ -9924,6 +9975,17 @@ function Taiko.SerializeTJA(Parsed)
 
         --SerializeTJA for each of these
         local ParsedData = v.Data
+
+        --FLAGS
+        for k2, v2 in spairs(v.Flag, function(t, a, b)
+            return a < b
+        end) do
+            Out[#Out + 1] = '//$'
+            Out[#Out + 1] = tostring(k2)
+            Out[#Out + 1] = '\n'
+        end
+        Out[#Out + 1] = '\n'
+
 
         --METADATA
         for k2, v2 in spairs(v.Metadata, function(t, a, b)
@@ -10180,7 +10242,7 @@ end
 
 --[[
 --Serialize Test
-local Parsed, Error = Taiko.ParseTJAFile('./Songs/00 Customs/tja/neta/ekiben/serializein.tja')
+local Parsed, Error = Taiko.ParseTJAFile([=[C:\Users\User\OneDrive\code\Taiko\Versions\Songs\00 Customs\tja\neta\donkama\neta.tja]=])
 local ParsedData = Parsed[1]
 for i = 1, #ParsedData.Data do
     local note = ParsedData.Data[i]
@@ -10188,7 +10250,7 @@ for i = 1, #ParsedData.Data do
 end
 
 local out = Taiko.SerializeTJA(Parsed)
-print(out)
+--print(out)
 io.open('./Songs/00 Customs/tja/neta/ekiben/serializeout.tja', 'wb+'):write(out)
 --print(Taiko.SerializeTJA(Taiko.ParseTJA(Taiko.SerializeTJA(Parsed))))
 error()
