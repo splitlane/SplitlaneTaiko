@@ -9798,6 +9798,7 @@ function Taiko.SerializeTJA(Parsed)
         Output: nothing
     ]]
     local lastnote = nil
+    local lastlastnote = nil
     --exclude: don't question, don't run
     local exclude = {
         mspermeasure = true,
@@ -9840,14 +9841,14 @@ function Taiko.SerializeTJA(Parsed)
                 
                 if k == 'bpm' then
                     Out[#Out + 1] = '#BPMCHANGE '
-                    Out[#Out + 1] = tostring(v)
+                    Out[#Out + 1] = tostring(note.bpm)
                 elseif k == 'scrollx' then
                     --scrollx handles both scrollx and scrolly
                     --TODO: Check scrolly against lastnote too --DONE
 
                     if (not lastnote or not (note[k] == lastnote[k] and note.scrolly == lastnote.scrolly)) then
                         Out[#Out + 1] = '#SCROLL '
-                        Out[#Out + 1] = tostring(-v)
+                        Out[#Out + 1] = tostring(-note.scrollx)
                         if note.scrolly ~= 0 then
                             if -note.scrolly >= 0 then
                                 Out[#Out + 1] = '+'
@@ -9859,7 +9860,7 @@ function Taiko.SerializeTJA(Parsed)
                         addnewline = false
                     end
                 elseif k == 'gogo' then
-                    if v then
+                    if note.gogo then
                         Out[#Out + 1] = '#GOGOSTART'
                     else
                         Out[#Out + 1] = '#GOGOEND'
@@ -9869,7 +9870,8 @@ function Taiko.SerializeTJA(Parsed)
 
                     addnewline = false
                 elseif k == 'delay' then
-                    if v == 0 then
+                    --[[
+                    if note.delay == 0 then
                         --Nothing, default
                         addnewline = false
                     else
@@ -9880,6 +9882,7 @@ function Taiko.SerializeTJA(Parsed)
 
                         delayaddms = delayaddms + changems
                     end
+                    --]]
                 elseif k == 'jposscroll' then
                     --require('ppp')(v)
                     --{lengthms=1500,lanep={0.6}}
@@ -9940,10 +9943,45 @@ function Taiko.SerializeTJA(Parsed)
             end
         end
 
+
+
+
+        local beforenewline = #Out + 1
+        local addnewline = true
+        --note.delay
+        --Changed to be after the note
+        if not lastnote then
+            --Nothing, default
+            addnewline = false
+        else
+            --STOPSONG is on
+            local changems = lastnote.delay - (lastlastnote and lastlastnote.delay or 0)
+
+            if changems ~= 0 then
+                Out[#Out + 1] = '#DELAY '
+                Out[#Out + 1] = tostring(MsToS(changems))
+
+                delayaddms = delayaddms + changems
+            end
+        end
+
+        if addnewline then
+            if addfirstnewline then
+                table.insert(Out, beforenewline, '\n')
+                addfirstnewline = false
+            end
+            Out[#Out + 1] = '\n'
+        end
+
+
+
+
+
         if note.data == 'note' then
             Out[#Out + 1] = tostring(note.type)
         end
 
+        lastlastnote = lastnote
         lastnote = note
 
         return delayaddms --the ms that delay removed
@@ -10241,8 +10279,8 @@ end
 
 
 --[[
---Serialize Test
-local Parsed, Error = Taiko.ParseTJAFile([=[C:\Users\User\OneDrive\code\Taiko\Versions\Songs\00 Customs\tja\neta\donkama\neta.tja]=])
+--Serialize Test (with donkama neta)
+local Parsed, Error = Taiko.ParseTJAFile([=[C:\Users\User\OneDrive\code\Taiko\Versions\Songs\00 Customs\tja\neta\ekiben\serializein2.tja]=])
 local ParsedData = Parsed[1]
 for i = 1, #ParsedData.Data do
     local note = ParsedData.Data[i]
