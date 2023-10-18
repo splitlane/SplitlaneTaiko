@@ -9955,9 +9955,14 @@ function Taiko.SerializeTJA(Parsed)
             addnewline = false
         else
             --STOPSONG is on
-            local changems = lastnote.delay - (lastlastnote and lastlastnote.delay or 0)
+            --local changems = lastnote.delay - (lastlastnote and lastlastnote.delay or 0)
+            local changems = note.delay - (lastnote and lastnote.delay or 0)
 
-            if changems ~= 0 then
+            if changems == 0 then
+                --Nothing, default
+                addnewline = false
+            else
+                --print(changems)
                 Out[#Out + 1] = '#DELAY '
                 Out[#Out + 1] = tostring(MsToS(changems))
 
@@ -9973,12 +9978,14 @@ function Taiko.SerializeTJA(Parsed)
             Out[#Out + 1] = '\n'
         end
 
-
+        --print(tostring(note.delay) .. ' | ' .. tostring(lastnote and lastnote.delay) .. ' | ' .. (note.delay - (lastnote and lastnote.delay or 0)) .. ' | ' .. tostring(note.type))
 
 
 
         if note.data == 'note' then
             Out[#Out + 1] = tostring(note.type)
+
+            --Out[#Out + 1] = ' // DEBUG: line: ' .. tostring(note.line) .. '\n' --DEBUG
         end
 
         lastlastnote = lastnote
@@ -10086,17 +10093,21 @@ function Taiko.SerializeTJA(Parsed)
 
             --start of measure
 
-            --TODO: simplify to measureendedlast or (i == 1) or ((not stacked) and (nextnote and note.ms == nextnote.ms))
-            if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) or stackedcondition or ((not stacked) and (nextnote and note.ms == nextnote.ms)) then
-                currentmeasure = {}
-                measurestartms = note.ms
-                --measurestartnote = note
-            end
+
 
 
             --stacked
+            --REMEMBER: UPDATE STACKED BEFORE CHECKING OR MEASURE IS SOMETIMES CLEARED WITHOUT BEING PUSHED
             if (not stacked) and (nextnote and (note.data == 'note' and nextnote.data == 'note') and note.ms == nextnote.ms) then
                 stacked = note.ms
+            end
+
+            --TODO: simplify to measureendedlast or (i == 1) or ((not stacked) and (nextnote and note.ms == nextnote.ms))
+            if (note and (note.data == 'event' and note.event == 'barline')) or (i == 1) or stackedcondition or ((not stacked) and (nextnote and note.ms == nextnote.ms)) then
+                --print('clearing measure', (note and (note.data == 'event' and note.event == 'barline')), (i == 1), stackedcondition, ((not stacked) and (nextnote and note.ms == nextnote.ms)))
+                currentmeasure = {}
+                measurestartms = note.ms
+                --measurestartnote = note
             end
 
 
@@ -10110,6 +10121,7 @@ function Taiko.SerializeTJA(Parsed)
             --]]
             --NVM: Also use barlines!
             currentmeasure[#currentmeasure + 1] = note
+            --print(note.line, #currentmeasure)
 
             
 
@@ -10118,7 +10130,9 @@ function Taiko.SerializeTJA(Parsed)
 
             --end of measure
             if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) or stackedcondition then
+                --print('pushing measure', (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')), (i == #ParsedData), stackedcondition)
                 if stackedcondition then
+                    --Out[#Out + 1] = '\n// DEBUG: STACKED'
                     Out[#Out + 1] = '\n#BARLINEOFF\n'
                     if lastsignraw ~= 0 then
                         Out[#Out + 1] = '#MEASURE 0/1\n'
@@ -10278,7 +10292,7 @@ end
 
 
 
---[[
+-- [[
 --Serialize Test (with donkama neta)
 local Parsed, Error = Taiko.ParseTJAFile([=[C:\Users\User\OneDrive\code\Taiko\Versions\Songs\00 Customs\tja\neta\ekiben\serializein2.tja]=])
 local ParsedData = Parsed[1]
