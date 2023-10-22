@@ -10292,7 +10292,7 @@ end
 
 
 
--- [[
+--[[
 --Serialize Test (with donkama neta)
 local Parsed, Error = Taiko.ParseTJAFile([=[C:\Users\User\OneDrive\code\Taiko\Versions\Songs\00 Customs\tja\neta\ekiben\serializein2.tja]=])
 local ParsedData = Parsed[1]
@@ -19981,6 +19981,8 @@ CalculateNoteHitGauge(target[1], target[2])
                 if IsKeyDown(Config.Controls.PlaySong.Debug.SaveState.Save.Hold) then
                     local a = IsKeyPressed2(Config.Controls.PlaySong.Debug.SaveState.Save.Slot)
                     if a then
+                        dontincrements = true
+                        
                         local success, out = SaveState.SaveSlot(a)
                         --success should always be true, there is no way that saving can fail
                         if success then
