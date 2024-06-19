@@ -38,6 +38,11 @@ WARNING: I can't push my local repo since it is just too big.
     - Delete: delete, backspace
     - "Snap" note to mouse position: CTRL + p
     - Clear all / (new note but not implemented yet): CTRL + n
+    - Saving and loading:
+        - Import (tja): CTRL + i
+        - Export (tja): CTRL + e
+        - Load (ppdc): CTRL + l
+        - Save (ppdc): CTRL + s
   - Modify selection: left shift and click to select / deselect notes
   - Toggle drag mode (switch between changing note time vs note scroll): t
   - Toggle grid: g
@@ -64,6 +69,15 @@ WARNING: I can't push my local repo since it is just too big.
 ### Other misc shortcuts
 - Default controls:
   - Toggle fullscreen: f
+
+### How to save and load edited charts and clarifications
+- .ppdc (Persistent Parsed Data Compressed) is the internal file format used by this sim, don't worry too much about it since its simply for perfectly saving the current state of the chart.
+- .tja is the external file format used by this sim. This sim was initially built to only load .tja, and then .ppdc was implemented, and then exporting .tja was implemented
+- For standard charts (no gimmicks): Saving and loading .ppdc and exporting and importing .tja will be perfect
+- For charts with extreme gimmicks (jposscroll, bmscroll, etc (simple complex scroll is fine)): Saving and loading .ppdc, and importing .tja will be perfect, but data may be lost when exporting .tja
+
+Chart of all formats and their relations
+![Chart of documentation above](readme/Formats.png "Chart of all formats and their relations")
 
 ## Before using (Credit: OpenTaiko)
 

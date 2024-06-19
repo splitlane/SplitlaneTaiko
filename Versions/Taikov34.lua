@@ -10033,9 +10033,11 @@ function Taiko.SerializeTJA(Parsed)
         for k2, v2 in spairs(v.Flag, function(t, a, b)
             return a < b
         end) do
-            Out[#Out + 1] = '//$'
-            Out[#Out + 1] = tostring(k2)
-            Out[#Out + 1] = '\n'
+            if v2 then
+                Out[#Out + 1] = '//$'
+                Out[#Out + 1] = tostring(k2)
+                Out[#Out + 1] = '\n'
+            end
         end
         Out[#Out + 1] = '\n'
 
