@@ -2,13 +2,13 @@
 
 Popular taiko game simulator.
 
-WARNING: I can't push my local repo since it contains many copyrighted assets and is just too big.
+WARNING: I can't push my local repo since it is just too big.
 
 - [Taiko](#taiko)
+  - [How to start](#how-to-use)
   - [Before using (Credit: OpenTaiko)](#before-using-credit-opentaiko)
   - [License](#license)
   - [Posting Vidoes (Credit: OpenTaiko)](#posting-vidoes-credit-opentaiko)
-  - [How to start](#how-to-start)
   - [How does this work](#how-does-this-work)
   - [WARNING: Code Quality](#warning-code-quality)
   - [Using this](#using-this)
@@ -17,11 +17,58 @@ WARNING: I can't push my local repo since it contains many copyrighted assets an
   - [TODO](#todo)
   - [Credits](#credits)
 
+## How to use
+
+- On GitHub, click "Code" (Green button on the top right) and then "Download ZIP"
+- Unzip the zip file you downloaded
+- Click [run.cmd](Versions/run.cmd)
+- Enjoy!
+
+### How to use: Editor
+
+- The editor is one of the main useful features of this program
+- It should be enabled by default
+- Default controls:
+  - Toggle editor overlay: Right CTRL
+  - Shortcuts:
+    - Select all: CTRL + a
+    - Copy: CTRL + c
+    - Paste: CTRL + v
+    - Cut: CTRL + x
+    - Delete: delete, backspace
+    - "Snap" note to mouse position: CTRL + p
+    - Clear all / (new note but not implemented yet): CTRL + n
+  - Modify selection: left shift and click to select / deselect notes
+  - Toggle drag mode (switch between changing note time vs note scroll): t
+  - Toggle grid: g
+  - Movement (freecam like mode):
+    - Speed up (hold and move to move fast): left shift
+    - Left: j or left arrow
+    - Right: l or right arrow
+    - Up: i or up arrow
+    - Down: k or down arrow
+    - Toggle movement: m
+    - Reset movement: right shift
+  - Debug mode (always enabled alongside editor):
+    - Toggle auto: a
+    - Retry (reloads the tja file from disk): r
+    - Backward: left arrow
+    - Forward: right arrow
+    - Savestates (each fn key corresponds to a different savestate slot):
+      - Save: left shift + (f2 - f10)
+      - Load: (f2 - f10)
+    - Speed up gameplay: up arrow
+    - Slow down gameplay: down arrow
+    - Stop time without pausing (so you can use editor): space
+
+### Other misc shortcuts
+- Default controls:
+  - Toggle fullscreen: f
+
 ## Before using (Credit: OpenTaiko)
 
 - It is **YOUR RESPONSIBILITY** to use this software. I will not take responsibilities for any problems you got from using this software.
-- Currently this software does not have an "Official" skin. if there is any bugs with non-official skin, contact the skin creator first and then contact the author of this software. There will be no support for AC-like skins and forks of this software.
-- Please research before asking people.
+- There will be ALMOST NO SUPPORT for this software (I am very very busy).
 
 ## License
 
@@ -29,17 +76,7 @@ All parts of this software written by me are licensed under the [MIT license](./
 
 ## Posting Vidoes (Credit: OpenTaiko)
 
-- If you are using OpenTaiko on video sharing sites, live streaming services, websites, or blogs, please make sure you explicitly mention it is not Bandai Namco Entertainment official's software, and make sure it is not confused with other Taiko simulators.
-- Also, if there is an tag feature on the website you are using, tagging it as "OpenTaiko", "TJAPlayer3-Develop-BSQ", or "TJAP3-BSQ" will avoid confusion with other simulators, and might raise video as similar content, so it is highly recommended.
-
-The author of this software does not support breaking copyright laws, so please follow as per your country's copyright laws.
-
-## How to start
-
-TODO: Make Batch file so easy
-Head over to the [latest version](Versions/Taikov31.lua) and set it as current directory (`cd PATH_TO_Versions`). Now, type  
-`raylua_s.exe Taikov31.lua`  
-and enjoy!
+- Please distinguish this simulator from the official game, and follow your country's copyright laws.
 
 ## How does this work
 

@@ -135,7 +135,7 @@ DO NOT EDIT
             },
             'Editor' = {
                 'Toggle' = {
-                    69 = true,
+                    345 = true,
                 },
                 'Shortcut' = {
                     'Hold' = {

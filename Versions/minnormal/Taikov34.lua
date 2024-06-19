@@ -16155,7 +16155,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             boxselectionpr = rl.new('Rectangle'), --pr for box selection
             boxselectionpr2 = rl.new('Rectangle'), --pr for box selection
             grid = {
-                on = false, --enabled?
+                on = true, --enabled?
                 isrect = true, --rectangle? or ellipse?
                 pr = rl.new('Rectangle', 0, 0, tsizex, tsizey), --pr for grid (x, y are intersection / starting points), (width, height are grid width height per)
                 v = rl.new('Vector2'), --v used for drawing
@@ -19374,7 +19374,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         --]]
 
 
-                        local path = FileDialog.Save('Save: Select editor save data location', nil, {'*.ppdc'}, nil, false)
+                        local path = FileDialog.Save('Save: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
                             --print(path)
@@ -19426,7 +19426,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Load) then
                         dontincrements = true
 
-                        local path = FileDialog.Open('Load: Select editor save data location', nil, {'*.ppdc'}, nil, false)
+                        local path = FileDialog.Open('Load: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
                             --print(path)
@@ -19489,7 +19489,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         --]]
 
 
-                        local path = FileDialog.Save('Export: Select editor save data location', nil, {'*.tja'}, nil, false)
+                        local path = FileDialog.Save('Export: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
 
@@ -19601,7 +19601,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Import) then
                         dontincrements = true
 
-                        local path = FileDialog.Open('Import: Select editor save data location', nil, {'*.tja'}, nil, false)
+                        local path = FileDialog.Open('Import: Select editor save data location', rl.GetWorkingDirectory(), nil, nil, false)
 
                         if path then
                             --print(path)
