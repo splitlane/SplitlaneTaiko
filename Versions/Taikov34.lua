@@ -16257,10 +16257,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
 
-
-
-        --Precalculate some more stuff
-        Taiko.ForAll(Parsed.Data, function(note, i, n)
+        local function calculaterotationr(note)
             --[[
                 coming from -> degree
                 r -> 0
@@ -16292,7 +16289,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 180 -> down
                 270 -> left
             ]]
+        end
 
+        --Precalculate some more stuff
+        Taiko.ForAll(Parsed.Data, function(note, i, n)
+            calculaterotationr(note)
 
 
             --remove bignotemul from parser
@@ -19381,6 +19382,8 @@ CalculateNoteHitGauge(target[1], target[2])
                                         note.editor.dragstartmousepr.y = mouseposition.y - offsety
                                     end
 
+                                    calculaterotationr(copy)
+
 
                                     loaded[#loaded + 1] = copy
                                     Parsed.Data[#Parsed.Data + 1] = copy
@@ -20321,6 +20324,7 @@ CalculateNoteHitGauge(target[1], target[2])
                             local interval = 960
                             note.scrollx = note.speed[1] / note.bpm * 240000 / interval / displayratio
                             note.scrolly = note.speed[2] / note.bpm * 240000 / interval / displayratio
+                            calculaterotationr(note)
                         else
 
                             --Get speed from position (copied from editor.changingscroll) (MODIFIED to not modify speed)
