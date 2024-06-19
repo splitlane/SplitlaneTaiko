@@ -10088,8 +10088,8 @@ function Taiko.SerializeTJA(Parsed)
         local currentmeasure = nil
         local measurestartms = nil
         --local measurestartnote = nil
-        local lastsign = nil
-        local lastsignraw = nil
+        local lastsign = '4/4'
+        local lastsignraw = 4/4
         local stacked = nil --holds ms
         local stackedcondition = nil --holds last stackedcondition
         for i = 1, #ParsedData do
@@ -19267,80 +19267,88 @@ CalculateNoteHitGauge(target[1], target[2])
                         editor.currentdragging = {}
 
                         local note = editor.clipboard[1]
-                        local offsetx = mouseposition.x - note.pr.x - editortemp.offset.x
-                        local offsety = mouseposition.y - note.pr.y - editortemp.offset.y
+                        if not note then
+                            GuiMessage('Nothing in clipboard')
+                        else
+                            local offsetx = mouseposition.x - note.pr.x - editortemp.offset.x
+                            local offsety = mouseposition.y - note.pr.y - editortemp.offset.y
 
 
-                        for i = 1, #editor.clipboard do
-                            local note = editor.clipboard[i]
+                            for i = 1, #editor.clipboard do
+                                local note = editor.clipboard[i]
 
-                            --Copy note
-                            local copy = {}
-                            for k, v in pairs(note) do
-                                local v2 = nil
-                                if k == 'pr' or k == 'osenotepr' or k == 'senotepr' then
-                                    v2 = rl.new('Rectangle')
-                                    v2.x = v.x
-                                    v2.y = v.y
-                                    v2.width = v.width
-                                    v2.height = v.height
-                                elseif k == 'tcentero' or k == 'tcenter' then
-                                    v2 = rl.new('Vector2')
-                                    v2.x = v.x
-                                    v2.y = v.y
-                                elseif k == 'speed' or k == 'p' then
-                                    v2 = {}
-                                    v2[1] = v[1]
-                                    v2[2] = v[2]
-                                elseif k == 'editor' then
-                                    v2 = nil
+                                if note.data == 'event' and note.event == 'barline' then
+
                                 else
-                                    v2 = v
-                                end
+                                    --Copy note
+                                    local copy = {}
+                                    for k, v in pairs(note) do
+                                        local v2 = nil
+                                        if k == 'pr' or k == 'osenotepr' or k == 'senotepr' then
+                                            v2 = rl.new('Rectangle')
+                                            v2.x = v.x
+                                            v2.y = v.y
+                                            v2.width = v.width
+                                            v2.height = v.height
+                                        elseif k == 'tcentero' or k == 'tcenter' then
+                                            v2 = rl.new('Vector2')
+                                            v2.x = v.x
+                                            v2.y = v.y
+                                        elseif k == 'speed' or k == 'p' then
+                                            v2 = {}
+                                            v2[1] = v[1]
+                                            v2[2] = v[2]
+                                        elseif k == 'editor' then
+                                            v2 = nil
+                                        else
+                                            v2 = v
+                                        end
 
-                                --[[
-                                if type(v) == 'cdata' then
-                                    print(k, v)
-                                end
-                                --]]
+                                        --[[
+                                        if type(v) == 'cdata' then
+                                            print(k, v)
+                                        end
+                                        --]]
 
-                                copy[k] = v2
+                                        copy[k] = v2
+                                    end
+
+
+                                    do
+                                        local note = copy
+
+                                        note.editor = note.editor or {}
+
+                                        --pr
+                                        --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
+                                        -- [[
+                                        note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
+                                        note.editor.dragstartpr.x = note.pr.x
+                                        note.editor.dragstartpr.y = note.pr.y
+                                        --]]
+                
+                                        --p
+                                        --WARNING: DEPRACATED SINCE P DOESNT SCALE
+                                        --[[
+                                        note.editor.dragstartp = note.editor.dragstartp or {}
+                                        note.editor.dragstartp[1] = note.p[1]
+                                        note.editor.dragstartp[2] = note.p[2]
+                                        --]]
+                
+                                        note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
+                                        note.editor.dragstartmousepr.x = mouseposition.x - offsetx
+                                        note.editor.dragstartmousepr.y = mouseposition.y - offsety
+                                    end
+
+
+                                    loaded[#loaded + 1] = copy
+                                    Parsed.Data[#Parsed.Data + 1] = copy
+                                    editor.currentdragging[#editor.currentdragging + 1] = copy
+                                end
                             end
 
-
-                            do
-                                local note = copy
-
-                                note.editor = note.editor or {}
-
-                                --pr
-                                --WARNING: DEPRACATED SINCE PR FOR DRUMROLLEND IS MODIFIED --NVM
-                                -- [[
-                                note.editor.dragstartpr = note.editor.dragstartpr or rl.new('Vector2')
-                                note.editor.dragstartpr.x = note.pr.x
-                                note.editor.dragstartpr.y = note.pr.y
-                                --]]
-        
-                                --p
-                                --WARNING: DEPRACATED SINCE P DOESNT SCALE
-                                --[[
-                                note.editor.dragstartp = note.editor.dragstartp or {}
-                                note.editor.dragstartp[1] = note.p[1]
-                                note.editor.dragstartp[2] = note.p[2]
-                                --]]
-        
-                                note.editor.dragstartmousepr = note.editor.dragstartmousepr or rl.new('Vector2')
-                                note.editor.dragstartmousepr.x = mouseposition.x - offsetx
-                                note.editor.dragstartmousepr.y = mouseposition.y - offsety
-                            end
-
-
-                            loaded[#loaded + 1] = copy
-                            Parsed.Data[#Parsed.Data + 1] = copy
-                            editor.currentdragging[#editor.currentdragging + 1] = copy
+                            leftdown = true
                         end
-
-                        leftdown = true
                     end
 
                     if IsKeyPressed(Config.Controls.PlaySong.Editor.Shortcut.Cut) then
