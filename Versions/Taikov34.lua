@@ -9736,7 +9736,7 @@ function Taiko.SerializeTJA(Parsed)
 
 
     
-    local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n\n'}
+    local Out = {'// Automatically Serialized by Taiko.SerializeTJA\n'}
 
 
 
@@ -9771,6 +9771,16 @@ function Taiko.SerializeTJA(Parsed)
     local function Round(a)
         return math.floor(a + 0.5)
     end
+    local function ToString(n)
+        --Format to 13 decimal places and trim right 0's
+        local s1 = string.format('%.13f', n)
+        local s2 = string.gsub(s1, '^(.-)0*$', '%1')
+        if string.sub(s2, -1, -1) == '.' then
+            return string.sub(s2, 1, -2)
+        else
+            return s2
+        end
+    end
     local function ToFraction(n)
         --[[
         local a = Gcd(n, 1)
@@ -9780,13 +9790,17 @@ function Taiko.SerializeTJA(Parsed)
         --Don't use Gcd, floating point
         local a, b = n, 1
         while true do
-            if not string.find(tostring(a), '%.') then
+            if not string.find(ToString(a), '%.') then
                 break
             end
             a = a * 10
             b = b * 10
         end
-        return a .. '/' .. b
+        return ToString(a) .. '/' .. ToString(b)
+    end
+    local floatTolerance = 0.00001
+    local function IsEqual(a, b)
+        return math.abs(a - b) < floatTolerance
     end
 
 
@@ -9806,7 +9820,6 @@ function Taiko.SerializeTJA(Parsed)
         Output: nothing
     ]]
     local lastnote = nil
-    local lastlastnote = nil
     --exclude: don't question, don't run
     local exclude = {
         mspermeasure = true,
@@ -9826,9 +9839,10 @@ function Taiko.SerializeTJA(Parsed)
     local include = {
         scrollx = true,
     }
-    local function SerializeNote(note)
+    local function SerializeNote(note, addfirstnewline)
         local delayaddms = 0
-        local addfirstnewline = true
+        -- local addfirstnewline = true
+        -- local addfirstnewline = false --adds 1 extra newline, nonoptimal (possibly remove) -- causes errors when mid scroll
 
         for k, v in spairs(note, function(t, a, b)
             return a < b
@@ -9849,19 +9863,19 @@ function Taiko.SerializeTJA(Parsed)
                 
                 if k == 'bpm' then
                     Out[#Out + 1] = '#BPMCHANGE '
-                    Out[#Out + 1] = tostring(note.bpm)
+                    Out[#Out + 1] = ToString(note.bpm)
                 elseif k == 'scrollx' then
                     --scrollx handles both scrollx and scrolly
                     --TODO: Check scrolly against lastnote too --DONE
 
                     if (not lastnote or not (note[k] == lastnote[k] and note.scrolly == lastnote.scrolly)) then
                         Out[#Out + 1] = '#SCROLL '
-                        Out[#Out + 1] = tostring(-note.scrollx)
+                        Out[#Out + 1] = ToString(-note.scrollx)
                         if note.scrolly ~= 0 then
                             if -note.scrolly >= 0 then
                                 Out[#Out + 1] = '+'
                             end
-                            Out[#Out + 1] = tostring(-note.scrolly)
+                            Out[#Out + 1] = ToString(-note.scrolly)
                             Out[#Out + 1] = 'i'
                         end
                     else
@@ -9896,7 +9910,7 @@ function Taiko.SerializeTJA(Parsed)
                     --{lengthms=1500,lanep={0.6}}
                     --local lengthms = v.lengthms * AttributeMul.jposscroll_lengthms
                     Out[#Out + 1] = '#JPOSSCROLL '
-                    Out[#Out + 1] = tostring(MsToS(v.lengthms))
+                    Out[#Out + 1] = ToString(MsToS(v.lengthms))
                     Out[#Out + 1] = ' '
                     if v.p == 'default' then
                         --default
@@ -9904,7 +9918,7 @@ function Taiko.SerializeTJA(Parsed)
                     else
                         if v.p and v.p[1] then
                             --p
-                            Out[#Out + 1] = tostring(v.p[1])
+                            Out[#Out + 1] = ToString(v.p[1])
                         else
                             --lanep
                             Out[#Out + 1] = ToFraction(v.lanep[1])
@@ -9914,7 +9928,7 @@ function Taiko.SerializeTJA(Parsed)
                             if v.p[2] >= 0 then
                                 Out[#Out + 1] = '+'
                             end
-                            Out[#Out + 1] = tostring(v.p[2])
+                            Out[#Out + 1] = ToString(v.p[2])
                             Out[#Out + 1] = 'i'
                         elseif v.lanep and v.lanep[2] and v.lanep[2] ~= 0 then
                             if v.lanep[2] >= 0 then
@@ -9932,12 +9946,12 @@ function Taiko.SerializeTJA(Parsed)
                     local n = note.type
                     if (not lastnote or not (v / ((n == 3 or n == 4 or n == 6) and Taiko.Data.BigNoteMul or 1) == lastnote[k] / ((lastnote.type == 3 or lastnote.type == 4 or lastnote.type == 6) and Taiko.Data.BigNoteMul or 1))) then
                         Out[#Out + 1] = '#RADIUS '
-                        Out[#Out + 1] = tostring(v)
+                        Out[#Out + 1] = ToString(v)
                     else
                         addnewline = false
                     end
                 else
-                    print('Invalid attribute, ' .. k)
+                    --print('Invalid attribute, ' .. k)
                     addnewline = false
                 end
 
@@ -9963,7 +9977,6 @@ function Taiko.SerializeTJA(Parsed)
             addnewline = false
         else
             --STOPSONG is on
-            --local changems = lastnote.delay - (lastlastnote and lastlastnote.delay or 0)
             local changems = note.delay - (lastnote and lastnote.delay or 0)
 
             if changems == 0 then
@@ -9972,7 +9985,7 @@ function Taiko.SerializeTJA(Parsed)
             else
                 --print(changems)
                 Out[#Out + 1] = '#DELAY '
-                Out[#Out + 1] = tostring(MsToS(changems))
+                Out[#Out + 1] = ToString(MsToS(changems))
 
                 delayaddms = delayaddms + changems
             end
@@ -9996,7 +10009,6 @@ function Taiko.SerializeTJA(Parsed)
             --Out[#Out + 1] = ' // DEBUG: line: ' .. tostring(note.line) .. '\n' --DEBUG
         end
 
-        lastlastnote = lastnote
         lastnote = note
 
         return delayaddms --the ms that delay removed
@@ -10024,7 +10036,13 @@ function Taiko.SerializeTJA(Parsed)
     --Main loop
     for k, v in pairs(Parsed) do
         --Reset SerializeNote
-        lastnote = nil
+        -- lastnote = nil
+        --defaults to save file size
+        lastnote = {
+            bpm = v.Metadata.BPM,
+            type = 1,
+            radius = 1,
+        }
 
         --SerializeTJA for each of these
         local ParsedData = v.Data
@@ -10053,9 +10071,13 @@ function Taiko.SerializeTJA(Parsed)
                 if k2 == 'COURSE' then
                     Out[#Out + 1] = tostring(Taiko.Data.CourseName[v2])
                 elseif MetadataMul[k2] then
-                    Out[#Out + 1] = tostring(v2 * MetadataMul[k2])
+                    Out[#Out + 1] = ToString(v2 * MetadataMul[k2])
                 else
-                    Out[#Out + 1] = tostring(v2)
+                    if type(v2) == 'number' then
+                        Out[#Out + 1] = ToString(v2)
+                    else
+                        Out[#Out + 1] = tostring(v2)
+                    end
                 end
 
                 Out[#Out + 1] = '\n'
@@ -10072,7 +10094,9 @@ function Taiko.SerializeTJA(Parsed)
         if v.Metadata.STOPSONG then
             Out[#Out + 1] = '\n#HBSCROLL\n'
         else
-            Out[#Out + 1] = '\n#NMSCROLL\n'
+            Out[#Out + 1] = '\n'
+            --resets by default? (we don't want other sims to error)
+            -- Out[#Out + 1] = '\n#NMSCROLL\n'
         end
 
         --NOTES
@@ -10088,10 +10112,11 @@ function Taiko.SerializeTJA(Parsed)
         local currentmeasure = nil
         local measurestartms = nil
         --local measurestartnote = nil
-        local lastsign = '4/4'
         local lastsignraw = 4/4
+        local lastsign = ToFraction(lastsignraw)
         local stacked = nil --holds ms
         local stackedcondition = nil --holds last stackedcondition
+        local nextnobarline = false
         for i = 1, #ParsedData do
             --Compare note for attributes (bpm, scroll, etc) against previous and insert after current note
 
@@ -10142,47 +10167,58 @@ function Taiko.SerializeTJA(Parsed)
             if (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')) or (i == #ParsedData) or stackedcondition then
                 --print('pushing measure', (nextnote and (nextnote.data == 'event' and nextnote.event == 'barline')), (i == #ParsedData), stackedcondition)
                 if stackedcondition then
-                    --Out[#Out + 1] = '\n// DEBUG: STACKED'
-                    Out[#Out + 1] = '\n#BARLINEOFF\n'
+                    Out[#Out + 1] = '\n// DEBUG: Stacked Notes\n'
+                    --Out[#Out + 1] = '\n#BARLINEOFF\n'
                     if lastsignraw ~= 0 then
                         Out[#Out + 1] = '#MEASURE 0/1\n'
                     end
 
                     --Push notes
+                    local barline = currentmeasure[1]
                     for i = 1, #currentmeasure do
                         local note = currentmeasure[i]
-                        local delayaddms = SerializeNote(note)
+                        if IsEqual(barline.scrollx, note.scrollx) and IsEqual(barline.scrolly, note.scrolly) then
+                            table.remove(currentmeasure, i)
+                            table.insert(currentmeasure, 1, note)
+                            break
+                        end
+                    end
+                    for i = 1, #currentmeasure do
+                        local note = currentmeasure[i]
+                        local delayaddms = SerializeNote(note, i ~= 1)
                     end
 
-
                     Out[#Out + 1] = ',\n'
+
+                    Out[#Out + 1] = '#BARLINEOFF\n'
 
                     --Place measure
 
                     --Determine measure sign
                     local msperbeat = 60000 / note.bpm
                     local signraw = ((nextnote.ms - stacked) / msperbeat) / 4
-                    local sign = tostring(signraw)
+                    local sign = ToFraction(signraw)
 
                     --dont place measure if no measure change
                     if sign ~= lastsign then
                         --LAZY --DIRTY (decimal fraction???)
                         --Out[#Out + 1] = '#MEASURE ' .. sign .. '/1\n'
-                        Out[#Out + 1] = '\n#MEASURE '
+                        Out[#Out + 1] = '#MEASURE '
                         Out[#Out + 1] = ToFraction(signraw)
                         Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                         Out[#Out + 1] = ',\n'
 
-                        Out[#Out + 1] = '\n#MEASURE '
+                        Out[#Out + 1] = '#MEASURE '
                         Out[#Out + 1] = ToFraction(lastsignraw)
                         Out[#Out + 1] = '\n' --TODO: FIX THIS NOT ADDING SIGNS
                     end
 
 
 
-                    Out[#Out + 1] = '#BARLINEON\n'
+                    --Out[#Out + 1] = '#BARLINEON\n'
                     
                     stacked = nil
+                    nextnobarline = true
 
                 else
 
@@ -10216,7 +10252,7 @@ function Taiko.SerializeTJA(Parsed)
                     --Determine measure sign
                     local msperbeat = 60000 / note.bpm
                     local signraw = (measurems / msperbeat) / 4
-                    local sign = tostring(signraw)
+                    local sign = ToString(signraw)
 
                     --dont place measure if no measure change
                     if sign ~= lastsign then
@@ -10230,6 +10266,11 @@ function Taiko.SerializeTJA(Parsed)
                     end
                     
                     --print(measurems, #currentmeasure, gcd, note.type)
+
+                    if nextnobarline then
+                        Out[#Out + 1] = '#BARLINEON\n'
+                        nextnobarline = false
+                    end
 
                     --Cases
                     if #currentmeasure == 0 then
@@ -10247,7 +10288,7 @@ function Taiko.SerializeTJA(Parsed)
                         --Push notes
                         for i = 1, #currentmeasure do
                             local note = currentmeasure[i]
-                            local delayaddms = SerializeNote(note)
+                            local delayaddms = SerializeNote(note, i ~= 1)
                         
                             if i == #currentmeasure then
                                 --End (last note - next barline)
