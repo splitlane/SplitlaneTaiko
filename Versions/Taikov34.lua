@@ -177,6 +177,7 @@ TODO: Add raylib option
     gimmick editor
     properties inspector
     USE DIALOGS NOT FULL SCREEN
+    TODO: review and fix calibrate bs
     
 
     FOR ESE GIT: git commit -a
