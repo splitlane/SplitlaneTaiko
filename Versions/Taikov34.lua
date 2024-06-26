@@ -17072,7 +17072,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
                 local offsets = s - Config.Offsets.Music
 
-                if offsets >= 0 then
+                if offsets >= 0 and not freezems then
                     --Prevent music desync
                     local desync = offsets - (rl.GetMusicTimePlayed(song) / songspeedmul)
                     --print(desync)
