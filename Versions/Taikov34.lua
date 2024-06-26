@@ -4258,6 +4258,8 @@ do
         drumrollbend = 'L',
         notetype = 'M',
         recttype = 'N',
+
+        obpm = 'O',
     }
 
 
@@ -15555,6 +15557,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --oms
             v.ms = v.oms or v.ms
             v.oms = v.ms
+
+            v.bpm = v.obpm or v.bpm
+            v.obpm = v.bpm
 
             v.ms = (v.ms - startms) / songspeedmul
             --v.s = MsToS(v.ms)
