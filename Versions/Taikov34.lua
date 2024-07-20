@@ -182,6 +182,7 @@ TODO: Add raylib option
 
     FOR ESE GIT: git commit -a
     git push -u https://ese.tjadataba.se/mc08/ESE.git
+    TODO: Fix complex scroll no number was found with "1-i" or "i"
 
 
 
@@ -6320,6 +6321,44 @@ function Taiko.ParseTJA(source)
         --return String.Split(s, ',')
         return String.Split(s, ' ')
     end
+    
+    local function ParseScroll(match)
+        local scrollx = nil
+        local scrolly = nil
+
+        if gimmick and CheckComplexNumber(match[2]) then
+            --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+            --(x) + (y)i
+            local complex = ParseComplexNumber(match[2])
+            scrollx = -complex[1]
+            scrolly = -complex[2]
+        elseif gimmick and CheckPolarNumber(match[2]) then
+            --Polar Scroll (TaikoManyGimmicks)
+            --(r),(div),(n)
+            local t = CheckCSVN(match[1], match[2], 'Invalid polar scroll')
+            if #t == 3 then
+                local polar = ParsePolarNumber(t[1], math.rad(t[3] / t[2] * 360))
+                scrollx = -polar[1]
+                scrolly = -polar[2]
+            else
+                ParseError(match[1], 'Invalid polar scroll')
+            end
+        else
+            --Normal Scroll
+            scrollx = CheckN(match[1], match[2], 'Invalid scroll')
+            if scrollx then
+                scrollx = -scrollx
+            end
+            scrolly = 0
+        end
+
+        --original gimmick: scroll can be 0
+        if not originalgimmick and scrollx == 0 and scrolly == 0 then
+            ParseError(match[1], 'Scroll cannot be 0')
+        end
+
+        return scrollx, scrolly
+    end
 
 
 
@@ -7487,34 +7526,7 @@ function Taiko.ParseTJA(source)
                         if Parser.disablescroll then
 
                         else
-                            if gimmick and CheckComplexNumber(match[2]) then
-                                --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
-                                --(x) + (y)i
-                                local complex = ParseComplexNumber(match[2])
-                                Parser.scrollx = -complex[1]
-                                Parser.scrolly = -complex[2]
-                            elseif gimmick and CheckPolarNumber(match[2]) then
-                                --Polar Scroll (TaikoManyGimmicks)
-                                --(r),(div),(n)
-                                local t = CheckCSVN(match[1], match[2], 'Invalid polar scroll')
-                                if #t == 3 then
-                                    local polar = ParsePolarNumber(t[1], math.rad(t[3] / t[2] * 360))
-                                    Parser.scrollx = -polar[1]
-                                    Parser.scrolly = -polar[2]
-                                else
-                                    ParseError(match[1], 'Invalid polar scroll')
-                                end
-                            else
-                                --Normal Scroll
-                                Parser.scrollx = -(CheckN(match[1], match[2], 'Invalid scroll') or -Parser.scrollx) --UNSAFE
-                                Parser.scrolly = 0
-                            end
-                            --Parser.scroll = -Parser.scrollx
-                            --print(Parser.scroll, Parser.scrolly)
-
-                            if Parser.scroll == 0 and Parser.scrollx == 0 and Parser.scrolly == 0 then
-                                ParseError(match[1], 'Scroll cannot be 0')
-                            end
+                            Parser.scrollx, Parser.scrolly = ParseScroll(match)
                         end
                     elseif match[1] == 'GOGOSTART' then
                         --[[
@@ -8296,11 +8308,11 @@ Everyone who DL
                                 if string.sub(String.TrimLeft(match[2]), 1, #'return ') == 'return ' then
                                     --return expr, add nothing
 
-                                    t = {CheckF(match[1], match[2], 'Invalid positionf')()}
+                                    t = {CheckF(match[1], match[2], 'Invalid positiont')()}
                                 else
                                     --expr, add return
 
-                                    t = {CheckF(match[1], 'return ' .. match[2], 'Invalid positionf')()}
+                                    t = {CheckF(match[1], 'return ' .. match[2], 'Invalid positiont')()}
                                 end
 
                                 --make t into {{starttime, function}, {starttime, function}, {starttime, function}, ...}
@@ -8330,12 +8342,114 @@ Everyone who DL
                                         if i == #t2 then
                                             a[3][1], a[3][2] = target[1], target[2]
                                         else
-                                            --local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
-                                            local howmuchmsbefore = t2[i][1] - (t2[i + 1] and t2[i + 1][1] or 0)
+                                            local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                            -- local howmuchmsbefore = t2[i][1] - (t2[i + 1] and t2[i + 1][1] or 0)
                                             a[3][1], a[3][2] = (t2[i + 1])[2](note, note.ms - howmuchmsbefore, t2[i + 1][3])
                                         end
                                         --print(a[1], unpack(a[3]))
                                     end
+
+                                    local mstilhit = note.ms - ms
+                                    --print(mstilhit)
+                                    for i = #t2, 1, -1 do
+                                        local a = t2[i]
+                                        if mstilhit < a[1] then
+                                            local finishms = t2[i + 1] and t2[i + 1][1] or 0
+                                            --if math.random(1,2)==1 then return unpack(a[3])end
+                                            return a[2](note, ms + finishms, a[3])
+                                        end
+                                    end
+
+                                    --unable to satisfy any time conditions, use calculateposition default
+                                    local howmuchmsbefore = t2[1][1] - (t2[2] and t2[2][1] or 0)
+                                    edgecase[3][1], edgecase[3][2] = (t2[1])[2](note, note.ms - howmuchmsbefore, t2[1][3])
+
+                                    local finishms = t2[1] and t2[1][1] or 0
+                                    --if math.random(1,2)==1 then return unpack(edgecase[3])end
+                                    return edgecase[2](note, ms + finishms, edgecase[3])
+                                end
+                            end
+
+                        elseif originalgimmick and (match[1] == 'POSITIONS' or match[1] == 'SCROLLT') then --TODO: OPTIMIZE, SLOW, DIRTY (especially the positionf function)
+                            --[[
+                                - Scroll values:
+                                    - Complex or normal
+                                - Time
+                                    - ms before note hit, positive
+                                - Use with no second argument to clear
+                            ]]
+                            if not match[2] or match[2] == '' then
+                                Parser.positionf = nil
+                            else
+
+                                
+
+                                --add surrounding function and call to get inner function --DIRTY
+
+                                local t = nil
+
+                                if string.sub(String.TrimLeft(match[2]), 1, #'return ') == 'return ' then
+                                    --return expr, add nothing
+
+                                    t = {CheckF(match[1], match[2], 'Invalid positions')()}
+                                else
+                                    --expr, add return
+
+                                    t = {CheckF(match[1], 'return ' .. match[2], 'Invalid positions')()}
+                                end
+
+                                --Set both scrolls to 1, so that the position calculation works correctly (DIRTY)
+                                local oldscrollx, oldscrolly = Parser.scrollx, Parser.scrolly
+                                Parser.scrollx = 1
+                                Parser.scrolly = 1
+
+
+                                --make t into {{starttime, function}, {starttime, function}, {starttime, function}, ...}
+                                local t2 = {}
+                                for i = 1, #t, 2 do
+                                    --ONLY DIFFERENT PART FROM POSITIONT (DIRTY, POSSIBLY OPTIMIZE)
+                                    local scrollx, scrolly = ParseScroll({match[1], t[i + 1]})
+                                    -- print(t[i + 1], scrollx, scrolly)
+                                    t[i + 1] = function(note, ms, target)
+                                        return target[1] - (scrollx * note.speed[1] * (note.ms - ms - note.delay)), target[2] - (scrolly * note.speed[2] * (note.ms - ms - note.delay)) --FlipY
+                                    end
+
+                                    t2[#t2 + 1] = {t[i], t[i + 1], {}}
+                                end
+                                t = nil
+
+                                --sort t2
+                                table.sort(t2, function(a, b)
+                                    return a[1] > b[1]
+                                end)
+
+                                local edgecase = nil
+                                if t2[1][1] == math.huge then
+                                    edgecase = t2[1]
+                                    table.remove(t2, 1)
+                                else
+                                    --use old scroll
+                                    edgecase = {math.huge, function(note, ms, target)
+                                        return target[1] - (oldscrollx * note.speed[1] * (note.ms - ms - note.delay)), target[2] - (oldscrolly * note.speed[2] * (note.ms - ms - note.delay)) --FlipY
+                                    end, {}}
+                                end
+                                
+
+                                --Generate positionf function from t
+                                Parser.positionf = function(note, ms, target)
+                                    --calculate targets
+                                    for i = #t2, 1, -1 do
+                                        local a = t2[i]
+                                        if i == #t2 then
+                                            a[3][1], a[3][2] = target[1], target[2]
+                                        else
+                                            local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                            -- local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                            a[3][1], a[3][2] = (t2[i + 1])[2](note, note.ms - howmuchmsbefore, t2[i + 1][3])
+                                        end
+                                        -- print(a[1], unpack(a[3]))
+                                    end
+                                    -- error()
 
                                     local mstilhit = note.ms - ms
                                     --print(mstilhit)
@@ -16879,13 +16993,13 @@ CalculateNoteHitGauge(target[1], target[2])
         --Generate Text Metadata
         local TextMetadata = table.concat(
             {
-                'Title: ', Parsed.Metadata.TITLE,
-                '\nSubtitle: ', Parsed.Metadata.SUBTITLE,
-                '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
-                '\nStars: ', tostring(Parsed.Metadata.LEVEL),
-                '\n\nAuto: ', tostring(auto),
-                '\nRecording: ', tostring(recording),
-                '\nReplaying: ', tostring(replaying)
+                -- 'Title: ', Parsed.Metadata.TITLE,
+                -- '\nSubtitle: ', Parsed.Metadata.SUBTITLE,
+                -- '\nDifficulty: ', Taiko.Data.CourseName[Parsed.Metadata.COURSE],
+                -- '\nStars: ', tostring(Parsed.Metadata.LEVEL),
+                -- '\n\nAuto: ', tostring(auto),
+                -- '\nRecording: ', tostring(recording),
+                -- '\nReplaying: ', tostring(replaying)
             }
         )
 
@@ -21322,6 +21436,7 @@ CalculateNoteHitGauge(target[1], target[2])
         if Parsed then
             return Parsed
         else
+            print(Error)
             GuiMessage('Taiko.ParseTJA Error: ' .. Error)
             return nil
         end
