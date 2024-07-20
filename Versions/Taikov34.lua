@@ -16713,8 +16713,8 @@ do
         for i = 1, animFrames do
             local animPoint = (i - 1) / (animFrames - 1)
             local bezierPointx, bezierPointy = calcBezierPoint(easeOut(animPoint), animateBezier, dest)
-            anim[1][i] = bezierPointx
-            anim[2][i] = bezierPointy
+            anim[1][i - 1] = bezierPointx
+            anim[2][i - 1] = bezierPointy
         end
     end
 end
@@ -21311,7 +21311,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
         --Calculate some stats
         offsetanalyzed.average = offsetanalyzed.sum / #offsets
-
+        -- print(offsetanalyzed.average, offsetanalyzed.sum, #offsets)
 
 
         return offsetanalyzed
@@ -21469,6 +21469,39 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
+    --TODO: Config editor
+    function Taiko.Config()
+        local str = 'amogus'
+        local out = {}
+        local displaytext = str
+        while not rl.WindowShouldClose() do
+            rl.BeginDrawing()
+            rl.ClearBackground(rl.RAYWHITE)
+            rl.DrawText(displaytext, fontsize, fontsize, fontsize, rl.BLACK)
+            rl.EndDrawing()
+
+            while true do
+                local c = rl.GetCharPressed()
+                if c == 0 then
+                    break
+                else
+                    out[#out + 1] = c
+                    --Update display
+                    displaytext = str .. utf8Encode(out)
+                end
+            end
+
+            --Remember, GetCharPressed doesn't detect special keys
+            if rl.IsKeyPressed(rl.KEY_BACKSPACE) then
+                out[#out] = nil
+                --Update display
+                displaytext = str .. utf8Encode(out)
+            end
+            if rl.IsKeyPressed(rl.KEY_ENTER) then
+                break
+            end
+        end
+    end
 
 
 
@@ -21494,10 +21527,9 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
-
-    --return Taiko.Calibrate()
+    -- return Taiko.Calibrate()
     return Taiko.SongSelect()
+    -- return Taiko.Config()
     --return Taiko.PlaySong(Parsed)
 
 
@@ -21506,6 +21538,63 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Taiko.Game()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -21640,7 +21729,6 @@ Taiko.Game(Taiko.GetDifficulty(p, 'Oni'), nil, s)error()
 
 
 --]==]
-Taiko.Game()
 
 
 
@@ -21849,7 +21937,7 @@ Taiko.PlaySong(Taiko.GetDifficulty(Taiko.ParseTJA(io.open(a,'r'):read('*all')), 
 
 
 
-
+--[=====[
 --works best with compact
 function Taiko.SongSelectOld(header, data, FilesSources)
     local Display = {} --2d array starting at {0, 0} (Left, up)
@@ -23035,7 +23123,7 @@ end
 
 
 
-
+--]=====]
 
 
 
