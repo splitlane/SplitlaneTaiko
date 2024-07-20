@@ -6239,6 +6239,10 @@ function Taiko.ParseTJA(source)
                 current = c
             elseif c == 'i' then
                 --t[2] = t[2] + tonumber(current)
+                --leniency when parsing complex: 1+i or 1-i allowed
+                if current == '+' or current == '-' then
+                    current = current .. '1'
+                end
                 t[2] = t[2] + ParseAnyNumber(current)
                 current = ''
             else
@@ -6298,6 +6302,11 @@ function Taiko.ParseTJA(source)
                     end
                     --]]
                 else
+                    --Leniency for 1+i, etc
+                    if imaginary and (t[i] == '' or t[i] == '-') then
+                        t[i] = t[i] .. '1'
+                    end
+                    --POSSIBLY USE PARSENUMBER? UNSAFE
                     t[i] = tonumber(t[i]) --UNSAFE
                 end
                 if imaginary then
