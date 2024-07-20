@@ -8408,11 +8408,8 @@ Everyone who DL
                                 local t2 = {}
                                 for i = 1, #t, 2 do
                                     --ONLY DIFFERENT PART FROM POSITIONT (DIRTY, POSSIBLY OPTIMIZE)
-                                    local scrollx, scrolly = ParseScroll({match[1], t[i + 1]})
+                                    t[i + 1] = {ParseScroll({match[1], t[i + 1]})}
                                     -- print(t[i + 1], scrollx, scrolly)
-                                    t[i + 1] = function(note, ms, target)
-                                        return target[1] - (scrollx * note.speed[1] * (note.ms - ms - note.delay)), target[2] - (scrolly * note.speed[2] * (note.ms - ms - note.delay)) --FlipY
-                                    end
 
                                     t2[#t2 + 1] = {t[i], t[i + 1], {}}
                                 end
@@ -8429,25 +8426,38 @@ Everyone who DL
                                     table.remove(t2, 1)
                                 else
                                     --use old scroll
-                                    edgecase = {math.huge, function(note, ms, target)
-                                        return target[1] - (oldscrollx * note.speed[1] * (note.ms - ms - note.delay)), target[2] - (oldscrolly * note.speed[2] * (note.ms - ms - note.delay)) --FlipY
-                                    end, {}}
+                                    edgecase = {math.huge, {oldscrollx, oldscrolly}, {}}
                                 end
-                                
+
+
 
                                 --Generate positionf function from t
+                                local ospeed = nil
                                 Parser.positionf = function(note, ms, target)
-                                    --calculate targets
-                                    for i = #t2, 1, -1 do
-                                        local a = t2[i]
-                                        if i == #t2 then
-                                            a[3][1], a[3][2] = target[1], target[2]
-                                        else
-                                            local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
-                                            -- local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
-                                            a[3][1], a[3][2] = (t2[i + 1])[2](note, note.ms - howmuchmsbefore, t2[i + 1][3])
+                                    --calculate targets (CANNOT DO FOR #POSITIONF since targets may be dynamic)
+                                    if not t2[1][3][1] then
+                                        ospeed = note.speed
+                                        for i = #t2, 1, -1 do
+                                            local a = t2[i]
+                                            if i == #t2 then
+                                                a[3][1], a[3][2] = target[1], target[2]
+                                            else
+                                                local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                                -- local howmuchmsbefore = t2[i + 1][1] - (t2[i + 2] and t2[i + 2][1] or 0)
+                                                note.speed = {ospeed[1] * t2[i + 1][2][1], ospeed[2] * t2[i + 1][2][2]}
+                                                a[3][1], a[3][2] = Taiko.CalculatePosition(note, note.ms - howmuchmsbefore, t2[i + 1][3])
+                                            end
+
+                                            -- print(a[1], unpack(a[3]))
                                         end
-                                        -- print(a[1], unpack(a[3]))
+
+                                        local howmuchmsbefore = t2[1][1] - (t2[2] and t2[2][1] or 0)
+                                        note.speed = {ospeed[1] * t2[1][2][1], ospeed[2] * t2[1][2][2]}
+                                        edgecase[3][1], edgecase[3][2] = Taiko.CalculatePosition(note, note.ms - howmuchmsbefore, t2[1][3])
+    
+
+
+                                        note.speed = ospeed
                                     end
                                     -- error()
 
@@ -8458,17 +8468,16 @@ Everyone who DL
                                         if mstilhit < a[1] then
                                             local finishms = t2[i + 1] and t2[i + 1][1] or 0
                                             --if math.random(1,2)==1 then return unpack(a[3])end
-                                            return a[2](note, ms + finishms, a[3])
+                                            note.speed = {ospeed[1] * a[2][1], ospeed[2] * a[2][2]}
+                                            return Taiko.CalculatePosition(note, ms + finishms, a[3])
                                         end
                                     end
 
                                     --unable to satisfy any time conditions, use calculateposition default
-                                    local howmuchmsbefore = t2[1][1] - (t2[2] and t2[2][1] or 0)
-                                    edgecase[3][1], edgecase[3][2] = (t2[1])[2](note, note.ms - howmuchmsbefore, t2[1][3])
 
                                     local finishms = t2[1] and t2[1][1] or 0
                                     --if math.random(1,2)==1 then return unpack(edgecase[3])end
-                                    return edgecase[2](note, ms + finishms, edgecase[3])
+                                    return Taiko.CalculatePosition(note, ms + finishms, edgecase[3])
                                 end
                             end
                         --end
@@ -15524,6 +15533,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
             return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
         end
+        Taiko.CalculatePosition = CalculatePosition
 
         local function CalculateLoadMs(note, ms)
             --x, y
