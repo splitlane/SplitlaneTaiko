@@ -16309,6 +16309,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             offset = {
                 x = 0,
                 y = 0
+            },
+            scale = {
+                x = 1,
+                y = 1,
             }
         } --moving temp
 
@@ -16354,7 +16358,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 offset = {
                     tempf = {
                         DrawTexturePro = function(texture, source, dest, origin, rotation, tint)
-                            local dest2 = rl.new('Rectangle', dest.x + editortemp.offset.x, dest.y + editortemp.offset.y, dest.width, dest.height)
+                            local dest2 = rl.new('Rectangle', dest.x * editortemp.scale.x + editortemp.offset.x, dest.y * editortemp.scale.y + editortemp.offset.y, dest.width * editortemp.scale.x, dest.height * editortemp.scale.y)
                             editortemp.data.DrawTexturePro(texture, source, dest2, origin, rotation, tint)
                         end,
                         --[[
@@ -17212,7 +17216,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     --print(desync)
                     if forceresync or desync > desynctime or desync < -desynctime then --basically abs function
                         --Resync music to notes
-                        print('RESYNC', desync)
+                        -- print('RESYNC', desync)
                         rl.SeekMusicStream(song, offsets * songspeedmul)
                         forceresync = false
                     end
@@ -19970,11 +19974,63 @@ CalculateNoteHitGauge(target[1], target[2])
                 if (useiskeydown and IsKeyDown or IsKeyPressed)(Config.Controls.PlaySong.Editor.Move.Down) then
                     movey = movey + Config.Controls.PlaySong.Editor.Move.MoveIncrement
                 end
+                if not editor.movingnotes then
+                    --Zoom in, zoom out
+                    if IsKeyDown(Config.Controls.PlaySong.Editor.Move.ZoomIn) then
+                        --Move editor around
+                        local zoommul = Config.Controls.PlaySong.Editor.Move.ZoomMultiplier
+                        editortemp.scale.x = editortemp.scale.x * zoommul
+                        editortemp.scale.y = editortemp.scale.y * zoommul
+                    end
+                    
+                    if IsKeyDown(Config.Controls.PlaySong.Editor.Move.ZoomOut) then
+                        --Move editor around
+                        local zoommul = Config.Controls.PlaySong.Editor.Move.ZoomMultiplier
+                        editortemp.scale.x = editortemp.scale.x / zoommul
+                        editortemp.scale.y = editortemp.scale.y / zoommul
+                    end
+
+                    if leftpressed then
+
+                    end
+                    if leftdown then
+
+                    end
+
+                    local scroll = rl.GetMouseWheelMoveV().y
+                    if scroll ~= 0 then
+                        -- Config.Controls.PlaySong.Editor.Move.ZoomMultiplier = 1.01
+                        local zoommul = scroll > 0 and Config.Controls.PlaySong.Editor.Move.ZoomMultiplier or 1/Config.Controls.PlaySong.Editor.Move.ZoomMultiplier
+                        local beforex, beforey = mouseposition.x * editortemp.scale.x + editortemp.offset.x, mouseposition.y * editortemp.scale.y + editortemp.offset.y
+                        editortemp.scale.x = editortemp.scale.x * zoommul
+                        editortemp.scale.y = editortemp.scale.y * zoommul
+                        local afterx, aftery = mouseposition.x * editortemp.scale.x + editortemp.offset.x, mouseposition.y * editortemp.scale.y + editortemp.offset.y
+                        print(afterx - beforex, aftery - beforey)
+                        editortemp.offset.x = editortemp.offset.x - (afterx - beforex)
+                        editortemp.offset.y = editortemp.offset.y - (aftery - beforey)
+                    end
+
+                else
+                    --TODO: Enlarge, shrink note radius?
+                end
 
                 if IsKeyPressed(Config.Controls.PlaySong.Editor.Move.Toggle) then
                     --Toggle moving mode (movingnotes: true <-> false)
                     --if not moving notes then we are moving the camera
                     editor.movingnotes = not editor.movingnotes
+                    if not editor.movingnotes then
+                        --Load ALL notes
+                        --DIRTY
+                        local c = nextnote
+                        while true do
+                            if c then
+                                c.loadms = 0
+                                c = c.nextnote
+                            else
+                                break
+                            end
+                        end
+                    end
                 end
 
                 if IsKeyDown(Config.Controls.PlaySong.Editor.Move.SpeedUpHold) then
@@ -20010,17 +20066,6 @@ CalculateNoteHitGauge(target[1], target[2])
                         v.x = v.x - movex
                         v.y = v.y - movey
 
-                        --Load ALL notes
-                        --DIRTY
-                        local c = nextnote
-                        while true do
-                            if c then
-                                c.loadms = 0
-                                c = c.nextnote
-                            else
-                                break
-                            end
-                        end
                     end
                 end
 

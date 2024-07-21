@@ -212,6 +212,13 @@ DO NOT EDIT
                         264 = true,
                         75 = true,
                     },
+                    'ZoomIn' = {
+                        61 = true,
+                    },
+                    'ZoomOut' = {
+                        45 = true,
+                    },
+                    'ZoomMultiplier' = 1.1,
                     'Toggle' = {
                         77 = true,
                     },
