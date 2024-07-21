@@ -24,6 +24,15 @@ WARNING: I can't push my local repo since it is just too big.
 - Click [run.cmd](Versions/run.cmd)
 - Enjoy!
 
+### How to use: Config
+
+- Currently the config does not have a GUI
+- To edit the config, go into config.tpd (use a simple text editor)
+- The tpd format is very close to JSON, and you should be able to get the syntax by looking through
+- A comma is always required at the end of any key value pair
+- When setting a keybind, the syntax is `KEYCODEHERE = true,`
+  - Find the keycodes from [raylib_keys.md](readme/raylib_keys.md)
+
 ### How to use: Editor
 
 - The editor is one of the main useful features of this program

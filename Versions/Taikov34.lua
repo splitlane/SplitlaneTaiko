@@ -20573,7 +20573,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     .. '\nscroll: {' .. note.scrollx .. ', ' .. note.scrolly .. '}'
                     .. '\nspeed: {' .. note.speed[1] .. ', ' .. note.speed[2] .. '}'
                     .. '\nbpm: ' .. note.bpm
-                    .. '\nn: ' .. note.n
+                    .. '\nn: ' .. (note.n or '')
 
                     --render based on note pr --DEPRACATED
                     --local x, y = note.pr.x + editor.info.offset.x, note.pr.y + editor.info.offset.y
