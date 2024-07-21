@@ -11923,12 +11923,14 @@ int MeasureText(const char *text, int fontSize)
                 ix = 0
             else
                 local p = t[c]
-                rect.x = p[1] * osx
-                rect.y = p[2] * osy
-                rect2.x = x + (sx + texttexturespacing) * ix
-                rect2.y = y + (sy + texttexturespacing) * line
-                rl.DrawTexturePro(texture, rect, rect2, origin, 0, rl.WHITE)
-                ix = ix + 1
+                if p then
+                    rect.x = p[1] * osx
+                    rect.y = p[2] * osy
+                    rect2.x = x + (sx + texttexturespacing) * ix
+                    rect2.y = y + (sy + texttexturespacing) * line
+                    rl.DrawTexturePro(texture, rect, rect2, origin, 0, rl.WHITE)
+                    ix = ix + 1
+                end
             end
         end
 
@@ -16318,7 +16320,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         
         local editor = {
-            on = true, --enabled?
+            on = false, --enabled?
             changingscroll = true, --changing note.scroll for dragging notes?
             currentdragging = {}, --table of current notes that are being dragged
             currentdragginglinethickness = 5, --thickness of currentdragging selection rectangle
@@ -17136,7 +17138,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --TODO: Draw before / after rendering?
-            rl.DrawFPS(10, 10)
+            -- rl.DrawFPS(10, 10)
             rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
 
             --[[
@@ -19205,6 +19207,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         .. '   Selected: ' .. #editor.currentdragging .. ' notes'
                         .. '   Runtime speed: ' .. (freezems and freezemstemp or runtimespeed)
                         .. '   ms: ' .. ms
+                        .. '   fps: ' .. rl.GetFPS()
                         .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
                         .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
