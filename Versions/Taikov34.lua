@@ -9384,10 +9384,23 @@ This is used when you want to return the judgment frame to its original position
                             --[[
                                 - Split the lane in 2 distinct lanes, dons appearing at the top lane and kas at the bottom, purple notes are squashed horizontally but overlap the 2 lanes
                             ]]
+                            Parser.positionf = function(note, ms, target)
+                                local offset = 100 --TODO: DIRTY
+                                if note.type == 1 or note.type == 3 then
+                                    local newtarget = {target[1], target[2] + offset}
+                                    return Taiko.CalculatePosition(note, ms, newtarget)
+                                elseif note.type == 2 or note.type == 4 then
+                                    local newtarget = {target[1], target[2] - offset}
+                                    return Taiko.CalculatePosition(note, ms, newtarget)
+                                else
+                                    return Taiko.CalculatePosition(note, ms, target)
+                                end
+                            end
                         elseif gimmick and match[1] == 'MERGELANE' then
                             --[[
                                 - Merge back to a single lane if the lane is split
                             ]]
+                            Parser.positionf = nil
                         elseif gimmick and match[1] == 'BARLINE' then
                             --[[
                                 - Display a barline at the current position
