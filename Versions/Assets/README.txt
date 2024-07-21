@@ -1,6 +1,3 @@
-CREDIT TO OPENTAIKO FOR SKIN
-
-
 Before using :
 
 - Install all fonts included in the Fonts folder
@@ -32,5 +29,6 @@ In-Game textures :
 - TJAPlayer3 Default skin
 - Freepik (starline / vector_corp / Harryarts) (Patterns)
 - cien (@CienpixeL) (Nameplates, Rainbox result screen gauge, Drum textures)
+- Takkkom (Ai Battle Mode, 5 Player mode and multiple misc textures)
 - Waldo - https://pressstart.vip/assets (Tower result screen background and skyboxes)
 - PNG Egg (Fireworks) (Non-commercial)

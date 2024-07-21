@@ -4,39 +4,313 @@ This file will be read and overwritten.
 DO NOT EDIT
 {
 	'Controls' = {
-		'Escape' = {
-			256 = true,
-		},
-		'Hit' = {
-			52 = {
-                1 = 2,
-                2 = false,
+        'PlaySong' = {
+            'Pause' = {
+                'Init' = {
+                    256 = true,
+                },
+                'U' = {
+                    263 = true,
+                    265 = true,
+                },
+                'D' = {
+                    262 = true,
+                    264 = true,
+                },
+                'Select' = {
+                    257 = true,
+                },
+                'Escape' = {
+                    256 = true,
+                },
             },
-			56 = {
-                1 = 2,
-                2 = true,
+            'Hit' = {
+                52 = {
+                    1 = 2,
+                    2 = false,
+                },
+                56 = {
+                    1 = 2,
+                    2 = true,
+                },
+                78 = {
+                    1 = 1,
+                    2 = true,
+                },
+                86 = {
+                    1 = 1,
+                    2 = false,
+                },
             },
-			78 = {
-                1 = 1,
-                2 = true,
+            'Screenshot' = {
+                -83 = true,
             },
-			86 = {
-                1 = 1,
-                2 = false,
+            'Fullscreen' = {
+                70 = true,
+                300 = true,
             },
-		},
-		'L' = {
-			263 = true,
-			265 = true,
-		},
-		'R' = {
-			262 = true,
-			264 = true,
-		},
-		'Select' = {
-			257 = true,
-		},
+            'Command' = {
+                'Init' = {
+                    290 = true,
+                },
+                'Move' = {
+                    'Left' = {
+                        263 = true,
+                    },
+                    'Right' = {
+                        262 = true,
+                    },
+                    'Up' = {
+                        265 = true,
+                    },
+                    'Down' = {
+                        264 = true,
+                    },
+                    'Toggle' = {
+                        77 = true,
+                    },
+                },
+            },
+            'Debug' = {
+                'Hold' = {
+                    342 = true,
+                },
+                'ToggleAuto' = {
+                    65 = true,
+                },
+                'Retry' = {
+                    82 = true,
+                },
+                'Backward' = {
+                    263 = true,
+                },
+                'Forward' = {
+                    262 = true,
+                },
+                'BackwardIncrement' = 0.100,
+                'ForwardIncrement' = 0.100,
+                'SaveState' = {
+                    'Save' = {
+                        'Hold' = {
+                            340 = true,
+                        },
+                        'Slot' = {
+                            291 = true,
+                            292 = true,
+                            293 = true,
+                            294 = true,
+                            295 = true,
+                            296 = true,
+                            297 = true,
+                            298 = true,
+                            299 = true,
+                        },
+                    },
+                    'Load' = {
+                        'Slot' = {
+                            291 = true,
+                            292 = true,
+                            293 = true,
+                            294 = true,
+                            295 = true,
+                            296 = true,
+                            297 = true,
+                            298 = true,
+                            299 = true,
+                        },
+                    },
+                },
+                'RunTimeSpeed' = {
+                    'Slower' = {
+                        264 = true,
+                    },
+                    'Faster' = {
+                        265 = true,
+                    },
+                    'FasterMultiplier' = 1.1,
+                },
+                'Freeze' = {
+                    32 = true,
+                },
+            },
+            'Editor' = {
+                'Toggle' = {
+                    345 = true,
+                },
+                'Shortcut' = {
+                    'Hold' = {
+                        341 = true,
+                    },
+                    'SelectAll' = {
+                        65 = true,
+                    },
+                    'Copy' = {
+                        67 = true,
+                    },
+                    'Paste' = {
+                        86 = true,
+                    },
+                    'Cut' = {
+                        88 = true,
+                    },
+                    'Delete' = {
+                        261 = true,
+                        259 = true,
+                    },
+                    'Snap' = {
+                        80 = true,
+                    },
+                    'Save' = {
+                        83 = true,
+                    },
+                    'Load' = {
+                        76 = true,
+                    },
+                    'Export' = {
+                        69 = true,
+                    },
+                    'Import' = {
+                        73 = true,
+                    },
+                    // Clear all, everything / new file
+                    'ClearAll' = {
+                        78 = true,
+                    },
+                    // New note
+                    'New' = {
+                        78 = true,
+                    },
+                },
+                'ModifySelectionHold' = {
+                    340 = true,
+                },
+                'ToggleDragMode' = {
+                    84 = true,
+                },
+                'ToggleGrid' = {
+                    71 = true,
+                },
+                'Move' = {
+                    'MoveIncrement' = 10,
+                    'SpeedUpHold' = {
+                        340 = true,
+                    },
+                    'SpeedUpMultiplier' = 2,
+                    'Left' = {
+                        263 = true,
+                        74 = true,
+                    },
+                    'Right' = {
+                        262 = true,
+                        76 = true,
+                    },
+                    'Up' = {
+                        265 = true,
+                        73 = true,
+                    },
+                    'Down' = {
+                        264 = true,
+                        75 = true,
+                    },
+                    'ZoomIn' = {
+                        61 = true,
+                    },
+                    'ZoomOut' = {
+                        45 = true,
+                    },
+                    'ZoomMultiplier' = 1.1,
+                    'Toggle' = {
+                        77 = true,
+                    },
+                    'MoveEditor' = {
+                        'Reset' = {
+                            344 = true,
+                        },
+                    },
+                },
+            },
+        },
+        'SongSelect' = {
+            'L' = {
+                263 = true,
+                265 = true,
+            },
+            'R' = {
+                262 = true,
+                264 = true,
+            },
+            'FastScrollTime' = 512,
+            'FastScrollInterval' = 400,
+            'Select' = {
+                257 = true,
+            },
+            'Search' = {
+                'Init' = {
+                    70 = true,
+                },
+                'FirstResult' = {
+
+                },
+                'U' = {
+                    263 = true,
+                    265 = true,
+                },
+                'D' = {
+                    262 = true,
+                    264 = true,
+                },
+                'All' = {
+                    340 = true,
+                    344 = true,
+                },
+                'Select' = {
+                    257 = true,
+                },
+                'Escape' = {
+                    256 = true,
+                },
+            },
+        },
 	},
+    'WindowName' = 'Taiko',
 	'ScreenHeight' = 720,
 	'ScreenWidth' = 1280,
+	'ComboSoundEnabled' = false,
+	'Fullscreen' = false,
+    'Offsets' = {
+        'Timing' = 0,
+        'Music' = 0,
+    },
+    'Paths' = {
+        'Assets' = 'Assets/',
+        'Screenshots' = 'Screenshots/',
+        'Config' = 'config.tpd',
+        'Songs_THISISNOTUSED' = 'Songs/',
+        'SongsESE_THISISNOTUSED' = 'C:\Users\User\Documents\BACKUP\ESE/',
+        'Songs' = 'Songs/',
+    },
+    'Formats' = {
+        'Screenshot' = '.png',
+    },
+    'Settings' = {
+        'LimitFPS' = true,
+        'FPS' = 60,
+        'VSync' = true,
+        'PlaySong' = {
+            'SONGVOLMultiplier' = 1,
+            'SEVOLMultiplier' = 0.5,
+            'LyricRomajiToHiragana' = true,
+            'Debug' = {
+                
+            },
+            'WaitForStart' = false,
+        },
+        'MasterVolume' = 0.05,
+        'Defaults' = {
+            'CalibratePath' = './defaultcalibrate120.tja',
+            'CalibrateDifficulty' = 'Oni',
+            'ClearAllPath' = './defaultclearall.tja',
+            'ClearAllDifficulty' = 'Oni',
+        },
+    },
 }

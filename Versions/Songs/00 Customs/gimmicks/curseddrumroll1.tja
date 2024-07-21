@@ -1,0 +1,43 @@
+// Cursed drumrolls (scrolls for 0 determine) (NOT STANDARDIZED)
+
+TITLE:curseddrumrolls.tja
+SUBTITLE:--Linda AI-CUE + mc08
+BPM:194
+// BPM:388
+WAVE:EkiBEN 2000.ogg
+OFFSET:0
+DEMOSTART:1.509
+
+COURSE:Oni
+LEVEL:10
+BALLOON:
+SCOREINIT:400
+SCOREDIFF:100
+
+
+#START
+
+
+#JPOSSCROLL 0.1 1/4 1
+0,
+,
+,
+
+#SCROLL 0.25
+5
+
+#SCROLL 0.25+0.25i
+0
+
+#SCROLL 0.25
+8,
+
+,
+,
+,
+,
+,
+
+
+#END
+

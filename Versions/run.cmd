@@ -1,0 +1,1 @@
+.\raylua_s.exe Taikov34.lua

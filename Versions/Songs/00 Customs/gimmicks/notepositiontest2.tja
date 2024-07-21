@@ -1,0 +1,115 @@
+// Note position (FUNCTION for ms passed from start) (NOT STANDARDIZED)
+// This is just for fucking around / generating ideas
+
+//$PARSER_UNCOMMENT_@@@
+
+TITLE:notepositiontest2.tja
+SUBTITLE:--Linda AI-CUE + mc08
+BPM:120
+// BPM:388
+WAVE:EkiBEN 2000.ogg
+OFFSET:0
+DEMOSTART:1.509
+
+COURSE:Oni
+LEVEL:10
+BALLOON:
+SCOREINIT:400
+SCOREDIFF:100
+
+
+#START
+
+
+#JPOSSCROLL 0.1 1/4 1
+,
+
+#MEASURE 4/4
+
+
+
+
+
+
+0
+
+,
+,
+,
+,
+,
+
+
+
+// circle but actually hit target
+#SUDDEN 100 100
+
+#SCROLL 1
+//@@@
+// #POSITIONF [[
+// return function(note, ms, target)
+//     local radius = 250 --radius in pixels
+//     local rotationcount = 1 --rotation count
+
+
+//     local circumference = 2 * math.pi * radius
+//     local rotationms = circumference / -note.speed[1] * rotationcount --total rotation ms
+
+//     local centerms = radius / -note.speed[1] --ms it takes to go to the center after finishing circle
+
+//     if note.ms - ms - centerms > rotationms then --stage 1: before rotation
+//         local finishms = note.ms - centerms - rotationms
+//         return target[1] + radius - (note.speed[1] * (finishms - ms - note.delay)), target[2] - (note.speed[2] * (finishms - ms - note.delay))
+//     elseif note.ms - ms > centerms then --stage 2: rotation
+//         return math.cos((ms-note.ms+centerms) / (rotationms / (2 * math.pi)) * rotationcount) * radius + target[1], math.sin((ms-note.ms+centerms) / (rotationms / (2 * math.pi)) * rotationcount) * radius + target[2]
+//     else --stage 3: after rotation
+//         local finishms = note.ms
+//         return target[1] - (note.speed[1] * (finishms - ms - note.delay)), target[2] - (note.speed[2] * (finishms - ms - note.delay))
+//     end
+// end
+// ]]
+//@@@
+1,
+,
+,
+
+// bait (go to target, move away, come back)
+#SUDDEN 100 100
+
+#SCROLL 1
+//@@@
+// #POSITIONF [[
+// return function(note, ms, target)
+//     local radius = 250 --radius in pixels
+//     local rotationcount = 1 --rotation count
+
+
+//     local circumference = radius * 2
+//     local rotationms = circumference / -note.speed[1] * rotationcount --total rotation ms
+
+//     local period = radius / -note.speed[1] * 2
+
+//     local centerms = radius / -note.speed[1] --ms it takes to go to the center after finishing circle
+
+//     if note.ms - ms - centerms > rotationms then --stage 1: before rotation
+//         local finishms = note.ms - centerms - rotationms
+//         return target[1] + radius - (note.speed[1] * (finishms - ms - note.delay)), target[2] - (note.speed[2] * (finishms - ms - note.delay))
+//     elseif note.ms - ms > centerms then --stage 2: rotation
+//         return math.abs((ms-note.ms+centerms) % period - (period / 2)) * (radius / (period / 2)) + target[1], target[2]
+//     else --stage 3: after rotation
+//         local finishms = note.ms
+//         return target[1] - (note.speed[1] * (finishms - ms - note.delay)), target[2] - (note.speed[2] * (finishms - ms - note.delay))
+//     end
+// end
+// ]]
+//@@@
+1,
+
+
+
+,
+,
+
+
+#END
+

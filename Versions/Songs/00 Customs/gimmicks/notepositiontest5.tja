@@ -1,0 +1,76 @@
+// Note position (positiont) (NOT STANDARDIZED)
+// This is just for fucking around / generating ideas
+
+//$PARSER_UNCOMMENT_@@@
+
+TITLE:notepositiontest5.tja
+SUBTITLE:--Linda AI-CUE + mc08
+BPM:120
+// BPM:388
+WAVE:EkiBEN 2000.ogg
+OFFSET:0
+DEMOSTART:1.509
+
+COURSE:Oni
+LEVEL:10
+BALLOON:
+SCOREINIT:400
+SCOREDIFF:100
+
+
+#START
+#BARLINEOFF
+
+//#JPOSSCROLL 0.1 1/4 1
+,
+
+#MEASURE 4/4
+
+
+
+
+
+
+0
+
+,
+
+
+// circle but actually hit target
+#SUDDEN 100 100
+
+
+#SCROLL 1
+// #SCROLLT 3500, '-1', 2500, '1', 1500,'-1', 500,'1'
+//@a@@
+// #POSITIONS [[
+// 3500,'-1',
+// 2500,'1',
+// 1500,'-1',
+// 500,'1'
+// ]]
+//@a@@
+1,
+
+
+
+#SCROLL 1
+//@@@
+// #POSITIONS [[
+// 2000,'1+1i',
+// 1500,'-1+1i',
+// 1000,'1-1i',
+// 500,'0.5+0.5i'
+// ]]
+//@@@
+1,
+
+
+,
+,
+,
+
+
+
+#END
+
