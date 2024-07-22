@@ -1,11 +1,14 @@
 # Taiko
 
-Popular taiko game simulator.
-
-WARNING: I can't push my local repo since it is just too big.
+Popular taiko game simulator, focusing on gimmicks and a gimmick editor.
 
 - [Taiko](#taiko)
-  - [How to start](#how-to-use)
+  - [For developers](#for-developers)
+  - [How to use](#how-to-use)
+    - [How to use: Config](#how-to-use-config)
+    - [How to use: Editor](#how-to-use-editor)
+    - [Other misc shortcuts](#other-misc-shortcuts)
+    - [How to save and load edited charts and clarifications](#how-to-save-and-load-edited-charts-and-clarifications)
   - [Before using (Credit: OpenTaiko)](#before-using-credit-opentaiko)
   - [License](#license)
   - [Posting Vidoes (Credit: OpenTaiko)](#posting-vidoes-credit-opentaiko)
@@ -16,6 +19,17 @@ WARNING: I can't push my local repo since it is just too big.
   - [Benchmarks (ParseTJA)](#benchmarks-parsetja)
   - [TODO](#todo)
   - [Credits](#credits)
+
+## For developers
+- `raylib_s.exe` is the graphics library, and it is a compiled binary from [raylib-lua](https://github.com/TSnake41/raylib-lua); feel free to compile it yourself if you want.
+- `tinyfiledialogs64.dll` facilitates file dialogs such as selecting a file or folder location (calls windows explorer if on windows, etc). It is a compiled dll from [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/files/), and open source.
+- `Taikov34.lua` is the entire simulator. Inside it, you will find `Taiko.ParseTJA` and `Taiko.Game`
+- `run.cmd` is a simple script to use `raylib_s.exe` to run `Taikov34.lua`.
+- `config.tpd` is the config file. Currently, there is no GUI, but it is a JSON-like format. See [How to use: Config](#how-to-use-config).
+- Copy a skin (Any OpenTaiko skin should work) into `Versions/` and name it `Assets`
+- Put your tja's and songs into `Songs/`
+- VERY INCOMPLETE documentation of all the functions in [docs.md](docs/docs.md)
+  - Just get started there, find the function you need, and CTRL+F and find it in the source code, `Taikov34.lua`
 
 ## How to use
 
