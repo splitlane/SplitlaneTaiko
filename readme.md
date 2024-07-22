@@ -4,6 +4,7 @@ Popular taiko game simulator, focusing on gimmicks and a gimmick editor.
 
 - [Taiko](#taiko)
   - [For developers](#for-developers)
+  - [Codebase architecture](#codebase-architecture)
   - [How to use](#how-to-use)
     - [How to use: Config](#how-to-use-config)
     - [How to use: Editor](#how-to-use-editor)
@@ -21,15 +22,23 @@ Popular taiko game simulator, focusing on gimmicks and a gimmick editor.
   - [Credits](#credits)
 
 ## For developers
-- `raylib_s.exe` is the graphics library, and it is a compiled binary from [raylib-lua](https://github.com/TSnake41/raylib-lua); feel free to compile it yourself if you want.
-- `tinyfiledialogs64.dll` facilitates file dialogs such as selecting a file or folder location (calls windows explorer if on windows, etc). It is a compiled dll from [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/files/), and open source.
-- `Taikov34.lua` is the entire simulator. Inside it, you will find `Taiko.ParseTJA` and `Taiko.Game`
-- `run.cmd` is a simple script to use `raylib_s.exe` to run `Taikov34.lua`.
-- `config.tpd` is the config file. Currently, there is no GUI, but it is a JSON-like format. See [How to use: Config](#how-to-use-config).
-- Copy a skin (Any OpenTaiko skin should work) into `Versions/` and name it `Assets`
-- Put your tja's and songs into `Songs/`
+- [raylib_s.exe](Versions/raylua_s.exe) is the graphics library, and it is a compiled binary from [raylib-lua](https://github.com/TSnake41/raylib-lua); feel free to compile it yourself if you want.
+- [tinyfiledialogs64.dll](Versions/tinyfiledialogs64.dll) facilitates file dialogs such as selecting a file or folder location (calls windows explorer if on windows, etc). It is a compiled dll from [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/files/), and open source.
+- [Taikov34.lua](Versions/Taikov34.lua) is the entire simulator. Inside it, you will find `Taiko.ParseTJA` and `Taiko.Game`
+- [run.cmd](Versions/run.cmd) is a simple script to use [raylib_s.exe](Versions/raylua_s.exe) to run [Taikov34.lua](Versions/Taikov34.lua).
+- [config.tpd](Versions/config.tpd) is the config file. Currently, there is no GUI, but it is a JSON-like format. See [How to use: Config](#how-to-use-config).
+- Copy a skin (Any OpenTaiko skin should work) into [Versions/](Versions/) and name it `Assets`
+- Put your tja's and songs into [Songs/](Versions/Songs/)
 - VERY INCOMPLETE documentation of all the functions in [docs.md](docs/docs.md)
-  - Just get started there, find the function you need, and CTRL+F and find it in the source code, `Taikov34.lua`
+  - Just get started there, find the function you need, and CTRL+F and find it in the source code, [Taikov34.lua](Versions/Taikov34.lua)
+- PLEASE SEE [Codebase architecture](#codebase-architecture)
+
+## Codebase architecture
+- Everything is in one file. Unfortunate, but I don't and probably won't have the time to clean it up in the future.
+- So, here is the structure of the code, it is not as bad as you may initially think.
+  - TJA Parser (Lines 7261-10356)
+  - TJA Serializer (Lines 11285-11892)
+  - Game (Lines 12519-23018)
 
 ## How to use
 
