@@ -21,15 +21,15 @@ Popular taiko game simulator, focusing on gimmicks and a gimmick editor.
   - [Credits](#credits)
 
 ## For developers
-- `raylib_s.exe` is the graphics library, and it is a compiled binary from [raylib-lua](https://github.com/TSnake41/raylib-lua); feel free to compile it yourself if you want.
-- `tinyfiledialogs64.dll` facilitates file dialogs such as selecting a file or folder location (calls windows explorer if on windows, etc). It is a compiled dll from [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/files/), and open source.
-- `Taikov34.lua` is the entire simulator. Inside it, you will find `Taiko.ParseTJA` and `Taiko.Game`
-- `run.cmd` is a simple script to use `raylib_s.exe` to run `Taikov34.lua`.
-- `config.tpd` is the config file. Currently, there is no GUI, but it is a JSON-like format. See [How to use: Config](#how-to-use-config).
-- Copy a skin (Any OpenTaiko skin should work) into `Versions/` and name it `Assets`
-- Put your tja's and songs into `Songs/`
+- [raylib_s.exe](Versions/raylua_s.exe) is the graphics library, and it is a compiled binary from [raylib-lua](https://github.com/TSnake41/raylib-lua); feel free to compile it yourself if you want.
+- [tinyfiledialogs64.dll](Versions/tinyfiledialogs64.dll) facilitates file dialogs such as selecting a file or folder location (calls windows explorer if on windows, etc). It is a compiled dll from [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/files/), and open source.
+- [Taikov34.lua](Versions/Taikov34.lua) is the entire simulator. Inside it, you will find `Taiko.ParseTJA` and `Taiko.Game`
+- [run.cmd](Versions/run.cmd) is a simple script to use [raylib_s.exe](Versions/raylua_s.exe) to run [Taikov34.lua](Versions/Taikov34.lua).
+- [config.tpd](Versions/config.tpd) is the config file. Currently, there is no GUI, but it is a JSON-like format. See [How to use: Config](#how-to-use-config).
+- Copy a skin (Any OpenTaiko skin should work) into [Versions/](Versions/) and name it `Assets`
+- Put your tja's and songs into [Songs/](Versions/Songs/)
 - VERY INCOMPLETE documentation of all the functions in [docs.md](docs/docs.md)
-  - Just get started there, find the function you need, and CTRL+F and find it in the source code, `Taikov34.lua`
+  - Just get started there, find the function you need, and CTRL+F and find it in the source code, [Taikov34.lua](Versions/Taikov34.lua)
 
 ## How to use
 
