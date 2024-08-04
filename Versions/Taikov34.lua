@@ -9199,6 +9199,12 @@ function Taiko.ParseTJA(source)
                         --Both are relative to note ms
                         Parser.suddenappear = -SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and -MsToS(Parser.suddenappear) or 0))
                         Parser.suddenmove = -SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and -MsToS(Parser.suddenmove) or 0))
+                        if Parser.suddenappear == 0 then
+                            Parser.suddenappear = nil
+                        end
+                        if Parser.suddenmove == 0 then
+                            Parser.suddenmove = nil
+                        end
 
                         
                     elseif match[1] == 'JPOSSCROLL' then
@@ -9285,7 +9291,8 @@ This is used when you want to return the judgment frame to its original position
                                 Parser.jposscroll.p[n] = CheckN(match[1], str, 'Invalid jposscroll')
 
                                 if direction then
-                                    Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                    -- print(direction)
+                                    Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
                                 end
                             end
                         end
@@ -9302,8 +9309,9 @@ This is used when you want to return the judgment frame to its original position
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
                                 --print(LineN, complex[1], complex[2])
-                                ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
-                                ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
+                                print(t[3])
+                                ParseJposscrollDistance(1, complex[1], t[3], fracdata[1])
+                                ParseJposscrollDistance(2, complex[2], t[3], fracdata[2])
                                 valid = true
                             elseif CheckPolarNumber(t[2]) then
                                 --Polar Scroll (TaikoManyGimmicks)
@@ -9323,8 +9331,8 @@ This is used when you want to return the judgment frame to its original position
                                     t2[1] = CheckN(match[1], t2[1], 'Invalid polar jposscroll')
                                     t2[3] = CheckN(match[1], t2[3], 'Invalid polar jposscroll')
                                     local polar = ParsePolarNumber(t2[1], math.rad(t2[3] / t2[2] * 360))
-                                    ParseJposscrollDistance(1, polar[1], nil, lanep)
-                                    ParseJposscrollDistance(2, polar[2], nil, lanep)
+                                    ParseJposscrollDistance(1, polar[1], t[3], lanep)
+                                    ParseJposscrollDistance(2, polar[2], t[3], lanep)
                                     valid = true
                                 else
                                     ParseError(match[1], 'Invalid polar jposscroll')
