@@ -11721,7 +11721,7 @@ function Taiko.SerializeTJA(Parsed)
             --]]
             --NVM: Also use barlines!
             currentmeasure[#currentmeasure + 1] = note
-            --print(note.line, #currentmeasure)
+            -- print(note.line, #currentmeasure)
 
             
 
@@ -18533,6 +18533,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
             --draw bottom
+            --TODO: Find skin and details
 
             --draw infobar
             rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
@@ -20587,6 +20588,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     .. '\nspeed: {' .. note.speed[1] .. ', ' .. note.speed[2] .. '}'
                     .. '\nbpm: ' .. note.bpm
                     .. '\nn: ' .. (note.n or '')
+                    .. '\nline: ' .. (note.line or '')
 
                     --render based on note pr --DEPRACATED
                     --local x, y = note.pr.x + editor.info.offset.x, note.pr.y + editor.info.offset.y
