@@ -20712,6 +20712,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         .. '   Runtime speed: ' .. (freezems and freezemstemp or runtimespeed)
                         .. '   ms: ' .. ms
                         .. '   fps: ' .. rl.GetFPS()
+                        .. '   loaded: ' .. #loadedrfinal
                         .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
                         .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
@@ -21752,6 +21753,16 @@ CalculateNoteHitGauge(target[1], target[2])
                         else
                             print('SaveSlot: Unable to find slot ' .. a)
                         end
+                    end
+                end
+
+                --Jump to ms
+                if rl.IsKeyPressed(83) then
+                    --TODO: Also add jump to line in tja
+                    local a = GuiInput('Enter where you want to jump to\n(seconds) (ONLY GO FORWARDS)')
+                    if a then
+                        s = a
+                        ms = s * 1000
                     end
                 end
 
