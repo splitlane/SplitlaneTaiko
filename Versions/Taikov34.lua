@@ -7453,6 +7453,21 @@ function Taiko.ParseTJA(source)
         end
     end
 
+    --Alias for all TJAP3 compat
+    if string.find(source, '$PARSER_TJAP3_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_SUDDEN_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
+    end
 
 
 
@@ -9271,7 +9286,11 @@ This is used when you want to return the judgment frame to its original position
                                     Parser.jposscroll.lanep[n] = str
                                 end
                                 if direction then
-                                    Parser.jposscroll.lanep[1] = Parser.jposscroll.lanep[1] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                    if n == 1 then --x
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
+                                    else
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    end
                                 end
                             elseif gimmick and str == 'default' then
                                 Parser.jposscroll.p = 'default'
@@ -9291,8 +9310,11 @@ This is used when you want to return the judgment frame to its original position
                                 Parser.jposscroll.p[n] = CheckN(match[1], str, 'Invalid jposscroll')
 
                                 if direction then
-                                    -- print(direction)
-                                    Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    if n == 1 then --x
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
+                                    else
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    end
                                 end
                             end
                         end
@@ -9309,7 +9331,7 @@ This is used when you want to return the judgment frame to its original position
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
                                 --print(LineN, complex[1], complex[2])
-                                print(t[3])
+                                -- print(t[3])
                                 ParseJposscrollDistance(1, complex[1], t[3], fracdata[1])
                                 ParseJposscrollDistance(2, complex[2], t[3], fracdata[2])
                                 valid = true
@@ -9936,7 +9958,10 @@ Everyone who DL
 
 
                     else
-                        
+                        --Invalid command
+                        if strict then
+                            ParseError('parser.parsecommand', 'Invalid command')
+                        end
                     end
 
 
@@ -16979,7 +17004,6 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         local function CalculatePosition(note, ms, target)
-
             return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
         end
         Taiko.CalculatePosition = CalculatePosition
@@ -17394,7 +17418,47 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             end)
         end
 
+        --TJAP3: Vertical component is not affected by SUDDEN at all
+        if Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT then
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                --reverse all complex scrolls (tjap3, add compat)
+                note.speed[2] = -note.speed[2]
 
+                if note.type == 5 or note.type == 6 then
+                    --remove infinite drumrolls (tjap3, add compat)
+                    if Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT then
+                        if (note.endnote.speed[1] < 0 and note.speed[1] > 0) or (note.endnote.speed[1] > 0 and note.speed[1] < 0) then
+                            note.endnote.speed[1] = note.speed[1]
+                        end
+                    end
+
+                    if Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT then
+                        if note.endnote.movemsa then
+                            note.endnote.movemsa = note.endnote.movemsa - (note.endnote.ms - note.ms)
+                        end
+                        if note.appearancemsa and note.endnote.appearancemsa then
+                            note.endnote.appearancemsa = note.appearancemsa
+                            if note.endnote.appearancemsa < note.endnote.loadms then
+                                note.endnote.loadms = note.endnote.appearancemsa
+                            end
+                        end
+                    end
+                end
+
+                -- if note.type == 5 or note.type == 6 or note.type == 8 then
+                --     note.movemsa = nil
+                -- end
+
+                if note.movemsa then
+                    local movemsa = note.movemsa
+                    note.CalculatePosition = function(note, ms, target)
+                        local msm = (ms >= movemsa and ms or movemsa)
+                        return target[1] - (note.speed[1] * (note.ms - msm - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
+                    end
+                    note.movemsa = nil
+                end
+            end)
+        end
 
 
 
