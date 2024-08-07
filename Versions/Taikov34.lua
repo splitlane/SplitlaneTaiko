@@ -16656,6 +16656,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
     
     function Taiko.PlaySong(Parsed, OptionalConfig)
+        -- local profiler = require'profiler'
+        -- profiler.start()
         SetupResizeAll()
 
 
@@ -17099,6 +17101,31 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         --WARNING: CPU Heavy, estimating
         --TODO: FIX LOADMS FOR DRUMROLLS (also fix for normal, esp when jposscroll)
         local function CalculateLoadMsDrumroll(note, loadms)
+            --if it is a simple drumroll (both scrolls are the same)
+            if note.startnote.drumrollbend == nil or #note.startnote.drumrollbend == 0 then
+                if note.scrollx == note.startnote.scrollx and note.scrolly == note.startnote.scrolly then
+                    note.drumrollsimple = true
+                    return CalculateLoadMs(note.startnote, note.startnote.ms)
+                end
+
+                --if it is a linear drumroll (both scrolls have the same slope)
+                if note.startnote.scrolly / note.startnote.scrollx == note.scrolly / note.scrollx and (note.startnote.scrolly >= 0 and note.scrolly >= 0 or note.startnote.scrolly < 0 and note.scrolly < 0) then
+                    note.drumrollsimple = true
+                    return CalculateLoadMs(note.startnote, note.startnote.ms)
+                end
+            end
+
+            --[[
+                TODO: Find out why things like
+                #SCROLL 155
+                50,
+                #SCROLL 1
+                8
+                bring sim to a screeching halt (60fps -> 13fps after a while)
+                prob the drawing of the drumroll body, not being clamped
+            ]]
+
+
             -- LineIntersectPoint(note.ms, -note.speed[1], -note.speed[2], note.startnote.ms, -note.startnote.speed[1], -note.startnote.speed[2], loadrect[3] - target[1], loadrect[4] - target[2])
 
             local increment = -10
@@ -19647,8 +19674,6 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
-                    --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                     --rewrite condition
                     if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)
                     --drumroll code
@@ -19656,7 +19681,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     and ((not note.endnote) or (note.endnote.done))
                     --endnote
                     --TODO: https://gist.github.com/ChickenProp/3194723
-                    --and ((not note.startnote) or (IsPointInRectangle(note.startnote.p[1], note.startnote.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)) then
+                    --[[
                     and ((not note.startnote) or (IsLineOutsideRectangle(
                         note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
                         note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
@@ -19664,8 +19689,11 @@ CalculateNoteHitGauge(target[1], target[2])
                         note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
                         unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]
                     ))) then
-                        --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
-                        --print('UNLOAD')
+                    --]]
+                    and ((not note.startnote) or (note.drumrollsimple)) then
+
+                        
+                        -- print('UNLOAD')
                         note.done = s
                         table.remove(loaded, i2)
                         done[#done + 1] = note
@@ -22375,6 +22403,8 @@ CalculateNoteHitGauge(target[1], target[2])
             --Pause / Command
             local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
             if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
+                -- profiler.report('profiler2.log')error()
+
                 dontincrements = true
 
                 local before = os.clock()

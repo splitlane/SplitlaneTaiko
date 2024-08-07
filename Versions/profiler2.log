@@ -1,0 +1,58 @@
+> Total time: 18.430000 s
+--------------------------------------------------------------------------------------
+| FILE                : FUNCTION                    : LINE   : TIME   : %     : #    |
+--------------------------------------------------------------------------------------
+| c:\Users\k1666\OneDr: IsKeyPressed                : 13599  : 0.0370 : 0.2   : 5807 |
+| c:\Users\k1666\OneDr: Anon                        : 18564  : 0.0210 : 0.1   : 12752|
+| c:\Users\k1666\OneDr: DrawTextTexture             : 13377  : 0.0150 : 0.1   :  464 |
+| [string "--[[..."]  : __index                     :  1457  : 0.0150 : 0.1   : 1542 |
+| c:\Users\k1666\OneDr: CalculatePosition           : 17031  : 0.0130 : 0.1   : 5072 |
+| c:\Users\k1666\OneDr: HitAuto                     : 18532  : 0.0110 : 0.1   :  136 |
+| c:\Users\k1666\OneDr: ForAll                      : 12259  : 0.0100 : 0.1   :    5 |
+| c:\Users\k1666\OneDr: ResizeAll                   : 14545  : 0.0080 : 0.0   :  120 |
+| c:\Users\k1666\OneDr: Hit                         : 18346  : 0.0070 : 0.0   :  185 |
+| c:\Users\k1666\OneDr: Lyric                       : 13236  : 0.0070 : 0.0   :    1 |
+| c:\Users\k1666\OneDr: IsKeyDown                   : 13607  : 0.0070 : 0.0   : 1881 |
+| c:\Users\k1666\OneDr: f                           : 18036  : 0.0060 : 0.0   :  270 |
+| c:\Users\k1666\OneDr: IsKeyPressed2               : 13615  : 0.0050 : 0.0   :  257 |
+| c:\Users\k1666\OneDr: MeasureTextTexture          : 13359  : 0.0050 : 0.0   :  464 |
+| [builtin:remove]    : remove                      :    -1  : 0.0040 : 0.0   : 1311 |
+| c:\Users\k1666\OneDr: ClipN                       :  6390  : 0.0040 : 0.0   :  339 |
+| c:\Users\k1666\OneDr: HitAutoNow                  : 18545  : 0.0020 : 0.0   :   49 |
+| c:\Users\k1666\OneDr: CalculateNoteHitGauge       : 18225  : 0.0020 : 0.0   :   12 |
+| c:\Users\k1666\OneDr: f                           : 17606  : 0.0020 : 0.0   :  270 |
+| c:\Users\k1666\OneDr: scoref                      :  6648  : 0.0020 : 0.0   :  136 |
+| c:\Users\k1666\OneDr: IsPointInRectangle          : 16895  : 0.0010 : 0.0   :  922 |
+| c:\Users\k1666\OneDr: speedcalcf                  : 12461  : 0.0010 : 0.0   :  270 |
+| c:\Users\k1666\OneDr: Anon                        : 17352  : 0.0010 : 0.0   : 1948 |
+| c:\Users\k1666\OneDr: calcBezierPoint             : 18229  : 0.0010 : 0.0   :  300 |
+--------------------------------------------------------------------------------------
+| c:\Users\k1666\OneDr: easeOut                     : 18244  : ~      : ~     :  300 |
+| [builtin:deg]       : Anon                        :    -1  : ~      : ~     :  240 |
+| c:\Users\k1666\OneDr: drumrollscoref              :  6666  : ~      : ~     :   49 |
+| profiler            : stop                        :   228  : ~      : ~     :    1 |
+| profiler            : Anon                        :   236  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: Round                       : 16881  : ~      : ~     :  240 |
+| c:\Users\k1666\OneDr: gaugepercentf               :  6923  : ~      : ~     :  136 |
+| c:\Users\k1666\OneDr: calculaterotationr          : 18001  : ~      : ~     :  270 |
+| [builtin:deg]       : deg                         :    -1  : ~      : ~     :  270 |
+| c:\Users\k1666\OneDr: GetAllNotes                 : 12304  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: open                        :   666  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: CalculateLoadMsDrumroll     : 17103  : ~      : ~     :    4 |
+| c:\Users\k1666\OneDr: CalculateLoadMs             : 17036  : ~      : ~     :  540 |
+| c:\Users\k1666\OneDr: IsLineOutsideRectangle      : 16956  : ~      : ~     :  103 |
+| c:\Users\k1666\OneDr: CalculateLoadMsDrumroll     : 17036  : ~      : ~     :    2 |
+| c:\Users\k1666\OneDr: CheckFile                   : 13016  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: SetupResizeAll              : 14600  : ~      : ~     :    1 |
+| [string "--[[..."]  : tostring                    :  1548  : ~      : ~     :   34 |
+| c:\Users\k1666\OneDr: NormalizeAngle              : 16886  : ~      : ~     :  510 |
+| c:\Users\k1666\OneDr: f                           : 17497  : ~      : ~     :  270 |
+| c:\Users\k1666\OneDr: GetFileType                 : 12801  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: f                           : 17395  : ~      : ~     :  270 |
+| c:\Users\k1666\OneDr: LoadAsset                   : 13036  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: Anon                        : 17580  : ~      : ~     : 2037 |
+| c:\Users\k1666\OneDr: f                           : 17517  : ~      : ~     :  270 |
+| c:\Users\k1666\OneDr: ConnectAll                  : 12343  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: LoadFont                    : 13209  : ~      : ~     :    1 |
+| c:\Users\k1666\OneDr: Anon                        :  6909  : ~      : ~     :    1 |
+--------------------------------------------------------------------------------------
