@@ -17069,10 +17069,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     mst = (target[1] - loadrect[1]) / note.speed[1]
                 end
             else
-                print(note.speed[1], note.speed[2])
                 if -note.speed[2] > 0 then
                     --u
-                    print('up', note.line)
                     mst = (target[2] - loadrect[2]) / -note.speed[2]
                 else
                     --d
