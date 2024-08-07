@@ -15036,7 +15036,7 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
         PlaySong = {
             --Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
             --Lyric = rl.GetFontDefault(),
-            Lyric = LoadFontDynamic('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
+            Lyric = LoadFontDynamic('Fonts/Font.otf', 32, nil, 0xFFFF)
         }
     }
 
