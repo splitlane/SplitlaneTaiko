@@ -7458,6 +7458,8 @@ function Taiko.ParseTJA(source)
         Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
         Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
         Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION = true
+        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true;
     end
     if string.find(source, '$PARSER_TJAP3_SUDDEN_COMPAT') then
         Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
@@ -7468,6 +7470,13 @@ function Taiko.ParseTJA(source)
     if string.find(source, '$PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT') then
         Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
     end
+    if string.find(source, '$PARSER_TJAP3_SUDDEN_MS_PRECISION') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION = true
+    end
+    if string.find(source, '$PARSER_TJAP3_JPOSSCROLL_FLIP_Y') then
+        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true
+    end
+    
 
 
 
@@ -9214,6 +9223,10 @@ function Taiko.ParseTJA(source)
                         --Both are relative to note ms
                         Parser.suddenappear = -SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and -MsToS(Parser.suddenappear) or 0))
                         Parser.suddenmove = -SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and -MsToS(Parser.suddenmove) or 0))
+                        if Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION then
+                            Parser.suddenappear = math.floor(Parser.suddenappear)
+                            Parser.suddenmove = math.floor(Parser.suddenmove)
+                        end
                         if Parser.suddenappear == 0 then
                             Parser.suddenappear = nil
                         end
@@ -9287,9 +9300,15 @@ This is used when you want to return the judgment frame to its original position
                                 end
                                 if direction then
                                     if n == 1 then --x
-                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
+                                        Parser.jposscroll.lanep[n] = Parser.jposscroll.lanep[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
                                     else
-                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                        Parser.jposscroll.lanep[n] = Parser.jposscroll.lanep[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    end
+                                end
+
+                                if n == 2 then
+                                    if not Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y then
+                                        Parser.jposscroll.lanep[n] = -Parser.jposscroll.lanep[n]
                                     end
                                 end
                             elseif gimmick and str == 'default' then
@@ -9316,6 +9335,12 @@ This is used when you want to return the judgment frame to its original position
                                         Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
                                     end
                                 end
+
+                                if n == 2 then
+                                    if not Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y then
+                                        Parser.jposscroll.p[n] = -Parser.jposscroll.p[n]
+                                    end
+                                end
                             end
                         end
 
@@ -9327,7 +9352,7 @@ This is used when you want to return the judgment frame to its original position
                                 It's just like scroll
                             ]]
                             if CheckComplexNumber(t[2]) then
-                                --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+                                --Complex Scroll (OpenTaiko)
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
                                 --print(LineN, complex[1], complex[2])
@@ -16816,15 +16841,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         local screenrect = {0, -OriginalConfig.ScreenHeight / 2, OriginalConfig.ScreenWidth, OriginalConfig.ScreenHeight / 2}
-        local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
-        local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+        --Only factors in screenrect
+        -- local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
+        -- local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+        --Factors in jposscroll (if the target is within screenrect, everything will be correct)
+        local loadrect = {-OriginalConfig.ScreenWidth - bufferlength, -OriginalConfig.ScreenHeight - bufferlength, OriginalConfig.ScreenWidth + bufferlength, OriginalConfig.ScreenHeight + bufferlength}
+        local unloadrect = {loadrect[1] - unloadbuffer, loadrect[2] - unloadbuffer, loadrect[3] + unloadbuffer, loadrect[4] + unloadbuffer}
 
-        --High loading mod for jposscroll testing
-        --[[
-        local n = 5000
-        loadrect = {screenrect[1] - n, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + n}
-        unloadrect = {screenrect[1] - n + 100, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + n - 100}
-        --]]
 
 
 
@@ -17010,12 +17033,74 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
         local function CalculateLoadMs(note, ms)
             --x, y
-            local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+            -- local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+            -- return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+
+            --How it works: Split screen into 4 sections, with 4 lines from each corner to the target
+            --speed = pixels/ms
+            --TODO: Have a cache!!!
+            --Remember, y is flipped (up = minus, down = plus)
+            --TODO: Cache this, update every time JPOSSCROLL
+            local dl = (target[2] - loadrect[2]) / (target[1] - loadrect[1])
+            local dr = (target[2] - loadrect[2]) / (target[1] - loadrect[3])
+            local ul = (target[2] - loadrect[4]) / (target[1] - loadrect[1])
+            local ur = (target[2] - loadrect[4]) / (target[1] - loadrect[3])
+            -- print(ul, ur, dl, dr)
+            -- print(target[1], target[2])error()
+            --TODO: Cache this forever in note
+            local m = note.speed[2] / note.speed[1]
+            local mst = nil --ms it takes for note to get from target to loading rect
+            if -note.speed[1] == 0 or ((dr <= m and m <= ur) or (dl <= m and m <= ul)) then
+                if -note.speed[1] > 0 then
+                    --r
+                    mst = (loadrect[3] - target[1]) / -note.speed[1]
+                else
+                    --l
+                    mst = (target[1] - loadrect[1]) / note.speed[1]
+                end
+            else
+                if -note.speed[2] > 0 then
+                    --u
+                    mst = (target[2] - loadrect[2]) / -note.speed[2]
+                else
+                    --d
+                    mst = (loadrect[4] - target[2]) / note.speed[2]
+                end
+            end
+
+            return ms - mst
+        end
+
+        local function LineIntersectPoint(pms, ps1, ps2, qms, qs1, qs2, x, y)
+            --[[
+                point slope form with p1, p2, q1, q2
+                p1 = (t - pms) * ps1
+                p2 = (t - pms) * ps2
+                q1 = (t - qms) * qs1
+                q2 = (t - qms) * qs2
+
+                y*p1-y*q1+p2*q1-x*p2-x*q2+p1*q2=0
+                y * ps1 * (t - pms) - y * qs1 * (t - qms) + ps2 * qs1 * (t - pms) * (t - qms) - x * ps2 * (t - pms) + x * qs2 * (t - qms) - ps1 * qs2 * (t - pms) * (t - qms) = 0
+
+                y*ps1*t - y*qs1*t + ps2*qs1*t^2 - ps2*qs1*t*pms - ps2*qs1*t*qms - x*ps2*t + x*qs2*t - ps1*qs2*t^2 + ps1*qs2*t*pms + ps1*qs2*t*qms - y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms = 0
+
+                (ps2*qs1 - ps1*qs2)t^2 + (y*ps1 - y*qs1 - ps2*qs1*pms - ps2*qs1*qms - x*ps2 + x*qs2 + ps1*qs2*pms + ps1*qs2*qms)t + (- y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms) = 0
+
+                now quadratic formula!
+            --]]
+            local a = ps2*qs1 - ps1*qs2
+            local b = y*ps1 - y*qs1 - ps2*qs1*pms - ps2*qs1*qms - x*ps2 + x*qs2 + ps1*qs2*pms + ps1*qs2*qms
+            local c = - y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms
+            local t1 = (-b + math.sqrt(b ^ 2 - 4 * a * c)) / (2 * a)
+            local t2 = (-b - math.sqrt(b ^ 2 - 4 * a * c)) / (2 * a)
+            print(t1, t2)
         end
 
         --WARNING: CPU Heavy, estimating
+        --TODO: FIX LOADMS FOR DRUMROLLS (also fix for normal, esp when jposscroll)
         local function CalculateLoadMsDrumroll(note, loadms)
+            -- LineIntersectPoint(note.ms, -note.speed[1], -note.speed[2], note.startnote.ms, -note.startnote.speed[1], -note.startnote.speed[2], loadrect[3] - target[1], loadrect[4] - target[2])
+
             local increment = -10
             local ms = loadms
             while true do
