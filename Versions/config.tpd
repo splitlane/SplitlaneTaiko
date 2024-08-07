@@ -299,7 +299,7 @@ DO NOT EDIT
         'PlaySong' = {
             'SONGVOLMultiplier' = 1,
             'SEVOLMultiplier' = 0.5,
-            'LyricRomajiToHiragana' = true,
+            'LyricRomajiToHiragana' = false,
             'Debug' = {
                 
             },

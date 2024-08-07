@@ -7681,7 +7681,7 @@ function Taiko.ParseTJA(source)
             elseif c == 'i' then
                 --t[2] = t[2] + tonumber(current)
                 --leniency when parsing complex: 1+i or 1-i allowed
-                if current == '+' or current == '-' then
+                if current == '+' or current == '-' or current == '' then
                     current = current .. '1'
                 end
                 t[2] = t[2] + ParseAnyNumber(current)
@@ -15225,7 +15225,12 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         --TEMPORARY --TODO
         --choose difficulty
-        SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra'))
+        SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra') or '')
+        
+        while not Taiko.Data.CourseId[SelectedDifficulty] do
+            SelectedDifficulty = string.lower(GuiInput('Try again. Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra') or '')
+        end
+        
         return SelectedDifficulty
 
         --[[
@@ -17034,6 +17039,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
         Taiko.CalculatePosition = CalculatePosition
 
         local function CalculateLoadMs(note, ms)
+            if note.speed[1] == 0 and note.speed[2] == 0 then
+                return -math.huge
+            end
             --x, y
             -- local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
             -- return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
@@ -17052,7 +17060,7 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             --TODO: Cache this forever in note
             local m = note.speed[2] / note.speed[1]
             local mst = nil --ms it takes for note to get from target to loading rect
-            if -note.speed[1] == 0 or ((dr <= m and m <= ur) or (dl <= m and m <= ul)) then
+            if -note.speed[1] ~= 0 and ((dr <= m and m <= ur) or (dl <= m and m <= ul)) then
                 if -note.speed[1] > 0 then
                     --r
                     mst = (loadrect[3] - target[1]) / -note.speed[1]
@@ -17061,8 +17069,10 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     mst = (target[1] - loadrect[1]) / note.speed[1]
                 end
             else
+                print(note.speed[1], note.speed[2])
                 if -note.speed[2] > 0 then
                     --u
+                    print('up', note.line)
                     mst = (target[2] - loadrect[2]) / -note.speed[2]
                 else
                     --d
