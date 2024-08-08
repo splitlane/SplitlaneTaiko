@@ -7459,7 +7459,8 @@ function Taiko.ParseTJA(source)
         Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
         Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
         Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION = true
-        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true;
+        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true
+        Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y = true
     end
     if string.find(source, '$PARSER_TJAP3_SUDDEN_COMPAT') then
         Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
@@ -7475,6 +7476,9 @@ function Taiko.ParseTJA(source)
     end
     if string.find(source, '$PARSER_TJAP3_JPOSSCROLL_FLIP_Y') then
         Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true
+    end
+    if string.find(source, '$PARSER_TJAP3_DIRECTION_FLIP_Y') then
+        Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y = true
     end
     
 
@@ -9206,8 +9210,12 @@ function Taiko.ParseTJA(source)
                         local d = math.sqrt(Parser.scrollx ^ 2 + Parser.scrolly ^ 2)
                         local polar = ParsePolarNumber(d, math.rad(final))
                         Parser.scrollx = -polar[1]
-                        Parser.scrolly = -polar[2]
+                        Parser.scrolly = polar[2]
                         --print(Parser.scrollx, Parser.scrolly)
+
+                        if Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y then
+                            Parser.scrolly = -Parser.scrolly
+                        end
 
 
                     elseif match[1] == 'SUDDEN' then
@@ -9226,6 +9234,14 @@ function Taiko.ParseTJA(source)
                         if Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION then
                             Parser.suddenappear = math.floor(Parser.suddenappear)
                             Parser.suddenmove = math.floor(Parser.suddenmove)
+
+                            --Possibly a separate flag? any value <0 is considered to be 0 in tjap3
+                            if Parser.suddenappear < 0 then
+                                Parser.suddenappear = 0
+                            end
+                            if Parser.suddenmove < 0 then
+                                Parser.suddenmove = 0
+                            end
                         end
                         if Parser.suddenappear == 0 then
                             Parser.suddenappear = nil
@@ -13234,6 +13250,10 @@ int MeasureText(const char *text, int fontSize)
         --the fonts are cached
 
         return function(fontchars, tmp)
+            if not CheckFile(str) then
+                print('Font not found, crashing')
+            end
+
             --tmp is dictionary form of fontchars
             if not tmp then
                 tmp = {}
