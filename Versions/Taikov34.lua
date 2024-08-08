@@ -13250,7 +13250,7 @@ int MeasureText(const char *text, int fontSize)
         --the fonts are cached
 
         return function(fontchars, tmp)
-            if not CheckFile(str) then
+            if not CheckFile(AssetsPath .. str) then
                 print('Font not found, crashing')
             end
 
