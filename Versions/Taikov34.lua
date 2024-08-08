@@ -9210,12 +9210,28 @@ function Taiko.ParseTJA(source)
                         local d = math.sqrt(Parser.scrollx ^ 2 + Parser.scrolly ^ 2)
                         local polar = ParsePolarNumber(d, math.rad(final))
                         Parser.scrollx = -polar[1]
-                        Parser.scrolly = -polar[2]
+
+                        -- [[
+                        Parser.scrolly = polar[2]
+                        --print(Parser.scrollx, Parser.scrolly)
+                        --]]
+
+
+
+
+                        --[[
+                        --by iid
+                        Parser.scrolly = polar[2]
                         --print(Parser.scrollx, Parser.scrolly)
 
                         if Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y then
                             Parser.scrolly = -Parser.scrolly
                         end
+                        --Cancel out the later vertical speed inversion by PARSER_TJAP3_SUDDEN_COMPAT
+                        if Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT then
+                            Parser.scrolly = -Parser.scrolly
+                        end
+                        --]]
 
 
                     elseif match[1] == 'SUDDEN' then
@@ -9232,8 +9248,8 @@ function Taiko.ParseTJA(source)
                         Parser.suddenappear = -SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and -MsToS(Parser.suddenappear) or 0))
                         Parser.suddenmove = -SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and -MsToS(Parser.suddenmove) or 0))
                         if Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION then
-                            Parser.suddenappear = math.ceil(Parser.suddenappear)
-                            Parser.suddenmove = math.ceil(Parser.suddenmove)
+                            Parser.suddenappear = -math.floor(-Parser.suddenappear)
+                            Parser.suddenmove = -math.floor(-Parser.suddenmove)
 
                             --Possibly a separate flag? any value <0 is considered to be 0 in tjap3
                             if -Parser.suddenappear < 0 then
