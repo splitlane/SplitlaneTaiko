@@ -16098,7 +16098,7 @@ end
                         local ParsedData = data
                         --]]
 
-                        Taiko.Play(ParsedData)
+                        Taiko.Play(ParsedData, nextdir, SelectedDifficulty)
                     end
                 else
                     --[[
@@ -23125,7 +23125,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
     --Wrapper for Taiko.PlaySong that handles everything (except difficulty selection and parsing)
-    function Taiko.Play(Parsed)
+    function Taiko.Play(Parsed, path, difficulty)
         while true do
             local Status, Result = Taiko.PlaySong(Parsed)
             if Status == true then
@@ -23137,6 +23137,12 @@ CalculateNoteHitGauge(target[1], target[2])
             elseif Status == false then
                 --Retry
 
+                --Reload file from disc
+                if path then
+                    local Parsed2 = Taiko.Parse(path)
+                    local ParsedData2 = Taiko.GetDifficulty(Parsed2, difficulty)
+                    Parsed = ParsedData2
+                end
             elseif Status == nil then
                 --Quit
                 break
