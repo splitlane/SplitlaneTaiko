@@ -9236,10 +9236,10 @@ function Taiko.ParseTJA(source)
                             Parser.suddenmove = math.floor(Parser.suddenmove)
 
                             --Possibly a separate flag? any value <0 is considered to be 0 in tjap3
-                            if Parser.suddenappear < 0 then
+                            if -Parser.suddenappear < 0 then
                                 Parser.suddenappear = 0
                             end
-                            if Parser.suddenmove < 0 then
+                            if -Parser.suddenmove < 0 then
                                 Parser.suddenmove = 0
                             end
                         end
