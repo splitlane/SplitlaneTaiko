@@ -43,7 +43,7 @@ DO NOT EDIT
                 },
             },
             'Screenshot' = {
-                -83 = true,
+                83 = true,
             },
             'Fullscreen' = {
                 70 = true,
@@ -278,11 +278,11 @@ DO NOT EDIT
 	'ComboSoundEnabled' = false,
 	'Fullscreen' = false,
     'Offsets' = {
-        'Timing' = 0,
+        'Timing' = 16,
         'Music' = 0,
     },
     'Paths' = {
-        'Assets' = 'Assets/',
+        'Assets' = 'Assets_OpenTaiko/',
         'Screenshots' = 'Screenshots/',
         'Config' = 'config.tpd',
         'Songs_THISISNOTUSED' = 'Songs/',

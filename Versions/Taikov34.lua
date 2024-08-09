@@ -14141,7 +14141,17 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
             },
             Backgrounds = {
                 Background = {
-                    Bottom = {
+                    Down = {
+                        [0] = LoadImage('Graphics/5_Game/5_Background/0/Down.png')
+                    },
+                    Footer = {
+                        [0] = LoadImage('Graphics/5_Game/8_Footer/0.png')
+                    },
+                    Up = {
+                        --goes down (drawn aligned to the left)
+                        [0] = LoadImage('Graphics/5_Game/5_Background/0/1P_Up_2nd.png'),
+                        --goes up
+                        [1] = LoadImage('Graphics/5_Game/5_Background/0/1P_Up_1st.png'),
                     },
                     InfoBar = {
                         [0] = LoadImage('Graphics/5_Game/6_Taiko/1P_Background.png')
@@ -14845,6 +14855,26 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
 
 
 
+    --Down
+    Textures.PlaySong.Backgrounds.Background.Down.sizex = Textures.PlaySong.Backgrounds.Background.Down[0].width
+    Textures.PlaySong.Backgrounds.Background.Down.sizey = Textures.PlaySong.Backgrounds.Background.Down[0].height
+    Textures.PlaySong.Backgrounds.Background.Down.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Down.sizex, Textures.PlaySong.Backgrounds.Background.Down.sizey)
+    Textures.PlaySong.Backgrounds.Background.Down.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Down.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 360/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Down.sizex, Textures.PlaySong.Backgrounds.Background.Down.sizey)
+
+    --Footer
+    Textures.PlaySong.Backgrounds.Background.Footer.sizex = Textures.PlaySong.Backgrounds.Background.Footer[0].width
+    Textures.PlaySong.Backgrounds.Background.Footer.sizey = Textures.PlaySong.Backgrounds.Background.Footer[0].height
+    Textures.PlaySong.Backgrounds.Background.Footer.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Footer.sizex, Textures.PlaySong.Backgrounds.Background.Footer.sizey)
+    Textures.PlaySong.Backgrounds.Background.Footer.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Footer.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 676/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Footer.sizex, Textures.PlaySong.Backgrounds.Background.Footer.sizey)
+
+    --Up
+    Textures.PlaySong.Backgrounds.Background.Up.sizex = Textures.PlaySong.Backgrounds.Background.Up[0].width
+    Textures.PlaySong.Backgrounds.Background.Up.sizey = Textures.PlaySong.Backgrounds.Background.Up[0].height
+    Textures.PlaySong.Backgrounds.Background.Up.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Up.sizex, Textures.PlaySong.Backgrounds.Background.Up.sizey)
+    Textures.PlaySong.Backgrounds.Background.Up.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Up.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 0/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Up.sizex, Textures.PlaySong.Backgrounds.Background.Up.sizey)
 
     --InfoBar
     Textures.PlaySong.Backgrounds.Background.InfoBar.sizex = Textures.PlaySong.Backgrounds.Background.InfoBar[0].width
@@ -15763,7 +15793,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             --BACKGROUND
             if SelectedConfig then
                 --LAZIEST SOLUTION EVER: Just render another one
-                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + (BackgroundPosition >= 0 and -skinresolution[1] or skinresolution[1])
+                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + skinresolution[1]
                 rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
 
                 --Now render center (main)
@@ -18725,85 +18755,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         while true do
-
-            --Make canvas
-            rl.BeginDrawing()
-
-            rl.ClearBackground(rl.RAYWHITE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            --rendering
-
-
-
-
-
-            --check if editor is in move
-            if editor.on and (not editor.movingnotes) then
-                for k, v in pairs(editor.moving.data) do
-                    rl[k] = editor.moving.tempf
-                end
-            end
-
-
-
-
-
-
-            --draw bottom
-            --TODO: Find skin and details
-
-            --draw infobar
-            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
-
-            --draw coursesymbol
-            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
-            
-            --draw nameplate
-
-            --base
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --edge
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --top
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --rankbase
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --rank
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --1P
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-
-
-
-
-
-
-
-            --TODO: Draw before / after rendering?
-            -- rl.DrawFPS(10, 10)
-            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
-
-            --[[
+                        --[[
             --debug
             DrawRectangleLines = function(a, b, c, d, e)
                 rl.DrawRectangleLines(a * 0.5, b * 0.5, c * 0.5, d * 0.5, e)
@@ -18859,6 +18811,142 @@ CalculateNoteHitGauge(target[1], target[2])
             framen = framen + 1
             --forceresync = true --Alternately enable forceresync for extra precision? (???)
             --]]
+
+
+
+
+
+
+            --Make canvas
+            rl.BeginDrawing()
+
+            rl.ClearBackground(rl.RAYWHITE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.data) do
+                    rl[k] = editor.moving.tempf
+                end
+            end
+
+
+
+
+
+
+            --draw bottom
+            --TODO: Find skin and details
+
+            --Actual backgrounds (non clean)
+            --Down
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Down[0], Textures.PlaySong.Backgrounds.Background.Down.sourcerect, Textures.PlaySong.Backgrounds.Background.Down.pr, Textures.PlaySong.Backgrounds.Background.Down.center, 0, rl.WHITE)
+
+            --Footer
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Footer[0], Textures.PlaySong.Backgrounds.Background.Footer.sourcerect, Textures.PlaySong.Backgrounds.Background.Footer.pr, Textures.PlaySong.Backgrounds.Background.Footer.center, 0, rl.WHITE)
+
+            --Up
+            local backgroundupy = math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizey / 10) % Textures.PlaySong.Backgrounds.Background.Up.sizey
+            local backgroundupx = -(math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizex / 5) % Textures.PlaySong.Backgrounds.Background.Up.sizex)
+            Textures.PlaySong.Backgrounds.Background.Up.pr.x = backgroundupx * scale[1]
+
+
+            for i = 1, 5 do
+                --LAZIEST SOLUTION EVER: Just render another one
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] - Textures.PlaySong.Backgrounds.Background.Up.sizey
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                --Now render center (main)
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1]
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                --down
+                if backgroundupy < Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.2 then
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+                end
+                
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1]
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                if backgroundupy > Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.8 then
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + 2 * Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+                end
+                
+                Textures.PlaySong.Backgrounds.Background.Up.pr.x = Textures.PlaySong.Backgrounds.Background.Up.pr.x + Textures.PlaySong.Backgrounds.Background.Up.sizex
+            end
+
+
+
+
+
+
+
+
+
+            --Clean stuff (necessary)
+
+            --draw infobar
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
+
+            --draw coursesymbol
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
+            
+            --draw nameplate
+
+            --base
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --edge
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --top
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rankbase
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rank
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --1P
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+
+
+
+
+
+
+
+            --TODO: Draw before / after rendering?
+            -- rl.DrawFPS(10, 10)
+            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
+
+
 
 
 
