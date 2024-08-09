@@ -183,6 +183,10 @@ TODO: Add raylib option
     FOR ESE GIT: git commit -a
     git push -u https://ese.tjadataba.se/mc08/ESE.git
     TODO: Fix complex scroll no number was found with "1-i" or "i"
+    TODO: Fix charts without songs crashing
+    
+
+
 
 
 
@@ -14138,7 +14142,6 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
             Backgrounds = {
                 Background = {
                     Bottom = {
-                        --[0] = LoadImage('')
                     },
                     InfoBar = {
                         [0] = LoadImage('Graphics/5_Game/6_Taiko/1P_Background.png')
@@ -15434,7 +15437,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         --Background scrolling position
         local BackgroundPosition = 0 --in skinresolution, scaled on render
-        local BackgroundScrollSpeed = 40 --in skinresolution, scaled on render / per second (deltatime)
+        local BackgroundScrollSpeed = -40 --in skinresolution, scaled on render / per second (deltatime)
 
         --local RenderDistance = 5
 
