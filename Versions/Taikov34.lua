@@ -183,6 +183,10 @@ TODO: Add raylib option
     FOR ESE GIT: git commit -a
     git push -u https://ese.tjadataba.se/mc08/ESE.git
     TODO: Fix complex scroll no number was found with "1-i" or "i"
+    TODO: Fix charts without songs crashing
+    
+
+
 
 
 
@@ -7453,6 +7457,34 @@ function Taiko.ParseTJA(source)
         end
     end
 
+    --Alias for all TJAP3 compat
+    if string.find(source, '$PARSER_TJAP3_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION = true
+        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true
+        Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y = true
+    end
+    if string.find(source, '$PARSER_TJAP3_SUDDEN_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT') then
+        Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT = true
+    end
+    if string.find(source, '$PARSER_TJAP3_SUDDEN_MS_PRECISION') then
+        Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION = true
+    end
+    if string.find(source, '$PARSER_TJAP3_JPOSSCROLL_FLIP_Y') then
+        Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y = true
+    end
+    if string.find(source, '$PARSER_TJAP3_DIRECTION_FLIP_Y') then
+        Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y = true
+    end
+    
 
 
 
@@ -7657,7 +7689,7 @@ function Taiko.ParseTJA(source)
             elseif c == 'i' then
                 --t[2] = t[2] + tonumber(current)
                 --leniency when parsing complex: 1+i or 1-i allowed
-                if current == '+' or current == '-' then
+                if current == '+' or current == '-' or current == '' then
                     current = current .. '1'
                 end
                 t[2] = t[2] + ParseAnyNumber(current)
@@ -9182,8 +9214,28 @@ function Taiko.ParseTJA(source)
                         local d = math.sqrt(Parser.scrollx ^ 2 + Parser.scrolly ^ 2)
                         local polar = ParsePolarNumber(d, math.rad(final))
                         Parser.scrollx = -polar[1]
-                        Parser.scrolly = -polar[2]
+
+                        -- [[
+                        Parser.scrolly = polar[2]
                         --print(Parser.scrollx, Parser.scrolly)
+                        --]]
+
+
+
+
+                        --[[
+                        --by iid
+                        Parser.scrolly = polar[2]
+                        --print(Parser.scrollx, Parser.scrolly)
+
+                        if Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y then
+                            Parser.scrolly = -Parser.scrolly
+                        end
+                        --Cancel out the later vertical speed inversion by PARSER_TJAP3_SUDDEN_COMPAT
+                        if Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT then
+                            Parser.scrolly = -Parser.scrolly
+                        end
+                        --]]
 
 
                     elseif match[1] == 'SUDDEN' then
@@ -9199,6 +9251,24 @@ function Taiko.ParseTJA(source)
                         --Both are relative to note ms
                         Parser.suddenappear = -SToMs(CheckN(match[1], t[1], 'Invalid sudden') or (Parser.suddenappear and -MsToS(Parser.suddenappear) or 0))
                         Parser.suddenmove = -SToMs(CheckN(match[1], t[2], 'Invalid sudden') or (Parser.suddenmove and -MsToS(Parser.suddenmove) or 0))
+                        if Parsed.Flag.PARSER_TJAP3_SUDDEN_MS_PRECISION then
+                            Parser.suddenappear = -math.floor(-Parser.suddenappear)
+                            Parser.suddenmove = -math.floor(-Parser.suddenmove)
+
+                            --Possibly a separate flag? any value <0 is considered to be 0 in tjap3
+                            if -Parser.suddenappear < 0 then
+                                Parser.suddenappear = 0
+                            end
+                            if -Parser.suddenmove < 0 then
+                                Parser.suddenmove = 0
+                            end
+                        end
+                        if Parser.suddenappear == 0 then
+                            Parser.suddenappear = nil
+                        end
+                        if Parser.suddenmove == 0 then
+                            Parser.suddenmove = nil
+                        end
 
                         
                     elseif match[1] == 'JPOSSCROLL' then
@@ -9265,7 +9335,17 @@ This is used when you want to return the judgment frame to its original position
                                     Parser.jposscroll.lanep[n] = str
                                 end
                                 if direction then
-                                    Parser.jposscroll.lanep[1] = Parser.jposscroll.lanep[1] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                    if n == 1 then --x
+                                        Parser.jposscroll.lanep[n] = Parser.jposscroll.lanep[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
+                                    else
+                                        Parser.jposscroll.lanep[n] = Parser.jposscroll.lanep[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    end
+                                end
+
+                                if n == 2 then
+                                    if not Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y then
+                                        Parser.jposscroll.lanep[n] = -Parser.jposscroll.lanep[n]
+                                    end
                                 end
                             elseif gimmick and str == 'default' then
                                 Parser.jposscroll.p = 'default'
@@ -9285,7 +9365,17 @@ This is used when you want to return the judgment frame to its original position
                                 Parser.jposscroll.p[n] = CheckN(match[1], str, 'Invalid jposscroll')
 
                                 if direction then
-                                    Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '1' and 1 or direction == '0' and -1, 'Invalid jposscroll', direction) or 1)
+                                    if n == 1 then --x
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and -1 or direction == '1' and 1, 'Invalid jposscroll', direction) or 1)
+                                    else
+                                        Parser.jposscroll.p[n] = Parser.jposscroll.p[n] * (Check(match[1], direction == '0' and 1 or direction == '1' and -1, 'Invalid jposscroll', direction) or 1)
+                                    end
+                                end
+
+                                if n == 2 then
+                                    if not Parsed.Flag.PARSER_TJAP3_JPOSSCROLL_FLIP_Y then
+                                        Parser.jposscroll.p[n] = -Parser.jposscroll.p[n]
+                                    end
                                 end
                             end
                         end
@@ -9298,12 +9388,13 @@ This is used when you want to return the judgment frame to its original position
                                 It's just like scroll
                             ]]
                             if CheckComplexNumber(t[2]) then
-                                --Complex Scroll (TaikoManyGimmicks + OpenTaiko)
+                                --Complex Scroll (OpenTaiko)
                                 --(x) + (y)i
                                 local complex, fracdata = ParseComplexNumberSimple(t[2])
                                 --print(LineN, complex[1], complex[2])
-                                ParseJposscrollDistance(1, complex[1], nil, fracdata[1])
-                                ParseJposscrollDistance(2, complex[2], nil, fracdata[2])
+                                -- print(t[3])
+                                ParseJposscrollDistance(1, complex[1], t[3], fracdata[1])
+                                ParseJposscrollDistance(2, complex[2], t[3], fracdata[2])
                                 valid = true
                             elseif CheckPolarNumber(t[2]) then
                                 --Polar Scroll (TaikoManyGimmicks)
@@ -9323,8 +9414,8 @@ This is used when you want to return the judgment frame to its original position
                                     t2[1] = CheckN(match[1], t2[1], 'Invalid polar jposscroll')
                                     t2[3] = CheckN(match[1], t2[3], 'Invalid polar jposscroll')
                                     local polar = ParsePolarNumber(t2[1], math.rad(t2[3] / t2[2] * 360))
-                                    ParseJposscrollDistance(1, polar[1], nil, lanep)
-                                    ParseJposscrollDistance(2, polar[2], nil, lanep)
+                                    ParseJposscrollDistance(1, polar[1], t[3], lanep)
+                                    ParseJposscrollDistance(2, polar[2], t[3], lanep)
                                     valid = true
                                 else
                                     ParseError(match[1], 'Invalid polar jposscroll')
@@ -9928,7 +10019,10 @@ Everyone who DL
 
 
                     else
-                        
+                        --Invalid command
+                        if strict then
+                            ParseError('parser.parsecommand', 'Invalid command')
+                        end
                     end
 
 
@@ -11721,7 +11815,7 @@ function Taiko.SerializeTJA(Parsed)
             --]]
             --NVM: Also use barlines!
             currentmeasure[#currentmeasure + 1] = note
-            --print(note.line, #currentmeasure)
+            -- print(note.line, #currentmeasure)
 
             
 
@@ -13176,6 +13270,10 @@ int MeasureText(const char *text, int fontSize)
         --the fonts are cached
 
         return function(fontchars, tmp)
+            if not CheckFile(AssetsPath .. str) then
+                print('Font not found, crashing')
+            end
+
             --tmp is dictionary form of fontchars
             if not tmp then
                 tmp = {}
@@ -14043,8 +14141,17 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
             },
             Backgrounds = {
                 Background = {
-                    Bottom = {
-                        --[0] = LoadImage('')
+                    Down = {
+                        [0] = LoadImage('Graphics/5_Game/5_Background/0/Down.png')
+                    },
+                    Footer = {
+                        [0] = LoadImage('Graphics/5_Game/8_Footer/0.png')
+                    },
+                    Up = {
+                        --goes down (drawn aligned to the left)
+                        [0] = LoadImage('Graphics/5_Game/5_Background/0/1P_Up_2nd.png'),
+                        --goes up
+                        [1] = LoadImage('Graphics/5_Game/5_Background/0/1P_Up_1st.png'),
                     },
                     InfoBar = {
                         [0] = LoadImage('Graphics/5_Game/6_Taiko/1P_Background.png')
@@ -14748,6 +14855,26 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
 
 
 
+    --Down
+    Textures.PlaySong.Backgrounds.Background.Down.sizex = Textures.PlaySong.Backgrounds.Background.Down[0].width
+    Textures.PlaySong.Backgrounds.Background.Down.sizey = Textures.PlaySong.Backgrounds.Background.Down[0].height
+    Textures.PlaySong.Backgrounds.Background.Down.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Down.sizex, Textures.PlaySong.Backgrounds.Background.Down.sizey)
+    Textures.PlaySong.Backgrounds.Background.Down.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Down.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 360/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Down.sizex, Textures.PlaySong.Backgrounds.Background.Down.sizey)
+
+    --Footer
+    Textures.PlaySong.Backgrounds.Background.Footer.sizex = Textures.PlaySong.Backgrounds.Background.Footer[0].width
+    Textures.PlaySong.Backgrounds.Background.Footer.sizey = Textures.PlaySong.Backgrounds.Background.Footer[0].height
+    Textures.PlaySong.Backgrounds.Background.Footer.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Footer.sizex, Textures.PlaySong.Backgrounds.Background.Footer.sizey)
+    Textures.PlaySong.Backgrounds.Background.Footer.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Footer.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 676/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Footer.sizex, Textures.PlaySong.Backgrounds.Background.Footer.sizey)
+
+    --Up
+    Textures.PlaySong.Backgrounds.Background.Up.sizex = Textures.PlaySong.Backgrounds.Background.Up[0].width
+    Textures.PlaySong.Backgrounds.Background.Up.sizey = Textures.PlaySong.Backgrounds.Background.Up[0].height
+    Textures.PlaySong.Backgrounds.Background.Up.sourcerect = rl.new('Rectangle', 0, 0, Textures.PlaySong.Backgrounds.Background.Up.sizex, Textures.PlaySong.Backgrounds.Background.Up.sizey)
+    Textures.PlaySong.Backgrounds.Background.Up.center = rl.new('Vector2', 0, 0)
+    Textures.PlaySong.Backgrounds.Background.Up.pr = rl.new('Rectangle', 0/1280 * OriginalConfig.ScreenWidth, 0/720 * OriginalConfig.ScreenHeight, Textures.PlaySong.Backgrounds.Background.Up.sizex, Textures.PlaySong.Backgrounds.Background.Up.sizey)
 
     --InfoBar
     Textures.PlaySong.Backgrounds.Background.InfoBar.sizex = Textures.PlaySong.Backgrounds.Background.InfoBar[0].width
@@ -14978,7 +15105,7 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
         PlaySong = {
             --Lyric = LoadFont('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
             --Lyric = rl.GetFontDefault(),
-            Lyric = LoadFontDynamic('Nijiiro Font/Nijiiro font.otf', 32, nil, 0xFFFF)
+            Lyric = LoadFontDynamic('Fonts/Font.otf', 32, nil, 0xFFFF)
         }
     }
 
@@ -15167,7 +15294,12 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         --TEMPORARY --TODO
         --choose difficulty
-        SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra'))
+        SelectedDifficulty = string.lower(GuiInput('Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra') or '')
+        
+        while not Taiko.Data.CourseId[SelectedDifficulty] do
+            SelectedDifficulty = string.lower(GuiInput('Try again. Type the difficulty and press enter\n\nOptions:\nEasy\nNormal\nHard\nOni\nUra') or '')
+        end
+        
         return SelectedDifficulty
 
         --[[
@@ -15335,7 +15467,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
 
         --Background scrolling position
         local BackgroundPosition = 0 --in skinresolution, scaled on render
-        local BackgroundScrollSpeed = 40 --in skinresolution, scaled on render / per second (deltatime)
+        local BackgroundScrollSpeed = -40 --in skinresolution, scaled on render / per second (deltatime)
 
         --local RenderDistance = 5
 
@@ -15661,7 +15793,7 @@ Press Enter once you have done this.]], 0, Config.ScreenHeight / 3, fontsize, rl
             --BACKGROUND
             if SelectedConfig then
                 --LAZIEST SOLUTION EVER: Just render another one
-                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + (BackgroundPosition >= 0 and -skinresolution[1] or skinresolution[1])
+                Textures.SongSelect.GenreBackground.pr.x = BackgroundPosition * scale[1] + skinresolution[1]
                 rl.DrawTexturePro(Textures.SongSelect.GenreBackground[SelectedConfig.BGTYPE], Textures.SongSelect.GenreBackground.sourcerect, Textures.SongSelect.GenreBackground.pr, Textures.SongSelect.GenreBackground.center, 0, SelectedConfig.BGCOLOR)
 
                 --Now render center (main)
@@ -16015,7 +16147,7 @@ end
                         local ParsedData = data
                         --]]
 
-                        Taiko.Play(ParsedData)
+                        Taiko.Play(ParsedData, nextdir, SelectedDifficulty)
                     end
                 else
                     --[[
@@ -16598,6 +16730,8 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
     
     function Taiko.PlaySong(Parsed, OptionalConfig)
+        -- local profiler = require'profiler'
+        -- profiler.start()
         SetupResizeAll()
 
 
@@ -16783,15 +16917,13 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         local screenrect = {0, -OriginalConfig.ScreenHeight / 2, OriginalConfig.ScreenWidth, OriginalConfig.ScreenHeight / 2}
-        local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
-        local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+        --Only factors in screenrect
+        -- local loadrect = {screenrect[1] - bufferlength, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + bufferlength}
+        -- local unloadrect = {screenrect[1] - unloadbuffer, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + unloadbuffer}
+        --Factors in jposscroll (if the target is within screenrect, everything will be correct)
+        local loadrect = {-OriginalConfig.ScreenWidth - bufferlength, -OriginalConfig.ScreenHeight - bufferlength, OriginalConfig.ScreenWidth + bufferlength, OriginalConfig.ScreenHeight + bufferlength}
+        local unloadrect = {loadrect[1] - unloadbuffer, loadrect[2] - unloadbuffer, loadrect[3] + unloadbuffer, loadrect[4] + unloadbuffer}
 
-        --High loading mod for jposscroll testing
-        --[[
-        local n = 5000
-        loadrect = {screenrect[1] - n, screenrect[2] - bufferlength, screenrect[3] + bufferlength, screenrect[4] + n}
-        unloadrect = {screenrect[1] - n + 100, screenrect[2] - unloadbuffer, screenrect[3] + unloadbuffer, screenrect[4] + n - 100}
-        --]]
 
 
 
@@ -16971,19 +17103,108 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
 
 
         local function CalculatePosition(note, ms, target)
-
             return target[1] - (note.speed[1] * (note.ms - ms - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
         end
         Taiko.CalculatePosition = CalculatePosition
 
         local function CalculateLoadMs(note, ms)
+            if note.speed[1] == 0 and note.speed[2] == 0 then
+                return -math.huge
+            end
             --x, y
-            local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
-            return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+            -- local x, y = RayIntersectsRectangle(target[1], target[2], -note.scrollx, -note.scrolly, loadrect[1], loadrect[2], loadrect[3], loadrect[4])
+            -- return ms - (x ~= 0 and x / -note.speed[1] or y / -note.speed[2])
+
+            --How it works: Split screen into 4 sections, with 4 lines from each corner to the target
+            --speed = pixels/ms
+            --TODO: Have a cache!!!
+            --Remember, y is flipped (up = minus, down = plus)
+            --TODO: Cache this, update every time JPOSSCROLL
+            local dl = (target[2] - loadrect[2]) / (target[1] - loadrect[1])
+            local dr = (target[2] - loadrect[2]) / (target[1] - loadrect[3])
+            local ul = (target[2] - loadrect[4]) / (target[1] - loadrect[1])
+            local ur = (target[2] - loadrect[4]) / (target[1] - loadrect[3])
+            -- print(ul, ur, dl, dr)
+            -- print(target[1], target[2])error()
+            --TODO: Cache this forever in note
+            local m = note.speed[2] / note.speed[1]
+            local mst = nil --ms it takes for note to get from target to loading rect
+            if -note.speed[1] ~= 0 and ((dr <= m and m <= ur) or (dl <= m and m <= ul)) then
+                if -note.speed[1] > 0 then
+                    --r
+                    mst = (loadrect[3] - target[1]) / -note.speed[1]
+                else
+                    --l
+                    mst = (target[1] - loadrect[1]) / note.speed[1]
+                end
+            else
+                if -note.speed[2] > 0 then
+                    --u
+                    mst = (target[2] - loadrect[2]) / -note.speed[2]
+                else
+                    --d
+                    mst = (loadrect[4] - target[2]) / note.speed[2]
+                end
+            end
+
+            return ms - mst
+        end
+
+        local function LineIntersectPoint(pms, ps1, ps2, qms, qs1, qs2, x, y)
+            --[[
+                point slope form with p1, p2, q1, q2
+                p1 = (t - pms) * ps1
+                p2 = (t - pms) * ps2
+                q1 = (t - qms) * qs1
+                q2 = (t - qms) * qs2
+
+                y*p1-y*q1+p2*q1-x*p2-x*q2+p1*q2=0
+                y * ps1 * (t - pms) - y * qs1 * (t - qms) + ps2 * qs1 * (t - pms) * (t - qms) - x * ps2 * (t - pms) + x * qs2 * (t - qms) - ps1 * qs2 * (t - pms) * (t - qms) = 0
+
+                y*ps1*t - y*qs1*t + ps2*qs1*t^2 - ps2*qs1*t*pms - ps2*qs1*t*qms - x*ps2*t + x*qs2*t - ps1*qs2*t^2 + ps1*qs2*t*pms + ps1*qs2*t*qms - y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms = 0
+
+                (ps2*qs1 - ps1*qs2)t^2 + (y*ps1 - y*qs1 - ps2*qs1*pms - ps2*qs1*qms - x*ps2 + x*qs2 + ps1*qs2*pms + ps1*qs2*qms)t + (- y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms) = 0
+
+                now quadratic formula!
+            --]]
+            local a = ps2*qs1 - ps1*qs2
+            local b = y*ps1 - y*qs1 - ps2*qs1*pms - ps2*qs1*qms - x*ps2 + x*qs2 + ps1*qs2*pms + ps1*qs2*qms
+            local c = - y*ps1*pms + y*qs1*qms + ps2*qs1*pms*qms + x*ps2*pms - x*qs2*qms - ps1*qs2*pms*qms
+            local t1 = (-b + math.sqrt(b ^ 2 - 4 * a * c)) / (2 * a)
+            local t2 = (-b - math.sqrt(b ^ 2 - 4 * a * c)) / (2 * a)
+            print(t1, t2)
         end
 
         --WARNING: CPU Heavy, estimating
+        --TODO: FIX LOADMS FOR DRUMROLLS (also fix for normal, esp when jposscroll)
         local function CalculateLoadMsDrumroll(note, loadms)
+            --if it is a simple drumroll (both scrolls are the same)
+            if note.startnote.drumrollbend == nil or #note.startnote.drumrollbend == 0 then
+                if note.scrollx == note.startnote.scrollx and note.scrolly == note.startnote.scrolly then
+                    note.drumrollsimple = true
+                    return CalculateLoadMs(note.startnote, note.startnote.ms)
+                end
+
+                --if it is a linear drumroll (both scrolls have the same slope)
+                if note.startnote.scrolly / note.startnote.scrollx == note.scrolly / note.scrollx and (note.startnote.scrolly >= 0 and note.scrolly >= 0 or note.startnote.scrolly < 0 and note.scrolly < 0) then
+                    note.drumrollsimple = true
+                    return CalculateLoadMs(note.startnote, note.startnote.ms)
+                end
+            end
+
+            --[[
+                TODO: Find out why things like
+                #SCROLL 155
+                50,
+                #SCROLL 1
+                8
+                bring sim to a screeching halt (60fps -> 13fps after a while)
+                prob the drawing of the drumroll body, not being clamped
+            ]]
+
+
+            -- LineIntersectPoint(note.ms, -note.speed[1], -note.speed[2], note.startnote.ms, -note.startnote.speed[1], -note.startnote.speed[2], loadrect[3] - target[1], loadrect[4] - target[2])
+
             local increment = -10
             local ms = loadms
             while true do
@@ -17386,7 +17607,47 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
             end)
         end
 
+        --TJAP3: Vertical component is not affected by SUDDEN at all
+        if Parsed.Flag.PARSER_TJAP3_SUDDEN_COMPAT then
+            Taiko.ForAll(Parsed.Data, function(note, i, n)
+                --reverse all complex scrolls (tjap3, add compat)
+                note.speed[2] = -note.speed[2]
 
+                if note.type == 5 or note.type == 6 then
+                    --remove infinite drumrolls (tjap3, add compat)
+                    if Parsed.Flag.PARSER_TJAP3_INFINITE_DRUMROLL_COMPAT then
+                        if (note.endnote.speed[1] < 0 and note.speed[1] > 0) or (note.endnote.speed[1] > 0 and note.speed[1] < 0) then
+                            note.endnote.speed[1] = note.speed[1]
+                        end
+                    end
+
+                    if Parsed.Flag.PARSER_TJAP3_DRUMROLL_SUDDEN_COMPAT then
+                        if note.endnote.movemsa then
+                            note.endnote.movemsa = note.endnote.movemsa - (note.endnote.ms - note.ms)
+                        end
+                        if note.appearancemsa and note.endnote.appearancemsa then
+                            note.endnote.appearancemsa = note.appearancemsa
+                            if note.endnote.appearancemsa < note.endnote.loadms then
+                                note.endnote.loadms = note.endnote.appearancemsa
+                            end
+                        end
+                    end
+                end
+
+                -- if note.type == 5 or note.type == 6 or note.type == 8 then
+                --     note.movemsa = nil
+                -- end
+
+                if note.movemsa then
+                    local movemsa = note.movemsa
+                    note.CalculatePosition = function(note, ms, target)
+                        local msm = (ms >= movemsa and ms or movemsa)
+                        return target[1] - (note.speed[1] * (note.ms - msm - note.delay)), target[2] - (note.speed[2] * (note.ms - ms - note.delay)) --FlipY
+                    end
+                    note.movemsa = nil
+                end
+            end)
+        end
 
 
 
@@ -18494,84 +18755,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
         while true do
-
-            --Make canvas
-            rl.BeginDrawing()
-
-            rl.ClearBackground(rl.RAYWHITE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            --rendering
-
-
-
-
-
-            --check if editor is in move
-            if editor.on and (not editor.movingnotes) then
-                for k, v in pairs(editor.moving.data) do
-                    rl[k] = editor.moving.tempf
-                end
-            end
-
-
-
-
-
-
-            --draw bottom
-
-            --draw infobar
-            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
-
-            --draw coursesymbol
-            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
-            
-            --draw nameplate
-
-            --base
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --edge
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --top
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --rankbase
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --rank
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-            --1P
-            rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
-
-
-
-
-
-
-
-
-            --TODO: Draw before / after rendering?
-            -- rl.DrawFPS(10, 10)
-            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
-
-            --[[
+                        --[[
             --debug
             DrawRectangleLines = function(a, b, c, d, e)
                 rl.DrawRectangleLines(a * 0.5, b * 0.5, c * 0.5, d * 0.5, e)
@@ -18627,6 +18811,142 @@ CalculateNoteHitGauge(target[1], target[2])
             framen = framen + 1
             --forceresync = true --Alternately enable forceresync for extra precision? (???)
             --]]
+
+
+
+
+
+
+            --Make canvas
+            rl.BeginDrawing()
+
+            rl.ClearBackground(rl.RAYWHITE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            --rendering
+
+
+
+
+
+            --check if editor is in move
+            if editor.on and (not editor.movingnotes) then
+                for k, v in pairs(editor.moving.data) do
+                    rl[k] = editor.moving.tempf
+                end
+            end
+
+
+
+
+
+
+            --draw bottom
+            --TODO: Find skin and details
+
+            --Actual backgrounds (non clean)
+            --Down
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Down[0], Textures.PlaySong.Backgrounds.Background.Down.sourcerect, Textures.PlaySong.Backgrounds.Background.Down.pr, Textures.PlaySong.Backgrounds.Background.Down.center, 0, rl.WHITE)
+
+            --Footer
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Footer[0], Textures.PlaySong.Backgrounds.Background.Footer.sourcerect, Textures.PlaySong.Backgrounds.Background.Footer.pr, Textures.PlaySong.Backgrounds.Background.Footer.center, 0, rl.WHITE)
+
+            --Up
+            local backgroundupy = math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizey / 10) % Textures.PlaySong.Backgrounds.Background.Up.sizey
+            local backgroundupx = -(math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizex / 5) % Textures.PlaySong.Backgrounds.Background.Up.sizex)
+            Textures.PlaySong.Backgrounds.Background.Up.pr.x = backgroundupx * scale[1]
+
+
+            for i = 1, 5 do
+                --LAZIEST SOLUTION EVER: Just render another one
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] - Textures.PlaySong.Backgrounds.Background.Up.sizey
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                --Now render center (main)
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1]
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                --down
+                if backgroundupy < Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.2 then
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+                end
+                
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1]
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+
+                if backgroundupy > Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.8 then
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + 2 * Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
+                end
+                
+                Textures.PlaySong.Backgrounds.Background.Up.pr.x = Textures.PlaySong.Backgrounds.Background.Up.pr.x + Textures.PlaySong.Backgrounds.Background.Up.sizex
+            end
+
+
+
+
+
+
+
+
+
+            --Clean stuff (necessary)
+
+            --draw infobar
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.InfoBar[0], Textures.PlaySong.Backgrounds.Background.InfoBar.sourcerect, Textures.PlaySong.Backgrounds.Background.InfoBar.pr, Textures.PlaySong.Backgrounds.Background.InfoBar.center, 0, rl.WHITE)
+
+            --draw coursesymbol
+            rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.CourseSymbol[Parsed.Metadata.COURSE], Textures.PlaySong.Backgrounds.Background.CourseSymbol.sourcerect, Textures.PlaySong.Backgrounds.Background.CourseSymbol.pr, Textures.PlaySong.Backgrounds.Background.CourseSymbol.center, 0, rl.WHITE)
+            
+            --draw nameplate
+
+            --base
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.base, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --edge
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.edge, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --top
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.top, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rankbase
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rankbase, Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --rank
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates.rank[3], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+            --1P
+            rl.DrawTexturePro(Textures.PlaySong.Nameplates[1], Textures.PlaySong.Nameplates.sourcerect, Textures.PlaySong.Nameplates.pr, Textures.PlaySong.Nameplates.center, 0, rl.WHITE)
+
+
+
+
+
+
+
+
+            --TODO: Draw before / after rendering?
+            -- rl.DrawFPS(10, 10)
+            rl.DrawText(TextMetadata, 10, 40, textsize, rl.BLACK)
+
+
 
 
 
@@ -19489,8 +19809,6 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
 
-
-                    --if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false and (not (note.type == 8 and ms < note.ms)) then
                     --rewrite condition
                     if (note.hit and not (stopsong and note.stopstart and not (ms > note.stopstart))) or (ms > note.ms and IsPointInRectangle(note.p[1], note.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)
                     --drumroll code
@@ -19498,7 +19816,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     and ((not note.endnote) or (note.endnote.done))
                     --endnote
                     --TODO: https://gist.github.com/ChickenProp/3194723
-                    --and ((not note.startnote) or (IsPointInRectangle(note.startnote.p[1], note.startnote.p[2], unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]) == false)) then
+                    --[[
                     and ((not note.startnote) or (IsLineOutsideRectangle(
                         note.p[1] < note.startnote.p[1] and note.p[1] or note.startnote.p[2],
                         note.p[2] < note.startnote.p[2] and note.p[2] or note.startnote.p[2],
@@ -19506,8 +19824,11 @@ CalculateNoteHitGauge(target[1], target[2])
                         note.p[2] < note.startnote.p[2] and note.startnote.p[2] or note.p[2],
                         unloadrectchanged[1], unloadrectchanged[2], unloadrectchanged[3], unloadrectchanged[4]
                     ))) then
-                        --Note: Drumrolls get loaded when startnote gets earlier, so don't unload them until ms is past the endnote.ms
-                        --print('UNLOAD')
+                    --]]
+                    and ((not note.startnote) or (note.drumrollsimple)) then
+
+                        
+                        -- print('UNLOAD')
                         note.done = s
                         table.remove(loaded, i2)
                         done[#done + 1] = note
@@ -20587,6 +20908,7 @@ CalculateNoteHitGauge(target[1], target[2])
                     .. '\nspeed: {' .. note.speed[1] .. ', ' .. note.speed[2] .. '}'
                     .. '\nbpm: ' .. note.bpm
                     .. '\nn: ' .. (note.n or '')
+                    .. '\nline: ' .. (note.line or '')
 
                     --render based on note pr --DEPRACATED
                     --local x, y = note.pr.x + editor.info.offset.x, note.pr.y + editor.info.offset.y
@@ -20638,6 +20960,7 @@ CalculateNoteHitGauge(target[1], target[2])
                         .. '   Runtime speed: ' .. (freezems and freezemstemp or runtimespeed)
                         .. '   ms: ' .. ms
                         .. '   fps: ' .. rl.GetFPS()
+                        .. '   loaded: ' .. #loadedrfinal
                         .. '\nEditor   DragMode: Changing ' .. (editor.changingscroll and 'scroll' or 'ms')
                         .. '   DragMode increment: ' .. (editor.grid.on and ((editor.changingscroll and (editor.grid.scrollincrement .. ' scroll') or (editor.grid.msincrement .. ' ms'))) or 'Off')
                         .. '   Grid: ' .. (editor.grid.on and 'On' or 'Off')
@@ -21681,6 +22004,16 @@ CalculateNoteHitGauge(target[1], target[2])
                     end
                 end
 
+                --Jump to ms
+                if rl.IsKeyPressed(83) then
+                    --TODO: Also add jump to line in tja
+                    local a = GuiInput('Enter where you want to jump to\n(seconds) (ONLY GO FORWARDS)')
+                    if a then
+                        s = a
+                        ms = s * 1000
+                    end
+                end
+
 
 
 
@@ -22205,6 +22538,8 @@ CalculateNoteHitGauge(target[1], target[2])
             --Pause / Command
             local commandactivated = IsKeyPressed(Config.Controls.PlaySong.Command.Init)
             if IsKeyPressed(Config.Controls.PlaySong.Pause.Init) or commandactivated then
+                -- profiler.report('profiler2.log')error()
+
                 dontincrements = true
 
                 local before = os.clock()
@@ -22897,7 +23232,7 @@ CalculateNoteHitGauge(target[1], target[2])
 
 
     --Wrapper for Taiko.PlaySong that handles everything (except difficulty selection and parsing)
-    function Taiko.Play(Parsed)
+    function Taiko.Play(Parsed, path, difficulty)
         while true do
             local Status, Result = Taiko.PlaySong(Parsed)
             if Status == true then
@@ -22909,6 +23244,12 @@ CalculateNoteHitGauge(target[1], target[2])
             elseif Status == false then
                 --Retry
 
+                --Reload file from disc
+                if path then
+                    local Parsed2 = Taiko.Parse(path)
+                    local ParsedData2 = Taiko.GetDifficulty(Parsed2, difficulty)
+                    Parsed = ParsedData2
+                end
             elseif Status == nil then
                 --Quit
                 break
