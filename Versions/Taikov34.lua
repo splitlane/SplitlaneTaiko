@@ -9037,6 +9037,9 @@ function Taiko.ParseTJA(source)
                             - The requirement is calculated one measure before #BRANCHSTART, changing the branch visually when it is calculated and changing the notes after #BRANCHSTART.
                             - The first measure's line after #BRANCHSTART is always yellow.
                             - Branch can be ended either with #BRANCHEND or with another #BRANCHSTART.
+
+                            More:
+                            https://github.com/IepIweidieng/TJAPlayer3/blob/gh-pages/tja.md#branchstart--branchend
                         ]]
                         if Parser.branch.on then
                             --Branch can be ended with #BRANCHSTART too
@@ -18865,34 +18868,36 @@ CalculateNoteHitGauge(target[1], target[2])
             rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Footer[0], Textures.PlaySong.Backgrounds.Background.Footer.sourcerect, Textures.PlaySong.Backgrounds.Background.Footer.pr, Textures.PlaySong.Backgrounds.Background.Footer.center, 0, rl.WHITE)
 
             --Up
-            local backgroundupy = math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizey / 10) % Textures.PlaySong.Backgrounds.Background.Up.sizey
-            local backgroundupx = -(math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizex / 5) % Textures.PlaySong.Backgrounds.Background.Up.sizex)
-            Textures.PlaySong.Backgrounds.Background.Up.pr.x = backgroundupx * scale[1]
+            local backgroundupy = (math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizey / 10) % Textures.PlaySong.Backgrounds.Background.Up.sizey)
+            local backgroundupx = (-(math.floor(ms / 1000 * Textures.PlaySong.Backgrounds.Background.Up.sizex / 5) % Textures.PlaySong.Backgrounds.Background.Up.sizex))
+            Textures.PlaySong.Backgrounds.Background.Up.pr.x = backgroundupx
+            Textures.PlaySong.Backgrounds.Background.Up.pr.width = Textures.PlaySong.Backgrounds.Background.Up.sizex
+            Textures.PlaySong.Backgrounds.Background.Up.pr.height = Textures.PlaySong.Backgrounds.Background.Up.sizey
 
 
             for i = 1, 5 do
                 --LAZIEST SOLUTION EVER: Just render another one
-                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] - Textures.PlaySong.Backgrounds.Background.Up.sizey
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = (backgroundupy - Textures.PlaySong.Backgrounds.Background.Up.sizey)
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
 
                 --Now render center (main)
-                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1]
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
 
                 --down
                 if backgroundupy < Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.2 then
-                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = (backgroundupy + Textures.PlaySong.Backgrounds.Background.Up.sizey)
                     rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[0], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
                 end
                 
-                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1]
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
 
-                Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + Textures.PlaySong.Backgrounds.Background.Up.sizey
+                Textures.PlaySong.Backgrounds.Background.Up.pr.y = (-backgroundupy + Textures.PlaySong.Backgrounds.Background.Up.sizey)
                 rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
 
                 if backgroundupy > Textures.PlaySong.Backgrounds.Background.Up.sizey * 0.8 then
-                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = -backgroundupy * scale[1] + 2 * Textures.PlaySong.Backgrounds.Background.Up.sizey
+                    Textures.PlaySong.Backgrounds.Background.Up.pr.y = (-backgroundupy + 2 * Textures.PlaySong.Backgrounds.Background.Up.sizey)
                     rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Up[1], Textures.PlaySong.Backgrounds.Background.Up.sourcerect, Textures.PlaySong.Backgrounds.Background.Up.pr, Textures.PlaySong.Backgrounds.Background.Up.center, 0, rl.WHITE)
                 end
                 
@@ -19246,6 +19251,12 @@ CalculateNoteHitGauge(target[1], target[2])
             --See if next note is ready to be loaded
             if nextnote then
                 while true do
+                    -- for k, v in pairs(nextnote) do print(k, v) end
+
+                    if nextnote and nextnote.data == 'event' and nextnote.event == 'branch' then
+                        nextnote = nextnote.branch.paths[branch][1]
+                    end
+
                     if nextnote and (nextnote.loadms < ms + totaldelay) then
                         loaded[#loaded + 1] = nextnote
 
@@ -19256,19 +19267,9 @@ CalculateNoteHitGauge(target[1], target[2])
 
                         nextnote = nextnote.nextnote
                         
-                        if nextnote then
-                            if nextnote.startnote then
-                                --end note
-                                nextnote = nextnote.nextnote
-                            end
-
-
-                            if nextnote and nextnote.branch then
-                                nextnote = nextnote.branch.paths[branch][1]
-                            end
-
-                            --logically, branch should not start with endnote
-
+                        if nextnote and nextnote.startnote then
+                            --end note
+                            nextnote = nextnote.nextnote
                         end
                     else
                         break

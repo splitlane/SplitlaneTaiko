@@ -282,7 +282,7 @@ DO NOT EDIT
         'Music' = 0,
     },
     'Paths' = {
-        'Assets' = 'Assets_OpenTaiko/',
+        'Assets' = 'Assets/',
         'Screenshots' = 'Screenshots/',
         'Config' = 'config.tpd',
         'Songs_THISISNOTUSED' = 'Songs/',
