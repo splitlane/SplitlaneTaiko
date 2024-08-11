@@ -7484,6 +7484,17 @@ function Taiko.ParseTJA(source)
     if string.find(source, '$PARSER_TJAP3_DIRECTION_FLIP_Y') then
         Parsed.Flag.PARSER_TJAP3_DIRECTION_FLIP_Y = true
     end
+
+
+
+
+    --Parser internal flags
+    if string.find(source, '$PARSER_DISABLE_ZEROOPT') then
+        zeroopt = false
+    end
+    if string.find(source, '$PARSER_ENABLE_ZEROOPT') then
+        zeroopt = true
+    end
     
 
 
