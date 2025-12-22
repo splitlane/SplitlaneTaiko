@@ -10280,8 +10280,10 @@ Everyone who DL
                                 end
                                 if nextbpmchange then
                                     --Put bpmchange on!
-                                    c.bpmchange = nextbpmchange[2]
-                                    nextbpmchange = false
+                                    if not (c.data == 'event' and c.event == 'barline') then
+                                        c.bpmchange = nextbpmchange[2]
+                                        nextbpmchange = false
+                                    end
                                 end
                                 if nextlyric then
                                     --Put lyric on!
@@ -10499,6 +10501,39 @@ function Taiko.ParseTJAFile(path)
                 and string.sub(path, 1, #path + 1 - slashp) --Path is in a directory, get directory
                 or '' --Path is not in a directory
             ) .. v.Metadata.WAVE
+
+            -- if v.Metadata.SCRIPT then
+            --     v.Metadata.SCRIPT = (
+            --         slashp
+            --         and string.sub(path, 1, #path + 1 - slashp) --Path is in a directory, get directory
+            --         or '' --Path is not in a directory
+            --     ) .. v.Metadata.SCRIPT
+            --     local f = io.open(v.Metadata.SCRIPT, 'rb')
+            --     local s = f:read('*all')
+            --     f:close()
+
+            --     local f, out = loadstring(s)
+            --     if f then
+            --         for i = 1, #v.Data do
+            --             local n = v.Data[i]
+            --             if n.positionf then
+            --                 local oldf = n.positionf
+            --                 n.positionf = function(...)
+            --                     f()
+                                
+            --                     setfenv(oldf, getfenv())
+            --                     -- print(oldf(...))
+
+            --                     return oldf()(...)
+            --                 end
+            --             end
+            --         end
+            --     else
+            --         return nil, 'SCRIPT: ' .. out
+            --     end
+
+
+            -- end
         end
         return Parsed
     else
@@ -18065,7 +18100,11 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                 offset = {
                     tempf = {
                         DrawTexturePro = function(texture, source, dest, origin, rotation, tint)
-                            local dest2 = rl.new('Rectangle', dest.x * editortemp.scale.x + editortemp.offset.x, dest.y * editortemp.scale.y + editortemp.offset.y, dest.width * editortemp.scale.x, dest.height * editortemp.scale.y)
+                            -- local dest2 = rl.new('Rectangle', dest.x * editortemp.scale.x + editortemp.offset.x, dest.y * editortemp.scale.y + editortemp.offset.y, dest.width * editortemp.scale.x, dest.height * editortemp.scale.y)
+                            local cx = dest.width / 2
+                            local cy = dest.height / 2
+                            local dest2 = rl.new('Rectangle', (dest.x - cx) * editortemp.scale.x + editortemp.offset.x + cx, (dest.y - cy) * editortemp.scale.y + editortemp.offset.y + cy, dest.width * editortemp.scale.x, dest.height * editortemp.scale.y)
+                            local origin2 = rl.new('Vector2', origin.x * 2, origin.y * 2)
                             editortemp.data.DrawTexturePro(texture, source, dest2, origin, rotation, tint)
                         end,
                         --[[
@@ -18077,6 +18116,9 @@ right 60-120 (Textures.PlaySong.Backgrounds.Taiko.sizex/2-120)
                     data = editortemp.data, --functions that are overwritten
                 } --data used for offsetting when moving
             },
+
+            movedragging = false,
+            movedraggingpos = rl.new('Vector2'), --position of last dragging for movement (right click dragging)
         }
         local runtimespeed = 1 --speed in which second gets incremented (multiplier)
         local pastruntimespeed = runtimespeed --variable to keep track of pastruntimespeed
@@ -18872,6 +18914,7 @@ CalculateNoteHitGauge(target[1], target[2])
             --TODO: Find skin and details
 
             --Actual backgrounds (non clean)
+            --[[
             --Down
             rl.DrawTexturePro(Textures.PlaySong.Backgrounds.Background.Down[0], Textures.PlaySong.Backgrounds.Background.Down.sourcerect, Textures.PlaySong.Backgrounds.Background.Down.pr, Textures.PlaySong.Backgrounds.Background.Down.center, 0, rl.WHITE)
 
@@ -18914,6 +18957,7 @@ CalculateNoteHitGauge(target[1], target[2])
                 
                 Textures.PlaySong.Backgrounds.Background.Up.pr.x = Textures.PlaySong.Backgrounds.Background.Up.pr.x + Textures.PlaySong.Backgrounds.Background.Up.sizex
             end
+            --]]
 
 
 
@@ -21184,6 +21228,24 @@ CalculateNoteHitGauge(target[1], target[2])
                 end
 
 
+
+                --move dragging
+                if rightdown then
+                    if rightpressed then
+                        editor.movedragging = true
+                    else
+                        local movex = mouseposition.x - editor.movedraggingpos.x
+                        local movey = mouseposition.y - editor.movedraggingpos.y
+
+                        local v = editortemp.offset
+                        v.x = v.x + movex
+                        v.y = v.y + movey
+                    end
+                    editor.movedraggingpos.x = mouseposition.x
+                    editor.movedraggingpos.y = mouseposition.y
+                else
+                    editor.movedragging = false
+                end
 
 
 

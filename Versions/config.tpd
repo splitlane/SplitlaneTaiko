@@ -278,7 +278,7 @@ DO NOT EDIT
 	'ComboSoundEnabled' = false,
 	'Fullscreen' = false,
     'Offsets' = {
-        'Timing' = 16,
+        'Timing' = 0,
         'Music' = 0,
     },
     'Paths' = {
