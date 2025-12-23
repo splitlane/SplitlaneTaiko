@@ -279,10 +279,11 @@ DO NOT EDIT
 	'Fullscreen' = false,
     'Offsets' = {
         'Timing' = 0,
+//        'Music' = -75,
         'Music' = 0,
     },
     'Paths' = {
-        'Assets' = 'Assets/',
+        'Assets' = 'Assets_OpenTaiko/',
         'Screenshots' = 'Screenshots/',
         'Config' = 'config.tpd',
         'Songs_THISISNOTUSED' = 'Songs/',
@@ -293,12 +294,12 @@ DO NOT EDIT
         'Screenshot' = '.png',
     },
     'Settings' = {
-        'LimitFPS' = true,
+        'LimitFPS' = false,
         'FPS' = 60,
         'VSync' = true,
         'PlaySong' = {
             'SONGVOLMultiplier' = 1,
-            'SEVOLMultiplier' = 0.5,
+            'SEVOLMultiplier' = 0.8,
             'LyricRomajiToHiragana' = false,
             'Debug' = {
                 
