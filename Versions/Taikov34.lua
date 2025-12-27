@@ -13017,7 +13017,7 @@ the way down and work your way up.]], 0, Config.ScreenHeight / 2, fontsize, rl.B
     local textsize = OriginalConfig.ScreenHeight / 45
     --print(textsize)
 
-    local desynctime = 0.1 --Acceptable time for desync until correction (seconds)
+    local desynctime = 0.01 --Acceptable time for desync until correction (seconds)
 
 
 
@@ -17987,8 +17987,8 @@ CalculateNoteHitGauge(target[1], target[2])
                     --print(desync)
                     if forceresync or desync > desynctime or desync < -desynctime then --basically abs function
                         --Resync music to notes
-                        -- print('RESYNC', desync)
-                        rl.SeekMusicStream(song, offsets * songspeedmul)
+                        print('RESYNC', desync)
+                        rl.SeekMusicStream(song, (offsets * songspeedmul + 1/60))
                         forceresync = false
                     end
 
