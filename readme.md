@@ -1,6 +1,6 @@
 # Taiko
 
-Popular taiko game simulator, focusing on gimmicks and a gimmick editor.
+Taiko rhythm game with extended features and an in-game chart editor.
 
 - [Taiko](#taiko)
   - [For developers](#for-developers)
